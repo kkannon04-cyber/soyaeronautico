@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meteorología · Generalidades y Atmósfera | SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --sky1:#0A2647; --sky2:#1657C6; --sky3:#3E7BFA; --sky4:#8FC1E8; --sky5:#E6F2FB;
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---- sub-tabs for MET ejes tematicos ---- */
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.locked{ opacity:0.45; cursor:default; }
+
+  .tracker-bar{ padding:12px 32px 14px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .tracker-inner{ max-width:1000px; margin:0 auto; }
+  .tracker-toprow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .tracker-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; }
+  .tracker-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); }
+  .tracker-track{ position:relative; height:46px; background:linear-gradient(180deg, var(--panel-alt), var(--panel)); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
+  .tracker-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(var(--live-rgb),0.18), rgba(var(--live-rgb),0.42)); transition:width .6s cubic-bezier(.4,0,.2,1); }
+  .tracker-plane{ position:absolute; top:50%; left:0%; font-size:1.5rem; transform:translate(-50%,-50%); transition:left .6s cubic-bezier(.4,0,.2,1); z-index:2; }
+  .tracker-plane.crash{ animation:crashFall .9s ease; }
+  @keyframes crashFall{ 0%{transform:translate(-50%,-50%) rotate(0);} 35%{transform:translate(-50%,16px) rotate(70deg);} 60%{transform:translate(-50%,16px) rotate(80deg);} 100%{transform:translate(-50%,-50%) rotate(0);} }
+  .tracker-boom{ position:absolute; top:6px; font-size:1.1rem; opacity:0; z-index:3; pointer-events:none; }
+  .tracker-boom.show{ animation:boomPop .9s ease; }
+  @keyframes boomPop{ 0%{opacity:0; transform:translateY(6px) scale(.6);} 30%{opacity:1; transform:translateY(0) scale(1.1);} 70%{opacity:1;} 100%{opacity:0; transform:translateY(-6px) scale(.9);} }
+  .tracker-marks{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:0.6rem; color:var(--text-muted); margin-top:5px; padding:0 2px; }
+  @media (max-width:760px){ .tracker-marks span{display:none;} .tracker-marks span:first-child, .tracker-marks span:last-child{display:inline;} }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:170px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  /* ---- composición atmosférica (barra apilada) ---- */
+  .gas-bar{ display:flex; height:38px; border-radius:8px; overflow:hidden; border:1px solid var(--hairline); margin:14px 0; }
+  .gas-seg{ display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-family:'IBM Plex Mono'; font-weight:600; }
+  .gas-legend{ display:flex; flex-wrap:wrap; gap:14px; font-size:0.82rem; color:var(--text-muted); margin-bottom:6px;}
+  .gas-legend span{ display:flex; align-items:center; gap:6px; }
+  .gas-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+  /* ---- diagrama de la atmósfera (capas) ---- */
+  .atmos-wrap{ display:grid; grid-template-columns: 1fr; gap:0; margin:20px 0; border-radius:14px; overflow:hidden; border:1px solid var(--hairline); }
+  .atmos-layer{ position:relative; padding:16px 18px; color:#fff; display:flex; flex-direction:column; gap:4px; }
+  .atmos-layer .lname{ font-family:'Archivo'; font-weight:800; font-size:1rem; }
+  .atmos-layer .lrange{ font-family:'IBM Plex Mono'; font-size:0.72rem; opacity:0.88; }
+  .atmos-layer .ldesc{ font-size:0.82rem; opacity:0.95; max-width:640px; line-height:1.5; }
+  .l-exosfera{ background:linear-gradient(180deg,#050912,#0A1B33); padding-top:26px; }
+  .l-termosfera{ background:linear-gradient(180deg,#0A1B33,#123B6B); }
+  .l-mesosfera{ background:linear-gradient(180deg,#123B6B,#1657C6); }
+  .l-estratosfera{ background:linear-gradient(180deg,#1657C6,#3E7BFA); }
+  .l-troposfera{ background:linear-gradient(180deg,#3E7BFA,#8FC1E8); color:#0A2647; padding-bottom:26px; }
+  .l-troposfera .lrange, .l-troposfera .ldesc{ opacity:0.85; }
+
+  /* ---- actividad drag & drop ---- */
+  .dnd-box{ border:1px solid var(--hairline); border-radius:14px; padding:18px; background:var(--panel); margin:18px 0; }
+  .dnd-instructions{ font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; }
+  .dnd-layers{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+  .dnd-layer{ border-radius:10px; padding:12px 14px; color:#fff; min-height:52px; transition:.15s; border:2px dashed rgba(255,255,255,0.35); }
+  .dnd-layer.dragover{ border-color:#fff; transform:scale(1.01); box-shadow:0 0 0 3px rgba(255,255,255,0.25); }
+  .dnd-layer .lname{ font-family:'Archivo'; font-weight:700; font-size:0.9rem; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .dnd-layer .lname .rng{ font-family:'IBM Plex Mono'; font-size:0.65rem; opacity:0.85; font-weight:400; }
+  .dnd-dropped{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .dnd-chip-placed{ background:rgba(255,255,255,0.92); color:var(--navy); font-size:0.72rem; font-weight:600; padding:5px 10px; border-radius:20px; }
+  .dnd-pool{ display:flex; flex-wrap:wrap; gap:8px; padding-top:6px; border-top:1px dashed var(--hairline); }
+  .dnd-chip{ cursor:grab; background:var(--bg); border:1px solid var(--hairline); border-radius:20px; padding:8px 14px; font-size:0.8rem; font-weight:500; transition:.15s; user-select:none; }
+  .dnd-chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .dnd-chip.selected{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.12); color:var(--accent); font-weight:600; }
+  .dnd-chip.wrong-shake{ animation:shakeChip .4s; border-color:var(--danger); }
+  @keyframes shakeChip{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .dnd-status{ margin-top:10px; font-size:0.85rem; font-weight:600; min-height:20px; }
+  .dnd-status.ok{ color:var(--vfr); }
+  .dnd-status.bad{ color:var(--danger); }
+  .dnd-progress{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); margin-top:6px; }
+  .dnd-reset{ margin-top:12px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:7px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; }
+  .dnd-reset:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+          <g transform="rotate(-40 20 20)">
+            <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+            <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        SoyAeronautico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html">ATS</a>
+      <a href="espacio-aereo.html">Espacio Aéreo</a>
+      <a href="meteorologia.html" class="active">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="pbn.html">PBN</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="meteorologia-generalidades.html" class="subtab active"><span class="n">1</span> Generalidades y Atmósfera</a>
+      <a href="#" class="subtab locked"><span class="n">2</span> Viento · Presión · Temperatura</a>
+      <a href="#" class="subtab locked"><span class="n">3</span> Humedad · Nubosidad · Meteoros</a>
+    </div>
+  </div>
+
+  <div class="tracker-bar">
+    <div class="tracker-inner">
+      <div class="tracker-toprow">
+        <span class="tracker-label">🎈 Globo sonda — sube de capa en capa respondiendo bien</span>
+        <span class="tracker-score mono" id="trackerScore">0 aciertos · 0 errores · nivel 0/8</span>
+      </div>
+      <div class="tracker-track" id="trackerTrack">
+        <div class="tracker-fill" id="trackerFill"></div>
+        <div class="tracker-boom" id="trackerBoom">💥</div>
+        <div class="tracker-plane" id="trackerPlane">🎈</div>
+      </div>
+      <div class="tracker-marks">
+        <span>Superficie</span><span>Tropopausa</span><span>Estratosfera</span><span>Ozono</span><span>Mesosfera</span><span>Termosfera</span><span>Ionosfera</span><span>Exosfera</span><span>ESPACIO</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Meteorología — Eje temático 1</div>
+  <h1>Generalidades: qué es la meteorología y cómo está armada la atmósfera.</h1>
+  <p class="lead">Antes de hablar de viento, presión o nubes, hay que tener clarísimo dónde ocurre todo eso: la atmósfera. Aquí vemos las definiciones base y recorremos capa por capa, de la superficie hacia el espacio.</p>
+  <div class="hero-note">🎈 <div><b>Cómo estudiar esta página:</b> lee cada bloque, responde el chequeo rápido que sigue y al final arma tú mismo la atmósfera arrastrando las características a su capa correcta.</div></div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. ¿Qué es la Meteorología?</a>
+  <a href="#t2">2. Tiempo vs. Clima</a>
+  <a href="#t3">3. La atmósfera: definición y composición</a>
+  <a href="#t4">4. Tropósfera</a>
+  <a href="#t5">5. Estratosfera</a>
+  <a href="#t6">6. Mesosfera</a>
+  <a href="#t7">7. Termosfera e Ionosfera</a>
+  <a href="#t8">8. Exosfera</a>
+  <a href="#t9">9. Actividad: arma la atmósfera</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>¿Qué es la Meteorología?</h2></div>
+    <div class="topic-body">
+      <p>La <b>Meteorología</b> es la ciencia que estudia la atmósfera y los fenómenos que ocurren en ella: viento, temperatura, humedad, presión, nubes y precipitación. Su objetivo es describir, entender y predecir el <b>estado de la atmósfera</b> en un lugar y momento determinados.</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>¿Por qué?</b>Porque casi todos los fenómenos que afectan un vuelo (turbulencia, visibilidad, viento cruzado, hielo, tormentas) nacen en la atmósfera.</div>
+        <div class="objective-item"><b>¿Para qué?</b>Para que el piloto y el controlador tomen decisiones seguras: despegar, desviar, esperar o cancelar.</div>
+        <div class="objective-item"><b>¿Con qué?</b>Con datos de estaciones, radiosondas, satélites y radares que alimentan reportes como el METAR y el TAF.</div>
+      </div>
+      <div class="mnemo"><b>🧠 Idea clave:</b> la meteorología aeronáutica no es "adivinar el clima", es traducir el estado físico de la atmósfera en información operacional para la aviación.</div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/8</div>
+      <div class="quiz-q">La Meteorología estudia principalmente...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Las rutas y procedimientos de navegación aérea</button>
+        <button class="quiz-opt" data-correct="true">La atmósfera y los fenómenos que ocurren en ella</button>
+        <button class="quiz-opt" data-correct="false">La estructura del espacio aéreo controlado</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>Tiempo vs. Clima</h2></div>
+    <div class="topic-body">
+      <p>Son dos palabras que se confunden mucho, pero en meteorología significan cosas distintas:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th></th><th>Tiempo (Weather)</th><th>Clima (Climate)</th></tr>
+        <tr><td><b>Escala temporal</b></td><td>Corto plazo: horas o días</td><td>Largo plazo: promedios de 30 años o más</td></tr>
+        <tr><td><b>Qué describe</b></td><td>El estado real de la atmósfera hoy, ahora mismo</td><td>El comportamiento típico/esperado de un lugar</td></tr>
+        <tr><td><b>Ejemplo</b></td><td>"Hoy hay lluvia y viento de 15 nudos en el aeropuerto"</td><td>"Esta región es tropical húmeda todo el año"</td></tr>
+        <tr><td><b>Uso en aviación</b></td><td>METAR, SPECI, TAF, reportes en vivo</td><td>Estudios de planeación de rutas, pistas y aeropuertos</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> el <b>tiempo</b> es lo que te pones hoy antes de salir; el <b>clima</b> es lo que ya sabes que te vas a encontrar en esa ciudad todo el año.</div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/8</div>
+      <div class="quiz-q">Un METAR reporta el estado de la atmósfera en un momento puntual. Esto corresponde a...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Tiempo (weather)</button>
+        <button class="quiz-opt" data-correct="false">Clima (climate)</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>La atmósfera: definición y composición</h2></div>
+    <div class="topic-body">
+      <p>La <b>atmósfera</b> es la capa de gases que envuelve la Tierra, retenida por la fuerza de gravedad. No tiene un límite superior definido: simplemente se va haciendo cada vez menos densa hasta mezclarse con el vacío del espacio.</p>
+      <p>Su composición es casi constante hasta unos 80 km de altura (capa homogénea llamada <b>homósfera</b>):</p>
+      <div class="gas-legend">
+        <span><i style="background:#1657C6"></i>Nitrógeno (N₂) 78%</span>
+        <span><i style="background:#3E7BFA"></i>Oxígeno (O₂) 21%</span>
+        <span><i style="background:#E08E3E"></i>Otros gases ~1% (Argón, CO₂, Neón, vapor de agua, ozono...)</span>
+      </div>
+      <div class="gas-bar">
+        <div class="gas-seg" style="background:#1657C6; width:78%;">N₂ 78%</div>
+        <div class="gas-seg" style="background:#3E7BFA; width:21%;">O₂ 21%</div>
+        <div class="gas-seg" style="background:#E08E3E; width:1%;"></div>
+      </div>
+      <p>La atmósfera se divide en <b>capas o niveles</b> según cómo se comporta la temperatura con la altura. Ese criterio (sube o baja la temperatura) es la clave para identificar cada capa, y es justo lo que vamos a recorrer a continuación.</p>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Las capas NO se distinguen por su composición química (que es casi igual hasta los 80 km), sino por el <b>comportamiento de la temperatura</b>: si aumenta o disminuye con la altura.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/8</div>
+      <div class="quiz-q">¿Cuál es el gas más abundante de la atmósfera?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Oxígeno</button>
+        <button class="quiz-opt" data-correct="true">Nitrógeno</button>
+        <button class="quiz-opt" data-correct="false">Dióxido de carbono</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- diagrama general de capas -->
+  <div class="atmos-wrap">
+    <div class="atmos-layer l-exosfera">
+      <div class="lname">🛰️ Exosfera</div>
+      <div class="lrange">≈ 600 km — hasta fundirse con el espacio</div>
+    </div>
+    <div class="atmos-layer l-termosfera">
+      <div class="lname">🌌 Termosfera (incluye la Ionosfera)</div>
+      <div class="lrange">≈ 85 km – 600 km</div>
+    </div>
+    <div class="atmos-layer l-mesosfera">
+      <div class="lname">☄️ Mesosfera</div>
+      <div class="lrange">≈ 50 km – 85 km</div>
+    </div>
+    <div class="atmos-layer l-estratosfera">
+      <div class="lname">🌀 Estratosfera</div>
+      <div class="lrange">≈ 11 km – 50 km</div>
+    </div>
+    <div class="atmos-layer l-troposfera">
+      <div class="lname">✈️ Tropósfera</div>
+      <div class="lrange">Superficie – ≈ 11 km (variable con la latitud)</div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Tropósfera</h2></div>
+    <div class="topic-body">
+      <p>Es la capa <b>más baja y más importante para la aviación</b>. Va desde la superficie hasta unos <b>11 km (≈36.000 ft)</b> en promedio, aunque su altura varía: es más alta en el ecuador (~18 km) y más baja en los polos (~8 km).</p>
+      <ul>
+        <li>Contiene cerca del <b>75-80% de toda la masa de la atmósfera</b> y casi todo el vapor de agua.</li>
+        <li>Aquí ocurre <b>prácticamente todo el "tiempo"</b>: nubes, lluvia, tormentas, viento, turbulencia.</li>
+        <li>La temperatura <b>disminuye con la altura</b>: aproximadamente <b>2°C por cada 1.000 ft</b> (gradiente térmico estándar OACI ≈ 6.5°C/km).</li>
+        <li>Termina en la <b>Tropopausa</b>: una capa de transición delgada donde la temperatura deja de bajar y se estabiliza. Es un límite clave para el vuelo (cerca de ella se ubica el nivel de crucero de muchos aviones comerciales).</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Truco:</b> "Tropósfera" viene del griego <i>tropos</i> (cambio, giro): es la capa donde todo cambia y se revuelve — por eso ahí vive el clima.</div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/8</div>
+      <div class="quiz-q">En la tropósfera, a medida que se asciende, la temperatura...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Disminuye (aprox. 2°C cada 1.000 ft)</button>
+        <button class="quiz-opt" data-correct="false">Aumenta constantemente</button>
+        <button class="quiz-opt" data-correct="false">Se mantiene siempre igual</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Estratosfera</h2></div>
+    <div class="topic-body">
+      <p>Va desde la tropopausa (≈11 km) hasta unos <b>50 km</b> de altura. Aquí la situación se invierte respecto a la tropósfera:</p>
+      <ul>
+        <li>La temperatura <b>aumenta con la altura</b>, gracias a la <b>capa de ozono (O₃)</b>, que absorbe radiación ultravioleta del sol y calienta el aire de esta capa.</li>
+        <li>El aire es muy estable (por eso se llama "estrato": capas horizontales que casi no se mezclan verticalmente).</li>
+        <li>Hay muy poco vapor de agua, casi no hay nubes ni turbulencia — por eso los <b>vuelos supersónicos y algunos globos de gran altura</b> vuelan aquí.</li>
+      </ul>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">La <b>capa de ozono</b> está dentro de la <b>estratosfera</b>, no en la tropósfera ni en la mesosfera. Es la responsable de que la temperatura suba en esta capa.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/8</div>
+      <div class="quiz-q">¿Por qué la temperatura aumenta con la altura en la estratosfera?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Por la cercanía al suelo caliente</button>
+        <button class="quiz-opt" data-correct="true">Por la absorción de radiación UV en la capa de ozono</button>
+        <button class="quiz-opt" data-correct="false">Por la fricción de los meteoritos</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>Mesosfera</h2></div>
+    <div class="topic-body">
+      <p>Se extiende aproximadamente entre <b>50 km y 85 km</b>. Es la capa <b>más fría de toda la atmósfera</b>, con temperaturas que pueden bajar de <b>-90°C</b>.</p>
+      <ul>
+        <li>La temperatura vuelve a <b>disminuir con la altura</b> (ya no hay ozono que caliente el aire).</li>
+        <li>Aquí es donde la mayoría de los <b>meteoritos se desintegran</b> por fricción con el aire, generando las "estrellas fugaces".</li>
+        <li>Es difícil de estudiar directamente: demasiado alta para globos y demasiado baja para satélites.</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Truco:</b> Mesosfera = "capa de en medio" y también la capa más helada — donde se queman los meteoritos antes de llegar a nosotros.</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/8</div>
+      <div class="quiz-q">¿En qué capa se desintegran la mayoría de los meteoritos al entrar a la atmósfera?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Estratosfera</button>
+        <button class="quiz-opt" data-correct="true">Mesosfera</button>
+        <button class="quiz-opt" data-correct="false">Termosfera</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Termosfera e Ionosfera</h2></div>
+    <div class="topic-body">
+      <p>La <b>Termosfera</b> va desde ≈85 km hasta ≈600 km. Su nombre lo dice todo: aquí la temperatura <b>vuelve a aumentar</b>, y de forma extrema — puede superar los <b>1.500°C</b> — porque las moléculas de gas (muy escasas) absorben directamente radiación solar de alta energía.</p>
+      <ul>
+        <li>Dentro de la termosfera está la <b>Ionosfera</b>: una región donde la radiación solar ioniza los gases (les quita electrones), formando partículas cargadas eléctricamente.</li>
+        <li>La ionosfera <b>refleja ondas de radio</b>, lo que permite las comunicaciones de larga distancia (HF).</li>
+        <li>Aquí ocurren las <b>auroras boreales y australes</b>, y orbitan satélites de <b>órbita baja (LEO)</b> y la <b>Estación Espacial Internacional</b>.</li>
+      </ul>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Aunque la termosfera tiene temperaturas altísimas, un astronauta no "sentiría calor" ahí: el aire es tan escaso que casi no hay moléculas para transmitir esa energía como calor (no hay suficiente densidad para la conducción).</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/8</div>
+      <div class="quiz-q">La capa que permite las comunicaciones de radio de larga distancia al reflejar las ondas es...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">La Ionosfera (dentro de la Termosfera)</button>
+        <button class="quiz-opt" data-correct="false">La Tropopausa</button>
+        <button class="quiz-opt" data-correct="false">La capa de ozono</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 8 -->
+  <article class="topic" id="t8">
+    <div class="topic-head"><div class="topic-num">8</div><h2>Exosfera</h2></div>
+    <div class="topic-body">
+      <p>Es la <b>última capa</b>, desde unos 600 km hacia afuera. Es la zona de transición entre la atmósfera y el espacio exterior: no tiene un límite superior claro.</p>
+      <ul>
+        <li>El aire es <b>extremadamente escaso</b>: las moléculas están tan separadas que casi no chocan entre sí.</li>
+        <li>Aquí orbitan los <b>satélites geoestacionarios</b> y de comunicaciones.</li>
+        <li>Se considera el punto donde la atmósfera terrestre se "disuelve" en el vacío del espacio.</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Truco para recordar el orden completo (de superficie hacia arriba):</b> <b>"Toda Estudiante Meteoróloga Toma Examen"</b> → Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
+    </div>
+    <div class="quiz-card" data-quiz="8">
+      <div class="quiz-tag">🎯 Chequeo rápido 8/8 — ¡última pregunta!</div>
+      <div class="quiz-q">Ordena mentalmente las capas de la atmósfera de la superficie hacia el espacio. ¿Cuál va justo antes de la Exosfera?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Estratosfera</button>
+        <button class="quiz-opt" data-correct="false">Mesosfera</button>
+        <button class="quiz-opt" data-correct="true">Termosfera</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🎈🏆</div>
+    <h3>¡Tu globo sonda llegó al espacio!</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 8 preguntas correctamente. Ya conoces las capas de la atmósfera — ahora ponlas a prueba armándolas tú mismo en la actividad de abajo.</p>
+  </div>
+
+  <!-- 9: actividad interactiva -->
+  <article class="topic" id="t9">
+    <div class="topic-head"><div class="topic-num">9</div><h2>Actividad: arma la atmósfera</h2></div>
+    <div class="topic-body">
+      <p>Abajo tienes las 5 capas de la atmósfera vacías, y una bolsa de <b>características</b> desordenadas. Tu misión: arrastra (o toca) cada característica y colócala en la capa correcta.</p>
+    </div>
+
+    <div class="dnd-box">
+      <div class="dnd-instructions">📌 En computador: arrastra la tarjeta hasta la capa. En celular: toca la tarjeta para seleccionarla y luego toca la capa donde va.</div>
+
+      <div class="dnd-layers" id="dndLayers">
+        <div class="dnd-layer l-exosfera" data-layer="exosfera">
+          <div class="lname">🛰️ Exosfera <span class="rng">≈600 km +</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer l-termosfera" data-layer="termosfera">
+          <div class="lname">🌌 Termosfera / Ionosfera <span class="rng">≈85–600 km</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer l-mesosfera" data-layer="mesosfera">
+          <div class="lname">☄️ Mesosfera <span class="rng">≈50–85 km</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer l-estratosfera" data-layer="estratosfera">
+          <div class="lname">🌀 Estratosfera <span class="rng">≈11–50 km</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer l-troposfera" data-layer="troposfera">
+          <div class="lname">✈️ Tropósfera <span class="rng">Superficie–≈11 km</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+      </div>
+
+      <div class="dnd-pool" id="dndPool"></div>
+      <div class="dnd-status" id="dndStatus"></div>
+      <div class="dnd-progress" id="dndProgress">0 / 12 colocadas correctamente</div>
+      <button class="dnd-reset" id="dndReset" type="button">↺ Reiniciar actividad</button>
+    </div>
+
+    <div class="mnemo"><b>🧠 Recuerda:</b> "Toda Estudiante Meteoróloga Toma Examen" — Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
+  </article>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo MET · Eje 1 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- GLOBO SONDA (tracker de quizzes) ----------
+  const TOTAL_QUIZ = 8;
+  let level = 0, correctCount = 0, wrongCount = 0;
+
+  const trackerFill = document.getElementById('trackerFill');
+  const trackerPlane = document.getElementById('trackerPlane');
+  const trackerBoom = document.getElementById('trackerBoom');
+  const trackerScore = document.getElementById('trackerScore');
+  const finishCard = document.getElementById('finishCard');
+
+  function renderTracker(){
+    const pct = (level / TOTAL_QUIZ) * 100;
+    trackerFill.style.width = pct + '%';
+    trackerPlane.style.left = pct + '%';
+    trackerBoom.style.left = pct + '%';
+    trackerScore.textContent = `${correctCount} aciertos · ${wrongCount} errores · nivel ${level}/${TOTAL_QUIZ}`;
+    if(level >= TOTAL_QUIZ && correctCount >= TOTAL_QUIZ){
+      finishCard.style.display = 'block';
+    }
+  }
+  renderTracker();
+
+  function playCrash(){
+    trackerPlane.classList.remove('crash');
+    trackerBoom.classList.remove('show');
+    void trackerPlane.offsetWidth;
+    trackerPlane.classList.add('crash');
+    trackerBoom.classList.add('show');
+  }
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    if(isCorrect){
+      correctCount++;
+      level = Math.min(level + 1, TOTAL_QUIZ);
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = level >= TOTAL_QUIZ
+        ? '✅ ¡Correcto! El globo llegó al espacio. 🏆'
+        : '✅ ¡Correcto! El globo sigue subiendo.';
+    }else{
+      wrongCount++;
+      btn.classList.add('incorrect');
+      level = Math.max(level - 1, 0);
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '💥 El globo bajó un poco... repasa y sigue subiendo en la próxima.';
+      playCrash();
+    }
+    renderTracker();
+  }
+
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+
+  // ---------- ACTIVIDAD DRAG & DROP: ARMA LA ATMÓSFERA ----------
+  const CHIPS = [
+    { id:1,  text:"Aquí ocurren la lluvia, el viento y las tormentas", layer:"troposfera" },
+    { id:2,  text:"Contiene entre el 75% y 80% de la masa de la atmósfera", layer:"troposfera" },
+    { id:3,  text:"Termina en la Tropopausa", layer:"troposfera" },
+    { id:4,  text:"La temperatura disminuye con la altura (~2°C/1000ft)", layer:"troposfera" },
+    { id:5,  text:"Contiene la capa de ozono", layer:"estratosfera" },
+    { id:6,  text:"La temperatura aumenta por absorción de radiación UV", layer:"estratosfera" },
+    { id:7,  text:"Aire muy estable, casi sin nubes ni turbulencia", layer:"estratosfera" },
+    { id:8,  text:"Es la capa más fría de toda la atmósfera (hasta -90°C)", layer:"mesosfera" },
+    { id:9,  text:"Aquí se desintegran la mayoría de los meteoritos", layer:"mesosfera" },
+    { id:10, text:"Contiene la Ionosfera, que refleja ondas de radio", layer:"termosfera" },
+    { id:11, text:"Aquí ocurren las auroras boreales y orbita la ISS", layer:"termosfera" },
+    { id:12, text:"Última capa; se mezcla poco a poco con el espacio", layer:"exosfera" },
+  ];
+
+  const dndPool = document.getElementById('dndPool');
+  const dndLayers = document.getElementById('dndLayers');
+  const dndStatus = document.getElementById('dndStatus');
+  const dndProgress = document.getElementById('dndProgress');
+  const dndReset = document.getElementById('dndReset');
+
+  let selectedChip = null;
+  let placedCorrect = 0;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildPool(){
+    dndPool.innerHTML = '';
+    placedCorrect = 0;
+    dndLayers.querySelectorAll('.dnd-dropped').forEach(d => d.innerHTML = '');
+    dndStatus.textContent = '';
+    dndStatus.className = 'dnd-status';
+    updateProgress();
+
+    shuffle(CHIPS).forEach(chip => {
+      const el = document.createElement('div');
+      el.className = 'dnd-chip';
+      el.textContent = chip.text;
+      el.draggable = true;
+      el.dataset.id = chip.id;
+      el.dataset.layer = chip.layer;
+
+      el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', chip.id);
+      });
+
+      el.addEventListener('click', () => {
+        if(selectedChip === el){
+          el.classList.remove('selected');
+          selectedChip = null;
+          return;
+        }
+        document.querySelectorAll('.dnd-chip.selected').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedChip = el;
+      });
+
+      dndPool.appendChild(el);
+    });
+  }
+
+  function updateProgress(){
+    dndProgress.textContent = `${placedCorrect} / ${CHIPS.length} colocadas correctamente`;
+  }
+
+  function placeChip(chipEl, layerEl){
+    const correctLayer = chipEl.dataset.layer;
+    const targetLayer = layerEl.dataset.layer;
+
+    if(correctLayer === targetLayer){
+      const chip = document.createElement('span');
+      chip.className = 'dnd-chip-placed';
+      chip.textContent = chipEl.textContent;
+      layerEl.querySelector('.dnd-dropped').appendChild(chip);
+      chipEl.remove();
+      placedCorrect++;
+      updateProgress();
+      dndStatus.className = 'dnd-status ok';
+      dndStatus.textContent = '✅ ¡Correcto! Esa característica es de esta capa.';
+      if(placedCorrect === CHIPS.length){
+        dndStatus.textContent = '🏆 ¡Perfecto! Armaste toda la atmósfera correctamente.';
+      }
+    }else{
+      chipEl.classList.add('wrong-shake');
+      layerEl.classList.add('dragover');
+      dndStatus.className = 'dnd-status bad';
+      dndStatus.textContent = '❌ Esa característica no pertenece a esta capa. Vuelve a intentarlo.';
+      setTimeout(() => {
+        chipEl.classList.remove('wrong-shake');
+        layerEl.classList.remove('dragover');
+      }, 450);
+    }
+    if(selectedChip === chipEl) selectedChip = null;
+  }
+
+  dndLayers.querySelectorAll('.dnd-layer').forEach(layerEl => {
+    layerEl.addEventListener('dragover', e => { e.preventDefault(); layerEl.classList.add('dragover'); });
+    layerEl.addEventListener('dragleave', () => layerEl.classList.remove('dragover'));
+    layerEl.addEventListener('drop', e => {
+      e.preventDefault();
+      layerEl.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      const chipEl = dndPool.querySelector(`.dnd-chip[data-id="${id}"]`);
+      if(chipEl) placeChip(chipEl, layerEl);
+    });
+    layerEl.addEventListener('click', () => {
+      if(selectedChip) placeChip(selectedChip, layerEl);
+    });
+  });
+
+  dndReset.addEventListener('click', buildPool);
+
+  buildPool();
+</script>
+
+</body>
+</html>

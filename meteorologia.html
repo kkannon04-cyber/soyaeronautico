@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meteorología | SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+
+  /* ---- grid de módulos/ejes ---- */
+  .modules-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:32px 0; }
+  .module-card{ border:1px solid var(--hairline); border-radius:14px; padding:24px; background:var(--panel); transition:.2s; position:relative; overflow:hidden; }
+  .module-card::before{ content:''; position:absolute; inset:-8px; border:1px dashed rgba(var(--muted-rgb),0.15); border-radius:6px; pointer-events:none; }
+  .module-card a{ text-decoration:none; display:block; position:relative; z-index:1; }
+  .module-card:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow-card); }
+  .module-card.locked{ opacity:0.6; cursor:default; }
+  .module-card.locked:hover{ border-color:var(--hairline); transform:none; box-shadow:none; }
+
+  .module-icon{ font-size:2.4rem; margin-bottom:12px; }
+  .module-number{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:block; }
+  .module-title{ font-size:1.1rem; font-weight:700; margin-bottom:8px; font-family:'Archivo', sans-serif; }
+  .module-desc{ font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px; }
+  .module-status{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:6px 10px; border-radius:6px; display:inline-block; margin-bottom:6px; }
+  .module-status.completed{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .module-status.upcoming{ background:rgba(var(--muted-rgb),0.12); color:var(--text-muted); }
+
+  .module-meta{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-top:12px; }
+  .module-meta-item{ display:inline-block; margin-right:14px; }
+  .module-meta-item::before{ content:'◆ '; opacity:0.5; margin-right:4px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+          <g transform="rotate(-40 20 20)">
+            <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+            <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        SoyAeronautico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html">ATS</a>
+      <a href="espacio-aereo.html">Espacio Aéreo</a>
+      <a href="meteorologia.html" class="active">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="pbn.html">PBN</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Módulo MET — Curso Básico Operador AIS·COM·MET</div>
+  <h1>Meteorología Aeronáutica.</h1>
+  <p class="lead">Entiende cómo funciona la atmósfera, cómo se mide el viento, la temperatura, la presión y la humedad, y cómo leer las nubes y los fenómenos meteorológicos que afectan tu vuelo. El módulo se divide en 3 ejes temáticos progresivos: desde lo general a lo específico.</p>
+  <div class="hero-note">
+    <span>🌤️</span>
+    <span><b>Estructura:</b> cada eje temático está dividido en bloques cortos con chequeos rápidos. Completa un eje para desbloquear el siguiente.</span>
+  </div>
+</section>
+
+<main class="content">
+  <div class="modules-grid">
+
+    <!-- Eje 1: Generalidades y Atmósfera (DISPONIBLE) -->
+    <div class="module-card">
+      <a href="meteorologia-generalidades.html">
+        <div class="module-icon">🌍</div>
+        <span class="module-number">Eje Temático 1</span>
+        <div class="module-title">Generalidades y Atmósfera</div>
+        <div class="module-desc">Definiciones base de Meteorología, qué es la atmósfera, su composición y sus capas: tropósfera, estratosfera, mesosfera, termosfera y exosfera.</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">8 bloques</div>
+          <div class="module-meta-item">8 chequeos</div>
+          <div class="module-meta-item">~25 min</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Eje 2: Viento, Presión, Temperatura (PRÓXIMO) -->
+    <div class="module-card locked">
+      <div class="module-icon">💨</div>
+      <span class="module-number">Eje Temático 2</span>
+      <div class="module-title">Viento, Presión y Temperatura</div>
+      <div class="module-desc">Aprende cómo se generan el viento y la presión, cómo varían con la altura y la localización, y qué implicaciones tienen para el vuelo.</div>
+      <span class="module-status upcoming">🔒 Próximo</span>
+      <div class="module-meta">
+        <div class="module-meta-item">Desbloquea completando el Eje 1</div>
+      </div>
+    </div>
+
+    <!-- Eje 3: Humedad, Nubosidad y Meteoros (PRÓXIMO) -->
+    <div class="module-card locked">
+      <div class="module-icon">⛅</div>
+      <span class="module-number">Eje Temático 3</span>
+      <div class="module-title">Humedad, Nubosidad y Meteoros</div>
+      <div class="module-desc">Descubre cómo se forma la humedad, qué son las nubes, cómo se clasifican, y qué fenómenos meteorológicos debes conocer (turbulencia, granizo, hielo, tormentas).</div>
+      <span class="module-status upcoming">🔒 Próximo</span>
+      <div class="module-meta">
+        <div class="module-meta-item">Desbloquea completando los Ejes 1 y 2</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo MET — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+</script>
+
+</body>
+</html>
