@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METAR y TAF — SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://aviationweather.gov">
+<link rel="preconnect" href="https://r.jina.ai">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --metar-btn-text:#FFFFFF;
+    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+  }
+
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --metar-btn-text:#0B1220;
+    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+  }
+
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55); } 70%{ box-shadow:0 0 0 6px rgba(var(--live-rgb),0); } 100%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0); } }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a[aria-current="page"]{ color:var(--text); }
+  nav.desktop-nav a[aria-current="page"]::after{ right:0; }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- PAGE HERO ---------- */
+  .page-hero{ max-width:1200px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--accent); text-transform:uppercase; margin-bottom:14px; }
+  .page-hero h1{ font-size:clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom:10px; }
+  .page-hero p.lead{ color:var(--text-muted); max-width:680px; font-size:1rem; line-height:1.6; }
+
+  /* ---------- SELECTION PANEL (estilo formulario clásico) ---------- */
+  .selector-wrap{ max-width:1200px; margin:0 auto; padding:20px 32px 0; }
+  .selector-panel{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
+    padding:26px 28px; box-shadow:var(--shadow-instrument);
+  }
+  .selector-title{ font-size:1.05rem; margin-bottom:20px; color:var(--accent); }
+  .selector-row{
+    display:flex; gap:28px; flex-wrap:wrap; margin-bottom:22px;
+  }
+  .field-group{ display:flex; flex-direction:column; gap:6px; min-width:150px; }
+  .field-group.grow{ flex:1; min-width:220px; }
+  .field-group label{
+    font-family:'IBM Plex Mono'; font-size:0.68rem; font-weight:600; letter-spacing:0.08em;
+    color:var(--text-muted); text-transform:uppercase;
+  }
+  .field-group input[type="text"], .field-group select{
+    background:var(--bg); border:1px solid var(--hairline); color:var(--text);
+    font-family:'IBM Plex Sans'; font-size:0.88rem; padding:9px 11px; border-radius:8px;
+  }
+  .field-group input[type="text"]{ font-family:'IBM Plex Mono'; text-transform:uppercase; letter-spacing:0.08em; }
+  .field-group input:focus, .field-group select:focus{ outline:none; border-color:var(--accent); }
+
+  .periodo-block{ border-top:1px solid var(--hairline); padding-top:20px; }
+  .periodo-title{
+    font-family:'IBM Plex Mono'; font-size:0.68rem; font-weight:600; letter-spacing:0.08em;
+    color:var(--text-muted); text-transform:uppercase; margin-bottom:14px;
+  }
+  .periodo-row{ display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:12px; }
+  .periodo-row .row-label{
+    font-size:0.82rem; font-weight:700; color:var(--text); min-width:64px; padding-bottom:9px;
+  }
+  .periodo-row select{
+    background:var(--bg); border:1px solid var(--hairline); color:var(--text);
+    font-family:'IBM Plex Mono'; font-size:0.85rem; padding:9px 10px; border-radius:8px;
+  }
+  .periodo-row select:focus{ outline:none; border-color:var(--accent); }
+  .periodo-col{ display:flex; flex-direction:column; gap:5px; }
+  .periodo-col span{
+    font-family:'IBM Plex Mono'; font-size:0.62rem; color:var(--text-muted); letter-spacing:0.06em;
+  }
+
+  .hint{ font-size:0.76rem; color:var(--text-muted); margin-top:2px; line-height:1.5; }
+
+  .btn-row{ display:flex; gap:12px; margin-top:20px; }
+  .btn-primary{
+    background:var(--accent); color:var(--metar-btn-text); border:none; font-weight:700;
+    padding:11px 26px; border-radius:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:0.9rem;
+    transition:filter .15s;
+  }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-primary:disabled{ opacity:0.6; cursor:wait; }
+  .btn-secondary{
+    background:none; color:var(--text-muted); border:1px solid var(--hairline); font-weight:600;
+    padding:11px 22px; border-radius:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:0.88rem;
+    transition:border-color .2s, color .2s;
+  }
+  .btn-secondary:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .chip-wrap{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chip-sm{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; font-weight:600;
+    background:var(--panel-alt); border:1px solid var(--hairline); color:var(--text-muted);
+    padding:5px 10px; border-radius:20px; cursor:pointer; transition:border-color .2s, color .2s;
+  }
+  .chip-sm:hover, .chip-sm.active{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- RESULTS ---------- */
+  .results-wrap{ max-width:1200px; margin:0 auto; padding:24px 32px 80px; }
+  .status-line{ font-size:0.85rem; color:var(--text-muted); margin-bottom:18px; min-height:20px; }
+  .status-line.error{ color:var(--danger); }
+
+  .station-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .station-head .station-icao{ font-family:'IBM Plex Mono'; font-weight:700; font-size:1.15rem; color:var(--accent); }
+  .station-head .station-name{ font-size:0.95rem; color:var(--text-muted); }
+
+  .result-section{ margin-bottom:26px; }
+  .result-section:last-child{ margin-bottom:0; }
+  .result-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .result-head h2{ font-size:1.05rem; }
+  .result-count{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); background:var(--panel-alt); padding:3px 10px; border-radius:20px; }
+
+  .empty-note{
+    color:var(--text-muted); font-size:0.85rem; background:var(--panel-alt);
+    border:1px dashed var(--hairline); border-radius:8px; padding:16px; text-align:center;
+  }
+
+  .report-list{ display:flex; flex-direction:column; gap:8px; }
+  .report-row{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--panel); border:1px solid var(--hairline); border-radius:8px;
+    padding:11px 14px;
+  }
+  .report-row .rtime{ flex-shrink:0; font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; color:var(--accent); min-width:80px; padding-top:1px; }
+  .report-row .rraw{ font-family:'IBM Plex Mono'; font-size:0.8rem; color:var(--text); word-break:break-word; white-space:pre-wrap; flex:1; }
+
+  .taf-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:16px 18px; margin-bottom:10px; }
+  .taf-card:last-child{ margin-bottom:0; }
+  .taf-valid{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--accent); margin-bottom:8px; letter-spacing:0.02em; }
+  .taf-raw{ font-family:'IBM Plex Mono'; font-size:0.82rem; color:var(--text); white-space:pre-wrap; word-break:break-word; line-height:1.6; }
+
+  .empty-state{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .empty-state svg{ margin-bottom:14px; opacity:0.5; }
+  .empty-state p{ font-size:0.9rem; max-width:360px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+  footer a{ text-decoration:none; }
+  footer a:hover{ color:var(--accent); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+        <g transform="rotate(-40 20 20)">
+          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      SoyAeronautico
+      <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+    </div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="espacio-aereo.html">Espacio Aéreo</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html" aria-current="page">METAR y TAF</a>
+    <a href="pbn.html">PBN</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <button class="nav-icon-btn" aria-label="Buscar en el portal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="eyebrow">Consulta operativa</div>
+  <h1>Selección de mensajes METAR / SPECI / TAF</h1>
+  <p class="lead">Elige el lugar, el tipo de mensaje y el período exacto (por defecto, las últimas 24 horas hasta ahora) — se muestra todo lo que NOAA tenga publicado en esa franja, sin límite de cantidad.</p>
+</section>
+
+<div class="selector-wrap">
+  <div class="selector-panel">
+    <div class="selector-row">
+      <div class="field-group grow">
+        <label for="icaoInput">Lugar (código ICAO)</label>
+        <input type="text" id="icaoInput" maxlength="4" placeholder="Ej. SKCL" autocomplete="off">
+        <div class="chip-wrap" id="quickChips">
+          <span class="chip-sm active" data-icao="SKBO">SKBO</span>
+          <span class="chip-sm" data-icao="SKCL">SKCL</span>
+          <span class="chip-sm" data-icao="SKRG">SKRG</span>
+          <span class="chip-sm" data-icao="SKMD">SKMD</span>
+          <span class="chip-sm" data-icao="SKBQ">SKBQ</span>
+          <span class="chip-sm" data-icao="SKCG">SKCG</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="tipoSelect">Tipo</label>
+        <select id="tipoSelect">
+          <option value="todos" selected>Todos</option>
+          <option value="metar">Solo METAR</option>
+          <option value="speci">Solo SPECI</option>
+          <option value="taf">Solo TAF</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="ordenSelect">Orden</label>
+        <select id="ordenSelect">
+          <option value="reciente" selected>Reciente primero</option>
+          <option value="antiguo">Antiguo primero</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="periodo-block">
+      <div class="periodo-title">Periodo (fecha y hora en UTC / Zulu)</div>
+
+      <div class="periodo-row">
+        <span class="row-label">Inicio:</span>
+        <div class="periodo-col"><span>Año</span><select id="inicioAnio"></select></div>
+        <div class="periodo-col"><span>Mes</span><select id="inicioMes"></select></div>
+        <div class="periodo-col"><span>Día</span><select id="inicioDia"></select></div>
+        <div class="periodo-col"><span>Hora</span><select id="inicioHora"></select></div>
+      </div>
+      <div class="periodo-row">
+        <span class="row-label">Fin:</span>
+        <div class="periodo-col"><span>Año</span><select id="finAnio"></select></div>
+        <div class="periodo-col"><span>Mes</span><select id="finMes"></select></div>
+        <div class="periodo-col"><span>Día</span><select id="finDia"></select></div>
+        <div class="periodo-col"><span>Hora</span><select id="finHora"></select></div>
+      </div>
+      <div class="hint">Por defecto el Fin queda en la hora actual UTC y el Inicio 24 horas antes. aviationweather.gov mantiene una ventana móvil reciente (no un archivo histórico completo), así que fechas muy antiguas pueden no traer resultados.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="buscarBtn" type="button">Ver</button>
+      <button class="btn-secondary" id="limpiarBtn" type="button">Limpiar</button>
+    </div>
+  </div>
+</div>
+
+<div class="results-wrap">
+  <div class="status-line" id="statusLine">Elige un lugar y un período, luego presiona Ver.</div>
+  <div id="resultsWrap">
+    <div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <p>Tus resultados de METAR, SPECI y TAF aparecerán aquí, en orden cronológico.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Datos METAR/TAF: aviationweather.gov (NOAA)</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU (siempre visible en el encabezado) ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- ELEMENTOS ----------
+  const icaoInput = document.getElementById('icaoInput');
+  const quickChips = document.getElementById('quickChips');
+  const tipoSelect = document.getElementById('tipoSelect');
+  const ordenSelect = document.getElementById('ordenSelect');
+  const buscarBtn = document.getElementById('buscarBtn');
+  const limpiarBtn = document.getElementById('limpiarBtn');
+  const statusLine = document.getElementById('statusLine');
+  const resultsWrap = document.getElementById('resultsWrap');
+
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  const selInicioAnio = document.getElementById('inicioAnio');
+  const selInicioMes = document.getElementById('inicioMes');
+  const selInicioDia = document.getElementById('inicioDia');
+  const selInicioHora = document.getElementById('inicioHora');
+  const selFinAnio = document.getElementById('finAnio');
+  const selFinMes = document.getElementById('finMes');
+  const selFinDia = document.getElementById('finDia');
+  const selFinHora = document.getElementById('finHora');
+
+  function diasEnMes(anio, mesIndex){ return new Date(Date.UTC(anio, mesIndex + 1, 0)).getUTCDate(); }
+
+  function llenarAnios(select, actual){
+    select.innerHTML = '';
+    for(let a = actual - 1; a <= actual; a++){
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      if(a === actual) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+  function llenarMeses(select, actual){
+    select.innerHTML = '';
+    meses.forEach((m, i) => {
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = m;
+      if(i === actual) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+  function llenarDias(select, anio, mesIndex, actual){
+    const total = diasEnMes(anio, mesIndex);
+    const prevValor = actual || parseInt(select.value, 10) || actual;
+    select.innerHTML = '';
+    for(let d = 1; d <= total; d++){
+      const opt = document.createElement('option');
+      opt.value = String(d).padStart(2,'0'); opt.textContent = String(d).padStart(2,'0');
+      if(d === prevValor) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+  function llenarHoras(select, actual){
+    select.innerHTML = '';
+    for(let h = 0; h < 24; h++){
+      const opt = document.createElement('option');
+      opt.value = String(h).padStart(2,'0'); opt.textContent = String(h).padStart(2,'0');
+      if(h === actual) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  function inicializarPeriodo(){
+    const ahora = new Date();
+    const inicio = new Date(ahora.getTime() - 24 * 3600000);
+
+    llenarAnios(selFinAnio, ahora.getUTCFullYear());
+    llenarMeses(selFinMes, ahora.getUTCMonth());
+    llenarDias(selFinDia, ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate());
+    llenarHoras(selFinHora, ahora.getUTCHours());
+
+    llenarAnios(selInicioAnio, inicio.getUTCFullYear());
+    llenarMeses(selInicioMes, inicio.getUTCMonth());
+    llenarDias(selInicioDia, inicio.getUTCFullYear(), inicio.getUTCMonth(), inicio.getUTCDate());
+    llenarHoras(selInicioHora, inicio.getUTCHours());
+  }
+
+  function conectarRegeneracionDias(selAnio, selMes, selDia){
+    [selAnio, selMes].forEach(sel => {
+      sel.addEventListener('change', () => {
+        llenarDias(selDia, parseInt(selAnio.value, 10), parseInt(selMes.value, 10));
+      });
+    });
+  }
+  conectarRegeneracionDias(selInicioAnio, selInicioMes, selInicioDia);
+  conectarRegeneracionDias(selFinAnio, selFinMes, selFinDia);
+
+  inicializarPeriodo();
+
+  function leerFechaUTC(selAnio, selMes, selDia, selHora){
+    return Date.UTC(
+      parseInt(selAnio.value, 10),
+      parseInt(selMes.value, 10),
+      parseInt(selDia.value, 10),
+      parseInt(selHora.value, 10), 0, 0
+    );
+  }
+
+  quickChips.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip-sm');
+    if(!chip) return;
+    quickChips.querySelectorAll('.chip-sm').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    icaoInput.value = chip.dataset.icao;
+  });
+
+  limpiarBtn.addEventListener('click', () => {
+    icaoInput.value = '';
+    tipoSelect.value = 'todos';
+    ordenSelect.value = 'reciente';
+    inicializarPeriodo();
+    statusLine.classList.remove('error');
+    statusLine.textContent = 'Elige un lugar y un período, luego presiona Ver.';
+    resultsWrap.innerHTML = `
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <p>Tus resultados de METAR, SPECI y TAF aparecerán aquí, en orden cronológico.</p>
+      </div>`;
+  });
+
+  function fechaHoraZ(epochSeconds){
+    if(!epochSeconds) return '—';
+    const d = new Date(epochSeconds * 1000);
+    return `${String(d.getUTCDate()).padStart(2,'0')} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}Z`;
+  }
+
+  function extraerValidez(raw){
+    if(!raw) return null;
+    const m = raw.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
+    if(!m) return null;
+    return `Válido: día ${m[1]} ${m[2]}Z → día ${m[3]} ${m[4]}Z`;
+  }
+
+  function extraerJson(texto){
+    try{ return JSON.parse(texto); }catch(e){}
+    const match = texto.match(/\[[\s\S]*\]/);
+    if(match){ try{ return JSON.parse(match[0]); }catch(e){} }
+    throw new Error('parse');
+  }
+
+  async function fetchWithTimeout(url, ms, comoTexto){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try{
+      const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+      if(!res.ok) throw new Error('network');
+      const parsed = comoTexto ? extraerJson(await res.text()) : await res.json();
+      if(!parsed || (Array.isArray(parsed) && !parsed.length) || parsed.error) throw new Error('notfound');
+      return parsed;
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
+  async function descargar(icao, tipo, horas){
+    // El endpoint de TAF de aviationweather.gov NO acepta "hours": solo entrega
+    // el boletín TAF vigente en este momento (por diseño, NOAA no expone un
+    // historial de TAFs por esta vía). El de METAR/SPECI sí admite "hours" para
+    // traer varias observaciones pasadas.
+    const params = tipo === 'taf'
+      ? `ids=${icao}&format=json`
+      : `ids=${icao}&format=json&hours=${horas}`;
+    const targetUrl = `https://aviationweather.gov/api/data/${tipo}?${params}`;
+    const encoded = encodeURIComponent(targetUrl);
+
+    const attempts = [
+      fetchWithTimeout(`/.netlify/functions/metar?icao=${icao}&type=${tipo}&hours=${horas}`, 7000, false),
+      fetchWithTimeout(targetUrl, 7000, false),
+      fetchWithTimeout(`https://r.jina.ai/${targetUrl}`, 7000, true),
+      fetchWithTimeout(`https://api.allorigins.win/raw?url=${encoded}`, 7000, false),
+      fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${targetUrl}`, 7000, false),
+      fetchWithTimeout(`https://corsproxy.io/?url=${encoded}`, 7000, false),
+      fetchWithTimeout(`https://thingproxy.freeboard.io/fetch/${targetUrl}`, 7000, false)
+    ];
+
+    try{
+      return await Promise.any(attempts);
+    }catch(aggregate){
+      const errors = (aggregate && aggregate.errors) || [];
+      const allNotFound = errors.length > 0 && errors.every(e => e && e.message === 'notfound');
+      throw new Error(allNotFound ? 'notfound' : 'network');
+    }
+  }
+
+  function renderEstacion(icao, reportes, tafData){
+    const nombre = (reportes.find(r => r.name)?.name) || (tafData.find(t => t.name)?.name) || null;
+    return `
+      <div class="station-head">
+        <span class="station-icao mono">${icao}</span>
+        ${nombre ? `<span class="station-name">${nombre}</span>` : ''}
+      </div>`;
+  }
+
+  function renderReportes(reportes){
+    return `
+      <div class="result-section">
+        <div class="result-head">
+          <h2>METAR / SPECI</h2>
+          <span class="result-count mono">${reportes.length} reporte(s)</span>
+        </div>
+        ${reportes.length ? `<div class="report-list">${reportes.map(m => `
+          <div class="report-row">
+            <span class="rtime mono">${fechaHoraZ(m.obsTime)}</span>
+            <span class="rraw">${m.rawOb || '—'}</span>
+          </div>`).join('')}</div>` : `<div class="empty-note">No hay reportes en el período elegido.</div>`}
+      </div>`;
+  }
+
+  function renderTaf(reportes){
+    return `
+      <div class="result-section">
+        <div class="result-head">
+          <h2>TAF</h2>
+          <span class="result-count mono">${reportes.length} boletín(es)</span>
+        </div>
+        ${reportes.length ? reportes.map(t => {
+          const validez = extraerValidez(t.rawTAF || t.rawOb);
+          return `
+            <div class="taf-card">
+              ${validez ? `<div class="taf-valid">${validez}${t.issueTime ? ' · emitido ' + fechaHoraZ(t.issueTime) : ''}</div>` : ''}
+              <div class="taf-raw">${t.rawTAF || t.rawOb || '—'}</div>
+            </div>`;
+        }).join('') : `<div class="empty-note">No hay TAF vigente publicado para esta estación.</div>`}
+      </div>`;
+  }
+
+  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+  // Caché en memoria por sesión: si una consulta ya tuvo éxito antes para esta
+  // combinación de estación+tipo+horas, la guardamos para poder mostrarla como
+  // respaldo si una consulta posterior falla, igual que hace el buscador de la
+  // página principal.
+  const resultCache = {};
+  const REINTENTOS = 3;
+
+  async function descargarConReintentos(icao, tipo, horas){
+    const cacheKey = `${tipo}:${icao}:${horas}`;
+    let ultimoError = null;
+
+    for(let intento = 1; intento <= REINTENTOS; intento++){
+      try{
+        const data = await descargar(icao, tipo, horas);
+        resultCache[cacheKey] = data;
+        return { data, esRespaldo: false };
+      }catch(err){
+        ultimoError = err;
+        if(err.message === 'notfound') break; // no tiene sentido reintentar si la estación no tiene datos
+        if(intento < REINTENTOS) await sleep(900 * intento);
+      }
+    }
+
+    if(resultCache[cacheKey]){
+      return { data: resultCache[cacheKey], esRespaldo: true };
+    }
+    throw ultimoError || new Error('network');
+  }
+
+  function filtrarMetar(data, tipo, orden, inicioMs, finMs){
+    let lista = Array.isArray(data) ? data.slice() : [];
+    lista = lista.filter(m => {
+      const t = (m.obsTime || 0) * 1000;
+      return t >= inicioMs && t <= finMs;
+    });
+    if(tipo === 'metar') lista = lista.filter(m => !(m.rawOb || '').trim().toUpperCase().startsWith('SPECI'));
+    if(tipo === 'speci') lista = lista.filter(m => (m.rawOb || '').trim().toUpperCase().startsWith('SPECI'));
+    lista.sort((a, b) => orden === 'reciente' ? (b.obsTime || 0) - (a.obsTime || 0) : (a.obsTime || 0) - (b.obsTime || 0));
+    return lista;
+  }
+
+  function pintarResultados(icao, reportes, tafData, quiereMetarSpeci, quiereTaf, mensaje, esError){
+    statusLine.classList.toggle('error', !!esError);
+    statusLine.textContent = mensaje;
+    let html = '';
+    html += renderEstacion(icao, reportes, tafData);
+    if(quiereMetarSpeci) html += renderReportes(reportes);
+    if(quiereTaf) html += renderTaf(tafData);
+    resultsWrap.innerHTML = html;
+  }
+
+  async function buscar(){
+    const icao = icaoInput.value.trim().toUpperCase();
+    if(icao.length !== 4){
+      statusLine.textContent = 'Ingresa un código ICAO válido de 4 letras (ej. SKCL).';
+      statusLine.classList.add('error');
+      return;
+    }
+
+    const inicioMs = leerFechaUTC(selInicioAnio, selInicioMes, selInicioDia, selInicioHora);
+    const finMs = leerFechaUTC(selFinAnio, selFinMes, selFinDia, selFinHora);
+    if(inicioMs >= finMs){
+      statusLine.classList.add('error');
+      statusLine.textContent = 'La fecha de Inicio debe ser anterior a la fecha de Fin.';
+      return;
+    }
+
+    statusLine.classList.remove('error');
+    buscarBtn.disabled = true;
+
+    const tipo = tipoSelect.value;
+    const orden = ordenSelect.value;
+    const quiereMetarSpeci = tipo !== 'taf';
+    const quiereTaf = tipo === 'todos' || tipo === 'taf';
+
+    // "hours" siempre cuenta hacia atrás desde AHORA, así que lo calculamos a partir
+    // del Inicio elegido, con un tope prudente (ventana móvil de NOAA).
+    const horasNecesarias = Math.ceil((Date.now() - inicioMs) / 3600000);
+    const horas = String(Math.min(Math.max(horasNecesarias, 1), 72));
+
+    // ---- Paso 1: si ya hay algo en caché para esta misma consulta, mostrarlo
+    // de inmediato mientras la versión fresca llega ("stale-while-revalidate").
+    // Así una búsqueda repetida del mismo ICAO se siente instantánea.
+    const cacheKeyMetar = `metar:${icao}:${horas}`;
+    const cacheKeyTaf = `taf:${icao}:${horas}`;
+    const cacheMetarPrevio = resultCache[cacheKeyMetar];
+    const cacheTafPrevio = resultCache[cacheKeyTaf];
+
+    if((quiereMetarSpeci && cacheMetarPrevio) || (quiereTaf && cacheTafPrevio)){
+      const reportesPrevios = quiereMetarSpeci && cacheMetarPrevio ? filtrarMetar(cacheMetarPrevio, tipo, orden, inicioMs, finMs) : [];
+      const tafPrevio = quiereTaf && cacheTafPrevio ? cacheTafPrevio.slice() : [];
+      pintarResultados(icao, reportesPrevios, tafPrevio, quiereMetarSpeci, quiereTaf,
+        `Mostrando lo último guardado de ${icao} mientras se actualiza...`, false);
+    }else{
+      statusLine.textContent = `Consultando ${icao}...`;
+    }
+
+    let reportes = [];
+    let tafData = [];
+    let metarError = null, tafError = null;
+    let metarEsRespaldo = false, tafEsRespaldo = false;
+
+    // ---- Paso 2: pedir los datos frescos. METAR y TAF se piden en paralelo
+    // (antes se pedían en serie, sumando la espera), y cada uno reintenta hasta
+    // 3 veces y cae a la última copia buena en caché si todos los intentos fallan.
+    const [resMetar, resTaf] = await Promise.allSettled([
+      quiereMetarSpeci ? descargarConReintentos(icao, 'metar', horas) : Promise.resolve(null),
+      quiereTaf ? descargarConReintentos(icao, 'taf', horas) : Promise.resolve(null)
+    ]);
+
+    if(quiereMetarSpeci){
+      if(resMetar.status === 'fulfilled'){
+        metarEsRespaldo = resMetar.value.esRespaldo;
+        reportes = filtrarMetar(resMetar.value.data, tipo, orden, inicioMs, finMs);
+      }else{
+        metarError = resMetar.reason;
+      }
+    }
+
+    if(quiereTaf){
+      if(resTaf.status === 'fulfilled'){
+        tafEsRespaldo = resTaf.value.esRespaldo;
+        tafData = Array.isArray(resTaf.value.data) ? resTaf.value.data.slice() : [];
+      }else{
+        tafError = resTaf.reason;
+      }
+    }
+
+    buscarBtn.disabled = false;
+
+    const huboExito = (quiereMetarSpeci && reportes.length) || (quiereTaf && tafData.length);
+    if(!huboExito){
+      const soloNotFound = (!quiereMetarSpeci || (metarError && metarError.message === 'notfound')) &&
+                            (!quiereTaf || (tafError && tafError.message === 'notfound'));
+      const mensajeError = soloNotFound
+        ? `No se encontraron reportes para ${icao} en ese período. Verifica el código o amplía el rango de fechas.`
+        : `No se pudo conectar con el servicio en este momento. Intenta de nuevo en unos segundos.`;
+
+      // Si ya habíamos mostrado algo en caché (stale-while-revalidate) y el
+      // refresco falló del todo, mejor dejar esos datos visibles con el aviso
+      // de error, en vez de vaciar la pantalla.
+      const huboCachePrevio = (quiereMetarSpeci && cacheMetarPrevio) || (quiereTaf && cacheTafPrevio);
+      if(huboCachePrevio){
+        statusLine.classList.add('error');
+        statusLine.textContent = `${mensajeError} Mostrando lo último guardado de ${icao}.`;
+        return;
+      }
+
+      statusLine.classList.add('error');
+      statusLine.textContent = mensajeError;
+      resultsWrap.innerHTML = `
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <p>No hay datos para mostrar todavía. Ajusta la búsqueda e intenta otra vez.</p>
+        </div>`;
+      return;
+    }
+
+    const huboRespaldo = (quiereMetarSpeci && metarEsRespaldo) || (quiereTaf && tafEsRespaldo);
+    const partes = [];
+    if(quiereMetarSpeci) partes.push(`${reportes.length} METAR/SPECI`);
+    if(quiereTaf) partes.push(`${tafData.length} TAF`);
+
+    const mensajeFinal = huboRespaldo
+      ? `No se pudo actualizar ahora mismo: mostrando la última copia buena obtenida de ${icao} (${partes.join(' · ')}).`
+      : `${icao}: ${partes.join(' · ')} encontrados entre ${fechaHoraZ(inicioMs/1000)} y ${fechaHoraZ(finMs/1000)}.`;
+
+    pintarResultados(icao, reportes, tafData, quiereMetarSpeci, quiereTaf, mensajeFinal, huboRespaldo);
+  }
+
+  buscarBtn.addEventListener('click', buscar);
+  icaoInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') buscar(); });
+</script>
+
+</body>
+</html>

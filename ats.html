@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATS — Servicios de Tránsito Aéreo | SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --vfr:#2E9E6D;
+    --mvfr:#3E7BFA;
+    --ifr:#D64545;
+    --lifr:#8B5CF6;
+    --warn:#E08E3E;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --vfr:#4FA88C;
+    --mvfr:#4A8FD1;
+    --ifr:#C9564F;
+    --lifr:#B15FC7;
+    --warn:#D19A55;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- STICKY HEADER (topbar + tracker) ---------- */
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- TRACKER BAR (simulador de ascenso) ---------- */
+  .tracker-bar{ padding:12px 32px 14px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .tracker-inner{ max-width:1000px; margin:0 auto; }
+  .tracker-toprow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .tracker-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; }
+  .tracker-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); }
+  .tracker-track{ position:relative; height:46px; background:linear-gradient(180deg, var(--panel-alt), var(--panel)); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
+  .tracker-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(var(--live-rgb),0.18), rgba(var(--live-rgb),0.42)); transition:width .6s cubic-bezier(.4,0,.2,1); }
+  .tracker-plane{ position:absolute; top:50%; left:0%; font-size:1.5rem; transform:translate(-50%,-50%) rotate(-20deg); transition:left .6s cubic-bezier(.4,0,.2,1); z-index:2; }
+  .tracker-plane.crash{ animation:crashFall .9s ease; }
+  @keyframes crashFall{
+    0%{ transform:translate(-50%,-50%) rotate(-20deg); }
+    35%{ transform:translate(-50%,16px) rotate(85deg); }
+    60%{ transform:translate(-50%,16px) rotate(95deg); }
+    100%{ transform:translate(-50%,-50%) rotate(-20deg); }
+  }
+  .tracker-boom{ position:absolute; top:6px; font-size:1.1rem; opacity:0; z-index:3; pointer-events:none; }
+  .tracker-boom.show{ animation:boomPop .9s ease; }
+  @keyframes boomPop{ 0%{opacity:0; transform:translateY(6px) scale(.6);} 30%{opacity:1; transform:translateY(0) scale(1.1);} 70%{opacity:1;} 100%{opacity:0; transform:translateY(-6px) scale(.9);} }
+  .tracker-marks{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:0.6rem; color:var(--text-muted); margin-top:5px; padding:0 2px; }
+  @media (max-width:760px){ .tracker-marks span{display:none;} .tracker-marks span:first-child, .tracker-marks span:last-child{display:inline;} }
+
+  /* ---------- HERO SIMPLE ---------- */
+  .hero-simple{ max-width:900px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  /* ---------- TOC ---------- */
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- CONTENT ---------- */
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:150px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-m{ background:rgba(62,123,250,0.15); color:var(--mvfr); }
+  .badge-i{ background:rgba(214,69,69,0.15); color:var(--ifr); }
+  .badge-l{ background:rgba(139,92,246,0.15); color:var(--lifr); }
+  .badge-w{ background:rgba(224,142,62,0.15); color:var(--warn); }
+
+  .phase-flow{ display:flex; flex-wrap:wrap; gap:12px; margin:18px 0; }
+  .phase{ flex:1; min-width:200px; border-radius:12px; padding:18px 18px; color:#fff; }
+  .phase h4{ margin-bottom:8px; font-family:'Archivo'; font-size:1.02rem; }
+  .phase p{ font-size:0.82rem; margin:0 0 6px; opacity:0.96; line-height:1.5; }
+  .phase ul{ margin:6px 0 0; padding-left:18px; font-size:0.8rem; opacity:0.96; }
+  .phase ul li{ margin-bottom:4px; }
+  .phase.incerfa{ background:linear-gradient(160deg, #3E7BFA, #2f5fce); }
+  .phase.alerfa{ background:linear-gradient(160deg, #E08E3E, #c8722a); }
+  .phase.detresfa{ background:linear-gradient(160deg, #D64545, #b93636); }
+
+  /* ---------- QUIZ ---------- */
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+          <g transform="rotate(-40 20 20)">
+            <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+            <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        SoyAeronautico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html" class="active">ATS</a>
+      <a href="espacio-aereo.html">Espacio Aéreo</a>
+      <a href="meteorologia.html">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="pbn.html">PBN</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <div class="tracker-bar">
+    <div class="tracker-inner">
+      <div class="tracker-toprow">
+        <span class="tracker-label">🎮 Simulador de ascenso — responde bien y sube de nivel</span>
+        <span class="tracker-score mono" id="trackerScore">0 aciertos · 0 errores · nivel 0/10</span>
+      </div>
+      <div class="tracker-track" id="trackerTrack">
+        <div class="tracker-fill" id="trackerFill"></div>
+        <div class="tracker-boom" id="trackerBoom">💥</div>
+        <div class="tracker-plane" id="trackerPlane">✈️</div>
+      </div>
+      <div class="tracker-marks">
+        <span>GND</span><span>5.000ft</span><span>10.000ft</span><span>FL100</span><span>FL180</span><span>FL240</span><span>FL300</span><span>FL330</span><span>FL350</span><span>CRUCERO</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Módulo ATS — Curso Básico Operador AIS·COM·MET</div>
+  <h1>Servicios de Tránsito Aéreo, de punta a punta.</h1>
+  <p class="lead">Aquí vas a repasar todo lo que necesitas de ATS: objetivos, cómo se divide el espacio aéreo, información de vuelo, alerta y comunicaciones. Está organizado en 10 bloques cortos, cada uno con su "truco para recordar" y un chequeo rápido de una sola pregunta.</p>
+  <div class="hero-note">
+    <span>🛫</span>
+    <span><b>Cómo funciona el juego:</b> al final de cada bloque hay una pregunta. Si aciertas, el avión sube un nivel en la barra de arriba. Si fallas, se estrella y baja un nivel. La meta es llegar a <b>CRUCERO</b> con los 10 aciertos.</span>
+  </div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. Objetivos y división</a>
+  <a href="#t2">2. ¿Cuándo se necesita?</a>
+  <a href="#t3">3. Espacio aéreo (FIR, ATZ...)</a>
+  <a href="#t4">4. Clases A–G</a>
+  <a href="#t5">5. Servicio FIS</a>
+  <a href="#t6">6. OFIS y ATIS</a>
+  <a href="#t7">7. Comunicaciones AT</a>
+  <a href="#t8">8. Comunicaciones TT</a>
+  <a href="#t9">9. Información requerida</a>
+  <a href="#t10">10. Servicio de Alerta</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>Objetivos y división de los ATS</h2></div>
+    <div class="topic-body">
+      <p>Todo lo que hacen los Servicios de Tránsito Aéreo (ATS) apunta a 5 objetivos. Apréndetelos con sus letras, porque las vas a volver a ver:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>A</b>Prevenir colisiones entre aeronaves.</div>
+        <div class="objective-item"><b>B</b>Prevenir colisiones en el área de maniobras, entre aeronaves y obstáculos.</div>
+        <div class="objective-item"><b>C</b>Acelerar y mantener ordenado el movimiento del tránsito aéreo.</div>
+        <div class="objective-item"><b>D</b>Asesorar y dar información útil para la marcha segura y eficaz de los vuelos.</div>
+        <div class="objective-item"><b>E</b>Notificar a los organismos pertinentes sobre aeronaves que necesiten búsqueda y salvamento (SAR), y colaborar con ellos.</div>
+      </div>
+      <p>Estos 5 objetivos se reparten entre <b>3 servicios</b>:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Servicio</th><th>Objetivos que cumple</th><th>Se divide en</th></tr>
+        <tr><td><b>Control de Tránsito Aéreo (ATC)</b></td><td>A · B · C</td><td>Control de Área (ACC), Control de Aproximación (APP), Control de Aeródromo (TWR)</td></tr>
+        <tr><td><b>Información de Vuelo (FIS)</b></td><td>D</td><td>—</td></tr>
+        <tr><td><b>Alerta</b></td><td>E</td><td>—</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> el ATC "cubre" justo las letras A, B y C — el mismo orden del abecedario con el que empiezan sus tres objetivos. Lo que sobra (D y E) se lo reparten FIS y Alerta.</div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/10</div>
+      <div class="quiz-q">¿Qué servicio satisface el objetivo D (asesorar y dar información útil a los vuelos)?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Servicio de Alerta</button>
+        <button class="quiz-opt" data-correct="false">Servicio de Control de Tránsito Aéreo</button>
+        <button class="quiz-opt" data-correct="true">Servicio de Información de Vuelo (FIS)</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>¿Cuándo se necesita un servicio ATS?</h2></div>
+    <div class="topic-body">
+      <p>Para decidir si una zona necesita ATS, el proveedor (ATSP) evalúa:</p>
+      <ul>
+        <li>Los <b>tipos de tránsito aéreo</b> de la zona.</li>
+        <li>La <b>densidad del tránsito</b> y/o la combinación de diferentes tipos de aeronaves.</li>
+        <li>Las <b>condiciones meteorológicas</b>.</li>
+        <li><b>Grandes extensiones de agua</b>, regiones montañosas, desérticas o deshabitadas.</li>
+        <li>Otros <b>factores pertinentes</b>.</li>
+      </ul>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Que las aeronaves de una zona tengan <b>sistemas anticolisión de a bordo (ACAS)</b> <u>no</u> es un factor para determinar ni para descartar la necesidad de servicios de tránsito aéreo en esa zona. El ACAS es un respaldo, no un reemplazo del ATC.</p>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> memoriza "Tipo – Densidad – Clima – Geografía – Otros" (T-D-C-G-O), y recuerda que el ACAS queda siempre por fuera de esa lista.</div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/10</div>
+      <div class="quiz-q">Si todas las aeronaves de una zona tienen ACAS instalado, ¿se puede descartar el servicio de tránsito aéreo en esa zona?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Sí, el ACAS reemplaza al servicio de tránsito aéreo</button>
+        <button class="quiz-opt" data-correct="true">No, el ACAS no es un factor para determinar o descartar esa necesidad</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>Designación del espacio aéreo (FIR, CTA, ATZ, AFIS, FIZ)</h2></div>
+    <div class="topic-body">
+      <p>Cuando se decide dar ATS en una zona, esa parte del espacio aéreo (o el aeródromo) se designa según el servicio que se va a prestar. De más grande a más pequeño:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Designación</th><th>¿Qué se suministra ahí?</th></tr>
+        <tr><td><b>FIR</b> (Región de Información de Vuelo)</td><td>Servicio de información de vuelo + servicio de alerta, en toda la región.</td></tr>
+        <tr><td><b>Área / Zona de control</b> (CTA / CTR)</td><td>Servicio de control de tránsito aéreo a todos los vuelos IFR. Si también se controla a los VFR, esa parte se designa como <b>Clase B, C o D</b>.</td></tr>
+        <tr><td><b>Aeródromo controlado</b> (con TWR)</td><td>Servicio de control de tránsito aéreo al tránsito de ese aeródromo. Alrededor se define la <b>ATZ</b> (zona de tránsito de aeródromo).</td></tr>
+        <tr><td><b>Aeródromo AFIS</b> (sin torre de control)</td><td>Servicio de información de vuelo y de alerta al tránsito de ese aeródromo.</td></tr>
+        <tr><td><b>FIZ</b> (Zona de Información de Vuelo)</td><td>Espacio alrededor de un aeródromo AFIS donde se da el servicio de información de vuelo de aeródromo.</td></tr>
+      </table>
+      </div>
+      <p>Cuando dentro de una FIR se designan áreas y zonas de control, esas áreas/zonas siguen formando parte de esa FIR (no salen de ella, solo tienen un servicio adicional encima).</p>
+      <div class="mnemo"><b>🧠 Truco:</b> imagina capas de una cebolla — la <b>FIR</b> lo envuelve todo, adentro puede haber <b>CTA/CTR</b> (control), y dentro de esas, en el aeródromo, la <b>ATZ</b> (con torre) o la <b>FIZ</b> (sin torre, con AFIS).</div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/10</div>
+      <div class="quiz-q">Un aeródromo no tiene torre de control, pero sí se brinda información de vuelo y alerta a su tránsito. ¿Cómo se designa ese aeródromo?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Aeródromo controlado</button>
+        <button class="quiz-opt" data-correct="true">Aeródromo AFIS</button>
+        <button class="quiz-opt" data-correct="false">Zona de control (CTR)</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Clasificación del espacio aéreo: Clases A–G</h2></div>
+    <div class="topic-body">
+      <p>El espacio aéreo ATS se clasifica en 7 clases: <b>A a E son controladas</b>, <b>F y G son no controladas</b>.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Clase</th><th>Vuelos</th><th>Separación</th><th>¿Autorización ATC?</th></tr>
+        <tr><td><span class="badge badge-a">A</span></td><td>Solo IFR</td><td>Todas las aeronaves</td><td>Sí</td></tr>
+        <tr><td><span class="badge badge-m">B</span></td><td>IFR y VFR</td><td>Todas las aeronaves</td><td>Sí</td></tr>
+        <tr><td><span class="badge badge-v">C</span></td><td>IFR y VFR</td><td>IFR-IFR e IFR-VFR (el VFR solo recibe info de otros VFR)</td><td>Sí</td></tr>
+        <tr><td><span class="badge badge-l">D</span></td><td>IFR y VFR</td><td>Solo IFR-IFR (VFR recibe información de tránsito)</td><td>Sí</td></tr>
+        <tr><td><span class="badge badge-w">E</span></td><td>IFR y VFR</td><td>Solo IFR-IFR</td><td>Sí para IFR · No para VFR</td></tr>
+        <tr><td><span class="badge badge-i">F</span></td><td>IFR y VFR</td><td>IFR-IFR si es factible (asesoramiento)</td><td>No</td></tr>
+        <tr><td><span class="badge badge-i">G</span></td><td>IFR y VFR</td><td>Ninguna</td><td>No</td></tr>
+      </table>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Dato clave: la Clase E <b>no se usa</b> para zonas de control (CTR).</p>
+      <div class="mnemo"><b>🧠 Truco:</b> a medida que bajas de la A a la G, el espacio aéreo se vuelve "más libre": A y B protegen a todos por igual; C y D siempre protegen al IFR; la E solo protege IFR-IFR; y F/G ya casi no exigen nada (por eso son "no controladas").</div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/10</div>
+      <div class="quiz-q">¿Cuál pareja de clases corresponde a espacio aéreo NO controlado?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">A y B</button>
+        <button class="quiz-opt" data-correct="false">C y D</button>
+        <button class="quiz-opt" data-correct="true">F y G</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Servicio de Información de Vuelo (FIS)</h2></div>
+    <div class="topic-body">
+      <p>El FIS se suministra a toda aeronave que pueda verse afectada, especialmente a las que reciben control de tránsito aéreo o de las que las dependencias ATS tengan conocimiento.</p>
+      <div class="card-box">
+        <h4>⚠️ Dos reglas de oro</h4>
+        <p style="margin:0 0 8px;">El FIS <b>no exime</b> al piloto al mando de sus responsabilidades: él decide sobre cualquier cambio sugerido a su plan de vuelo.</p>
+        <p style="margin:0;">Si una dependencia da control (ATC) <u>y</u> información de vuelo (FIS) al mismo tiempo, el <b>ATC siempre tiene prioridad</b> sobre el FIS cuando el tránsito lo requiera.</p>
+      </div>
+      <p>Contenido que <b>siempre</b> debe incluir el FIS:</p>
+      <ul>
+        <li>SIGMET y AIRMET.</li>
+        <li>Actividad volcánica, erupciones y nubes de cenizas volcánicas.</li>
+        <li>Liberación de materiales radiactivos o químicos tóxicos.</li>
+        <li>Cambios en la disponibilidad de ayudas de radionavegación.</li>
+        <li>Cambios en el estado de aeródromos e instalaciones (incluida agua sobre el área de movimiento).</li>
+        <li>Globos libres no tripulados.</li>
+        <li>Cualquier otra información que afecte la seguridad operacional.</li>
+      </ul>
+      <p>Además, en la medida de lo posible: condiciones meteorológicas de salida, destino y alternativa; peligros de colisión en espacio C, D, E, F y G; e información de embarcaciones marítimas, si el piloto la solicita (esta última puede ser incompleta, sin que el ATS garantice su exactitud).</p>
+      <div class="mnemo"><b>🧠 Truco:</b> el FIS "informa pero no manda": nunca reemplaza al piloto ni al ATC, solo les da mejores elementos para decidir.</div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/10</div>
+      <div class="quiz-q">Si una dependencia da control y también información de vuelo al mismo tiempo, ¿cuál tiene prioridad cuando el tránsito lo exige?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">El servicio de información de vuelo (FIS)</button>
+        <button class="quiz-opt" data-correct="true">El servicio de control de tránsito aéreo (ATC)</button>
+        <button class="quiz-opt" data-correct="false">Se reparten el tránsito al azar</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>Radiodifusiones OFIS y ATIS</h2></div>
+    <div class="topic-body">
+      <p>El <b>OFIS</b> (servicio de información de vuelo para las operaciones) reúne, en un solo paquete, la información meteorológica y la información operacional (radionavegación, aeródromos), bajo responsabilidad del ATSP. Cuando se transmite a las aeronaves, debe ir en el orden que corresponde a las etapas del vuelo.</p>
+      <p>Existen tres tipos principales de radiodifusión OFIS:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>HF</b>Radiodifusión de largo alcance.</div>
+        <div class="objective-item"><b>VHF</b>Radiodifusión de alcance local/regional.</div>
+        <div class="objective-item"><b>ATIS</b>Servicio automático de información terminal.</div>
+      </div>
+      <p>El <b>ATIS-voz</b> debe implementarse en aeropuertos con operación internacional regular, y en aeródromos controlados donde el ATSP determine que es necesario según el volumen de operaciones — su objetivo es reducir la carga en los canales VHF y la carga de trabajo de los controladores. Además, si el piloto lo solicita, los mensajes OFIS deben transmitirse por la dependencia ATS correspondiente.</p>
+      <div class="mnemo"><b>🧠 Truco:</b> OFIS = el "combo completo" (clima + operación); ATIS = la grabación automática que repite ese combo para no saturar la frecuencia.</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/10</div>
+      <div class="quiz-q">¿Cuáles son los tres tipos principales de radiodifusión OFIS?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">AM, FM y satelital</button>
+        <button class="quiz-opt" data-correct="true">HF, VHF y ATIS</button>
+        <button class="quiz-opt" data-correct="false">Radar, ADS-B y GPS</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Comunicaciones AT (aire-tierra)</h2></div>
+    <div class="topic-body">
+      <p>El Servicio Móvil Aeronáutico usa radiotelefonía o enlace de datos para las comunicaciones aeroterrestres de los ATS. Las dependencias ATS deben tener y escuchar el <b>canal de emergencia 121,5 MHz</b>. Cuando se usa comunicación radiotelefónica directa (o enlace de datos) piloto-controlador para dar control de tránsito aéreo, esos canales deben tener <b>dispositivos de registro</b>, y esos registros se conservan mínimo <b>90 días</b>.</p>
+      <p>Cada servicio tiene su propio alcance de comunicación:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Servicio</th><th>Alcance de comunicación exigido</th></tr>
+        <tr><td>Información de vuelo (FIS)</td><td>Bidireccional, directa y continua con toda aeronave equipada, en cualquier dirección dentro de la FIR.</td></tr>
+        <tr><td>Control de Área (ACC)</td><td>Igual, en cualquier dirección dentro del área de control. Si no es factible, <b>solo como último recurso</b> se usa un operador aeroterrestre o de estación aeronáutica como intermediario.</td></tr>
+        <tr><td>Control de Aproximación (APP)</td><td>Con todas las aeronaves bajo su control; si funciona de forma independiente, usa canales exclusivos.</td></tr>
+        <tr><td>Control de Aeródromo (TWR)</td><td>Con aeronaves dentro de un radio de <b>45 km (25 NM)</b> del aeródromo.</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> piensa en círculos que crecen — Aeródromo (25 NM) es el más chico, luego Aproximación, y por último Área/FIR, que cubre todo.</div>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/10</div>
+      <div class="quiz-q">¿Cuál es el radio mínimo dentro del cual la torre de un aeródromo debe poder comunicarse con las aeronaves equipadas?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">5 NM</button>
+        <button class="quiz-opt" data-correct="true">25 NM (45 km)</button>
+        <button class="quiz-opt" data-correct="false">100 NM</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 8 -->
+  <article class="topic" id="t8">
+    <div class="topic-head"><div class="topic-num">8</div><h2>Comunicaciones TT (tierra-tierra)</h2></div>
+    <div class="topic-body">
+      <p>El Servicio Fijo Aeronáutico usa comunicaciones orales directas o por enlace de datos <b>entre dependencias</b> para fines de ATS. Deben poder establecerse:</p>
+      <ul>
+        <li><b>Instantáneamente</b>, para transferencia de control usando radar o ADS-B.</li>
+        <li><b>Normalmente en 15 segundos</b>, para otros fines.</li>
+      </ul>
+      <p>Cuando se requiere que quede constancia por escrito, se usan comunicaciones impresas: el tiempo de tránsito del mensaje no debe exceder <b>5 minutos</b>.</p>
+      <div class="mnemo"><b>🧠 Truco:</b> "15 segundos para hablar, 5 minutos para escribir" — y para transferencias con radar/ADS-B, ni eso: debe ser instantáneo.</div>
+    </div>
+    <div class="quiz-card" data-quiz="8">
+      <div class="quiz-tag">🎯 Chequeo rápido 8/10</div>
+      <div class="quiz-q">Para una transferencia de control usando radar o ADS-B, ¿en cuánto tiempo debe poder establecerse la comunicación oral directa?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Instantáneamente</button>
+        <button class="quiz-opt" data-correct="false">En 15 minutos</button>
+        <button class="quiz-opt" data-correct="false">En 5 minutos</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 9 -->
+  <article class="topic" id="t9">
+    <div class="topic-head"><div class="topic-num">9</div><h2>Información meteorológica y de aeródromo requerida</h2></div>
+    <div class="topic-body">
+      <p>El ATSP debe asegurar que sus dependencias tengan información meteorológica actualizada, condiciones de aeródromo y de navegación aérea, y toda la información que sostenga un suministro seguro de los ATS. Esa información meteorológica debe exigir un <b>mínimo de interpretación</b> por parte del personal ATS, y llegar con la frecuencia que cada dependencia necesite.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Dependencia</th><th>Debe recibir / tener</th></tr>
+        <tr><td>ACC / FIC</td><td>Información según RAC 203 (dando importancia al probable empeoramiento del tiempo) y datos de presión para reglaje de altímetros a intervalos adecuados.</td></tr>
+        <tr><td>Control de Aproximación</td><td>Lo anterior, más monitores de viento en superficie, de RVR y de altura de base de nubes (si se miden por instrumentos), e información sobre cizalladura del viento.</td></tr>
+        <tr><td>Torres de aeródromo</td><td>Lo mismo que Aproximación; los informes especiales y actualizaciones de pronóstico se comunican de inmediato, sin esperar el próximo informe ordinario.</td></tr>
+      </table>
+      </div>
+      <p>También se debe mantener actualizada a las torres y a las dependencias de aproximación sobre las <b>condiciones del área de movimiento</b> (incluyendo peligros transitorios) y sobre el <b>estado operacional de los servicios de radionavegación y ayudas visuales</b>, notificando cualquier cambio de forma oportuna.</p>
+      <div class="mnemo"><b>🧠 Truco:</b> "mínima interpretación, máxima rapidez" — si cambia el clima o el estado del aeródromo, se avisa de inmediato, sin esperar el próximo reporte programado.</div>
+    </div>
+    <div class="quiz-card" data-quiz="9">
+      <div class="quiz-tag">🎯 Chequeo rápido 9/10</div>
+      <div class="quiz-q">¿Qué debe recibir una dependencia que suministra servicio de aproximación en un aeródromo donde se presenta cizalladura del viento?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Un radar meteorológico propio obligatorio</button>
+        <button class="quiz-opt" data-correct="true">Información sobre ese fenómeno que pudiera afectar la aproximación o el despegue</button>
+        <button class="quiz-opt" data-correct="false">Ninguna información especial adicional</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 10 -->
+  <article class="topic" id="t10">
+    <div class="topic-head"><div class="topic-num">10</div><h2>Servicio de Alerta y sus 3 fases</h2></div>
+    <div class="topic-body">
+      <p>El servicio de alerta se suministra a: 1) toda aeronave con servicio de control de tránsito aéreo; 2) en la medida de lo posible, a las demás con plan de vuelo presentado o de las que se tenga conocimiento; y 3) a toda aeronave que se sepa o sospeche que sufre <b>interferencia ilícita</b>.</p>
+      <p>Si una aeronave entra en emergencia bajo control de una torre o de aproximación, esa dependencia notifica de inmediato al FIC/ACC correspondiente, y este notifica al <b>Centro Coordinador de Salvamento (RCC)</b> — salvo que la notificación resulte superflua por la naturaleza de la emergencia. Cuando la urgencia lo exige, la torre o aproximación debe alertar primero a los organismos locales de salvamento antes que nada.</p>
+      <p>El servicio de alerta avanza en <b>3 fases</b>, como un semáforo que se pone cada vez más serio:</p>
+      <div class="phase-flow">
+        <div class="phase incerfa">
+          <h4>🟡 INCERFA (Incertidumbre)</h4>
+          <ul>
+            <li>No hay comunicación 30 min después de cuando debió recibirse (o falló el primer intento).</li>
+            <li>La aeronave no llega 30 min después de la hora prevista de llegada.</li>
+          </ul>
+        </div>
+        <div class="phase alerfa">
+          <h4>🟠 ALERFA (Alerta)</h4>
+          <ul>
+            <li>Tras la incertidumbre, nuevos intentos no dan noticias.</li>
+            <li>Autorizada a aterrizar, no lo hace en 5 min y no hay comunicación.</li>
+            <li>Funcionamiento anormal, sin llegar a aterrizaje forzoso probable.</li>
+            <li>Se sabe o sospecha interferencia ilícita.</li>
+          </ul>
+        </div>
+        <div class="phase detresfa">
+          <h4>🔴 DETRESFA (Peligro)</h4>
+          <ul>
+            <li>Tras la alerta, nuevos intentos infructuosos hacen suponer peligro.</li>
+            <li>Combustible agotado o insuficiente.</li>
+            <li>Funcionamiento anormal grave: probable aterrizaje forzoso.</li>
+            <li>Certeza o información de aterrizaje forzoso hecho o inminente.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> recuerda los números <b>"30 – 30 – 5"</b>: 30 min sin comunicación, 30 min de retraso en la llegada y 5 min de retraso en un aterrizaje ya autorizado. Y el orden de gravedad es como un semáforo: amarillo (duda) → naranja (alerta) → rojo (peligro).</div>
+    </div>
+    <div class="quiz-card" data-quiz="10">
+      <div class="quiz-tag">🎯 Chequeo rápido 10/10 — ¡última pregunta!</div>
+      <div class="quiz-q">Una aeronave fue autorizada a aterrizar y no lo hizo dentro de los 5 minutos siguientes a la hora prevista, sin que se restablezca la comunicación. ¿En qué fase se declara esto?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">INCERFA</button>
+        <button class="quiz-opt" data-correct="true">ALERFA</button>
+        <button class="quiz-opt" data-correct="false">DETRESFA</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🏆✈️</div>
+    <h3>¡Altitud de crucero alcanzada!</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 10 preguntas correctamente. Ya tienes el mapa completo de los Servicios de Tránsito Aéreo — ahora ponlo a prueba en la Zona de Quizzes.</p>
+  </div>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo ATS — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU (simple, siempre visible en el encabezado) ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- SIMULADOR DE ASCENSO (juego del avioncito) ----------
+  const TOTAL_QUIZ = 10;
+  let level = 0, correctCount = 0, wrongCount = 0;
+
+  const trackerFill = document.getElementById('trackerFill');
+  const trackerPlane = document.getElementById('trackerPlane');
+  const trackerBoom = document.getElementById('trackerBoom');
+  const trackerScore = document.getElementById('trackerScore');
+  const finishCard = document.getElementById('finishCard');
+
+  function renderTracker(){
+    const pct = (level / TOTAL_QUIZ) * 100;
+    trackerFill.style.width = pct + '%';
+    trackerPlane.style.left = pct + '%';
+    trackerBoom.style.left = pct + '%';
+    trackerScore.textContent = `${correctCount} aciertos · ${wrongCount} errores · nivel ${level}/${TOTAL_QUIZ}`;
+    if(level >= TOTAL_QUIZ && correctCount >= TOTAL_QUIZ){
+      finishCard.style.display = 'block';
+    }
+  }
+  renderTracker();
+
+  function playCrash(){
+    trackerPlane.classList.remove('crash');
+    trackerBoom.classList.remove('show');
+    void trackerPlane.offsetWidth; // reinicia la animación
+    trackerPlane.classList.add('crash');
+    trackerBoom.classList.add('show');
+  }
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+
+    const feedback = card.querySelector('.quiz-feedback');
+
+    if(isCorrect){
+      correctCount++;
+      level = Math.min(level + 1, TOTAL_QUIZ);
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = level >= TOTAL_QUIZ
+        ? '✅ ¡Correcto! Avión en CRUCERO. 🏆'
+        : '✅ ¡Correcto! El avión sigue subiendo.';
+    }else{
+      wrongCount++;
+      btn.classList.add('incorrect');
+      level = Math.max(level - 1, 0);
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '💥 Se estrelló un poco... revisa el tema y sigue subiendo en la próxima.';
+      playCrash();
+    }
+    renderTracker();
+  }
+
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+</script>
+
+</body>
+</html>
