@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz ATS · 50 preguntas · SoyAeronautico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --panel: #F5F8FC;
+      --panel-alt: #EAF1FB;
+      --accent: #1657C6;
+      --accent-rgb: 22,87,198;
+      --navy: #0A2647;
+      --text: #0F1B2D;
+      --text-muted: #5B6B7F;
+      --hairline: #E1E7EF;
+      --shadow-rgb: 15,23,42;
+      --danger: #D64545;
+      --vfr: #2E9E6D;
+      --mvfr: #3E7BFA;
+      --ifr: #D64545;
+      --lifr: #8B5CF6;
+      --live: #2E9E6D;
+      --live-rgb: 46,158,109;
+      --topbar-bg: rgba(255,255,255,0.85);
+      --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
+    }
+    [data-theme="dark"] {
+      --bg: #0B1220;
+      --panel: #121C2E;
+      --panel-alt: #17223A;
+      --accent: #4F8EF7;
+      --accent-rgb: 79,142,247;
+      --navy: #0A2647;
+      --text: #EDEFF3;
+      --text-muted: #8894A8;
+      --hairline: #2A3548;
+      --shadow-rgb: 0,0,0;
+      --danger: #C9564F;
+      --vfr: #4FA88C;
+      --mvfr: #4A8FD1;
+      --ifr: #C9564F;
+      --lifr: #B15FC7;
+      --live: #4FA88C;
+      --live-rgb: 79,168,140;
+      --topbar-bg: rgba(11,18,32,0.85);
+      --shadow-card: 0 12px 30px -18px rgba(0,0,0,0.55);
+    }
+    html { transition: background .2s; scroll-behavior: smooth; }
+    body { transition: background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+    * { box-sizing:border-box; }
+    h1,h2,h3,h4 { font-family:'Archivo', sans-serif; margin:0; }
+    .mono { font-family:'IBM Plex Mono', monospace; }
+    a { color:inherit; text-decoration:none; }
+
+    /* topbar (idéntico al portal) */
+    .topbar {
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 32px;
+      background:var(--topbar-bg);
+      backdrop-filter:blur(8px);
+      border-bottom:1px solid var(--hairline);
+    }
+    .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; text-decoration:none; color:var(--text); }
+    .brand-mark { width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+    .brand-mark svg { display:block; }
+    .brand small { display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+    .live-dot { width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+    @keyframes pulseDot { 0%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55); } 70%{ box-shadow:0 0 0 6px rgba(var(--live-rgb),0); } 100%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0); } }
+    @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+    nav.desktop-nav { display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500; }
+    nav.desktop-nav a { position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+    nav.desktop-nav a::after { content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+    nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible { color:var(--text); }
+    nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after { right:0; }
+    nav.desktop-nav a.active { color:var(--vfr); font-weight:600; }
+    nav.desktop-nav a.active::after { right:0; background:var(--vfr); }
+    .nav-divider { width:1px; height:18px; background:var(--hairline); }
+    .nav-icon-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+    .nav-icon-btn:hover { color:var(--accent); border-color:var(--hairline); }
+    .nav-right { display:flex; align-items:center; gap:14px; }
+    .theme-toggle svg { display:block; }
+    .theme-toggle .icon-moon { display:none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display:none; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display:block; }
+    .menu-btn { display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem; }
+    @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+    /* hero simple */
+    .hero-simple { max-width:960px; margin:0 auto; padding:40px 32px 20px; }
+    .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+    .hero-simple h1 { font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
+    .hero-simple p.lead { color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; margin-bottom:4px; }
+    .hero-note { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 10px; font-size:0.9rem; color:var(--text-muted); }
+    .hero-note b { color:var(--text); }
+
+    .quiz-container { max-width:900px; margin:0 auto; padding:20px 32px 60px; }
+    .question-card { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:24px; transition:border-color .2s; }
+    .question-card.correct { border-left:6px solid var(--vfr); }
+    .question-card.wrong { border-left:6px solid var(--danger); }
+    .q-header { display:flex; align-items:baseline; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .q-num { font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
+    .q-tag { font-family:'IBM Plex Mono'; font-size:0.65rem; color:var(--text-muted); background:var(--bg); padding:2px 10px; border-radius:12px; border:1px solid var(--hairline); }
+    .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
+    .options { display:flex; flex-direction:column; gap:8px; }
+    .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
+    .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
+    .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(46,158,109,0.12); }
+    .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(214,69,69,0.12); }
+    .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(46,158,109,0.08); }
+    .opt-btn:disabled { cursor:default; opacity:0.8; }
+    .feedback { margin-top:12px; font-size:0.9rem; padding:8px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--hairline); display:none; }
+    .feedback.show { display:block; }
+    .feedback.correct { border-color:var(--vfr); color:var(--vfr); }
+    .feedback.wrong { border-color:var(--danger); color:var(--danger); }
+
+    .score-panel { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px; }
+    .score-panel .mono { font-weight:600; }
+    .score-panel .nota { font-size:1.2rem; font-weight:700; color:var(--accent); }
+    .reset-btn { background:var(--accent); color:#fff; border:none; padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s; font-family:'IBM Plex Sans'; }
+    .reset-btn:hover { filter:brightness(1.08); }
+    .finish-msg { font-size:1.1rem; font-weight:600; }
+
+    @media (max-width:600px) { .topbar { padding:12px 16px; } .quiz-container { padding:12px 16px; } .question-card { padding:18px; } .score-panel { padding:12px 16px; } }
+
+    /* botón para ir al quiz desde ATS (lo ponemos en la hero) */
+    .btn-quiz-ats { display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+    .btn-quiz-ats:hover { filter:brightness(1.08); }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+        <g transform="rotate(-40 20 20)">
+          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="espacio-aereo.html">Espacio Aéreo</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="pbn.html">PBN</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <button class="nav-icon-btn" aria-label="Buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<section class="hero-simple">
+  <div class="eyebrow">Quiz ATS · 50 preguntas</div>
+  <h1>Servicios de Tránsito Aéreo — examen completo</h1>
+  <p class="lead">50 preguntas basadas en los objetivos, clasificación, FIS, alerta, comunicaciones y espacios aéreos. Al final obtendrás tu nota sobre 100.</p>
+  <div class="hero-note">
+    <span>📋</span>
+    <span><b>Instrucciones:</b> cada pregunta tiene una única opción correcta. Selecciona tu respuesta y verás la retroalimentación. Puedes reiniciar en cualquier momento con el botón de abajo. ¡Ánimo!</span>
+  </div>
+  <!-- botón para regresar al módulo ATS (estilo portal) -->
+  <a href="ats.html" class="btn-quiz-ats">← Volver al módulo ATS</a>
+</section>
+
+<div class="quiz-container" id="quizContainer">
+  <!-- las preguntas se inyectan acá -->
+</div>
+
+<div class="score-panel" id="scorePanel">
+  <span><span class="mono" id="answeredCount">0</span> / 50 respondidas</span>
+  <span class="nota" id="notaFinal">—</span>
+  <button class="reset-btn" id="resetQuiz">Reiniciar quiz</button>
+</div>
+
+<script>
+  // ---------- TEMAS ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){ document.documentElement.setAttribute('data-theme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  themeToggle.addEventListener('click',()=>{ const isDark=document.documentElement.getAttribute('data-theme')==='dark'; if(isDark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme','light'); themeToggle.setAttribute('aria-label','Cambiar a modo oscuro'); }else{ document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('aisTheme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); } });
+
+  // ---------- 50 PREGUNTAS (ATS) ----------
+  const questions = [
+    { q: "¿Cuál es el primer objetivo de los Servicios de Tránsito Aéreo (ATS)?", options: ["Prevenir colisiones entre aeronaves", "Acelerar el tránsito aéreo", "Asesorar a los pilotos", "Notificar a los organismos SAR"], correct: 0 },
+    { q: "El objetivo B de los ATS se refiere a:", options: ["Prevenir colisiones en el área de maniobras", "Prevenir colisiones entre aeronaves", "Acelerar el movimiento", "Información de vuelo"], correct: 0 },
+    { q: "El servicio de control de tránsito aéreo (ATC) cubre los objetivos:", options: ["A, B y C", "A, B y D", "B, C y E", "A, C y E"], correct: 0 },
+    { q: "¿Qué servicio satisface el objetivo D (asesorar y proporcionar información útil)?", options: ["Servicio de Alerta", "Servicio de Control ATC", "Servicio de Información de Vuelo (FIS)", "Servicio de Aeródromo"], correct: 2 },
+    { q: "El objetivo E de los ATS está relacionado con:", options: ["Búsqueda y salvamento (SAR)", "Control de aproximación", "Separación vertical", "Información meteorológica"], correct: 0 },
+    { q: "¿Cuándo se decide si una zona necesita servicios ATS, qué factor NO se considera?", options: ["Densidad del tránsito", "Condiciones meteorológicas", "Presencia de ACAS a bordo", "Grandes extensiones de agua"], correct: 2 },
+    { q: "Según el material, el ACAS (sistema anticolisión) en una zona:", options: ["Reemplaza al ATC", "No es factor para determinar la necesidad de ATS", "Es obligatorio para vuelos VFR", "Solo se usa en espacios no controlados"], correct: 1 },
+    { q: "Una FIR (Región de Información de Vuelo) proporciona:", options: ["Servicio de control de tránsito", "Servicio de información de vuelo y alerta", "Solo servicio de alerta", "Control de aproximación"], correct: 1 },
+    { q: "Las áreas de control (CTA) y zonas de control (CTR) son partes del espacio aéreo donde se da:", options: ["Servicio de información de vuelo", "Servicio de control de tránsito aéreo a vuelos IFR", "Solo a vuelos VFR", "Servicio de alerta exclusivo"], correct: 1 },
+    { q: "Un aeródromo controlado es aquel donde:", options: ["Se suministra AFIS", "Se suministra servicio de control de tránsito aéreo", "No hay torre de control", "Solo se da información meteorológica"], correct: 1 },
+    { q: "Un aeródromo AFIS es aquel donde se proporciona:", options: ["Control de aproximación", "Servicio de información de vuelo y alerta al tránsito del aeródromo", "Control de área", "Separación vertical"], correct: 1 },
+    { q: "La FIZ (Zona de Información de Vuelo) se establece alrededor de:", options: ["Un centro de control de área", "Un aeródromo AFIS", "Una torre de control", "Una región de información de vuelo"], correct: 1 },
+    { q: "¿Qué clase de espacio aéreo solo permite vuelos IFR?", options: ["Clase A", "Clase B", "Clase C", "Clase D"], correct: 0 },
+    { q: "En la Clase B se permite vuelos IFR y VFR; se proporciona separación:", options: ["Solo entre IFR", "Entre todos los vuelos", "Solo entre VFR", "Ninguna separación"], correct: 1 },
+    { q: "En la Clase C, los vuelos IFR están separados de:", options: ["Solo otros IFR", "Otros IFR y de VFR", "Solo de VFR", "Ninguno"], correct: 1 },
+    { q: "En la Clase D, ¿qué separación se proporciona?", options: ["IFR-IFR e IFR-VFR", "Solo IFR-IFR", "Todos los vuelos", "Solo VFR-VFR"], correct: 1 },
+    { q: "La Clase E se caracteriza por:", options: ["Separación entre IFR-IFR", "No se usa para zonas de control", "Ambas son correctas", "Ninguna es correcta"], correct: 2 },
+    { q: "Las clases F y G son espacios aéreos:", options: ["Controlados", "No controlados", "Solo para vuelos IFR", "Solo para vuelos VFR"], correct: 1 },
+    { q: "En la Clase F, los vuelos IFR participantes reciben:", options: ["Servicio de control", "Servicio de asesoramiento de tránsito aéreo", "Separación vertical", "Autorización ATC"], correct: 1 },
+    { q: "La Clase G proporciona a los vuelos:", options: ["Servicio de información de vuelo si lo solicitan", "Control de tránsito", "Separación obligatoria", "Ningún servicio"], correct: 0 },
+    { q: "El límite inferior de un área de control (CTA) no debe ser menor a:", options: ["200 m (700 ft)", "100 m", "500 m", "50 m"], correct: 0 },
+    { q: "Si el límite inferior de un área de control resulta en una elevación por encima de 900 m (3000 ft), debe coincidir con:", options: ["Un nivel de crucero VFR", "El nivel del mar", "El límite superior de la FIR", "Un nivel de crucero IFR"], correct: 0 },
+    { q: "Las zonas de control (CTR) se extienden al menos:", options: ["5 NM desde el centro del aeródromo", "9,3 km (5 NM)", "10 km", "15 NM"], correct: 1 },
+    { q: "Una zona de control puede incluir:", options: ["Dos o más aeródromos cercanos", "Solo un aeródromo", "Solo aeródromos militares", "Ningún aeródromo"], correct: 0 },
+    { q: "Las zonas prohibidas (SK-P) son:", options: ["De uso restringido con NOTAM", "Absolutamente vedadas a aeronaves civiles", "Zonas peligrosas", "Áreas de control"], correct: 1 },
+    { q: "Las zonas restringidas (SK-R) se activan/desactivan mediante:", options: ["NOTAM", "AIP", "Carta de acuerdo", "Autorización ATC"], correct: 0 },
+    { q: "Las zonas peligrosas (SK-D) tienen como propósito:", options: ["Advertir a los pilotos sobre actividades peligrosas", "Prohibir el vuelo", "Controlar el tránsito", "Dar servicio de alerta"], correct: 0 },
+    { q: "El centro de control de área (ACC) se identifica por:", options: ["Nombre de un pueblo o ciudad cercana", "Código ICAO del aeródromo", "Número de la FIR", "Nombre del controlador"], correct: 0 },
+    { q: "La torre de control de aeródromo se identifica por:", options: ["Nombre de la ciudad donde está el aeródromo", "Nombre del centro de control", "Código de la zona", "Ninguna"], correct: 0 },
+    { q: "Las dependencias ATS deben grabar las conversaciones y conservarlas por lo menos:", options: ["24 horas", "90 días", "30 días", "7 días"], correct: 1 },
+    { q: "El canal de emergencia que deben tener y escuchar las dependencias ATS es:", options: ["121,5 MHz", "118,0 MHz", "123,45 MHz", "136,0 MHz"], correct: 0 },
+    { q: "Para el servicio de control de aeródromo, la torre debe comunicarse con aeronaves dentro de un radio de:", options: ["25 NM (45 km)", "10 NM", "50 NM", "100 NM"], correct: 0 },
+    { q: "En las comunicaciones tierra-tierra (TT), para transferencia de control usando radar o ADS-B, la comunicación debe establecerse:", options: ["Instantáneamente", "En 15 segundos", "En 5 minutos", "En 1 minuto"], correct: 0 },
+    { q: "Para otros fines en comunicaciones TT, el tiempo normal de establecimiento es:", options: ["15 segundos", "5 segundos", "1 minuto", "30 segundos"], correct: 0 },
+    { q: "El tiempo de tránsito de un mensaje impreso en comunicaciones TT no debe exceder:", options: ["5 minutos", "1 minuto", "15 segundos", "10 minutos"], correct: 0 },
+    { q: "El FIS (servicio de información de vuelo) no exime al piloto al mando de:", options: ["Sus responsabilidades", "La decisión final sobre el plan de vuelo", "Ambas son correctas", "Ninguna"], correct: 2 },
+    { q: "Cuando una dependencia da ATC y FIS, ¿cuál tiene prioridad?", options: ["FIS", "ATC", "Se alternan", "Depende del piloto"], correct: 1 },
+    { q: "El OFIS (radiodifusión FIS para operaciones) incluye información:", options: ["Meteorológica y operacional integrada", "Solo meteorológica", "Solo de aeródromo", "Solo de radionavegación"], correct: 0 },
+    { q: "Los tres tipos principales de OFIS son:", options: ["HF, VHF y ATIS", "AM, FM y satelital", "Radar, ADS-B y GPS", "METAR, TAF y SIGMET"], correct: 0 },
+    { q: "El ATIS-voz se implementa principalmente para:", options: ["Reducir la carga en frecuencias VHF y trabajo de controladores", "Dar control de aproximación", "Reemplazar al controlador", "Dar información de alerta"], correct: 0 },
+    { q: "El servicio de alerta se suministra a:", options: ["Aeronaves con plan de vuelo presentado en lo posible", "Aeronaves con servicio ATC", "Aeronaves con interferencia ilícita", "Todas las anteriores"], correct: 3 },
+    { q: "La fase INCERFA se declara cuando no hay comunicación después de:", options: ["30 minutos", "15 minutos", "5 minutos", "1 hora"], correct: 0 },
+    { q: "La fase ALERFA se activa si una aeronave autorizada a aterrizar no lo hace en:", options: ["5 minutos", "10 minutos", "30 minutos", "1 minuto"], correct: 0 },
+    { q: "La fase DETRESFA (peligro) se declara cuando:", options: ["Hay certeza de aterrizaje forzoso", "Combustible insuficiente", "Funcionamiento anormal grave", "Todas las anteriores"], correct: 3 },
+    { q: "Cuando se sabe o sospecha interferencia ilícita, la fase declarada es:", options: ["ALERFA", "INCERFA", "DETRESFA", "Ninguna"], correct: 0 },
+    { q: "La separación vertical mínima reducida (RVSM) se aplica entre FL290 y FL410 inclusive, con un valor de:", options: ["300 m (1000 ft)", "200 m", "500 m", "600 m"], correct: 0 },
+    { q: "La separación horizontal puede ser longitudinal o lateral. La longitudinal se expresa en:", options: ["Tiempo o distancia", "Grados", "Metros", "Niveles de vuelo"], correct: 0 },
+    { q: "La separación lateral se obtiene manteniendo aeronaves en:", options: ["Diferentes rutas o áreas geográficas", "Diferentes niveles", "Misma ruta", "Mismo nivel"], correct: 0 },
+    { q: "Las aeronotificaciones especiales deben transmitirse a:", options: ["Otras aeronaves afectadas", "Oficina meteorológica asociada", "Otras dependencias ATS afectadas", "Todas las anteriores"], correct: 3 },
+    { q: "La información sobre condiciones del aeródromo y estado operacional de instalaciones debe mantenerse actualizada para:", options: ["Torres de control y aproximación", "Solo torres", "Solo aproximación", "Centros de información de vuelo"], correct: 0 }
+  ];
+
+  // ---------- ESTADO ----------
+  let answered = new Array(questions.length).fill(false);
+  let selected = new Array(questions.length).fill(null);
+  let correctAnswers = 0;
+  let totalAnswered = 0;
+
+  const container = document.getElementById('quizContainer');
+  const answeredSpan = document.getElementById('answeredCount');
+  const notaSpan = document.getElementById('notaFinal');
+
+  function renderQuestions() {
+    container.innerHTML = '';
+    questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.dataset.idx = idx;
+
+      const header = document.createElement('div');
+      header.className = 'q-header';
+      header.innerHTML = `<span class="q-num">${idx+1}/50</span><span class="q-tag">ATS</span>`;
+      card.appendChild(header);
+
+      const qText = document.createElement('div');
+      qText.className = 'q-text';
+      qText.textContent = q.q;
+      card.appendChild(qText);
+
+      const optsDiv = document.createElement('div');
+      optsDiv.className = 'options';
+
+      q.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.dataset.optIdx = oi;
+        btn.addEventListener('click', () => handleAnswer(idx, oi));
+        optsDiv.appendChild(btn);
+      });
+      card.appendChild(optsDiv);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback';
+      feedback.id = `fb-${idx}`;
+      card.appendChild(feedback);
+
+      container.appendChild(card);
+    });
+    updateUI();
+  }
+
+  function handleAnswer(qIdx, optIdx) {
+    if (answered[qIdx]) return;
+    const q = questions[qIdx];
+    const correct = q.correct;
+    const isCorrect = optIdx === correct;
+
+    answered[qIdx] = true;
+    selected[qIdx] = optIdx;
+    totalAnswered++;
+    if (isCorrect) correctAnswers++;
+
+    const card = container.querySelector(`.question-card[data-idx="${qIdx}"]`);
+    const btns = card.querySelectorAll('.opt-btn');
+    btns.forEach((b, i) => {
+      b.disabled = true;
+      if (i === correct) b.classList.add('reveal-correct');
+      if (i === optIdx && isCorrect) b.classList.add('selected-correct');
+      if (i === optIdx && !isCorrect) b.classList.add('selected-wrong');
+    });
+
+    if (isCorrect) {
+      card.classList.add('correct');
+    } else {
+      card.classList.add('wrong');
+    }
+
+    const fb = document.getElementById(`fb-${qIdx}`);
+    fb.classList.add('show');
+    fb.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+    fb.textContent = isCorrect ? '✅ Correcto.' : `❌ Incorrecto. La respuesta correcta era: ${q.options[correct]}`;
+
+    updateUI();
+  }
+
+  function updateUI() {
+    answeredSpan.textContent = totalAnswered;
+    const total = questions.length;
+    const nota = totalAnswered > 0 ? Math.round((correctAnswers / totalAnswered) * 100) : 0;
+    const finalNota = totalAnswered === total ? Math.round((correctAnswers / total) * 100) : (totalAnswered > 0 ? `${nota}% (parcial)` : '—');
+    notaSpan.textContent = totalAnswered === total ? `${finalNota}%` : finalNota;
+    if (totalAnswered === total) {
+      notaSpan.textContent = `${Math.round((correctAnswers / total) * 100)}%`;
+    }
+  }
+
+  function resetQuiz() {
+    answered = new Array(questions.length).fill(false);
+    selected = new Array(questions.length).fill(null);
+    correctAnswers = 0;
+    totalAnswered = 0;
+    renderQuestions();
+    updateUI();
+    notaSpan.textContent = '—';
+  }
+
+  document.getElementById('resetQuiz').addEventListener('click', resetQuiz);
+
+  // render inicial
+  renderQuestions();
+</script>
+</body>
+</html>
