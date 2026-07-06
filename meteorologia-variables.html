@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meteorología · Variables Meteorológicas | SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --sky1:#0A2647; --sky2:#1657C6; --sky3:#3E7BFA; --sky4:#8FC1E8; --sky5:#E6F2FB;
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---- sub-tabs for MET ejes tematicos ---- */
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.locked{ opacity:0.45; cursor:default; }
+
+  .tracker-bar{ padding:12px 32px 14px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .tracker-inner{ max-width:1000px; margin:0 auto; }
+  .tracker-toprow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .tracker-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; }
+  .tracker-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); }
+  .tracker-track{ position:relative; height:46px; background:linear-gradient(180deg, var(--panel-alt), var(--panel)); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
+  .tracker-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(var(--live-rgb),0.18), rgba(var(--live-rgb),0.42)); transition:width .6s cubic-bezier(.4,0,.2,1); }
+  .tracker-plane{ position:absolute; top:50%; left:0%; font-size:1.5rem; transform:translate(-50%,-50%); transition:left .6s cubic-bezier(.4,0,.2,1); z-index:2; }
+  .tracker-plane.crash{ animation:crashFall .9s ease; }
+  @keyframes crashFall{ 0%{transform:translate(-50%,-50%) rotate(0);} 35%{transform:translate(-50%,16px) rotate(70deg);} 60%{transform:translate(-50%,16px) rotate(80deg);} 100%{transform:translate(-50%,-50%) rotate(0);} }
+  .tracker-boom{ position:absolute; top:6px; font-size:1.1rem; opacity:0; z-index:3; pointer-events:none; }
+  .tracker-boom.show{ animation:boomPop .9s ease; }
+  @keyframes boomPop{ 0%{opacity:0; transform:translateY(6px) scale(.6);} 30%{opacity:1; transform:translateY(0) scale(1.1);} 70%{opacity:1;} 100%{opacity:0; transform:translateY(-6px) scale(.9);} }
+  .tracker-marks{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:0.6rem; color:var(--text-muted); margin-top:5px; padding:0 2px; }
+  @media (max-width:760px){ .tracker-marks span{display:none;} .tracker-marks span:first-child, .tracker-marks span:last-child{display:inline;} }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:170px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  /* ---- rosa de los vientos ---- */
+  .rose-wrap{ display:flex; justify-content:center; margin:20px 0; }
+  .rose-svg{ max-width:320px; width:100%; height:auto; }
+
+  /* ---- barbas de viento ---- */
+  .barb-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:14px; margin:18px 0; }
+  .barb-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:14px; text-align:center; }
+  .barb-card svg{ width:70px; height:70px; }
+  .barb-card .blabel{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-top:6px; }
+
+  /* ---- escalas termómetro ---- */
+  .scale-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:18px 0; text-align:center; }
+  .scale-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:14px 8px; }
+  .scale-card .sname{ font-family:'Archivo'; font-weight:700; font-size:0.9rem; margin-bottom:10px; color:var(--accent); }
+  .scale-row{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:0.75rem; padding:3px 6px; }
+  .scale-row.boil{ color:var(--danger); }
+  .scale-row.frost{ color:var(--mvfr); }
+
+  /* ---- diagrama de fuerzas / circulación (chips) ---- */
+  .force-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:16px 0; }
+  .force-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; }
+  .force-card .fname{ font-family:'Archivo'; font-weight:700; font-size:0.88rem; color:var(--accent); margin-bottom:6px; }
+  .force-card p{ font-size:0.83rem; color:var(--text-muted); margin:0; line-height:1.5; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-w{ background:rgba(224,142,62,0.18); color:var(--warn); }
+
+  /* ---- actividad drag & drop (reutilizada: rosa de los vientos) ---- */
+  .dnd-box{ border:1px solid var(--hairline); border-radius:14px; padding:18px; background:var(--panel); margin:18px 0; }
+  .dnd-instructions{ font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; }
+  .dnd-layers{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-bottom:18px; }
+  .dnd-layer{ border-radius:10px; padding:12px 14px; color:#fff; min-height:64px; transition:.15s; border:2px dashed rgba(255,255,255,0.35); background:linear-gradient(135deg,var(--sky2),var(--sky3)); }
+  .dnd-layer.dragover{ border-color:#fff; transform:scale(1.01); box-shadow:0 0 0 3px rgba(255,255,255,0.25); }
+  .dnd-layer .lname{ font-family:'Archivo'; font-weight:700; font-size:0.85rem; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .dnd-layer .lname .rng{ font-family:'IBM Plex Mono'; font-size:0.65rem; opacity:0.85; font-weight:400; }
+  .dnd-dropped{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .dnd-chip-placed{ background:rgba(255,255,255,0.92); color:var(--navy); font-size:0.72rem; font-weight:600; padding:5px 10px; border-radius:20px; }
+  .dnd-pool{ display:flex; flex-wrap:wrap; gap:8px; padding-top:6px; border-top:1px dashed var(--hairline); }
+  .dnd-chip{ cursor:grab; background:var(--bg); border:1px solid var(--hairline); border-radius:20px; padding:8px 14px; font-size:0.8rem; font-weight:500; transition:.15s; user-select:none; }
+  .dnd-chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .dnd-chip.selected{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.12); color:var(--accent); font-weight:600; }
+  .dnd-chip.wrong-shake{ animation:shakeChip .4s; border-color:var(--danger); }
+  @keyframes shakeChip{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .dnd-status{ margin-top:10px; font-size:0.85rem; font-weight:600; min-height:20px; }
+  .dnd-status.ok{ color:var(--vfr); }
+  .dnd-status.bad{ color:var(--danger); }
+  .dnd-progress{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); margin-top:6px; }
+  .dnd-reset{ margin-top:12px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:7px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; }
+  .dnd-reset:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+          <g transform="rotate(-40 20 20)">
+            <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+            <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        SoyAeronautico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html">ATS</a>
+      <a href="espacio-aereo.html">Espacio Aéreo</a>
+      <a href="meteorologia.html" class="active">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="pbn.html">PBN</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="meteorologia-generalidades.html" class="subtab"><span class="n">1</span> Generalidades y Atmósfera</a>
+      <a href="meteorologia-variables.html" class="subtab active"><span class="n">2</span> Variables Meteorológicas</a>
+      <a href="#" class="subtab locked"><span class="n">3</span> Nubosidad · Meteoros</a>
+    </div>
+  </div>
+
+  <div class="tracker-bar">
+    <div class="tracker-inner">
+      <div class="tracker-toprow">
+        <span class="tracker-label">🪁 Cometa al viento — avanza de bloque en bloque respondiendo bien</span>
+        <span class="tracker-score mono" id="trackerScore">0 aciertos · 0 errores · nivel 0/13</span>
+      </div>
+      <div class="tracker-track" id="trackerTrack">
+        <div class="tracker-fill" id="trackerFill"></div>
+        <div class="tracker-boom" id="trackerBoom">💨</div>
+        <div class="tracker-plane" id="trackerPlane">🪁</div>
+      </div>
+      <div class="tracker-marks">
+        <span>Inicio</span><span>Viento</span><span>Medición</span><span>Local</span><span>Fuerzas</span><span>Cizalladura</span><span>Visibilidad</span><span>Humedad</span><span>Temperatura</span><span>Presión</span><span>¡Meta!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Meteorología — Eje temático 2</div>
+  <h1>Variables Meteorológicas: viento, visibilidad, humedad, temperatura y presión.</h1>
+  <p class="lead">Estas cinco variables son el lenguaje básico del tiempo aeronáutico: todo METAR, TAF y pronóstico se construye reportando su valor. Aquí vemos qué son, cómo se miden, cómo se representan y qué fuerzas físicas las explican.</p>
+  <div class="hero-note">🪁 <div><b>Cómo estudiar esta página:</b> lee cada bloque, responde el chequeo rápido que sigue y al final arma tú mismo la rosa de los vientos en la actividad interactiva.</div></div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. Introducción a las variables</a>
+  <a href="#t2">2. Viento: definición y vector</a>
+  <a href="#t3">3. Medición y representación</a>
+  <a href="#t4">4. Variación diurna y conceptos</a>
+  <a href="#t5">5. Circulación general</a>
+  <a href="#t6">6. Vientos locales</a>
+  <a href="#t7">7. Fuerzas sobre el aire</a>
+  <a href="#t8">8. Convergencia · Cizalladura</a>
+  <a href="#t9">9. Visibilidad</a>
+  <a href="#t10">10. Humedad</a>
+  <a href="#t11">11. Calor y temperatura</a>
+  <a href="#t12">12. Escalas y gradientes</a>
+  <a href="#t13">13. Presión atmosférica</a>
+  <a href="#t14">14. Actividad: rosa de los vientos</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>Introducción a las variables meteorológicas</h2></div>
+    <div class="topic-body">
+      <p>Ya vimos qué es la atmósfera y cómo está organizada por capas. Ahora entramos a las <b>cinco variables</b> que la meteorología aeronáutica mide constantemente para describir el estado del tiempo en un aeródromo o en ruta:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>💨 Viento</b>Dirección y velocidad del aire en movimiento.</div>
+        <div class="objective-item"><b>👁️ Visibilidad</b>Distancia hasta la cual se distinguen objetos con claridad.</div>
+        <div class="objective-item"><b>💧 Humedad</b>Cantidad de vapor de agua presente en el aire.</div>
+        <div class="objective-item"><b>🌡️ Temperatura</b>Medida de la energía o agitación molecular del aire.</div>
+        <div class="objective-item"><b>📊 Presión</b>Peso de la columna de aire sobre un punto de la superficie.</div>
+      </div>
+      <p>Estas cinco variables no actúan por separado: están profundamente relacionadas entre sí. Un cambio de presión genera viento; un cambio de temperatura modifica la humedad relativa; la humedad, a su vez, condiciona la visibilidad. Entenderlas por separado y luego en conjunto es la base para interpretar cualquier METAR o TAF.</p>
+      <div class="mnemo"><b>🧠 Idea clave:</b> todo reporte meteorológico aeronáutico (METAR, SPECI, TAF) es, en el fondo, un resumen ordenado de estas cinco variables más la nubosidad y los fenómenos presentes.</div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/13</div>
+      <div class="quiz-q">¿Cuáles son las cinco variables meteorológicas básicas que se estudian en este eje?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Nubes, lluvia, granizo, hielo y tormentas</button>
+        <button class="quiz-opt" data-correct="true">Viento, visibilidad, humedad, temperatura y presión</button>
+        <button class="quiz-opt" data-correct="false">Tropósfera, estratosfera, mesosfera, termosfera y exosfera</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>Viento: definición y vector</h2></div>
+    <div class="topic-body">
+      <p>El <b>viento</b> es el movimiento natural del aire, causado por las diferencias de presión que se desarrollan a partir del calentamiento radiativo diferencial de la superficie terrestre. En términos simples: el aire se mueve porque hay zonas más calientes que otras.</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Diferencia de presiones</b>El motor de todo movimiento del aire.</div>
+        <div class="objective-item"><b>Diferencia de temperaturas</b>Genera esas diferencias de presión.</div>
+        <div class="objective-item"><b>Sentido del flujo</b>El aire se desplaza siempre de zonas de alta a zonas de baja presión.</div>
+      </div>
+      <p>Es importante no confundir <b>viento</b> con <b>aire</b>: el aire es la masa gaseosa (compuesta de oxígeno, nitrógeno y otros gases); el viento es ese aire <i>en movimiento</i>.</p>
+      <p>El viento se representa como un <b>vector</b>, es decir, tiene magnitud y dirección:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Componente</th><th>Descripción</th></tr>
+        <tr><td><b>Magnitud (velocidad)</b></td><td>Velocidad con la que se desplaza el viento sobre la superficie. Se mide en nudos (kt), km/h o m/s.</td></tr>
+        <tr><td><b>Dirección</b></td><td>Dirección de <b>donde viene</b> el viento (no hacia dónde va). Se representa en grados de 0° a 360°, medidos desde el norte verdadero en sentido horario.</td></tr>
+      </table>
+      </div>
+      <div class="rose-wrap">
+        <svg class="rose-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="120" cy="120" r="105" fill="none" stroke="var(--hairline)" stroke-width="1"/>
+          <circle cx="120" cy="120" r="70" fill="none" stroke="var(--hairline)" stroke-width="1"/>
+          <circle cx="120" cy="120" r="35" fill="none" stroke="var(--hairline)" stroke-width="1"/>
+          <g stroke="var(--accent)" stroke-width="2">
+            <line x1="120" y1="15" x2="120" y2="225"/>
+            <line x1="15" y1="120" x2="225" y2="120"/>
+            <line x1="45" y1="45" x2="195" y2="195" stroke-width="1.4" opacity="0.6"/>
+            <line x1="45" y1="195" x2="195" y2="45" stroke-width="1.4" opacity="0.6"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="13" font-weight="700" fill="var(--text)" text-anchor="middle">
+            <text x="120" y="24">N</text>
+            <text x="120" y="228">S</text>
+            <text x="20" y="124">O</text>
+            <text x="222" y="124">E</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9" fill="var(--text-muted)" text-anchor="middle">
+            <text x="185" y="60">NE</text>
+            <text x="185" y="188">SE</text>
+            <text x="55" y="188">SO</text>
+            <text x="55" y="60">NO</text>
+          </g>
+          <circle cx="120" cy="120" r="4" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> "viento del norte" significa que <b>viene</b> del norte y sopla hacia el sur — la dirección del viento siempre se nombra por su origen, nunca por su destino.</div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/13</div>
+      <div class="quiz-q">La dirección del viento reportada en un METAR indica...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Hacia dónde se dirige el aire</button>
+        <button class="quiz-opt" data-correct="true">De dónde viene el aire</button>
+        <button class="quiz-opt" data-correct="false">La orientación de la pista activa</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>Medición y representación del viento</h2></div>
+    <div class="topic-body">
+      <p>El viento se mide de forma distinta según la altura a la que se necesite el dato:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Instrumento</th><th>Uso</th><th>Principio</th></tr>
+        <tr><td><b>Anemómetro rotatorio</b></td><td>Superficie</td><td>Cuenta el número de vueltas de sus aspas y lo transforma en velocidad.</td></tr>
+        <tr><td><b>Globo piloto</b></td><td>Altura</td><td>Se observa a través de un teodolito, registrando ángulo de altura y azimut.</td></tr>
+        <tr><td><b>Radiosonda</b></td><td>Altura</td><td>Aparato transportado por una sonda que transmite datos a tierra por ondas radioeléctricas.</td></tr>
+      </table>
+      </div>
+      <p>Cuando el viento no produce ningún movimiento perceptible del aire, se reporta como <b>calma</b> (velocidad inferior a 1 nudo).</p>
+      <p>En las cartas y diagramas meteorológicos, el viento se representa con una <b>flecha con barbas</b>: la punta de la flecha señala de dónde viene el viento, y las barbas indican su magnitud. Cada bandera equivale a 50 nudos, cada barba completa a 10 nudos y cada media barba a 5 nudos.</p>
+      <div class="barb-grid">
+        <div class="barb-card">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="70" r="5" fill="none" stroke="var(--accent)" stroke-width="2"/></svg>
+          <div class="blabel">Calma</div>
+        </div>
+        <div class="barb-card">
+          <svg viewBox="0 0 100 100"><line x1="50" y1="70" x2="50" y2="20" stroke="var(--accent)" stroke-width="2.5"/><line x1="50" y1="20" x2="65" y2="28" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <div class="blabel">5 nudos</div>
+        </div>
+        <div class="barb-card">
+          <svg viewBox="0 0 100 100"><line x1="50" y1="70" x2="50" y2="20" stroke="var(--accent)" stroke-width="2.5"/><line x1="50" y1="20" x2="70" y2="30" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <div class="blabel">10 nudos</div>
+        </div>
+        <div class="barb-card">
+          <svg viewBox="0 0 100 100"><line x1="50" y1="70" x2="50" y2="20" stroke="var(--accent)" stroke-width="2.5"/><line x1="50" y1="20" x2="70" y2="30" stroke="var(--accent)" stroke-width="2.5"/><line x1="50" y1="30" x2="70" y2="40" stroke="var(--accent)" stroke-width="2.5"/></svg>
+          <div class="blabel">15 nudos</div>
+        </div>
+        <div class="barb-card">
+          <svg viewBox="0 0 100 100"><line x1="50" y1="70" x2="50" y2="20" stroke="var(--accent)" stroke-width="2.5"/><polygon points="50,20 70,20 50,35" fill="var(--accent)"/></svg>
+          <div class="blabel">50 nudos</div>
+        </div>
+      </div>
+      <p>Con esto se pueden combinar banderas y barbas: tres barbas y media representan 35 nudos, y una bandera con una barba y media significa 65 nudos.</p>
+      <p><b>Equivalencias útiles:</b> 1 kt = 1,8 km/h = 0,5 m/s · 1 kt = 1,15 mph · 1 kt = 1,9 km/h (aprox. redondeado en algunas tablas).</p>
+      <div class="card-box">
+        <h4>📏 Escalas Beaufort y Douglas</h4>
+        <p style="margin-bottom:10px;">Relacionan la velocidad del viento con efectos visibles en tierra (Beaufort) y con el estado del mar (Douglas). Algunos valores de referencia:</p>
+        <div class="ats-table-wrap">
+        <table class="ats-table">
+          <tr><th>Fuerza</th><th>Nudos</th><th>Denominación</th><th>Características visuales</th></tr>
+          <tr><td>0</td><td>&lt;1</td><td>Calma</td><td>Humo vertical, anemómetro no gira</td></tr>
+          <tr><td>3</td><td>7 a 10</td><td>Viento leve o flojo</td><td>Se mueven las hojas, banderas flamean</td></tr>
+          <tr><td>6</td><td>22 a 27</td><td>Fuerte o fresco</td><td>Silba la jarcia, se mueven ramas gruesas</td></tr>
+          <tr><td>9</td><td>41 a 47</td><td>Temporal</td><td>Arrastra objetos, imposible caminar</td></tr>
+          <tr><td>12</td><td>+64</td><td>Huracán</td><td>Daños y consecuencias variadas</td></tr>
+        </table>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/13</div>
+      <div class="quiz-q">En la representación gráfica del viento, una barba completa equivale a...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">50 nudos</button>
+        <button class="quiz-opt" data-correct="true">10 nudos</button>
+        <button class="quiz-opt" data-correct="false">5 nudos</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Variación diurna y conceptos clave</h2></div>
+    <div class="topic-body">
+      <p>El viento no sopla igual todo el día. Su velocidad varía por los <b>movimientos convectivos del aire</b> y el diferente calentamiento en cada hora:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Máximo</b>Entre el mediodía y la caída de la tarde, cuando el calentamiento solar es más intenso.</div>
+        <div class="objective-item"><b>Mínimo</b>Hacia el alba, justo antes de la salida del sol, cuando la superficie está más fría.</div>
+      </div>
+      <p>Tres conceptos que aparecen constantemente en meteorología aeronáutica:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Concepto</th><th>Definición</th></tr>
+        <tr><td><b>Turbulencia</b></td><td>Fluctuaciones rápidas del viento; variaciones irregulares y rápidas tanto en dirección como en magnitud.</td></tr>
+        <tr><td><b>Calma</b></td><td>Ausencia de movimiento perceptible del aire (por convención, inferior a 1 nudo).</td></tr>
+        <tr><td><b>Onda de montaña</b></td><td>Fenómeno ondulatorio en el flujo del aire al desplazarse perpendicularmente contra una barrera montañosa, generando nubes lenticulares y rotor.</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Las ondas de montaña producen nubes características fáciles de identificar desde el aire: <b>nube lenticular</b> (en la cresta de la onda), <b>nube rotor</b> (turbulenta, bajo la lenticular) y <b>penacho nuboso</b> sobre la cima. Son zonas de turbulencia severa a evitar.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/13</div>
+      <div class="quiz-q">El viento en superficie alcanza normalmente su velocidad máxima...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Entre el mediodía y la caída de la tarde</button>
+        <button class="quiz-opt" data-correct="false">Justo antes del amanecer</button>
+        <button class="quiz-opt" data-correct="false">A medianoche</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Circulación general de la atmósfera</h2></div>
+    <div class="topic-body">
+      <p>A gran escala, el planeta tiene franjas de viento organizadas en bandas latitudinales, producto del calentamiento desigual entre el ecuador y los polos, y de la rotación terrestre (células de Hadley, Ferrel y Polar):</p>
+      <ul>
+        <li><b>Franja ecuatorial (Doldrums):</b> viento débil con dirección E-W. El aire asciende y se enfría, condensando el vapor de agua en nubes de tormenta (Cumulonimbos) a lo largo de toda la franja — esta es la <b>Zona de Confluencia Intertropical (ZCIT)</b>.</li>
+        <li><b>Franja subtropical (30°-60° N/S):</b> viento fuerte, con dirección predominante W-E (vientos del oeste / <i>Westerlies</i>).</li>
+        <li><b>Franja polar (60°-90° N/S):</b> viento débil, dirección W-E, en los círculos polares ártico y antártico.</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Relevancia para Colombia:</b> el país se ubica muy cerca de la ZCIT, lo que explica la abundante actividad convectiva (tormentas, cumulonimbos) típica de las estaciones colombianas cercanas al ecuador, como SKBO, SKCL, SKRG, SKMD, SKBQ y SKCG.</div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/13</div>
+      <div class="quiz-q">La franja de viento débil en el ecuador, donde se forman abundantes cumulonimbos, se conoce como...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Vientos del oeste (Westerlies)</button>
+        <button class="quiz-opt" data-correct="true">Zona de Confluencia Intertropical (ZCIT)</button>
+        <button class="quiz-opt" data-correct="false">Corriente en chorro polar</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>Vientos locales</h2></div>
+    <div class="topic-body">
+      <p>Además de la circulación general, existen vientos de escala local causados por diferencias de temperatura entre superficies cercanas — muy relevantes para aeródromos rodeados de montañas o costas, como es frecuente en Colombia.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Viento local</th><th>Cuándo ocurre</th><th>Dirección del flujo</th></tr>
+        <tr><td><b>Brisa de Valle (viento anabático)</b></td><td>Día</td><td>Del valle hacia la montaña — pendiente arriba.</td></tr>
+        <tr><td><b>Brisa de Montaña (viento catabático)</b></td><td>Noche</td><td>De la montaña hacia el valle — pendiente abajo.</td></tr>
+        <tr><td><b>Brisa marina</b></td><td>Día</td><td>Del mar (más frío) hacia la tierra (más caliente).</td></tr>
+        <tr><td><b>Brisa terrestre</b></td><td>Noche</td><td>De la tierra (se enfría rápido) hacia el mar (aún caliente).</td></tr>
+      </table>
+      </div>
+      <p>El <b>efecto Foehn</b> describe lo que ocurre cuando una masa de aire cálido y húmedo asciende por la ladera de barlovento de una montaña (se enfría, se satura y forma nubes), y desciende ya seca y recalentada por la ladera de sotavento:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Barlovento</b>Ladera desde donde sopla el viento (donde asciende y se enfría el aire).</div>
+        <div class="objective-item"><b>Sotavento</b>Ladera hacia donde sopla el viento (donde desciende y se recalienta el aire, ya seco).</div>
+        <div class="objective-item"><b>Ráfaga</b>Cambio brusco en la velocidad del viento: se calma y el ciclo se repite, pudiendo cambiar también de dirección.</div>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> "ana" = arriba (anabático sube de día); "cata" = abajo (catabático baja de noche). El sotavento siempre recibe el aire más seco y más cálido.</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/13</div>
+      <div class="quiz-q">La brisa de valle (viento anabático) se caracteriza por soplar...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">De día, pendiente arriba, del valle hacia la montaña</button>
+        <button class="quiz-opt" data-correct="false">De noche, pendiente abajo, de la montaña al valle</button>
+        <button class="quiz-opt" data-correct="false">Solo sobre el mar</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Fuerzas que actúan sobre el aire en movimiento</h2></div>
+    <div class="topic-body">
+      <p>El comportamiento final del viento resulta del equilibrio entre varias fuerzas físicas:</p>
+      <div class="force-grid">
+        <div class="force-card">
+          <div class="fname">Gradiente de presión</div>
+          <p>Diferencia de presión entre dos puntos; es la causa primaria del movimiento del aire, siempre desde la zona de mayor hacia la de menor presión, buscando el equilibrio (igual que el agua entre dos tanques conectados).</p>
+        </div>
+        <div class="force-card">
+          <div class="fname">Fuerza de Coriolis</div>
+          <p>Producto de la rotación terrestre: desvía la trayectoria de toda partícula en movimiento hacia la <b>derecha en el hemisferio norte</b> y hacia la <b>izquierda en el hemisferio sur</b>. Es máxima en los polos y nula en el ecuador.</p>
+        </div>
+        <div class="force-card">
+          <div class="fname">Fuerza centrífuga</div>
+          <p>Producida por la rotación de la Tierra (mayor en el ecuador); contrarresta parte de la gravedad y produce una tendencia del aire a abultarse y acelerarse cerca del ecuador.</p>
+        </div>
+        <div class="force-card">
+          <div class="fname">Fuerza de fricción o rozamiento</div>
+          <p>Se opone al movimiento debido a las imperfecciones del terreno. Es máxima cerca de la superficie y disminuye con la altura; genera turbulencia mecánica, especialmente con obstáculos de pendiente mayor a 15°.</p>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>🧭 Viento geostrófico</h4>
+        <p style="margin:0;">Es el viento resultante de un equilibrio entre el gradiente de presión y la fuerza de Coriolis, bajo estas condiciones: partícula de aire en movimiento horizontal, velocidad constante y rozamiento despreciable (por eso solo se da en altura, lejos del efecto de la fricción superficial).</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/13</div>
+      <div class="quiz-q">La fuerza de Coriolis desvía la trayectoria de una partícula de aire hacia...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">La derecha en el hemisferio norte y la izquierda en el sur</button>
+        <button class="quiz-opt" data-correct="false">Siempre hacia el ecuador</button>
+        <button class="quiz-opt" data-correct="false">Siempre hacia los polos</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 8 -->
+  <article class="topic" id="t8">
+    <div class="topic-head"><div class="topic-num">8</div><h2>Convergencia, divergencia y cizalladura</h2></div>
+    <div class="topic-body">
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Fenómeno</th><th>Definición</th><th>Efecto en la presión</th></tr>
+        <tr><td><b>Convergencia</b></td><td>El flujo de aire que penetra en una región excede al flujo que sale.</td><td>Aumento de presión / ascenso de aire (favorece nubosidad y tormentas).</td></tr>
+        <tr><td><b>Divergencia</b></td><td>El flujo de aire que sale de una región excede al flujo de aire entrante.</td><td>Disminución de la presión / descenso de aire (favorece cielos despejados).</td></tr>
+      </table>
+      </div>
+      <p><b>Cizalladura del viento (wind shear):</b> es un cambio en dirección o velocidad, o ambas, del viento a través de una distancia relativamente corta. Puede ocurrir en cualquier parte de la atmósfera, desde sus límites más altos hasta muy cerca del suelo, y es especialmente crítica durante el despegue y el aterrizaje.</p>
+      <p>En los aeródromos con varios sensores de viento, la cizalladura se detecta si estos registran direcciones e intensidades diferentes de viento, superiores a 15 nudos, en distintos puntos del campo.</p>
+      <p>Principales orígenes de la cizalladura:</p>
+      <ul>
+        <li>Actividad tormentosa (microburst, downburst)</li>
+        <li>Paso de frentes</li>
+        <li>Corriente en chorro (jet stream)</li>
+        <li>Brisas y vientos alisios</li>
+        <li>Rozamiento en la capa límite planetaria</li>
+        <li>Obstáculos del terreno</li>
+      </ul>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Un <b>microburst</b> es una corriente descendente intensa y localizada bajo una tormenta que, al chocar con el suelo, se abre en todas direcciones — genera cizalladura severa: primero viento de cara (headwind) y luego viento de cola (tailwind) en cuestión de segundos.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="8">
+      <div class="quiz-tag">🎯 Chequeo rápido 8/13</div>
+      <div class="quiz-q">La cizalladura del viento (wind shear) se define como...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Un cambio en dirección o velocidad del viento en una distancia corta</button>
+        <button class="quiz-opt" data-correct="false">La ausencia total de viento en superficie</button>
+        <button class="quiz-opt" data-correct="false">El aumento gradual y constante de la presión</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 9 -->
+  <article class="topic" id="t9">
+    <div class="topic-head"><div class="topic-num">9</div><h2>Visibilidad</h2></div>
+    <div class="topic-body">
+      <p>La <b>visibilidad</b> está directamente relacionada con la cantidad de agua (u otras partículas) presente en la atmósfera. El agua puede estar en estado sólido, líquido o gaseoso; en su estado gaseoso (vapor de agua) es un componente más del aire que puede convertirse en gotas de agua o cristales de hielo.</p>
+      <p><b>Visibilidad horizontal:</b> en meteorología, es la mayor distancia hasta la cual son visibles los detalles del paisaje con suficiente claridad, o el grado de transparencia de la atmósfera. Durante la noche es difícil de estimar, porque depende de la cantidad de luz que emite el objeto observado.</p>
+      <p>Los fenómenos que restringen la visibilidad (meteoros) se diferencian por la distancia a la que reducen la visibilidad, su porcentaje de humedad asociado y el tipo de partícula (aerosol) que los origina:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Meteoro</th><th>Visibilidad</th><th>Humedad</th><th>Aerosol</th></tr>
+        <tr><td><b>Lluvia</b></td><td>&lt; 1 km</td><td>100%</td><td>Agua o hielo</td></tr>
+        <tr><td><b>Llovizna</b></td><td>&lt; 3 km</td><td>100%</td><td>Agua o hielo</td></tr>
+        <tr><td><b>Niebla (FG)</b></td><td>&lt; 1 km</td><td>90-100%</td><td>Agua o hielo</td></tr>
+        <tr><td><b>Neblina (BR)</b></td><td>&gt; 1 km</td><td>80-90%</td><td>Agua o hielo</td></tr>
+        <tr><td><b>Bruma (HZ)</b></td><td>&lt; 2 km</td><td>&lt; 80%</td><td>Partículas sólidas</td></tr>
+        <tr><td><b>Calima</b></td><td>&gt; 2 km</td><td>&lt; 80%</td><td>Partículas sólidas</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> Niebla y Neblina son de agua (humedad alta); Bruma y Calima son de partículas sólidas (polvo, humo, contaminación) con humedad baja. La diferencia dentro de cada par está en cuánto restringen la visibilidad.</div>
+    </div>
+    <div class="quiz-card" data-quiz="9">
+      <div class="quiz-tag">🎯 Chequeo rápido 9/13</div>
+      <div class="quiz-q">¿Qué meteoro reduce la visibilidad a menos de 1 km y está asociado a una humedad de 90-100%, compuesto por gotas de agua o hielo?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Calima</button>
+        <button class="quiz-opt" data-correct="true">Niebla</button>
+        <button class="quiz-opt" data-correct="false">Bruma</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 10 -->
+  <article class="topic" id="t10">
+    <div class="topic-head"><div class="topic-num">10</div><h2>Humedad</h2></div>
+    <div class="topic-body">
+      <p>La <b>humedad atmosférica</b> es la cantidad de vapor de agua existente en el aire. Depende de la temperatura: resulta mucho más elevada en masas de aire caliente que en masas de aire frío. Se mide mediante un <b>higrómetro</b>.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Tipo</th><th>Definición</th></tr>
+        <tr><td><b>Humedad absoluta</b></td><td>Cantidad de vapor, en gramos, contenido en un metro cúbico de aire.</td></tr>
+        <tr><td><b>Humedad específica</b></td><td>Cantidad de vapor contenido en un kilogramo de aire húmedo.</td></tr>
+        <tr><td><b>Humedad relativa</b></td><td>Expresada en %, es la relación entre la cantidad de vapor realmente contenido en el aire y la cantidad de vapor que el aire es capaz de contener a esa temperatura.</td></tr>
+        <tr><td><b>Punto de rocío</b></td><td>Temperatura a la que el aire debe enfriarse (a presión y humedad constantes) para saturarse (alcanzar 100% de humedad relativa).</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen: la humedad relativa NO es un buen indicador de la cantidad real de agua</h4>
+        <p style="margin:0;">Ejemplo con tres ciudades colombianas: Cúcuta (31°C, HR 20%), Manizales (22°C, HR 50%) y Bogotá (14°C, HR 100%) pueden tener <b>la misma cantidad de agua</b> en el aire, porque coinciden en su punto de rocío (14°C). La diferencia de HR se debe únicamente a la diferente capacidad de cada temperatura para contener vapor de agua: el aire caliente admite más agua antes de saturarse que el aire frío.</p>
+      </div>
+      <p>Por esta razón, la <b>humedad relativa varía en sentido inverso a la temperatura</b> a lo largo del día: sube cuando la temperatura baja (madrugada) y baja cuando la temperatura sube (tarde).</p>
+      <p>La humedad está ligada al <b>ciclo hidrológico</b> de la atmósfera, mediante los siguientes procesos: evaporación, condensación (sobre núcleos de condensación), fusión o derretimiento (sólido a líquido), solidificación o congelación, sublimación (sólido a gaseoso) y ebullición.</p>
+    </div>
+    <div class="quiz-card" data-quiz="10">
+      <div class="quiz-tag">🎯 Chequeo rápido 10/13</div>
+      <div class="quiz-q">El punto de rocío es...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">La temperatura a la que el aire debe enfriarse para saturarse</button>
+        <button class="quiz-opt" data-correct="false">El porcentaje de nubes que cubre el cielo</button>
+        <button class="quiz-opt" data-correct="false">La altura donde se forman las nubes cumulonimbo</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 11 -->
+  <article class="topic" id="t11">
+    <div class="topic-head"><div class="topic-num">11</div><h2>Calor y temperatura</h2></div>
+    <div class="topic-body">
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Calor</th><th>Temperatura</th></tr>
+        <tr><td>Energía producida por el movimiento o agitación de las partículas de un cuerpo.</td><td>Medida de la energía que se produce por la agitación de las partículas de un cuerpo.</td></tr>
+        <tr><td>Energía que se transfiere de un objeto a otro.</td><td>Los objetos poseen una temperatura porque sus moléculas están en constante movimiento.</td></tr>
+        <tr><td>Unidad de medida: Joule o calorías.</td><td>Unidades de medida: Kelvin, Celsius, Fahrenheit.</td></tr>
+        <tr><td>No hay instrumentos que lo midan directamente.</td><td>Se puede medir con un termómetro.</td></tr>
+      </table>
+      </div>
+      <p>La temperatura resulta de una sensación (caliente/fría) que determina si un cuerpo es apto para transmitir calor a otros o para recibir el calor transmitido por estos — es, en esencia, la relación entre la temperatura de nuestro cuerpo y la de otros cuerpos ajenos a nosotros.</p>
+      <p>El calor se transmite entre cuerpos mediante distintos mecanismos, todos relevantes en meteorología:</p>
+      <div class="force-grid">
+        <div class="force-card"><div class="fname">Conducción</div><p>Transmisión del calor por contacto directo entre cuerpos.</p></div>
+        <div class="force-card"><div class="fname">Convección</div><p>Transmisión de calor por medio de corrientes verticales ascendentes (aire caliente que sube).</p></div>
+        <div class="force-card"><div class="fname">Radiación / Irradiación</div><p>El calor atraviesa el espacio en forma de rayos infrarrojos, sin necesidad de un medio material — así llega la energía del Sol a través de la atmósfera.</p></div>
+        <div class="force-card"><div class="fname">Advección</div><p>Transmisión del calor por el movimiento horizontal de una masa de aire.</p></div>
+        <div class="force-card"><div class="fname">Turbulencia</div><p>Movimiento irregular del viento en diferentes direcciones; transmite la energía mucho más rápido y produce diferencias de temperatura en espacios reducidos.</p></div>
+      </div>
+      <div class="card-box">
+        <h4>🔥 Calor específico</h4>
+        <p>Es la cantidad de calor necesaria para elevar la temperatura de una unidad de masa de una sustancia en un grado. Explica las diferencias entre océanos y continentes:</p>
+        <div class="ats-table-wrap">
+        <table class="ats-table">
+          <tr><th></th><th>De día</th><th>De noche</th></tr>
+          <tr><td><b>Agua</b></td><td>Absorbe poco, se calienta poco y lentamente</td><td>Se enfría poco y lentamente</td></tr>
+          <tr><td><b>Suelo</b></td><td>Se calienta bastante y rápidamente</td><td>Se enfría bastante y rápidamente</td></tr>
+        </table>
+        </div>
+      </div>
+      <div class="mnemo"><b>🧠 Relevancia:</b> este contraste (agua estable, tierra volátil) es justamente el motor de las brisas marina y terrestre vistas en el bloque 6.</div>
+    </div>
+    <div class="quiz-card" data-quiz="11">
+      <div class="quiz-tag">🎯 Chequeo rápido 11/13</div>
+      <div class="quiz-q">La transmisión de calor por medio de corrientes verticales ascendentes se llama...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Conducción</button>
+        <button class="quiz-opt" data-correct="true">Convección</button>
+        <button class="quiz-opt" data-correct="false">Advección</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 12 -->
+  <article class="topic" id="t12">
+    <div class="topic-head"><div class="topic-num">12</div><h2>Escalas, variaciones y gradiente térmico</h2></div>
+    <div class="topic-body">
+      <p>La temperatura se expresa en tres escalas principales:</p>
+      <div class="scale-grid">
+        <div class="scale-card">
+          <div class="sname">Fahrenheit</div>
+          <div class="scale-row boil"><span>Ebullición</span><span>212°</span></div>
+          <div class="scale-row frost"><span>Congelación</span><span>32°</span></div>
+        </div>
+        <div class="scale-card">
+          <div class="sname">Celsius</div>
+          <div class="scale-row boil"><span>Ebullición</span><span>100°</span></div>
+          <div class="scale-row frost"><span>Congelación</span><span>0°</span></div>
+        </div>
+        <div class="scale-card">
+          <div class="sname">Kelvin</div>
+          <div class="scale-row boil"><span>Ebullición</span><span>373°</span></div>
+          <div class="scale-row frost"><span>Congelación</span><span>273°</span></div>
+        </div>
+      </div>
+      <p>La temperatura varía en distintas escalas de tiempo y espacio:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Variación</th><th>Comportamiento</th></tr>
+        <tr><td><b>Diaria</b></td><td>Máximo en la tarde, entre 14 y 16 horas; mínimo poco antes de la salida del sol.</td></tr>
+        <tr><td><b>Anual</b></td><td>Producida por las estaciones del año.</td></tr>
+        <tr><td><b>Con la altitud</b></td><td>Disminuye a medida que se asciende.</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>📐 Gradientes</h4>
+        <p><b>Isotermas:</b> curvas dibujadas sobre un mapa que unen los puntos de igual temperatura.</p>
+        <p><b>Gradiente de temperatura:</b> cambio de temperatura en una dirección determinada en el espacio; se obtiene del mapa de isotermas.</p>
+        <p style="margin-bottom:0;"><b>Gradiente térmico vertical:</b> variación de la temperatura por cada incremento de elevación — el valor estándar OACI es <b>2°C de disminución por cada 1.000 ft</b> de ascenso.</p>
+      </div>
+      <p>Entre los factores que influyen en la temperatura de un lugar están: el ángulo de incidencia de los rayos solares (según la latitud), el calentamiento diferencial de tierras y aguas, las corrientes oceánicas, la altura sobre el nivel del mar, la posición geográfica y la cobertura nubosa (albedo).</p>
+      <div class="card-box">
+        <h4>☁️ Cobertura de nubes y albedo</h4>
+        <p style="margin:0;">Las nubes pueden tener un alto albedo y reflejar gran parte de la radiación solar incidente, reduciendo la radiación que llega a la superficie de día. En la noche el efecto se invierte: las nubes absorben la radiación terrestre y la reemiten hacia la superficie, manteniendo el calor cerca del suelo — por eso las noches nubladas son más cálidas que las noches despejadas.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="12">
+      <div class="quiz-tag">🎯 Chequeo rápido 12/13</div>
+      <div class="quiz-q">El gradiente térmico vertical estándar establece que la temperatura disminuye aproximadamente...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">2°C por cada 1.000 ft de ascenso</button>
+        <button class="quiz-opt" data-correct="false">10°C por cada 1.000 ft de ascenso</button>
+        <button class="quiz-opt" data-correct="false">2°C por cada 100 ft de ascenso</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 13 -->
+  <article class="topic" id="t13">
+    <div class="topic-head"><div class="topic-num">13</div><h2>Presión atmosférica</h2></div>
+    <div class="topic-body">
+      <p>La <b>presión atmosférica</b> es el peso de la columna de aire que hay sobre cualquier punto o lugar de la Tierra, es decir, el peso por unidad de superficie:</p>
+      <div class="card-box" style="text-align:center;">
+        <p class="mono" style="margin:0; font-size:0.95rem;">Presión atmosférica = Peso de la columna de aire ÷ Unidad de superficie</p>
+      </div>
+      <p>Cuanto mayor es la altura, menor es la presión atmosférica; cuanto más cerca del nivel del mar, mayor será la presión. En la cima del Everest (8.848 m) la presión ronda los 300 mm de mercurio, mientras que al nivel del mar es de 760 mm de mercurio (1 atmósfera).</p>
+      <p><b>Unidades de medida:</b> pulgada de mercurio (inHg, unidad de longitud) y milibar/hectopascal (hPa, fuerza por unidad de área) — esta última es la que reporta el QNH en el METAR.</p>
+      <p>Las diferencias de calentamiento y enfriamiento sobre la superficie terrestre producen diferencias de densidad del aire, que se traducen directamente en diferencias de presión.</p>
+      <div class="card-box">
+        <h4>🗺️ Isobaras y sistemas de presión</h4>
+        <p>Periódicamente se registran medidas de presión en muchos puntos de la Tierra simultáneamente, y se trazan <b>líneas isobaras</b>: líneas que unen puntos de igual presión en un instante determinado. Al analizarlas aparecen sistemas de <b>alta</b> y <b>baja presión</b>:</p>
+        <div class="ats-table-wrap">
+        <table class="ats-table">
+          <tr><th>Sistema</th><th>Comportamiento</th><th>Condiciones de vuelo típicas</th></tr>
+          <tr><td><b>Baja presión (B / L)</b></td><td>La presión disminuye hacia el centro; el aire asciende.</td><td>Desfavorables: nubes bajas, visibilidad limitada, precipitación, niebla, vientos fuertes y turbulencia.</td></tr>
+          <tr><td><b>Alta presión (A / H)</b></td><td>La presión aumenta hacia el centro; el aire desciende.</td><td>Favorables: menos nubosidad, vientos ligeros o en calma; aunque puede presentarse neblina.</td></tr>
+        </table>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>📐 Gradiente de presión vertical</h4>
+        <p style="margin:0;">La presión disminuye aproximadamente <b>una pulgada de mercurio por cada 1.000 ft</b> de ascenso (cerca del nivel del mar) — este comportamiento es la base del funcionamiento del altímetro de a bordo.</p>
+      </div>
+      <div class="mnemo"><b>🧠 Idea clave para el examen:</b> altas presiones = buen tiempo generalizado; bajas presiones = tiempo inestable, nubosidad y con frecuencia lluvia. Las isobaras muy juntas indican un gradiente de presión fuerte y, por tanto, vientos más intensos.</div>
+    </div>
+    <div class="quiz-card" data-quiz="13">
+      <div class="quiz-tag">🎯 Chequeo rápido 13/13 — ¡última pregunta!</div>
+      <div class="quiz-q">Un sistema de baja presión en superficie se asocia normalmente con...</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Cielos despejados y vientos en calma</button>
+        <button class="quiz-opt" data-correct="true">Nubosidad, precipitación y tiempo inestable</button>
+        <button class="quiz-opt" data-correct="false">Ausencia total de viento</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🪁🏆</div>
+    <h3>¡Tu cometa llegó a la meta!</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 13 preguntas correctamente. Ya conoces las cinco variables meteorológicas — ahora ponlas a prueba armando la rosa de los vientos en la actividad de abajo.</p>
+  </div>
+
+  <!-- 14: actividad interactiva -->
+  <article class="topic" id="t14">
+    <div class="topic-head"><div class="topic-num">14</div><h2>Actividad: arma la rosa de los vientos</h2></div>
+    <div class="topic-body">
+      <p>Abajo tienes las 8 direcciones cardinales de la rosa de los vientos, ordenadas por sus grados, y una bolsa de <b>abreviaturas</b> desordenadas. Tu misión: arrastra (o toca) cada abreviatura y colócala en el grado correcto.</p>
+    </div>
+
+    <div class="dnd-box">
+      <div class="dnd-instructions">📌 En computador: arrastra la tarjeta hasta la casilla de grados. En celular: toca la tarjeta para seleccionarla y luego toca la casilla donde va.</div>
+
+      <div class="dnd-layers" id="dndLayers">
+        <div class="dnd-layer" data-layer="000">
+          <div class="lname">000° <span class="rng">Norte</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="045">
+          <div class="lname">045° <span class="rng">Noreste</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="090">
+          <div class="lname">090° <span class="rng">Este</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="135">
+          <div class="lname">135° <span class="rng">Sureste</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="180">
+          <div class="lname">180° <span class="rng">Sur</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="225">
+          <div class="lname">225° <span class="rng">Suroeste</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="270">
+          <div class="lname">270° <span class="rng">Oeste</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+        <div class="dnd-layer" data-layer="315">
+          <div class="lname">315° <span class="rng">Noroeste</span></div>
+          <div class="dnd-dropped"></div>
+        </div>
+      </div>
+
+      <div class="dnd-pool" id="dndPool"></div>
+      <div class="dnd-status" id="dndStatus"></div>
+      <div class="dnd-progress" id="dndProgress">0 / 8 colocadas correctamente</div>
+      <button class="dnd-reset" id="dndReset" type="button">↺ Reiniciar actividad</button>
+    </div>
+
+    <div class="mnemo"><b>🧠 Recuerda:</b> la dirección del viento se mide en grados desde el norte verdadero (000°), en sentido horario, y siempre indica de dónde viene el viento — no hacia dónde va.</div>
+  </article>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo MET · Eje 2 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- COMETA AL VIENTO (tracker de quizzes) ----------
+  const TOTAL_QUIZ = 13;
+  let level = 0, correctCount = 0, wrongCount = 0;
+
+  const trackerFill = document.getElementById('trackerFill');
+  const trackerPlane = document.getElementById('trackerPlane');
+  const trackerBoom = document.getElementById('trackerBoom');
+  const trackerScore = document.getElementById('trackerScore');
+  const finishCard = document.getElementById('finishCard');
+
+  function renderTracker(){
+    const pct = (level / TOTAL_QUIZ) * 100;
+    trackerFill.style.width = pct + '%';
+    trackerPlane.style.left = pct + '%';
+    trackerBoom.style.left = pct + '%';
+    trackerScore.textContent = `${correctCount} aciertos · ${wrongCount} errores · nivel ${level}/${TOTAL_QUIZ}`;
+    if(level >= TOTAL_QUIZ && correctCount >= TOTAL_QUIZ){
+      finishCard.style.display = 'block';
+    }
+  }
+  renderTracker();
+
+  function playCrash(){
+    trackerPlane.classList.remove('crash');
+    trackerBoom.classList.remove('show');
+    void trackerPlane.offsetWidth;
+    trackerPlane.classList.add('crash');
+    trackerBoom.classList.add('show');
+  }
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    if(isCorrect){
+      correctCount++;
+      level = Math.min(level + 1, TOTAL_QUIZ);
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = level >= TOTAL_QUIZ
+        ? '✅ ¡Correcto! La cometa llegó a la meta. 🏆'
+        : '✅ ¡Correcto! La cometa sigue avanzando.';
+    }else{
+      wrongCount++;
+      btn.classList.add('incorrect');
+      level = Math.max(level - 1, 0);
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '💨 Una ráfaga hizo retroceder la cometa... repasa y sigue avanzando en la próxima.';
+      playCrash();
+    }
+    renderTracker();
+  }
+
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+
+  // ---------- ACTIVIDAD DRAG & DROP: ROSA DE LOS VIENTOS ----------
+  const CHIPS = [
+    { id:1, text:"N — Norte",     layer:"000" },
+    { id:2, text:"NE — Noreste",  layer:"045" },
+    { id:3, text:"E — Este",      layer:"090" },
+    { id:4, text:"SE — Sureste",  layer:"135" },
+    { id:5, text:"S — Sur",       layer:"180" },
+    { id:6, text:"SO — Suroeste", layer:"225" },
+    { id:7, text:"O — Oeste",     layer:"270" },
+    { id:8, text:"NO — Noroeste", layer:"315" },
+  ];
+
+  const dndPool = document.getElementById('dndPool');
+  const dndLayers = document.getElementById('dndLayers');
+  const dndStatus = document.getElementById('dndStatus');
+  const dndProgress = document.getElementById('dndProgress');
+  const dndReset = document.getElementById('dndReset');
+
+  let selectedChip = null;
+  let placedCorrect = 0;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildPool(){
+    dndPool.innerHTML = '';
+    placedCorrect = 0;
+    dndLayers.querySelectorAll('.dnd-dropped').forEach(d => d.innerHTML = '');
+    dndStatus.textContent = '';
+    dndStatus.className = 'dnd-status';
+    updateProgress();
+
+    shuffle(CHIPS).forEach(chip => {
+      const el = document.createElement('div');
+      el.className = 'dnd-chip';
+      el.textContent = chip.text;
+      el.draggable = true;
+      el.dataset.id = chip.id;
+      el.dataset.layer = chip.layer;
+
+      el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', chip.id);
+      });
+
+      el.addEventListener('click', () => {
+        if(selectedChip === el){
+          el.classList.remove('selected');
+          selectedChip = null;
+          return;
+        }
+        document.querySelectorAll('.dnd-chip.selected').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedChip = el;
+      });
+
+      dndPool.appendChild(el);
+    });
+  }
+
+  function updateProgress(){
+    dndProgress.textContent = `${placedCorrect} / ${CHIPS.length} colocadas correctamente`;
+  }
+
+  function placeChip(chipEl, layerEl){
+    const correctLayer = chipEl.dataset.layer;
+    const targetLayer = layerEl.dataset.layer;
+
+    if(correctLayer === targetLayer){
+      const chip = document.createElement('span');
+      chip.className = 'dnd-chip-placed';
+      chip.textContent = chipEl.textContent;
+      layerEl.querySelector('.dnd-dropped').appendChild(chip);
+      chipEl.remove();
+      placedCorrect++;
+      updateProgress();
+      dndStatus.className = 'dnd-status ok';
+      dndStatus.textContent = '✅ ¡Correcto! Esa dirección va en esa casilla.';
+      if(placedCorrect === CHIPS.length){
+        dndStatus.textContent = '🏆 ¡Perfecto! Armaste toda la rosa de los vientos correctamente.';
+      }
+    }else{
+      chipEl.classList.add('wrong-shake');
+      layerEl.classList.add('dragover');
+      dndStatus.className = 'dnd-status bad';
+      dndStatus.textContent = '❌ Esa dirección no corresponde a esos grados. Vuelve a intentarlo.';
+      setTimeout(() => {
+        chipEl.classList.remove('wrong-shake');
+        layerEl.classList.remove('dragover');
+      }, 450);
+    }
+    if(selectedChip === chipEl) selectedChip = null;
+  }
+
+  dndLayers.querySelectorAll('.dnd-layer').forEach(layerEl => {
+    layerEl.addEventListener('dragover', e => { e.preventDefault(); layerEl.classList.add('dragover'); });
+    layerEl.addEventListener('dragleave', () => layerEl.classList.remove('dragover'));
+    layerEl.addEventListener('drop', e => {
+      e.preventDefault();
+      layerEl.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      const chipEl = dndPool.querySelector(`.dnd-chip[data-id="${id}"]`);
+      if(chipEl) placeChip(chipEl, layerEl);
+    });
+    layerEl.addEventListener('click', () => {
+      if(selectedChip) placeChip(selectedChip, layerEl);
+    });
+  });
+
+  dndReset.addEventListener('click', buildPool);
+
+  buildPool();
+</script>
+
+</body>
+</html>
