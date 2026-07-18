@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zona de Quizzes · SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --hairline:#E1E7EF;
+    --vfr:#2E9E6D;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --hairline:#2A3548;
+    --vfr:#4FA88C;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; text-decoration:none; color:var(--text); }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  .hero-simple{ max-width:960px; margin:0 auto; padding:48px 32px 20px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; }
+
+  .quiz-index{ max-width:900px; margin:0 auto; padding:20px 32px 60px; }
+  .quiz-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 22px; transition:transform .2s, border-color .2s; }
+  .quiz-card:hover{ transform:translateY(-4px); border-color:var(--accent); }
+  .quiz-card .badge{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.65rem; font-weight:600; color:var(--accent); background:rgba(var(--accent-rgb),0.12); padding:2px 12px; border-radius:12px; margin-bottom:10px; }
+  .quiz-card h3{ font-size:1.1rem; margin-bottom:6px; }
+  .quiz-card p{ color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin:0 0 16px; }
+  .quiz-card .btn-start{ display:inline-block; background:var(--accent); color:#fff; padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s; border:none; cursor:pointer; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .quiz-card .btn-start:hover{ filter:brightness(1.08); }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+        <g transform="rotate(-40 20 20)">
+          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="designadores.html">Designadores</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html" class="active">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <button class="nav-icon-btn" aria-label="Buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<section class="hero-simple">
+  <div class="eyebrow">Zona de Quizzes</div>
+  <h1>Bancos de preguntas por módulo</h1>
+  <p class="lead">Selecciona un quiz para poner a prueba tus conocimientos. Cada uno tiene su propia calificación y puedes repetirlo las veces que quieras.</p>
+</section>
+
+<div class="quiz-index">
+  <div class="quiz-grid">
+    <!-- Quiz ATS (50 preguntas) -->
+    <div class="quiz-card">
+      <div class="badge">50 preguntas</div>
+      <h3>Servicios de Tránsito Aéreo (ATS)</h3>
+      <p>Objetivos, clasificación del espacio aéreo, FIS, alerta, comunicaciones y más.</p>
+      <a href="quiz-ats.html" class="btn-start">Comenzar →</a>
+    </div>
+
+    <!-- Quiz Plan de Vuelo (25 preguntas) -->
+    <div class="quiz-card">
+      <div class="badge">25 preguntas</div>
+      <h3>Plan de Vuelo — nivel medio-alto</h3>
+      <p>Normativa, plazos, mecanismos de presentación, tipos de vuelo y llenado del FPL en Colombia.</p>
+      <a href="quiz-fpl.html" class="btn-start">Comenzar →</a>
+    </div>
+
+    <!-- Simulador METAR -->
+    <div class="quiz-card">
+      <div class="badge">Simulador</div>
+      <h3>Simulador METAR</h3>
+      <p>Codifica reportes METAR a partir de escenarios reales, con retroalimentación bloque por bloque y modo examen.</p>
+      <a href="simulador-metar.html" class="btn-start">Comenzar →</a>
+    </div>
+
+    <!-- Quiz Designadores de Aeródromos -->
+    <div class="quiz-card">
+      <div class="badge">73 aeródromos</div>
+      <h3>Designadores de Aeródromos</h3>
+      <p>Escribe el código OACI o identifica el nombre de aeródromos controlados, no controlados y de aviación de estado en Colombia.</p>
+      <a href="quiz-designadores.html" class="btn-start">Comenzar →</a>
+    </div>
+
+    <!-- Simulador Plan de Vuelo -->
+    <div class="quiz-card">
+      <div class="badge">Simulador</div>
+      <h3>Simulador Plan de Vuelo</h3>
+      <p>Completa un formulario FPL campo por campo, con validación en tiempo real y retroalimentación por casilla según la normativa OACI/Colombia.</p>
+      <a href="simulador-plan-vuelo.html" class="btn-start">Comenzar →</a>
+    </div>
+
+    <div class="quiz-card" style="border:2px dashed var(--hairline); background:transparent;">
+      <div class="badge" style="color:var(--text-muted); background:transparent;">Próximamente</div>
+      <h3 style="color:var(--text-muted);">Más quizzes</h3>
+      <p style="color:var(--text-muted);">Meteorología, PBN y más están en desarrollo.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos.</span>
+  <span>Módulo ATS — Curso Básico Operador de Estación Aeronáutica</span>
+</footer>
+
+<script>
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){ document.documentElement.setAttribute('data-theme', 'dark'); themeToggle.setAttribute('aria-label', 'Cambiar a modo claro'); }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme', 'light'); themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro'); }
+    else{ document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('aisTheme', 'dark'); themeToggle.setAttribute('aria-label', 'Cambiar a modo claro'); }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+</script>
+</body>
+</html>

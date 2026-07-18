@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador METAR · SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --danger-rgb:214,69,69;
+    --vfr:#2E9E6D;
+    --vfr-rgb:46,158,109;
+    --mvfr:#3E7BFA;
+    --ifr:#D64545;
+    --lifr:#8B5CF6;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --metar-btn-text:#FFFFFF;
+    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --danger-rgb:201,86,79;
+    --vfr:#4FA88C;
+    --vfr-rgb:79,168,140;
+    --mvfr:#4A8FD1;
+    --ifr:#C9564F;
+    --lifr:#B15FC7;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --metar-btn-text:#0B1220;
+    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box;}
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- TOP BAR (idéntico al resto del portal) ---------- */
+  .topbar{ position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{animation:none;} }
+  nav.desktop-nav{display:flex; align-items:center; gap:26px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- HERO SIMPLE (mismo patrón que quizzes.html) ---------- */
+  .hero-simple{ max-width:1100px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:760px; }
+
+  .wrap{ max-width:1100px; margin:0 auto; padding:20px 32px 70px; }
+
+  /* ---------- CONTROL BAR ---------- */
+  .controls{ display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; justify-content:space-between; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px 22px; margin-bottom:22px; box-shadow:var(--shadow-instrument); }
+  .control-group{ display:flex; flex-direction:column; gap:8px; }
+  .control-group .glabel{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pill-btn{ font-family:'IBM Plex Sans'; font-size:0.82rem; font-weight:600; padding:8px 16px; border-radius:30px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:all .15s; }
+  .pill-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .pill-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--metar-btn-text); }
+  .pill-btn.mode-exam.active{ background:var(--lifr); border-color:var(--lifr); }
+  .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--accent); color:var(--metar-btn-text); }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  /* ---------- SCENARIO PANEL ---------- */
+  .instrument{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; position:relative; box-shadow:var(--shadow-instrument); margin-bottom:22px; }
+  .instrument::before{ content:''; position:absolute; inset:8px; border:1px dashed rgba(var(--muted-rgb),0.15); border-radius:6px; pointer-events:none; }
+  .instrument-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.14em; color:var(--text-muted); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .exam-progress{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--accent); }
+
+  .scenario-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; position:relative; z-index:1; }
+  .scenario-tile{ background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px; padding:12px 14px; }
+  .scenario-tile .tlabel{ font-family:'IBM Plex Mono'; font-size:0.64rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:5px; }
+  .scenario-tile .tval{ font-size:0.9rem; font-weight:500; line-height:1.4; }
+
+  /* ---------- INPUT AREA ---------- */
+  .metar-textarea{ width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Mono'; font-size:0.98rem; letter-spacing:0.04em; padding:14px 16px; border-radius:8px; text-transform:uppercase; resize:vertical; min-height:64px; line-height:1.5; }
+  .metar-textarea:focus{ outline:none; border-color:var(--accent); }
+  .input-hint{ font-size:0.78rem; color:var(--text-muted); margin-top:8px; }
+
+  /* ---------- FEEDBACK BLOCKS ---------- */
+  .feedback-list{ display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:12px 16px; background:var(--bg); }
+  .fb-block.ok{ border-left-color:var(--vfr); }
+  .fb-block.bad{ border-left-color:var(--danger); }
+  .fb-head{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; margin-bottom:4px; }
+  .fb-icon{ font-size:1rem; line-height:1; }
+  .fb-body{ font-size:0.85rem; color:var(--text-muted); line-height:1.55; }
+  .fb-body b{ color:var(--text); }
+  .fb-body .mono{ background:var(--panel-alt); padding:1px 6px; border-radius:4px; color:var(--accent); }
+
+  .score-banner{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel-alt); border:1px solid var(--hairline); border-radius:10px; padding:16px 20px; margin:16px 0; }
+  .score-num{ font-family:'IBM Plex Mono'; font-weight:700; font-size:2rem; color:var(--accent); }
+  .score-text{ color:var(--text-muted); font-size:0.88rem; }
+
+  .metar-raw-box{ background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px; padding:14px 16px; font-family:'IBM Plex Mono'; font-size:0.9rem; color:var(--vfr); overflow-x:auto; white-space:pre-wrap; word-break:break-word; margin-top:6px; }
+
+  /* ---------- HELP PANEL ---------- */
+  .help-panel{ display:none; }
+  .help-panel.visible{ display:block; }
+  .help-section{ margin-bottom:18px; }
+  .help-section h4{ font-family:'Archivo'; font-size:0.95rem; color:var(--accent); margin-bottom:8px; }
+  .help-section ul{ margin:0; padding-left:20px; color:var(--text-muted); font-size:0.85rem; line-height:1.65; }
+  .help-section ul li b{ color:var(--text); }
+  .help-section code{ font-family:'IBM Plex Mono'; background:var(--panel-alt); padding:1px 5px; border-radius:4px; color:var(--accent); }
+
+  /* ---------- EXAM SUMMARY ---------- */
+  .exam-table{ width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:10px; }
+  .exam-table th, .exam-table td{ text-align:left; padding:6px 10px; border-bottom:1px solid var(--hairline); }
+  .exam-table th{ color:var(--text-muted); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:640px){
+    .controls{ flex-direction:column; align-items:stretch; }
+    .action-row{ justify-content:stretch; }
+    .action-row .btn{ flex:1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+        <g transform="rotate(-40 20 20)">
+          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="designadores.html">Designadores</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+    <a href="simulador-metar.html" class="active">Simulador</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <button class="nav-icon-btn" aria-label="Buscar en el portal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" aria-label="Abrir menú">☰</button>
+  </div>
+</header>
+
+<section class="hero-simple">
+  <div class="eyebrow">Práctica interactiva · MET</div>
+  <h1>Simulador METAR</h1>
+  <p class="lead">Se te presenta una situación meteorológica real en lenguaje natural. Tu trabajo es codificarla como un reporte METAR válido, siguiendo el orden y las reglas del RAC 203 / Anexo 3 OACI. El simulador evalúa tu respuesta bloque por bloque y te explica cada error.</p>
+</section>
+
+<div class="wrap">
+
+  <!-- ================= CONTROLES ================= -->
+  <div class="controls">
+    <div class="control-group">
+      <div class="glabel">Nivel de dificultad</div>
+      <div class="pill-row" id="levelRow">
+        <button class="pill-btn active" data-level="1" type="button">Básico</button>
+        <button class="pill-btn" data-level="2" type="button">Intermedio</button>
+        <button class="pill-btn" data-level="3" type="button">Avanzado</button>
+        <button class="pill-btn" data-level="4" type="button">Experto</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="glabel">Modo</div>
+      <div class="pill-row" id="modeRow">
+        <button class="pill-btn active" data-mode="practica" type="button">Práctica</button>
+        <button class="pill-btn mode-exam" data-mode="examen" type="button">Examen (20 preguntas)</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="glabel">&nbsp;</div>
+      <div class="action-row">
+        <button class="btn btn-outline" id="btnAyuda" type="button">Mostrar ayuda</button>
+        <button class="btn btn-primary" id="btnNuevo" type="button">Intentar nuevamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= AYUDA (reglas, sin revelar respuesta) ================= -->
+  <div class="instrument help-panel" id="helpPanel">
+    <div class="instrument-label">Reglas rápidas de redacción METAR/SPECI</div>
+    <div style="position:relative; z-index:1;">
+      <div class="help-section">
+        <h4>Orden del reporte</h4>
+        <ul><li><code>TIPO</code> [<code>COR</code>] <code>ICAO</code> <code>DDHHMMZ</code> [<code>AUTO</code>] · <code>VIENTO</code> · <code>VISIBILIDAD</code> · <code>FENÓMENOS</code> · <code>NUBES</code> · <code>TEMP/PUNTO ROCÍO</code> · <code>QNH</code> · [<code>RE...</code>] [<code>WS...</code>] [<code>TENDENCIA</code>] [<code>RMK</code>]</li></ul>
+      </div>
+      <div class="help-section">
+        <h4>Viento</h4>
+        <ul>
+          <li>Formato <code>dddffKT</code> (dirección en decenas de grado + velocidad en nudos).</li>
+          <li>Calma: <code>00000KT</code>.</li>
+          <li>Variable con velocidad &lt; 3KT: <code>VRBffKT</code>.</li>
+          <li>Ráfagas (variación ≥10KT sobre la media): se agrega <code>G</code> + velocidad de ráfaga, ej. <code>21009G20KT</code>.</li>
+          <li>Variación de dirección entre 60° y 179° (viento ≥3KT): se agrega grupo <code>dddVddd</code>, ej. <code>210V280</code>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Visibilidad</h4>
+        <ul>
+          <li>4 cifras en metros; 10 km o más se codifica como <code>9999</code>.</li>
+          <li>Si la visibilidad mínima es distinta y menor al 50% de la reinante, se agrega una segunda visibilidad + dirección cardinal (8 rumbos), ej. <code>6000 2000SE</code>.</li>
+          <li><code>CAVOK</code> reemplaza visibilidad + fenómenos + nubes cuando: vis ≥10km, sin nubes bajo 5000ft/altitud mínima de sector, sin fenómenos significativos.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Fenómenos presentes (tiempo presente)</h4>
+        <ul>
+          <li>Orden del grupo: <b>intensidad</b> (– leve / sin signo = moderado / + fuerte) → <b>descriptor</b> (MI, BC, PR, DR, BL, SH, TS, FZ, VC) → <b>fenómeno</b> (DZ, RA, SN, GR, GS, BR, FG, HZ, FU, DU, SA, VA...).</li>
+          <li><code>VC</code> (vecindad) se usa para TS, FG, SH, VA observados entre 8 y 16 km del punto de referencia.</li>
+          <li>Neblina <code>BR</code>: visibilidad 1000–5000 m. Niebla <code>FG</code>: visibilidad &lt;1000 m.</li>
+          <li>Calima <code>HZ</code> o humo <code>FU</code> que reducen la visibilidad a 6000–7000 m se anotan solo en <code>RMK</code>, no en tiempo presente.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Nubosidad</h4>
+        <ul>
+          <li>Cantidad: <code>FEW</code> (1-2/8), <code>SCT</code> (3-4/8), <code>BKN</code> (5-7/8), <code>OVC</code> (8/8) + altura en centenas de pies (3 cifras).</li>
+          <li><code>CB</code> y <code>TCU</code> se anotan siempre que existan, con dirección en <code>RMK</code> (máx. 2 rumbos).</li>
+          <li><code>NSC</code>: sin nubes significativas, pero no se cumplen todas las condiciones de CAVOK. <code>SKC</code>: cielo despejado (sin capas).</li>
+          <li><code>VV</code> + 3 cifras: visibilidad vertical cuando el cielo está oscurecido.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Temperatura, QNH y suplementos</h4>
+        <ul>
+          <li>Formato <code>TT/TT</code>; temperaturas bajo cero llevan prefijo <code>M</code> (ej. <code>M02</code>).</li>
+          <li>QNH: <code>Q</code> + 4 cifras en hPa.</li>
+          <li><code>RE</code> (fenómeno reciente, sin intensidad): ej. <code>RETSRA</code>.</li>
+          <li><code>WS</code> (cizalladura): ej. <code>WS R14L</code> o <code>WS ALL RWY</code>.</li>
+          <li>Tendencia <code>NOSIG</code>: no se prevén cambios significativos en las próximas 2 horas.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ESCENARIO ================= -->
+  <div class="instrument" id="scenarioPanel">
+    <div class="instrument-label">
+      <span>Situación meteorológica observada</span>
+      <span class="exam-progress" id="examProgress" style="display:none;"></span>
+    </div>
+    <div class="scenario-grid" id="scenarioGrid"></div>
+  </div>
+
+  <!-- ================= INPUT / EVALUACIÓN ================= -->
+  <div class="instrument">
+    <div class="instrument-label">Escribe el METAR completo</div>
+    <div style="position:relative; z-index:1;">
+      <textarea class="metar-textarea mono" id="metarInput" rows="2" placeholder="Ej. METAR SKBO 151800Z 28012G22KT 8000 RA SCT025 BKN080 24/20 Q1013 NOSIG=" autocapitalize="characters" spellcheck="false"></textarea>
+      <div class="input-hint">Escribe el reporte tal como lo transmitirías, terminando en <code class="mono">=</code>. Mayúsculas o minúsculas, no importa.</div>
+      <div class="action-row" style="margin-top:14px;">
+        <button class="btn btn-primary" id="btnEvaluar" type="button">Evaluar</button>
+        <button class="btn btn-outline" id="btnRespuesta" type="button">Mostrar respuesta oficial</button>
+      </div>
+
+      <div id="respuestaOficial" style="display:none; margin-top:14px;">
+        <div class="instrument-label" style="margin-bottom:6px;">Respuesta oficial</div>
+        <div class="metar-raw-box mono" id="metarOficialTexto">—</div>
+      </div>
+
+      <div id="scoreBanner" style="display:none;"></div>
+      <div class="feedback-list" id="feedbackList"></div>
+
+      <div id="examSummary" style="display:none; margin-top:18px;">
+        <h3 style="font-size:1.1rem; margin-bottom:10px;">Resultado del examen</h3>
+        <div class="score-banner">
+          <div class="score-num" id="examScoreNum">0</div>
+          <div class="score-text">de 100 puntos, sobre 20 reportes METAR consecutivos.</div>
+        </div>
+        <table class="exam-table">
+          <thead><tr><th>#</th><th>Aeródromo</th><th>Bloques correctos</th><th>Puntaje</th></tr></thead>
+          <tbody id="examTableBody"></tbody>
+        </table>
+        <div class="action-row" style="margin-top:16px;">
+          <button class="btn btn-primary" id="btnReiniciarExamen" type="button">Repetir examen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Simulador basado en RAC 203, Anexo 3 OACI y Manual de claves OMM-N.306</span>
+</footer>
+
+<script>
+/* ======================================================================
+   THEME TOGGLE (idéntico al resto del portal)
+   ====================================================================== */
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('aisTheme');
+if(savedTheme === 'dark'){
+  document.documentElement.setAttribute('data-theme', 'dark');
+  themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+}
+themeToggle.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if(isDark){
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('aisTheme', 'light');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+  }else{
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('aisTheme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+});
+
+/* ======================================================================
+   RELOJ ZULU (idéntico al resto del portal)
+   ====================================================================== */
+const zuluMini = document.getElementById('zuluMini');
+function updateZuluMini(){
+  const now = new Date();
+  const p = n => n.toString().padStart(2, '0');
+  zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+}
+updateZuluMini();
+setInterval(updateZuluMini, 1000);
+
+/* ======================================================================
+   SIMULADOR METAR — MOTOR DE GENERACIÓN Y EVALUACIÓN
+   ====================================================================== */
+(function(){
+
+  // ---------- Datos base ----------
+  const ESTACIONES = [
+    {code:'SKBO', ciudad:'Bogotá (El Dorado)', pistas:['13L','13R','31L','31R']},
+    {code:'SKCL', ciudad:'Cali (Alfonso Bonilla Aragón)', pistas:['01','19']},
+    {code:'SKRG', ciudad:'Rionegro (José María Córdova)', pistas:['01','19']},
+    {code:'SKMD', ciudad:'Medellín (Olaya Herrera)', pistas:['01','19']},
+    {code:'SKBQ', ciudad:'Barranquilla (Ernesto Cortissoz)', pistas:['05','23']},
+    {code:'SKCG', ciudad:'Cartagena (Rafael Núñez)', pistas:['18','36']}
+  ];
+  const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
+  const DIR_TXT = {N:'norte', NE:'noreste', E:'este', SE:'sureste', S:'sur', SW:'suroeste', W:'oeste', NW:'noroeste'};
+  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function pad3(n){ return String(n).padStart(3,'0'); }
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[randInt(0, arr.length-1)]; }
+  function roundTo(n, step){ return Math.round(n/step)*step; }
+  function chance(p){ return Math.random() < p; }
+
+  // ---------- Configuración por nivel ----------
+  const NIVELES = {
+    1: { nombre:'Básico',     tierMax:1, gust:0,    variable:0,    variacion:0,   auto:0,    cor:0,   speci:0,   trend:0,   re:0,    ws:0,    visSec:0 },
+    2: { nombre:'Intermedio', tierMax:2, gust:0.35, variable:0,    variacion:0,   auto:0,    cor:0,   speci:0,   trend:0,   re:0,    ws:0,    visSec:0 },
+    3: { nombre:'Avanzado',   tierMax:3, gust:0.4,  variable:0.12, variacion:0.25, auto:0.22, cor:0.10, speci:0.15, trend:0.4, re:0,    ws:0,    visSec:0.2 },
+    4: { nombre:'Experto',    tierMax:3, gust:0.45, variable:0.15, variacion:0.3,  auto:0.3,  cor:0.15, speci:0.25, trend:0.5, re:0.35, ws:0.25, visSec:0.32 }
+  };
+
+  // ======================================================================
+  // CASOS BASE (situaciones meteorológicas), cada uno construye un "draft"
+  // ======================================================================
+  const CASOS = [];
+
+  // --- Tier 1: despejado / parcialmente nublado, sin fenómenos ---
+  CASOS.push({ tier:1, id:'despejado', gen(){
+    const vis = choice([9999,9999,8000,7000]);
+    const nCapas = choice([0,1,1,2]);
+    const clouds = [];
+    let h = randInt(15,30)*100;
+    for(let i=0;i<nCapas;i++){
+      clouds.push({amount: choice(['FEW','SCT']), heightFt:h, type:null});
+      h += randInt(10,20)*100;
+    }
+    return { visMain:vis, wx:[], clouds, cavok:false, nsc:false, vv:null, skc: nCapas===0 && chance(0.5) };
+  }});
+
+  // --- Tier 1: nubosidad dispersa/fragmentada moderada, sin fenómenos ---
+  CASOS.push({ tier:1, id:'parcial', gen(){
+    const vis = choice([9999,8000,7000,6000,5000]);
+    const clouds = [
+      {amount:'SCT', heightFt: randInt(15,35)*100, type:null},
+    ];
+    if(chance(0.5)) clouds.push({amount:'BKN', heightFt: randInt(45,80)*100, type:null});
+    return { visMain:vis, wx:[], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 2: llovizna ---
+  CASOS.push({ tier:2, id:'llovizna', gen(){
+    const intensidad = choice(['-','','-']);
+    const vis = intensidad==='-' ? choice([7000,8000,9999]) : choice([5000,6000,7000]);
+    const clouds = [
+      {amount: choice(['SCT','BKN']), heightFt: randInt(8,15)*100, type:null},
+      {amount:'BKN', heightFt: randInt(40,70)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:intensidad+'DZ', natural:(intensidad==='-'?'Llovizna leve':'Llovizna moderada')}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 2: lluvia ---
+  CASOS.push({ tier:2, id:'lluvia', gen(){
+    const intensidad = choice(['-','','','+']);
+    const vis = intensidad==='+' ? choice([3000,4000]) : intensidad==='' ? choice([5000,6000,7000]) : choice([7000,8000,9999]);
+    const clouds = [
+      {amount: choice(['BKN','OVC']), heightFt: randInt(10,20)*100, type:null},
+      {amount:'OVC', heightFt: randInt(40,70)*100, type:null}
+    ];
+    const txt = intensidad==='-'?'Lluvia leve':intensidad==='+'?'Lluvia fuerte':'Lluvia moderada';
+    return { visMain:vis, wx:[{code:intensidad+'RA', natural:txt}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 2: neblina (BR) en tiempo presente ---
+  CASOS.push({ tier:2, id:'neblina', gen(){
+    const vis = randInt(10,50)*100; // 1000-5000
+    const clouds = [{amount: choice(['FEW','SCT']), heightFt: randInt(10,20)*100, type:null}];
+    return { visMain:vis, wx:[{code:'BR', natural:'Neblina (BR)'}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 2: oscurecimiento reportado SOLO en RMK (calima/humo 6000-7000 m) ---
+  CASOS.push({ tier:2, id:'oscurecimiento_rmk', gen(){
+    const vis = choice([6000,7000]);
+    const codigo = choice(['HZ','FU']);
+    const clouds = [{amount:'SCT', heightFt: randInt(20,35)*100, type:null}];
+    return { visMain:vis, wx:[], clouds, cavok:false, nsc:false, vv:null,
+      rmkOnly:[{code:codigo, natural: codigo==='HZ'?'Calima (HZ)':'Humo (FU)'}] };
+  }});
+
+  // --- Tier 3: chubascos de lluvia con CB ---
+  CASOS.push({ tier:3, id:'chubascos', gen(){
+    const intensidad = choice(['','+','']);
+    const vis = choice([3000,4000,5000,6000]);
+    const dirs = [choice(DIRS)];
+    const clouds = [
+      {amount:'SCT', heightFt: randInt(12,20)*100, type:'CB', dirs},
+      {amount:'BKN', heightFt: randInt(50,80)*100, type:null}
+    ];
+    const txt = intensidad==='+'?'Chubascos fuertes de lluvia':'Chubascos de lluvia';
+    return { visMain:vis, wx:[{code:intensidad+'SHRA', natural:txt}], clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'CB' };
+  }});
+
+  // --- Tier 3: tormenta con lluvia (CB dentro de 8km) ---
+  CASOS.push({ tier:3, id:'tormenta', gen(){
+    const vis = choice([3000,4000,5000,6000]);
+    const dirs = [choice(DIRS)];
+    const clouds = [
+      {amount:'SCT', heightFt: randInt(12,18)*100, type:'CB', dirs},
+      {amount:'BKN', heightFt: randInt(40,70)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'TSRA', natural:'Tormenta eléctrica con lluvia'}], clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'CB' };
+  }});
+
+  // --- Tier 3: tormenta en vecindad (VCTS, 8-16km => vis>=8000) ---
+  CASOS.push({ tier:3, id:'tormenta_vecindad', gen(){
+    const vis = choice([8000,9999]);
+    const dirs = chance(0.5) ? [choice(DIRS)] : [DIRS[0], DIRS[1]];
+    const clouds = [
+      {amount:'FEW', heightFt: randInt(15,25)*100, type:'CB', dirs},
+      {amount:'SCT', heightFt: randInt(35,55)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'VCTS', natural:'Tormenta observada en las proximidades del aeródromo'}], clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'CB', vc:{code:'VCTS', dirs} };
+  }});
+
+  // --- Tier 3: chubascos en vecindad (VCSH) ---
+  CASOS.push({ tier:3, id:'chubascos_vecindad', gen(){
+    const vis = choice([9000,9999]);
+    const dirs = chance(0.5) ? [choice(DIRS)] : [DIRS[2], DIRS[3]];
+    const clouds = [
+      {amount:'FEW', heightFt: randInt(20,30)*100, type:null},
+      {amount:'SCT', heightFt: randInt(50,70)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'VCSH', natural:'Chubascos observados en las proximidades del aeródromo'}], clouds, cavok:false, nsc:false, vv:null, vc:{code:'VCSH', dirs} };
+  }});
+
+  // --- Tier 3: niebla total (FG), visibilidad < 1000 m ---
+  CASOS.push({ tier:3, id:'niebla_total', gen(){
+    const vis = randInt(2,9)*100; // 200-900
+    const clouds = [{amount:'BKN', heightFt: randInt(1,3)*100, type:null}];
+    return { visMain:vis, wx:[{code:'FG', natural:'Niebla (FG)'}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 3: bancos de niebla (BCFG), visibilidad >= 2000 ---
+  CASOS.push({ tier:3, id:'niebla_bancos', gen(){
+    const vis = choice([3000,6000,9999]);
+    let visSecundaria = null;
+    if(vis >= 6000 && chance(0.5)) visSecundaria = {valor: randInt(10,30)*100, dir: choice(DIRS)};
+    const clouds = [{amount:'SCT', heightFt: randInt(8,15)*100, type:null}];
+    return { visMain:vis, wx:[{code:'BCFG', natural:'Bancos de niebla (BCFG)'}], clouds, cavok:false, nsc:false, vv:null, visSecundaria };
+  }});
+
+  // --- Tier 3: niebla baja (MIFG) ---
+  CASOS.push({ tier:3, id:'niebla_baja', gen(){
+    const vis = choice([8000,9000,9999]);
+    const clouds = [{amount:'SCT', heightFt: randInt(15,25)*100, type:null}];
+    return { visMain:vis, wx:[{code:'MIFG', natural:'Niebla baja alrededor del aeródromo (MIFG)'}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 3: CAVOK ---
+  CASOS.push({ tier:3, id:'cavok', gen(){
+    return { visMain:'CAVOK', wx:[], clouds:[], cavok:true, nsc:false, vv:null };
+  }});
+
+  // --- Tier 3: NSC con fenómeno leve ---
+  CASOS.push({ tier:3, id:'nsc_fenomeno', gen(){
+    const vis = choice([8000,9999]);
+    return { visMain:vis, wx:[{code:'-RA', natural:'Lluvia leve'}], clouds:[], cavok:false, nsc:true, vv:null };
+  }});
+
+  // --- Tier 3: visibilidad vertical (cielo oscurecido) ---
+  CASOS.push({ tier:3, id:'vv', gen(){
+    const vis = randInt(1,5)*100;
+    const vvFt = randInt(1,4)*100;
+    return { visMain:vis, wx:[{code:'FG', natural:'Niebla densa (FG)'}], clouds:[], cavok:false, nsc:false, vv:vvFt };
+  }});
+
+  // ======================================================================
+  // GENERADOR PRINCIPAL DE ESCENARIO
+  // ======================================================================
+  function generarViento(cfg){
+    if(chance(0.04) && cfg.variable){
+      return { calm:true, token:'00000KT', natural:'Viento en calma (00000KT).', dirs:null };
+    }
+    if(chance(cfg.variable)){
+      const spd = randInt(1,2);
+      return { calm:false, variable:true, token:`VRB0${spd}KT`, spd, natural:`Viento variable en dirección, ${spd} kt (velocidad menor a 3 kt).` };
+    }
+    const dir = roundTo(randInt(10,360),10);
+    const spd = randInt(3,28);
+    let gust = null;
+    if(chance(cfg.gust)){
+      gust = spd + randInt(10,18);
+    }
+    let variacion = null;
+    if(chance(cfg.variacion)){
+      const spread = randInt(60,170);
+      let from = roundTo(dir - Math.floor(spread/2), 10);
+      let to = roundTo(dir + Math.ceil(spread/2), 10);
+      from = ((from % 360)+360)%360; if(from===0) from=360;
+      to = ((to % 360)+360)%360; if(to===0) to=360;
+      variacion = {from,to};
+    }
+    const token = `${pad3(dir)}${pad2(spd)}${gust?('G'+pad2(gust)):''}KT`;
+    let natural = `Dirección ${dir}° a ${spd} kt`;
+    if(gust) natural += ` con ráfagas de ${gust} kt`;
+    natural += '.';
+    if(variacion) natural += ` La dirección varía entre ${variacion.from}° y ${variacion.to}°.`;
+    return { calm:false, variable:false, token, dir, spd, gust, variacion, natural };
+  }
+
+  function generarEscenario(nivel){
+    const cfg = NIVELES[nivel];
+    const pool = CASOS.filter(c => c.tier <= cfg.tierMax);
+    const caso = choice(pool);
+    const draft = caso.gen();
+
+    const estacion = choice(ESTACIONES);
+    const dia = randInt(1,28);
+    const hora = randInt(0,23);
+
+    // Tipo de reporte / AUTO / COR / SPECI
+    let reportType = 'METAR';
+    let minuto = 0;
+    if(chance(cfg.speci)){ reportType = 'SPECI'; minuto = randInt(1,59); }
+    const auto = chance(cfg.auto);
+    const cor = !auto && chance(cfg.cor);
+
+    // Viento
+    const viento = generarViento(cfg);
+
+    // Visibilidad secundaria (si el caso no trae ya una y el nivel lo permite)
+    let visSecundaria = draft.visSecundaria || null;
+    if(!draft.cavok && !visSecundaria && typeof draft.visMain === 'number' && draft.visMain >= 3000 && chance(cfg.visSec)){
+      const minVal = Math.round(draft.visMain * choice([0.3,0.4])/100)*100;
+      visSecundaria = { valor: Math.max(minVal,100), dir: choice(DIRS) };
+    }
+
+    // Temperatura / punto de rocío
+    let temp = randInt(8,28);
+    let dewSpread = randInt(1,8);
+    // Si hay niebla/neblina/bancos, el punto de rocío debe estar muy cerca de la temperatura
+    const wxCodes = draft.wx.map(w=>w.code);
+    const hayHumedadAlta = wxCodes.some(c => /FG|BR|BCFG|MIFG|VV/.test(c)) || draft.vv;
+    if(hayHumedadAlta) dewSpread = randInt(0,1);
+    let dew = temp - dewSpread;
+    if(nivel>=3 && estacion.code==='SKBO' && chance(0.12)){ temp = randInt(-2,4); dew = temp - randInt(0,2); }
+
+    function fmtTemp(t){ return (t<0? 'M'+pad2(Math.abs(t)) : pad2(t)); }
+
+    // QNH
+    const qnh = randInt(1006,1025);
+
+    // Tendencia
+    const trend = chance(cfg.trend) ? 'NOSIG' : null;
+
+    // RE (fenómeno reciente) — solo si hay un fenómeno de precipitación/tormenta elegible
+    let re = null;
+    if(chance(cfg.re) && draft.wx.length){
+      const base = draft.wx[0].code.replace(/^[+-]/,'');
+      if(/RA|DZ|TS/.test(base)){
+        re = { code:'RE'+base, natural:`Se observó ${draft.wx[0].natural.toLowerCase()} durante la hora anterior (fenómeno reciente).` };
+      }
+    }
+
+    // Wind shear
+    let ws = null;
+    if(chance(cfg.ws)){
+      if(chance(0.7)) ws = { tipo:'rwy', rwy: choice(estacion.pistas) };
+      else ws = { tipo:'all' };
+    }
+
+    return {
+      nivel, casoId: caso.id,
+      estacion, dia, hora, minuto, reportType, auto, cor,
+      viento, visMain: draft.visMain, visSecundaria,
+      wx: draft.wx, cavok: draft.cavok, nsc: draft.nsc, vv: draft.vv,
+      skc: draft.skc || false,
+      clouds: draft.clouds || [],
+      cbTcuDirs: draft.cbTcuDirs || null, cbTcuType: draft.cbTcuType || null,
+      vc: draft.vc || null,
+      rmkOnly: draft.rmkOnly || [],
+      temp, dew, fmtTemp, qnh, trend, re, ws
+    };
+  }
+
+  // ======================================================================
+  // CONSTRUCCIÓN DEL METAR CORRECTO (tokens) + RMK
+  // ======================================================================
+  function construirRmk(s){
+    const partes = [];
+    const cbTcu = s.cbTcuDirs ? { tipo: s.cbTcuType, dirs: s.cbTcuDirs } : null;
+    const vc = s.vc;
+    function mismasDirs(a,b){
+      if(!a || !b) return false;
+      if(a.length !== b.length) return false;
+      return a.every((d,i)=>d===b[i]);
+    }
+    if(cbTcu && vc && mismasDirs(cbTcu.dirs, vc.dirs)){
+      partes.push(cbTcu.tipo);
+      partes.push(vc.code + '/' + vc.dirs.join('/'));
+    } else {
+      if(cbTcu) partes.push(cbTcu.tipo + (cbTcu.dirs && cbTcu.dirs.length ? '/'+cbTcu.dirs.join('/') : ''));
+      if(vc) partes.push(vc.code + '/' + vc.dirs.join('/'));
+    }
+    (s.rmkOnly||[]).forEach(o => partes.push(o.code));
+    return partes;
+  }
+
+  function construirTokens(s){
+    const tokens = [];
+    tokens.push(s.reportType);
+    if(s.cor) tokens.push('COR');
+    tokens.push(s.estacion.code);
+    const ddhhmm = pad2(s.dia)+pad2(s.hora)+pad2(s.minuto)+'Z';
+    tokens.push(ddhhmm);
+    if(s.auto) tokens.push('AUTO');
+    tokens.push(s.viento.token);
+    if(s.viento.variacion) tokens.push(pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to));
+
+    let cloudTokens = [];
+    let visToken, visSecToken = null, wxTokens = [];
+    if(s.cavok){
+      tokens.push('CAVOK');
+    } else {
+      visToken = (typeof s.visMain==='number') ? pad3v(s.visMain) : s.visMain;
+      tokens.push(visToken);
+      if(s.visSecundaria){ visSecToken = pad3v(s.visSecundaria.valor)+s.visSecundaria.dir; tokens.push(visSecToken); }
+      wxTokens = s.wx.map(w=>w.code);
+      wxTokens.forEach(t=>tokens.push(t));
+      if(s.vv){ tokens.push('VV'+pad3(Math.round(s.vv/100))); }
+      else if(s.nsc){ tokens.push('NSC'); }
+      else if(s.skc){ tokens.push('SKC'); }
+      else {
+        cloudTokens = s.clouds.map(c => c.amount+pad3(Math.round(c.heightFt/100))+(c.type?c.type:''));
+        cloudTokens.forEach(t=>tokens.push(t));
+      }
+    }
+    const tempTok = s.fmtTemp(s.temp)+'/'+s.fmtTemp(s.dew);
+    tokens.push(tempTok);
+    const qnhTok = 'Q'+s.qnh;
+    tokens.push(qnhTok);
+    if(s.re) tokens.push(s.re.code);
+    let wsTokens = [];
+    if(s.ws){
+      if(s.ws.tipo==='rwy'){ wsTokens = ['WS','R'+s.ws.rwy]; }
+      else { wsTokens = ['WS','ALL','RWY']; }
+      wsTokens.forEach(t=>tokens.push(t));
+    }
+    if(s.trend) tokens.push(s.trend);
+    const rmkPartes = construirRmk(s);
+    let rmkTokens = [];
+    if(rmkPartes.length){
+      rmkTokens = ['RMK', ...rmkPartes];
+      rmkTokens.forEach(t=>tokens.push(t));
+    }
+
+    return {
+      full: tokens.join(' ')+'=',
+      ddhhmm, visToken, visSecToken, wxTokens, cloudTokens, tempTok, qnhTok, wsTokens, rmkTokens
+    };
+  }
+  function pad3v(n){ return n>=10000?'9999':pad3(n); } // vis siempre 4 cifras, tope 9999
+
+  // ======================================================================
+  // DESCRIPCIÓN EN LENGUAJE NATURAL
+  // ======================================================================
+  function amountTxt(a){ return a==='FEW'?'Nubes escasas (pocas)':a==='SCT'?'Nubes dispersas':a==='BKN'?'Nubes fragmentadas':'Cielo cubierto'; }
+
+  function construirDescripcion(s){
+    const tiles = [];
+    tiles.push({label:'Aeródromo', val:`${s.estacion.code} — ${s.estacion.ciudad}`});
+    tiles.push({label:'Fecha y hora', val:`Día ${s.dia} a las ${pad2(s.hora)}:${pad2(s.minuto)} UTC`});
+    if(s.reportType==='SPECI') tiles.push({label:'Tipo de reporte', val:'Reporte ESPECIAL (SPECI) — se emite fuera de la hora en punto por cambio significativo.'});
+    if(s.auto) tiles.push({label:'Origen', val:'Estación totalmente automática (sistema AWOS, sin intervención humana).'});
+    if(s.cor) tiles.push({label:'Origen', val:'Reporte corregido (se está enmendando un reporte previo).'});
+
+    tiles.push({label:'Viento', val: s.viento.natural});
+
+    if(s.cavok){
+      tiles.push({label:'Condiciones', val:'CAVOK — visibilidad de 10 km o más, sin nubes bajo 5000 ft y sin fenómenos significativos.'});
+    } else {
+      const visTxt = typeof s.visMain==='number' ? `${s.visMain} metros` : s.visMain;
+      tiles.push({label:'Visibilidad', val: visTxt});
+      if(s.visSecundaria) tiles.push({label:'Visibilidad mínima', val:`${s.visSecundaria.valor} metros hacia el ${DIR_TXT[s.visSecundaria.dir]}`});
+
+      s.wx.forEach(w => tiles.push({label:'Fenómeno observado', val:w.natural}));
+
+      if(s.cbTcuDirs){
+        const dirTxt = s.cbTcuDirs.map(d=>DIR_TXT[d]).join(' y ');
+        tiles.push({label:'Nube convectiva', val:`Se observan nubes de tipo ${s.cbTcuType==='CB'?'cumulonimbus (CB)':'torre cúmulus (TCU)'} ubicadas hacia el ${dirTxt}.`});
+      }
+      if(s.vc){
+        const dirTxt = s.vc.dirs.map(d=>DIR_TXT[d]).join(' y ');
+        tiles.push({label:'Ubicación del fenómeno', val:`El fenómeno en vecindad se observa hacia el ${dirTxt} (entre 8 y 16 km del aeródromo).`});
+      }
+      (s.rmkOnly||[]).forEach(o => tiles.push({label:'Observación adicional', val:`${o.natural}, reduciendo la visibilidad general a ${s.visMain} m (se anota solo como observación adicional, no como fenómeno de tiempo presente).`}));
+
+      if(s.vv){
+        tiles.push({label:'Cielo', val:`Cielo oscurecido. Visibilidad vertical estimada en ${s.vv} ft.`});
+      } else if(s.nsc){
+        tiles.push({label:'Nubes', val:'Sin nubes significativas por debajo de 5000 ft (NSC), aunque hay un fenómeno presente que impide usar CAVOK.'});
+      } else if(s.skc){
+        tiles.push({label:'Nubes', val:'Cielo despejado, sin capas de nubes.'});
+      } else {
+        s.clouds.forEach(c => {
+          let t = `${amountTxt(c.amount)} a ${c.heightFt} ft`;
+          if(c.type) t += ` (${c.type==='CB'?'cumulonimbus':'torre cúmulus'})`;
+          tiles.push({label:'Nubosidad', val:t});
+        });
+      }
+    }
+
+    tiles.push({label:'Temperatura', val:`${s.temp}°C`});
+    tiles.push({label:'Punto de rocío', val:`${s.dew}°C`});
+    tiles.push({label:'QNH', val:`${s.qnh} hPa`});
+
+    if(s.re) tiles.push({label:'Fenómeno reciente', val:s.re.natural});
+    if(s.ws){
+      tiles.push({label:'Cizalladura del viento', val: s.ws.tipo==='rwy' ? `Reportada en la aproximación/despegue de la pista ${s.ws.rwy}.` : 'Reportada en todas las pistas.'});
+    }
+    if(s.trend) tiles.push({label:'Tendencia', val:'No se prevén cambios significativos en las próximas 2 horas (NOSIG).'});
+
+    return tiles;
+  }
+
+  // ======================================================================
+  // EVALUACIÓN DE LA RESPUESTA DEL ESTUDIANTE
+  // ======================================================================
+  function tokenize(text){
+    return text.toUpperCase().replace(/=+\s*$/,'').trim().split(/\s+/).filter(Boolean);
+  }
+
+  function evaluar(userText, s, tk){
+    const toks = tokenize(userText);
+    const has = (t) => toks.includes(t);
+    const bloques = [];
+
+    // 1. Tipo de informe
+    {
+      const tipoOk = has(s.reportType);
+      const corOk = s.cor ? has('COR') : !has('COR');
+      const ok = tipoOk && corOk;
+      let msg;
+      if(ok){ msg = `El tipo de informe (<b>${s.reportType}${s.cor?' COR':''}</b>) está correcto.`; }
+      else {
+        msg = `Debía iniciar con <b>${s.reportType}</b>${s.cor?' seguido de <b>COR</b> (reporte corregido)':''}. `;
+        if(!tipoOk) msg += `No encontré el identificador <span class="mono">${s.reportType}</span>. `;
+        if(s.cor && !has('COR')) msg += `Falta <span class="mono">COR</span> justo después del tipo de mensaje. `;
+        if(!s.cor && has('COR')) msg += `Agregaste <span class="mono">COR</span> pero este no es un reporte corregido. `;
+      }
+      bloques.push({label:'Tipo de informe', ok, msg});
+    }
+
+    // 2. Aeródromo
+    {
+      const ok = has(s.estacion.code);
+      const msg = ok ? `El indicador de lugar <span class="mono">${s.estacion.code}</span> es correcto.`
+        : `No encontré el indicador OACI correcto. Debía ser <span class="mono">${s.estacion.code}</span> (${s.estacion.ciudad}), justo después del tipo de mensaje.`;
+      bloques.push({label:'Aeródromo', ok, msg});
+    }
+
+    // 3. Fecha, hora y AUTO
+    {
+      const okFecha = has(tk.ddhhmm);
+      const okAuto = s.auto ? has('AUTO') : !has('AUTO');
+      const ok = okFecha && okAuto;
+      let msg;
+      if(ok) msg = `Fecha/hora <span class="mono">${tk.ddhhmm}</span>${s.auto?' y AUTO':''} correctos.`;
+      else {
+        msg = '';
+        if(!okFecha) msg += `El grupo fecha-hora debía ser <span class="mono">${tk.ddhhmm}</span> (día ${s.dia}, ${pad2(s.hora)}:${pad2(s.minuto)} UTC, terminado en Z). `;
+        if(s.auto && !has('AUTO')) msg += `Falta <span class="mono">AUTO</span> después del grupo fecha-hora: este reporte proviene de una estación totalmente automática. `;
+        if(!s.auto && has('AUTO')) msg += `Agregaste <span class="mono">AUTO</span> pero este reporte sí tuvo intervención del observador. `;
+      }
+      bloques.push({label:'Fecha y hora', ok, msg});
+    }
+
+    // 4. Viento
+    {
+      const okViento = has(s.viento.token);
+      const okVariacion = s.viento.variacion ? has(pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to)) : true;
+      const ok = okViento && okVariacion;
+      let msg;
+      if(ok) msg = `Grupo de viento <span class="mono">${s.viento.token}${s.viento.variacion?(' '+pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to)):''}</span> correcto.`;
+      else {
+        msg = `El grupo de viento correcto era <span class="mono">${s.viento.token}</span>` + (s.viento.variacion?` seguido de <span class="mono">${pad3(s.viento.variacion.from)}V${pad3(s.viento.variacion.to)}</span>`:'') + '. ';
+        msg += 'Recuerda: dirección en decenas de grado + velocidad en nudos + <b>KT</b>; ráfagas se anotan con <b>G</b> solo si superan en 10KT o más la velocidad media; velocidad &lt;3KT se codifica como <b>VRB</b>; variación de 60°-179° agrega el grupo <b>dddVddd</b>.';
+      }
+      bloques.push({label:'Viento', ok, msg});
+    }
+
+    // 5. Visibilidad
+    {
+      let ok, msg;
+      if(s.cavok){
+        ok = has('CAVOK');
+        msg = ok ? 'Usaste correctamente <span class="mono">CAVOK</span>.' : 'Se cumplían las tres condiciones de <b>CAVOK</b> (visibilidad ≥10km, sin nubes bajo 5000ft, sin fenómenos). Debiste escribir <span class="mono">CAVOK</span> en lugar de visibilidad, fenómenos y nubes por separado.';
+      } else {
+        const okMain = has(tk.visToken);
+        const okSec = s.visSecundaria ? has(tk.visSecToken) : true;
+        ok = okMain && okSec;
+        if(ok) msg = `Visibilidad <span class="mono">${tk.visToken}${s.visSecundaria?(' '+tk.visSecToken):''}</span> correcta.`;
+        else {
+          msg = `La visibilidad reinante debía codificarse como <span class="mono">${tk.visToken}</span> metros. `;
+          if(s.visSecundaria && !has(tk.visSecToken)) msg += `Además faltaba (o estaba mal) la visibilidad mínima <span class="mono">${tk.visSecToken}</span>, ya que era menor al 50% de la reinante y con dirección distinta.`;
+        }
+      }
+      bloques.push({label:'Visibilidad', ok, msg});
+    }
+
+    // 6. Fenómenos presentes
+    if(!s.cavok){
+      const esperados = tk.wxTokens;
+      const faltantes = esperados.filter(t => !has(t));
+      const ok = faltantes.length===0;
+      let msg;
+      if(esperados.length===0){
+        msg = has(/.*/) && false ? '' : 'No se esperaba ningún grupo de tiempo presente en este reporte.';
+        // Verificamos que el usuario no haya inventado fenómenos que no correspondían
+        bloques.push({label:'Fenómenos presentes', ok:true, msg});
+      } else {
+        if(ok){ msg = `Fenómeno(s) <span class="mono">${esperados.join(', ')}</span> correctamente codificado(s).`; }
+        else{
+          msg = `Faltó o estaba mal escrito: <span class="mono">${faltantes.join(', ')}</span>. Recuerda el orden intensidad→descriptor→fenómeno (ej. <span class="mono">+TSRA</span>), y que <b>VC</b> se usa para fenómenos observados entre 8 y 16 km.`;
+        }
+        bloques.push({label:'Fenómenos presentes', ok, msg});
+      }
+    }
+
+    // 7. Nubosidad
+    if(!s.cavok){
+      let ok, msg;
+      if(s.vv){
+        const esperado = 'VV'+pad3(Math.round(s.vv/100));
+        ok = has(esperado);
+        msg = ok ? `Visibilidad vertical <span class="mono">${esperado}</span> correcta.` : `El cielo estaba oscurecido: debías reportar visibilidad vertical <span class="mono">${esperado}</span> en lugar de capas de nubes.`;
+      } else if(s.nsc){
+        ok = has('NSC');
+        msg = ok ? 'Usaste correctamente <span class="mono">NSC</span>.' : 'No había nubes significativas bajo 5000 ft, pero como había un fenómeno presente no aplicaba CAVOK: debías escribir <span class="mono">NSC</span>.';
+      } else if(s.skc){
+        ok = has('SKC');
+        msg = ok ? 'Usaste correctamente <span class="mono">SKC</span>.' : 'El cielo estaba despejado sin ninguna capa: debías escribir <span class="mono">SKC</span>.';
+      } else {
+        const faltantes = tk.cloudTokens.filter(t => !has(t));
+        ok = faltantes.length===0;
+        msg = ok ? `Nubosidad <span class="mono">${tk.cloudTokens.join(', ')}</span> correcta.`
+          : `Faltó o estaba incompleto: <span class="mono">${faltantes.join(', ')}</span>. Recuerda el formato cantidad (FEW/SCT/BKN/OVC) + altura en centenas de pies (3 cifras), agregando CB o TCU cuando existan nubes de desarrollo vertical.`;
+      }
+      bloques.push({label:'Nubosidad', ok, msg});
+    }
+
+    // 8. Temperatura y punto de rocío
+    {
+      const ok = has(tk.tempTok);
+      const msg = ok ? `Temperatura/punto de rocío <span class="mono">${tk.tempTok}</span> correctos.`
+        : `Debía ser <span class="mono">${tk.tempTok}</span> (temperatura/punto de rocío en grados Celsius enteros; recuerda anteponer <b>M</b> a los valores bajo cero, ej. M02).`;
+      bloques.push({label:'Temperatura y punto de rocío', ok, msg});
+    }
+
+    // 9. QNH
+    {
+      const ok = has(tk.qnhTok);
+      const msg = ok ? `QNH <span class="mono">${tk.qnhTok}</span> correcto.`
+        : `El QNH debía codificarse como <span class="mono">${tk.qnhTok}</span> (letra Q + 4 cifras del valor en hectopascales).`;
+      bloques.push({label:'QNH', ok, msg});
+    }
+
+    // 10. Información suplementaria (RE / WS / Tendencia / RMK)
+    const necesitaSuplemento = s.re || s.ws || s.trend || tk.rmkTokens.length;
+    if(necesitaSuplemento){
+      const faltan = [];
+      if(s.re && !has(s.re.code)) faltan.push(`fenómeno reciente <span class="mono">${s.re.code}</span>`);
+      if(s.ws){
+        const wsOk = tk.wsTokens.every(t=>has(t));
+        if(!wsOk) faltan.push(`cizalladura <span class="mono">${tk.wsTokens.join(' ')}</span>`);
+      }
+      if(s.trend && !has(s.trend)) faltan.push(`tendencia <span class="mono">${s.trend}</span>`);
+      if(tk.rmkTokens.length){
+        const rmkOk = tk.rmkTokens.every(t=>has(t));
+        if(!rmkOk) faltan.push(`observaciones <span class="mono">${tk.rmkTokens.join(' ')}</span>`);
+      }
+      const ok = faltan.length===0;
+      const msg = ok ? 'Información suplementaria (RE/WS/tendencia/RMK) correcta.'
+        : `Faltó o estaba incompleto: ${faltan.join('; ')}.`;
+      bloques.push({label:'Información suplementaria', ok, msg});
+    }
+
+    return bloques;
+  }
+
+  // ======================================================================
+  // CONTROLADOR DE LA INTERFAZ
+  // ======================================================================
+  const levelRow = document.getElementById('levelRow');
+  const modeRow = document.getElementById('modeRow');
+  const btnNuevo = document.getElementById('btnNuevo');
+  const btnAyuda = document.getElementById('btnAyuda');
+  const helpPanel = document.getElementById('helpPanel');
+  const scenarioGrid = document.getElementById('scenarioGrid');
+  const examProgress = document.getElementById('examProgress');
+  const metarInput = document.getElementById('metarInput');
+  const btnEvaluar = document.getElementById('btnEvaluar');
+  const btnRespuesta = document.getElementById('btnRespuesta');
+  const respuestaOficial = document.getElementById('respuestaOficial');
+  const metarOficialTexto = document.getElementById('metarOficialTexto');
+  const scoreBanner = document.getElementById('scoreBanner');
+  const feedbackList = document.getElementById('feedbackList');
+  const examSummary = document.getElementById('examSummary');
+  const examTableBody = document.getElementById('examTableBody');
+  const examScoreNum = document.getElementById('examScoreNum');
+  const btnReiniciarExamen = document.getElementById('btnReiniciarExamen');
+
+  let nivelActual = 1;
+  let modoActual = 'practica';
+  let escenario = null;
+  let tokensEsperados = null;
+
+  // Examen
+  let examEnCurso = false;
+  let examIndice = 0;
+  let examResultados = [];
+  const EXAM_TOTAL = 20;
+
+  levelRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    levelRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    nivelActual = parseInt(btn.dataset.level, 10);
+    if(!examEnCurso) nuevoEjercicio();
+  });
+
+  modeRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    modeRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    modoActual = btn.dataset.mode;
+    if(modoActual === 'examen') iniciarExamen();
+    else { examEnCurso = false; examProgress.style.display='none'; examSummary.style.display='none'; nuevoEjercicio(); }
+  });
+
+  btnAyuda.addEventListener('click', () => {
+    const visible = helpPanel.classList.toggle('visible');
+    btnAyuda.textContent = visible ? 'Ocultar ayuda' : 'Mostrar ayuda';
+  });
+
+  btnNuevo.addEventListener('click', () => {
+    if(examEnCurso){ avanzarExamen(); }
+    else nuevoEjercicio();
+  });
+
+  btnRespuesta.addEventListener('click', () => {
+    const vis = respuestaOficial.style.display !== 'none';
+    respuestaOficial.style.display = vis ? 'none' : 'block';
+    metarOficialTexto.textContent = tokensEsperados.full;
+    btnRespuesta.textContent = vis ? 'Mostrar respuesta oficial' : 'Ocultar respuesta oficial';
+  });
+
+  btnEvaluar.addEventListener('click', () => {
+    if(!metarInput.value.trim()){ return; }
+    const bloques = evaluar(metarInput.value, escenario, tokensEsperados);
+    pintarFeedback(bloques);
+    if(examEnCurso) registrarResultadoExamen(bloques);
+  });
+
+  btnReiniciarExamen.addEventListener('click', () => iniciarExamen());
+
+  function renderEscenario(){
+    scenarioGrid.innerHTML = construirDescripcion(escenario).map(t => `
+      <div class="scenario-tile">
+        <div class="tlabel">${t.label}</div>
+        <div class="tval">${t.val}</div>
+      </div>
+    `).join('');
+  }
+
+  function limpiarFeedback(){
+    feedbackList.innerHTML = '';
+    scoreBanner.style.display = 'none';
+    respuestaOficial.style.display = 'none';
+    btnRespuesta.textContent = 'Mostrar respuesta oficial';
+    metarInput.value = '';
+  }
+
+  function nuevoEjercicio(){
+    escenario = generarEscenario(nivelActual);
+    tokensEsperados = construirTokens(escenario);
+    renderEscenario();
+    limpiarFeedback();
+  }
+
+  function pintarFeedback(bloques){
+    const correctos = bloques.filter(b=>b.ok).length;
+    const total = bloques.length;
+    const pct = Math.round((correctos/total)*100);
+    scoreBanner.style.display = 'flex';
+    scoreBanner.className = 'score-banner';
+    scoreBanner.innerHTML = `<div class="score-num">${pct}%</div><div class="score-text">${correctos} de ${total} bloques correctos.</div>`;
+
+    feedbackList.innerHTML = bloques.map(b => `
+      <div class="fb-block ${b.ok?'ok':'bad'}">
+        <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span> ${b.label}</div>
+        <div class="fb-body">${b.msg}</div>
+      </div>
+    `).join('');
+  }
+
+  // ---------------- Modo examen ----------------
+  function iniciarExamen(){
+    examEnCurso = true;
+    examIndice = 1;
+    examResultados = [];
+    examSummary.style.display = 'none';
+    examProgress.style.display = 'inline';
+    btnNuevo.textContent = 'Siguiente pregunta →';
+    actualizarProgreso();
+    escenario = generarEscenario(nivelActual);
+    tokensEsperados = construirTokens(escenario);
+    renderEscenario();
+    limpiarFeedback();
+  }
+
+  function actualizarProgreso(){
+    examProgress.textContent = `Pregunta ${examIndice} de ${EXAM_TOTAL}`;
+  }
+
+  function registrarResultadoExamen(bloques){
+    const correctos = bloques.filter(b=>b.ok).length;
+    const total = bloques.length;
+    const puntaje = Math.round((correctos/total)*100);
+    examResultados.push({ icao: escenario.estacion.code, correctos, total, puntaje });
+  }
+
+  function avanzarExamen(){
+    if(examResultados.length < examIndice){
+      // El usuario no evaluó esta pregunta: se cuenta como 0
+      examResultados.push({ icao: escenario.estacion.code, correctos:0, total:1, puntaje:0 });
+    }
+    if(examIndice >= EXAM_TOTAL){
+      finalizarExamen();
+      return;
+    }
+    examIndice++;
+    actualizarProgreso();
+    escenario = generarEscenario(nivelActual);
+    tokensEsperados = construirTokens(escenario);
+    renderEscenario();
+    limpiarFeedback();
+  }
+
+  function finalizarExamen(){
+    examEnCurso = false;
+    examProgress.style.display = 'none';
+    btnNuevo.textContent = 'Intentar nuevamente';
+    const notaFinal = Math.round(examResultados.reduce((acc,r)=>acc+r.puntaje,0) / examResultados.length);
+    examScoreNum.textContent = notaFinal;
+    examTableBody.innerHTML = examResultados.map((r,i)=>`
+      <tr><td>${i+1}</td><td class="mono">${r.icao}</td><td>${r.correctos}/${r.total}</td><td>${r.puntaje}</td></tr>
+    `).join('');
+    examSummary.style.display = 'block';
+    feedbackList.innerHTML = '';
+    scoreBanner.style.display = 'none';
+    metarInput.value='';
+  }
+
+  // ---------------- Inicio ----------------
+  nuevoEjercicio();
+
+})();
+</script>
+</body>
+</html>

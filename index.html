@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoyAeronautico — Portal AIS·COM·MET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --vfr:#2E9E6D;
+    --mvfr:#3E7BFA;
+    --ifr:#D64545;
+    --lifr:#8B5CF6;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --featured-grad:radial-gradient(circle at 85% 15%, rgba(var(--accent-rgb),0.10), transparent 55%), linear-gradient(160deg, #F2F6FC 0%, #E7EEF9 100%);
+    --notam-grad:linear-gradient(90deg, #F2F6FC 0%, #E7EEF9 100%);
+    --metar-btn-text:#FFFFFF;
+    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-notam:0 12px 30px -14px rgba(15,23,42,0.12);
+  }
+
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --vfr:#4FA88C;
+    --mvfr:#4A8FD1;
+    --ifr:#C9564F;
+    --lifr:#B15FC7;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --featured-grad:radial-gradient(circle at 85% 15%, rgba(var(--accent-rgb),0.18), transparent 55%), linear-gradient(160deg, #14202F 0%, #0F1826 100%);
+    --notam-grad:linear-gradient(90deg, #17223A 0%, #121C2E 100%);
+    --metar-btn-text:#0B1220;
+    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-notam:0 12px 30px -14px rgba(0,0,0,0.55);
+  }
+
+  html{ transition:background .2s; }
+  body{ transition:background .2s, color .2s; }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem;
+    letter-spacing:0.02em;
+  }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{
+    width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent); flex-shrink:0;
+  }
+  .brand-mark svg{ display:block; }
+  .brand small{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-weight:400;
+    font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em;
+  }
+  .live-dot{
+    width:6px; height:6px; border-radius:50%; background:var(--live);
+    box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6);
+    animation:pulseDot 2.2s ease-out infinite;
+    flex-shrink:0;
+  }
+  @keyframes pulseDot{
+    0%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55); }
+    70%{ box-shadow:0 0 0 6px rgba(var(--live-rgb),0); }
+    100%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0); }
+  }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{
+    position:relative;
+    text-decoration:none; color:var(--text-muted);
+    padding-bottom:6px;
+    transition:color .2s;
+  }
+  nav.desktop-nav a::after{
+    content:'';
+    position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent);
+    transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{
+    color:var(--text);
+  }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{
+    right:0;
+  }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:8px;
+    background:none; border:1px solid transparent; color:var(--text-muted);
+    cursor:pointer; transition:border-color .2s, color .2s;
+  }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+
+  @media (max-width:820px){
+    nav.desktop-nav{display:none;}
+    .nav-right .nav-icon-btn:first-child{display:none;}
+    .menu-btn{display:block;}
+  }
+
+  /* ---------- HERO / INSTRUMENT STRIP ---------- */
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:56px 32px 64px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .radar-sweep{
+    position:absolute; inset:-20% -20% auto auto; top:-40%; right:-30%;
+    width:900px; height:900px;
+    background:conic-gradient(from 0deg, transparent 0deg, rgba(var(--accent-rgb),0.16) 18deg, transparent 45deg);
+    border-radius:50%;
+    animation:sweep 7s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{ to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion:reduce){ .radar-sweep{animation:none;} }
+
+  .hero-inner{position:relative; z-index:1; max-width:1200px; margin:0 auto;}
+  .eyebrow{
+    font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:14px;
+  }
+  .hero h1{
+    font-size:clamp(1.9rem, 4vw, 3rem);
+    line-height:1.15; max-width:760px; margin-bottom:14px;
+  }
+  .hero p.lead{
+    color:var(--text-muted); max-width:620px; font-size:1.05rem; margin-bottom:40px;
+  }
+
+  /* Instrument panel */
+  .panel-grid{
+    display:grid; grid-template-columns:1fr 1.4fr; gap:20px;
+  }
+  @media (max-width:900px){ .panel-grid{grid-template-columns:1fr;} }
+
+  .instrument{
+    background:var(--panel);
+    border:1px solid var(--hairline);
+    border-radius:14px;
+    padding:24px 26px;
+    position:relative;
+    box-shadow:var(--shadow-instrument);
+  }
+  .instrument::before{
+    content:'';
+    position:absolute; inset:8px; border:1px dashed rgba(var(--muted-rgb),0.15);
+    border-radius:6px; pointer-events:none;
+  }
+  .instrument-label{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.14em;
+    color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;
+  }
+
+  /* Zulu clock */
+  .zulu-time{
+    font-family:'IBM Plex Mono'; font-weight:600;
+    font-size:clamp(2.4rem, 6vw, 3.6rem);
+    color:var(--accent); letter-spacing:0.02em; line-height:1;
+  }
+  .zulu-date{
+    margin-top:10px; font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text-muted);
+  }
+  .tick-row{
+    display:flex; gap:3px; margin-top:18px;
+  }
+  .tick{ width:3px; height:14px; background:var(--hairline); }
+  .tick.major{ height:20px; background:var(--accent); opacity:0.5; }
+
+  /* METAR search */
+  .metar-search-row{ display:flex; gap:10px; margin-bottom:6px; }
+  .metar-input{
+    flex:1; background:var(--bg); border:1px solid var(--hairline); color:var(--text);
+    font-family:'IBM Plex Mono'; font-size:1rem; letter-spacing:0.08em;
+    padding:12px 14px; border-radius:6px; text-transform:uppercase;
+  }
+  .metar-input:focus{ outline:none; border-color:var(--accent); }
+  .metar-btn{
+    background:var(--accent); color:var(--metar-btn-text); border:none; font-weight:600;
+    padding:12px 20px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Sans';
+    transition:filter .15s;
+  }
+  .metar-btn:hover{ filter:brightness(1.08); }
+  .metar-btn:disabled{ opacity:0.6; cursor:wait; }
+
+  .quick-carousel{ display:flex; align-items:center; gap:8px; margin:14px 0 18px; }
+  .carousel-arrow{
+    flex-shrink:0; width:28px; height:28px; border-radius:50%;
+    background:var(--panel-alt); border:1px solid var(--hairline); color:var(--text-muted);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:border-color .2s, color .2s;
+  }
+  .carousel-arrow:hover{ color:var(--accent); border-color:var(--accent); }
+  .quick-chips{
+    display:flex; gap:14px; overflow-x:auto; scroll-behavior:smooth;
+    padding:4px 2px 8px; scrollbar-width:none;
+  }
+  .quick-chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px;
+    cursor:pointer; width:56px;
+  }
+  .chip-dial{
+    width:44px; height:44px; border-radius:50%;
+    background:var(--panel-alt); border:1px solid var(--hairline);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; color:var(--text-muted);
+    position:relative; transition:border-color .2s, color .2s, background .2s;
+  }
+  .chip-dial::before{
+    content:''; position:absolute; inset:-4px; border-radius:50%;
+    border:1px dashed rgba(var(--muted-rgb),0.25);
+  }
+  .chip span.chip-label{
+    font-family:'IBM Plex Mono'; font-size:0.62rem; color:var(--text-muted);
+    letter-spacing:0.03em; transition:color .2s;
+  }
+  .chip:hover .chip-dial, .chip.active .chip-dial{
+    color:var(--accent); border-color:var(--accent); background:rgba(var(--accent-rgb),0.08);
+  }
+  .chip:hover span.chip-label, .chip.active span.chip-label{ color:var(--accent); }
+
+  .metar-status{ min-height:20px; font-size:0.85rem; color:var(--text-muted); margin-bottom:10px; }
+  .metar-status.error{ color:var(--danger); }
+
+  .metar-result{ display:none; }
+  .metar-result.visible{ display:block; }
+  .metar-header-row{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .metar-station-name{ font-family:'Archivo'; font-weight:700; font-size:1.1rem; }
+  .flt-cat{
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:0.75rem; padding:4px 10px;
+    border-radius:20px; letter-spacing:0.05em; color:#0B1220;
+  }
+
+  .metar-list{
+    display:flex; flex-direction:column; gap:8px;
+    max-height:360px; overflow-y:auto;
+  }
+  .metar-row{
+    display:flex; align-items:baseline; gap:12px;
+    background:var(--bg); border:1px solid var(--hairline); border-radius:6px;
+    padding:10px 14px;
+  }
+  .metar-row.latest{ border-color:var(--accent); }
+  .metar-row .mtime{
+    flex-shrink:0; font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600;
+    color:var(--accent); min-width:46px;
+  }
+  .metar-row .mraw{
+    font-family:'IBM Plex Mono'; font-size:0.8rem; color:var(--text);
+    word-break:break-word; white-space:pre-wrap;
+  }
+
+  /* ---------- HERO PHOTO CARD (recuadro del título) ---------- */
+  .hero-photo-card{
+    position:relative;
+    min-height:360px;
+    border-radius:14px;
+    overflow:hidden;
+    margin-bottom:20px;
+    border:1px solid var(--hairline);
+    box-shadow:var(--shadow-instrument);
+  }
+  .hero-photo-card img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover; object-position:center 28%;
+    display:block;
+  }
+  .hero-photo-card::before{
+    content:'';
+    position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(100deg, rgba(6,16,32,0.94) 0%, rgba(6,16,32,0.86) 38%, rgba(6,16,32,0.5) 65%, rgba(6,16,32,0.18) 100%),
+      linear-gradient(0deg, rgba(6,16,32,0.35) 0%, rgba(6,16,32,0) 40%);
+  }
+  .hero-photo-overlay{
+    position:relative; z-index:2;
+    padding:48px 40px;
+    max-width:680px;
+    min-height:360px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-photo-overlay .eyebrow{ color:#8FB6F2; margin-bottom:14px; }
+  .hero-photo-overlay h1{
+    color:#FFFFFF; font-size:clamp(1.7rem, 3.4vw, 2.5rem); margin-bottom:14px;
+  }
+  .hero-photo-overlay p.lead{
+    color:#DCE5F3; font-size:0.98rem; margin-bottom:0; max-width:600px;
+  }
+  @media (max-width:640px){
+    .hero-photo-card{ min-height:0; }
+    .hero-photo-overlay{ padding:28px 22px; }
+  }
+
+  /* ---------- NOTAM STRIP ---------- */
+  .notam-strip{
+    max-width:1200px; margin:0 auto; padding:0 32px;
+    transform:translateY(-28px);
+  }
+  .notam-inner{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    background:var(--notam-grad);
+    border:1px solid var(--hairline); border-left:3px solid var(--accent);
+    border-radius:10px; padding:18px 24px;
+    box-shadow:var(--shadow-notam);
+  }
+  .notam-tag{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; font-weight:600; letter-spacing:0.1em;
+    color:var(--accent); border:1px solid var(--accent); border-radius:4px;
+    padding:3px 8px; white-space:nowrap;
+  }
+  .notam-text{ flex:1; min-width:200px; font-size:0.92rem; color:var(--text); }
+  .notam-text b{ color:var(--accent); font-weight:600; }
+  .notam-cta{
+    display:flex; align-items:center; gap:6px; text-decoration:none;
+    font-size:0.88rem; font-weight:600; color:var(--text);
+    white-space:nowrap; transition:gap .2s, color .2s;
+  }
+  .notam-cta:hover{ gap:10px; color:var(--accent); }
+  @media (max-width:640px){ .notam-strip{ transform:none; padding-top:20px; } }
+
+  /* ---------- NAV GRID ---------- */
+  .sections{ max-width:1200px; margin:0 auto; padding:64px 32px; }
+  .sections-head{ margin-bottom:32px; }
+  .sections-head .eyebrow{ margin-bottom:10px; }
+  .sections-head h2{ font-size:1.7rem; margin-bottom:10px; }
+  .sections-head p{ color:var(--text-muted); max-width:560px; }
+
+  .modules-layout{
+    display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:stretch;
+  }
+  @media (max-width:900px){ .modules-layout{ grid-template-columns:1fr; } }
+
+  /* Featured module card */
+  .card-featured{
+    display:flex; flex-direction:column; justify-content:flex-end;
+    position:relative; overflow:hidden;
+    text-decoration:none; min-height:340px;
+    background:var(--featured-grad);
+    border:1px solid var(--hairline); border-radius:14px;
+    padding:32px; transition:transform .25s cubic-bezier(.4,0,.2,1), border-color .25s;
+  }
+  .card-featured:hover{ transform:translateY(-4px); border-color:var(--accent); }
+  .card-featured::before{
+    content:''; position:absolute; top:-30%; right:-15%; width:340px; height:340px;
+    border-radius:50%; border:1px dashed rgba(var(--accent-rgb),0.22); pointer-events:none;
+  }
+  .card-featured::after{
+    content:''; position:absolute; top:-15%; right:5%; width:220px; height:220px;
+    border-radius:50%; border:1px dashed rgba(var(--accent-rgb),0.16); pointer-events:none;
+  }
+  .featured-eyebrow{
+    display:flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:16px;
+  }
+  .featured-eyebrow .card-code{ color:var(--accent); border-color:var(--accent); }
+  .card-featured h3{ font-size:1.6rem; max-width:420px; margin-bottom:10px; }
+  .card-featured p{ color:var(--text-muted); max-width:400px; font-size:0.92rem; line-height:1.55; margin:0 0 18px; }
+  .featured-cta{ display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; color:var(--text); }
+  .card-featured:hover .featured-cta{ color:var(--accent); }
+
+  /* Compact list of remaining modules */
+  .module-list{
+    display:flex; flex-direction:column;
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
+    overflow:hidden;
+  }
+  .module-row{
+    display:flex; align-items:center; gap:14px;
+    text-decoration:none; padding:18px 22px;
+    border-bottom:1px solid var(--hairline);
+    transition:background .2s, padding-left .2s;
+  }
+  .module-row:last-child{ border-bottom:none; }
+  .module-row:hover{ background:var(--panel-alt); padding-left:26px; }
+  .row-code{
+    flex-shrink:0; width:40px; height:40px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-size:0.68rem; font-weight:600;
+    border:1px solid currentColor;
+  }
+  .module-row-text{ flex:1; min-width:0; }
+  .module-row-text h3{ font-size:0.98rem; margin-bottom:3px; }
+  .module-row-text p{ color:var(--text-muted); font-size:0.8rem; margin:0; line-height:1.4; }
+  .row-arrow{ flex-shrink:0; color:var(--text-muted); transition:transform .2s, color .2s; }
+  .module-row:hover .row-arrow{ transform:translateX(3px); color:var(--accent); }
+
+  .card-code{
+    display:inline-block; font-family:'IBM Plex Mono'; font-size:0.75rem; font-weight:600;
+    border:1px solid currentColor; border-radius:4px;
+    padding:2px 8px; letter-spacing:0.06em;
+  }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{
+    display:none;
+    position:fixed; inset:0; z-index:200;
+  }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(3px);
+  }
+  .mobile-nav-panel{
+    position:absolute; top:0; right:0; bottom:0;
+    width:min(300px, 85vw);
+    background:var(--panel);
+    border-left:1px solid var(--hairline);
+    padding:24px 0;
+    display:flex; flex-direction:column;
+    overflow-y:auto;
+    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
+  }
+  .mobile-nav-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px 20px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:12px;
+  }
+  .mobile-nav-close{
+    background:none; border:1px solid var(--hairline);
+    color:var(--text); width:34px; height:34px;
+    border-radius:8px; font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mobile-nav-links a{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    text-decoration:none; color:var(--text);
+    font-size:0.95rem; font-weight:500;
+    border-bottom:1px solid var(--hairline);
+    transition:background .15s, color .15s, padding-left .15s;
+  }
+  .mobile-nav-links a:hover{
+    background:var(--panel-alt); color:var(--accent); padding-left:30px;
+  }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{
+    margin-top:auto; padding:20px 24px 0;
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px solid var(--hairline);
+  }
+  .mobile-nav-footer .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--hairline);
+    color:var(--text-muted); padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
+    transition:color .2s, border-color .2s;
+  }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- LOCAL TIME — misma familia que .zulu-time ---------- */
+  .local-time-block{
+    margin-top:20px;
+    padding-top:20px;
+    border-top:1px solid var(--hairline);
+  }
+  .local-time{
+    font-family:'IBM Plex Mono'; font-weight:600;
+    font-size:clamp(2.4rem, 6vw, 3.6rem);
+    color:var(--accent); letter-spacing:0.02em; line-height:1;
+  }
+  .local-tz{
+    margin-top:10px; font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text-muted);
+  }
+
+  /* ---------- MET FEATURED CARD with bg image ---------- */
+  .card-featured.card-met-img{
+    background:none;   /* quita el gradiente base */
+  }
+  /* la imagen ocupa todo el fondo */
+  .card-met-img .met-bg-img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover; object-position:center 38%;
+    display:block;
+    z-index:0;
+    border-radius:inherit;
+  }
+  /* neutralizamos los pseudo-elementos del .card-featured base (dashed rings)
+     y los convertimos en el overlay oscuro + un ring sutil */
+  .card-met-img::before{
+    content:'';
+    position:absolute; inset:0;
+    z-index:1;
+    border-radius:inherit;
+    /* degradado lateral: opaco a la izquierda donde está el texto, 
+       semitransparente a la derecha para que se vea la imagen */
+    background:
+      linear-gradient(105deg,
+        rgba(4,12,26,0.96) 0%,
+        rgba(4,12,26,0.88) 35%,
+        rgba(4,12,26,0.55) 62%,
+        rgba(4,12,26,0.10) 100%),
+      linear-gradient(180deg,
+        rgba(4,12,26,0.30) 0%,
+        rgba(4,12,26,0.00) 40%,
+        rgba(4,12,26,0.55) 100%);
+    width:unset; height:unset; top:unset; right:unset;   /* anula posición heredada */
+    border:none;   /* anula el dashed ring heredado */
+  }
+  .card-met-img::after{
+    content:'';
+    position:absolute; top:-18%; right:-8%; width:260px; height:260px;
+    border-radius:50%;
+    border:1px dashed rgba(143,182,242,0.18);
+    pointer-events:none;
+    z-index:2;
+  }
+  /* todo el contenido encima del overlay */
+  .card-met-img .featured-eyebrow,
+  .card-met-img h3,
+  .card-met-img p,
+  .card-met-img .featured-cta{
+    position:relative; z-index:3;
+  }
+  .card-met-img h3{ color:#FFFFFF; }
+  .card-met-img p{ color:#C8D8EF; }
+  .card-met-img .featured-eyebrow{ color:#8FB6F2; }
+  .card-met-img .featured-cta{ color:#FFFFFF; }
+  .card-met-img:hover .featured-cta{ color:#8FB6F2; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--hairline); padding:28px 32px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-size:0.8rem; color:var(--text-muted);
+  }
+  footer a{ text-decoration:none; }
+  footer a:hover{ color:var(--accent); }
+
+  /* ---------- MOBILE RESPONSIVE ---------- */
+  @media (max-width:600px){
+    .topbar{ padding:12px 16px; }
+    .hero{ padding:28px 16px 40px; }
+    .hero-photo-overlay{ padding:24px 18px; min-height:260px; }
+    .hero-photo-card{ min-height:260px; }
+    .panel-grid{ gap:14px; }
+    .instrument{ padding:18px 16px; }
+    .zulu-time{ font-size:2rem; }
+    .local-time{ font-size:1.6rem; }
+    .notam-strip{ padding:0 16px; }
+    .notam-inner{ gap:10px; padding:14px 16px; }
+    .sections{ padding:36px 16px; }
+    .sections-head h2{ font-size:1.35rem; }
+    .modules-layout{ gap:14px; }
+    .card-featured{ padding:22px; min-height:260px; }
+    .card-featured h3{ font-size:1.25rem; }
+    footer{ padding:20px 16px; flex-direction:column; gap:6px; }
+    .metar-search-row{ flex-direction:column; }
+    .metar-btn{ width:100%; padding:14px; }
+  }
+  @media (max-width:400px){
+    .hero h1{ font-size:1.5rem; }
+    .zulu-time{ font-size:1.8rem; }
+  }
+
+  /* ---------- NOTICIAS AERONÁUTICAS ---------- */
+  .news-section{
+    max-width:1200px; margin:0 auto; padding:0 32px 72px;
+  }
+  .news-head{ margin-bottom:28px; }
+  .news-head .eyebrow{ margin-bottom:10px; }
+  .news-head-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    flex-wrap:wrap; gap:10px; margin-bottom:8px;
+  }
+  .news-head-row h2{ font-size:1.7rem; }
+  .news-updated{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.08em;
+    color:var(--text-muted);
+  }
+  .news-head p{ color:var(--text-muted); max-width:580px; }
+
+  .news-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(290px, 1fr));
+    gap:16px;
+  }
+
+  .news-card{
+    display:flex; flex-direction:column;
+    background:var(--panel); border:1px solid var(--hairline);
+    border-radius:12px; overflow:hidden;
+    text-decoration:none; color:inherit;
+    transition:transform .22s cubic-bezier(.4,0,.2,1), border-color .22s, box-shadow .22s;
+  }
+  .news-card:hover{
+    transform:translateY(-3px);
+    border-color:var(--accent);
+    box-shadow:0 8px 24px -10px rgba(var(--accent-rgb),0.25);
+  }
+  .news-thumb{
+    width:100%; height:160px; overflow:hidden; flex-shrink:0;
+    background:var(--panel-alt);
+    position:relative;
+  }
+  .news-thumb img{
+    width:100%; height:100%; object-fit:cover;
+    display:block; transition:transform .4s;
+  }
+  .news-card:hover .news-thumb img{ transform:scale(1.04); }
+  .news-thumb-placeholder{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .news-thumb-placeholder svg{ opacity:0.2; }
+  .news-source-badge{
+    position:absolute; top:10px; left:10px;
+    font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; letter-spacing:0.09em;
+    background:rgba(var(--accent-rgb),0.92); color:#fff;
+    padding:3px 8px; border-radius:4px;
+  }
+  .news-body{
+    flex:1; padding:18px 20px; display:flex; flex-direction:column; gap:10px;
+  }
+  .news-date{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; color:var(--text-muted);
+  }
+  .news-title{
+    font-family:'Archivo'; font-weight:700; font-size:0.98rem;
+    line-height:1.35; color:var(--text);
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .news-excerpt{
+    font-size:0.82rem; color:var(--text-muted); line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    flex:1;
+  }
+  .news-cta{
+    font-size:0.82rem; font-weight:600; color:var(--accent);
+    display:flex; align-items:center; gap:5px; margin-top:4px;
+  }
+  .news-card:hover .news-cta{ gap:9px; }
+
+  /* skeleton loader */
+  .news-skeleton{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:12px; overflow:hidden;
+  }
+  .skel-img{ height:160px; background:var(--panel-alt); }
+  .skel-body{ padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+  .skel-line{
+    height:12px; border-radius:4px; background:var(--hairline);
+    animation:skelPulse 1.4s ease-in-out infinite;
+  }
+  .skel-line.w80{ width:80%; }
+  .skel-line.w60{ width:60%; }
+  .skel-line.w95{ width:95%; }
+  .skel-line.h18{ height:18px; }
+  @keyframes skelPulse{
+    0%,100%{ opacity:1; } 50%{ opacity:0.45; }
+  }
+
+  /* error & empty states */
+  .news-error{
+    grid-column:1/-1; text-align:center; padding:40px 20px;
+    color:var(--text-muted); font-size:0.9rem;
+  }
+  .news-error strong{ display:block; font-family:'Archivo'; font-size:1.05rem; color:var(--text); margin-bottom:6px; }
+
+  /* source filter pills */
+  .news-filters{
+    display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
+  }
+  .news-filter-btn{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; letter-spacing:0.06em;
+    background:none; border:1px solid var(--hairline); color:var(--text-muted);
+    padding:5px 14px; border-radius:20px; cursor:pointer;
+    transition:border-color .2s, color .2s, background .2s;
+  }
+  .news-filter-btn:hover{ color:var(--accent); border-color:var(--accent); }
+  .news-filter-btn.active{
+    background:var(--accent); border-color:var(--accent); color:#fff;
+  }
+  [data-theme="dark"] .news-filter-btn.active{ color:#0B1220; }
+
+  @media (max-width:600px){
+    .news-section{ padding:0 16px 48px; }
+    .news-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+        <g transform="rotate(-40 20 20)">
+          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      SoyAeronautico
+      <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+    </div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="designadores.html">Designadores</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <button class="nav-icon-btn" aria-label="Buscar en el portal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="radar-sweep" aria-hidden="true"></div>
+  <div class="hero-inner">
+
+    <div class="hero-photo-card">
+      <img src="assets/equipo-cea-hero.jpg" alt="Equipo de operadores aeronáuticos en jornada de campo, junto a un vehículo de rescate y extinción de incendios y personal de bomberos aeroportuarios.">
+      <div class="hero-photo-overlay">
+        <div class="eyebrow">AIS · COM · MET</div>
+        <h1>Bienvenido a bordo, compañero.</h1>
+        <p class="lead">Gracias por elegir este camino. Como operador AIS·COM·MET vas a ser una pieza clave en la aviación: el puente entre pilotos, controladores y meteorólogos. Cada reporte que redactes, cada frecuencia que operes y cada dato que verifiques ayuda a mantener el cielo seguro para todos. Aquí nos vamos a preparar juntos para eso.</p>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <!-- ZULU CLOCK -->
+      <div class="instrument">
+        <div class="instrument-label">Hora Zulu (UTC)</div>
+        <div class="zulu-time mono" id="zuluTime">--:--:--</div>
+        <div class="zulu-date mono" id="zuluDate">-- --- ----</div>
+        <div class="tick-row" aria-hidden="true" id="tickRow"></div>
+        <div class="local-time-block">
+          <div class="instrument-label">Hora Local</div>
+          <div class="local-time mono" id="localTime">--:--:--</div>
+          <div class="local-tz mono" id="localTz">Detectando zona horaria…</div>
+        </div>
+      </div>
+
+      <!-- METAR SEARCH -->
+      <div class="instrument">
+        <div class="instrument-label">Consulta METAR por ICAO</div>
+        <div class="metar-search-row">
+          <input type="text" class="metar-input mono" id="icaoInput" maxlength="4" placeholder="Ej. SKBO" autocomplete="off">
+          <button class="metar-btn" id="metarBtn">Buscar</button>
+        </div>
+        <div class="quick-carousel">
+          <button class="carousel-arrow" id="carouselPrev" aria-label="Anterior" type="button">‹</button>
+          <div class="quick-chips" id="quickChips">
+            <span class="chip" data-icao="SKBO"><span class="chip-dial">SKBO</span><span class="chip-label">Bogotá</span></span>
+            <span class="chip" data-icao="SKCL"><span class="chip-dial">SKCL</span><span class="chip-label">Cali</span></span>
+            <span class="chip" data-icao="SKRG"><span class="chip-dial">SKRG</span><span class="chip-label">Rionegro</span></span>
+            <span class="chip" data-icao="SKMD"><span class="chip-dial">SKMD</span><span class="chip-label">Medellín</span></span>
+            <span class="chip" data-icao="SKBQ"><span class="chip-dial">SKBQ</span><span class="chip-label">Barranq.</span></span>
+            <span class="chip" data-icao="SKCG"><span class="chip-dial">SKCG</span><span class="chip-label">Cartagena</span></span>
+          </div>
+          <button class="carousel-arrow" id="carouselNext" aria-label="Siguiente" type="button">›</button>
+        </div>
+        <div class="metar-status" id="metarStatus">Escribe un código ICAO de 4 letras y presiona Buscar.</div>
+
+        <div class="metar-result" id="metarResult">
+          <div class="metar-header-row">
+            <div class="metar-station-name" id="stationName">—</div>
+            <div class="flt-cat" id="fltCat" style="background:var(--text-muted);">—</div>
+          </div>
+          <div class="metar-list" id="metarList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="notam-strip">
+  <div class="notam-inner">
+    <span class="notam-tag">NOTAM A0142/26</span>
+    <span class="notam-text">Nuevo banco de <b>120 preguntas de Meteorología</b> disponible en la Zona de Quizzes — vigente hasta el parcial.</span>
+    <a class="notam-cta" href="quizzes.html">Ir a Quizzes →</a>
+  </div>
+</div>
+
+<section class="sections">
+  <div class="sections-head">
+    <div class="eyebrow">Módulos de estudio</div>
+    <h2>Seis frentes, un solo parcial.</h2>
+    <p>Cada módulo trae guías, glosario cruzado y su propio banco de preguntas.</p>
+  </div>
+
+  <div class="modules-layout">
+    <a class="card-featured card-met-img" href="meteorologia.html">
+      <img class="met-bg-img" src="assets/met-hero.png" alt="">
+      <div class="featured-eyebrow"><span class="card-code">MET</span> Módulo destacado — conectado a los datos en vivo de arriba</div>
+      <h3>Meteorología Aeronáutica</h3>
+      <p>Clasificación de nubes, fenómenos significativos y lectura completa de reportes METAR/TAF — la misma lógica que acabas de ver en el panel de consulta en vivo.</p>
+      <span class="featured-cta">Estudiar el módulo →</span>
+    </a>
+
+    <div class="module-list">
+      <a class="module-row" href="ats.html" style="color:var(--vfr);">
+        <span class="row-code">ATS</span>
+        <span class="module-row-text" style="color:var(--text);">
+          <h3>Servicios de Tránsito Aéreo</h3>
+          <p>ATC, FIS, ACC/APP/TWR/AFIS y los objetivos de cada servicio.</p>
+        </span>
+        <span class="row-arrow">→</span>
+      </a>
+      <a class="module-row" href="designadores.html" style="color:var(--mvfr);">
+        <span class="row-code">DES</span>
+        <span class="module-row-text" style="color:var(--text);">
+          <h3>Designadores de Lugar</h3>
+          <p>Más de 1.000 indicadores ICAO de aeródromos colombianos, filtrables por departamento.</p>
+        </span>
+        <span class="row-arrow">→</span>
+      </a>
+      <a class="module-row" href="plan-de-vuelo.html" style="color:var(--ifr);">
+        <span class="row-code">FPL</span>
+        <span class="module-row-text" style="color:var(--text);">
+          <h3>Plan de Vuelo</h3>
+          <p>Información para cada casilla.</p>
+        </span>
+        <span class="row-arrow">→</span>
+      </a>
+      <a class="module-row" href="glosario.html" style="color:var(--lifr);">
+        <span class="row-code">GLO</span>
+        <span class="module-row-text" style="color:var(--text);">
+          <h3>Glosario Aeronáutico</h3>
+          <p>NOTAM, RVSM, PBN y demás términos, buscables al instante.</p>
+        </span>
+        <span class="row-arrow">→</span>
+      </a>
+      <a class="module-row" href="quizzes.html" style="color:var(--accent);">
+        <span class="row-code">QUI</span>
+        <span class="module-row-text" style="color:var(--text);">
+          <h3>Zona de Quizzes</h3>
+          <p>Bancos de preguntas por módulo con calificación inmediata.</p>
+        </span>
+        <span class="row-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NOTICIAS AERONÁUTICAS ===== -->
+<section class="news-section" id="noticias">
+  <div class="news-head">
+    <div class="eyebrow">Mundo Aeronáutico</div>
+    <div class="news-head-row">
+      <h2>Noticias del sector</h2>
+      <span class="news-updated mono" id="newsUpdated"></span>
+    </div>
+    <p>Titulares recientes de fuentes especializadas en aviación civil y operaciones aeronáuticas. Se actualizan automáticamente.</p>
+  </div>
+  <div class="news-filters" id="newsFilters">
+    <button class="news-filter-btn active" data-source="all">Todas</button>
+  </div>
+  <div class="news-grid" id="newsGrid">
+    <!-- skeletons inserted by JS -->
+  </div>
+</section>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Datos METAR: aviationweather.gov (NOAA)</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+    // keep mobile toggle in sync
+    if(typeof syncMobileThemeLabel === 'function') syncMobileThemeLabel();
+  });
+
+  // ---------- ZULU CLOCK + LOCAL TIME ----------
+  const zuluTimeEl = document.getElementById('zuluTime');
+  const zuluDateEl = document.getElementById('zuluDate');
+  const localTimeEl = document.getElementById('localTime');
+  const localTzEl   = document.getElementById('localTz');
+  const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+  function pad(n){ return n.toString().padStart(2,'0'); }
+
+  // Detect local timezone name (e.g. "America/Bogota") and offset label
+  const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  // Build a friendly offset string like "UTC−5 | America/Bogota"
+  function getTzLabel(){
+    try{
+      const offsetMin = -new Date().getTimezoneOffset();
+      const sign = offsetMin >= 0 ? '+' : '−';
+      const absH = Math.floor(Math.abs(offsetMin) / 60);
+      const absM = Math.abs(offsetMin) % 60;
+      const offsetStr = absM ? `UTC${sign}${absH}:${pad(absM)}` : `UTC${sign}${absH}`;
+      return tzName ? `${offsetStr} · ${tzName}` : offsetStr;
+    }catch(e){ return tzName || 'Hora local'; }
+  }
+  localTzEl.textContent = getTzLabel();
+
+  function updateClocks(){
+    const now = new Date();
+    // Zulu
+    const h = pad(now.getUTCHours());
+    const m = pad(now.getUTCMinutes());
+    const s = pad(now.getUTCSeconds());
+    zuluTimeEl.textContent = `${h}:${m}:${s} Z`;
+    zuluDateEl.textContent = `${pad(now.getUTCDate())} ${meses[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
+    // Local
+    const lh = pad(now.getHours());
+    const lm = pad(now.getMinutes());
+    const ls = pad(now.getSeconds());
+    localTimeEl.textContent = `${lh}:${lm}:${ls}`;
+  }
+  updateClocks();
+  setInterval(updateClocks, 1000);
+
+  // ---------- MOBILE NAV DRAWER ----------
+  const menuBtn        = document.getElementById('menuBtn');
+  const mobileNav      = document.getElementById('mobileNav');
+  const mobileNavClose = document.getElementById('mobileNavClose');
+  const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+  const themeToggleMob = document.getElementById('themeToggleMobile');
+
+  function openMobileNav(){
+    mobileNav.classList.add('open');
+    menuBtn.setAttribute('aria-expanded','true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileNav(){
+    mobileNav.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded','false');
+    document.body.style.overflow = '';
+  }
+  menuBtn.addEventListener('click', openMobileNav);
+  mobileNavClose.addEventListener('click', closeMobileNav);
+  mobileNavBack.addEventListener('click', closeMobileNav);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+  // Sync mobile theme toggle label with current theme
+  function syncMobileThemeLabel(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+    themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+    themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+      isDark ? ' Modo claro' : ' Modo oscuro';
+  }
+  syncMobileThemeLabel();
+
+  themeToggleMob.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label','Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme','dark');
+      localStorage.setItem('aisTheme','dark');
+      themeToggle.setAttribute('aria-label','Cambiar a modo claro');
+    }
+    syncMobileThemeLabel();
+  });
+
+  // decorative tick row
+  const tickRow = document.getElementById('tickRow');
+  for(let i=0;i<30;i++){
+    const t = document.createElement('div');
+    t.className = 'tick' + (i % 5 === 0 ? ' major' : '');
+    tickRow.appendChild(t);
+  }
+
+  // ---------- METAR ----------
+  // Estrategia estilo OGIMET: cada hora en punto sale un METAR nuevo en NOAA.
+  // Guardamos en caché (por sesión) lo que ya se descargó de cada estación y
+  // sólo pedimos a la API lo del día en curso (hours=24), así el listado se va
+  // completando reporte a reporte igual que lo hace ogimet, sin re-explicar nada.
+  const icaoInput = document.getElementById('icaoInput');
+  const metarBtn = document.getElementById('metarBtn');
+  const metarStatus = document.getElementById('metarStatus');
+  const metarResult = document.getElementById('metarResult');
+  const stationName = document.getElementById('stationName');
+  const fltCatEl = document.getElementById('fltCat');
+  const metarList = document.getElementById('metarList');
+  const quickChips = document.getElementById('quickChips');
+
+  const fltCatColors = {
+    'VFR': 'var(--vfr)',
+    'MVFR': 'var(--mvfr)',
+    'IFR': 'var(--ifr)',
+    'LIFR': 'var(--lifr)'
+  };
+
+  // Caché en memoria por ICAO: guarda el último resultado bueno (con su hora),
+  // para poder mostrarlo como respaldo si una consulta posterior falla.
+  const metarCache = {};
+
+  function horaZ(epochSeconds){
+    if(!epochSeconds) return '--:--';
+    const d = new Date(epochSeconds * 1000);
+    return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}Z`;
+  }
+
+  function renderLista(reportes){
+    metarList.innerHTML = reportes.map((m, i) => `
+      <div class="metar-row${i === 0 ? ' latest' : ''}">
+        <span class="mtime mono">${horaZ(m.obsTime)}</span>
+        <span class="mraw mono">${m.rawOb || '—'}</span>
+      </div>
+    `).join('');
+  }
+
+  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+  // Extrae el arreglo JSON aunque venga envuelto en texto/markdown (algunos
+  // lectores como r.jina.ai devuelven el JSON metido dentro de ```json ... ```).
+  function extraerJson(texto){
+    try{ return JSON.parse(texto); }catch(e){}
+    const match = texto.match(/\[[\s\S]*\]/);
+    if(match){
+      try{ return JSON.parse(match[0]); }catch(e){}
+    }
+    throw new Error('parse');
+  }
+
+  async function fetchWithTimeout(url, ms, comoTexto){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try{
+      const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+      if(!res.ok) throw new Error('network');
+      const parsed = comoTexto ? extraerJson(await res.text()) : await res.json();
+      if(!parsed || !parsed.length) throw new Error('notfound');
+      return parsed;
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
+  // Un único intento: lanza todas las vías EN PARALELO y se queda con la
+  // primera que responda datos válidos.
+  async function intentarDescarga(icao){
+    const targetUrl = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&hours=24`;
+    const encoded = encodeURIComponent(targetUrl);
+
+    // NOAA no habilita CORS en su API (lo dice su propia documentación), así que
+    // un fetch directo desde el navegador SIEMPRE será bloqueado. Si el sitio está
+    // desplegado en Netlify, la función propia (/.netlify/functions/metar) no tiene
+    // ese problema y no cachea nada, así que va primero. El resto de proxies quedan
+    // como respaldo por si el sitio no está en Netlify o la función falla.
+    const attempts = [
+      fetchWithTimeout(`/.netlify/functions/metar?icao=${icao}&hours=24`, 10000, false),
+      fetchWithTimeout(targetUrl, 10000, false),
+      fetchWithTimeout(`https://r.jina.ai/${targetUrl}`, 10000, true),
+      fetchWithTimeout(`https://api.allorigins.win/raw?url=${encoded}`, 10000, false),
+      fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${targetUrl}`, 10000, false),
+      fetchWithTimeout(`https://corsproxy.io/?url=${encoded}`, 10000, false),
+      fetchWithTimeout(`https://thingproxy.freeboard.io/fetch/${targetUrl}`, 10000, false)
+    ];
+
+    try{
+      return await Promise.any(attempts);
+    }catch(aggregate){
+      const errors = (aggregate && aggregate.errors) || [];
+      const allNotFound = errors.length > 0 && errors.every(e => e && e.message === 'notfound');
+      throw new Error(allNotFound ? 'notfound' : 'network');
+    }
+  }
+
+  function pintarResultado(icao, reportes, esRespaldo){
+    const m = reportes[0];
+    stationName.textContent = m.name || m.icaoId || icao;
+
+    const cat = (m.fltCat || '').toUpperCase();
+    fltCatEl.textContent = cat || 'S/D';
+    fltCatEl.style.background = fltCatColors[cat] || 'var(--text-muted)';
+
+    renderLista(reportes);
+    metarResult.classList.add('visible');
+
+    if(esRespaldo){
+      metarStatus.classList.add('error');
+      metarStatus.textContent = `No se pudo actualizar ahora mismo. Mostrando el último dato obtenido de ${icao} (${horaZ(m.obsTime)}).`;
+    }else{
+      metarStatus.classList.remove('error');
+      metarStatus.textContent = `${reportes.length} reporte(s) de hoy para ${icao}. Último: ${horaZ(m.obsTime)}.`;
+    }
+  }
+
+  const REINTENTOS = 3;
+
+  async function buscarMetar(icaoRaw){
+    const icao = icaoRaw.trim().toUpperCase();
+    if(icao.length !== 4){
+      metarStatus.textContent = 'Ingresa un código ICAO válido de 4 letras (ej. SKBO).';
+      metarStatus.classList.add('error');
+      return;
+    }
+    metarStatus.classList.remove('error');
+    metarBtn.disabled = true;
+
+    let ultimoError = null;
+
+    for(let intento = 1; intento <= REINTENTOS; intento++){
+      metarStatus.textContent = intento === 1
+        ? `Consultando ${icao}...`
+        : `Reintentando ${icao} (${intento}/${REINTENTOS})...`;
+
+      try{
+        const data = await intentarDescarga(icao);
+
+        // Más reciente primero, y sólo lo del día UTC en curso.
+        const hoyUTC = new Date().toISOString().slice(0,10);
+        let reportesHoy = data.filter(m => m.obsTime && new Date(m.obsTime * 1000).toISOString().slice(0,10) === hoyUTC);
+        if(!reportesHoy.length) reportesHoy = data.slice();
+        reportesHoy.sort((a, b) => (b.obsTime || 0) - (a.obsTime || 0));
+
+        metarCache[icao] = reportesHoy;
+        pintarResultado(icao, reportesHoy, false);
+        metarBtn.disabled = false;
+        return;
+      }catch(err){
+        ultimoError = err;
+        // Si la estación simplemente no tiene reporte, no vale la pena reintentar.
+        if(err.message === 'notfound') break;
+        if(intento < REINTENTOS) await sleep(1200 * intento);
+      }
+    }
+
+    // Todos los intentos fallaron: mostramos la última copia buena si existe.
+    metarBtn.disabled = false;
+    if(ultimoError && ultimoError.message === 'notfound'){
+      metarStatus.classList.add('error');
+      metarStatus.textContent = `No se encontró METAR reciente para ${icao}. Verifica el código ICAO.`;
+      return;
+    }
+    if(metarCache[icao] && metarCache[icao].length){
+      pintarResultado(icao, metarCache[icao], true);
+    }else{
+      metarStatus.classList.add('error');
+      metarStatus.textContent = `No se pudo conectar con el servicio de METAR en este momento. Intenta de nuevo en unos segundos.`;
+    }
+  }
+
+  metarBtn.addEventListener('click', () => buscarMetar(icaoInput.value));
+  icaoInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') buscarMetar(icaoInput.value); });
+  quickChips.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if(chip){
+      quickChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      icaoInput.value = chip.dataset.icao;
+      buscarMetar(chip.dataset.icao);
+    }
+  });
+
+  // Carousel arrows
+  const carouselPrev = document.getElementById('carouselPrev');
+  const carouselNext = document.getElementById('carouselNext');
+  carouselPrev.addEventListener('click', () => quickChips.scrollBy({ left: -140, behavior: 'smooth' }));
+  carouselNext.addEventListener('click', () => quickChips.scrollBy({ left: 140, behavior: 'smooth' }));
+
+  // Nada se busca al cargar la página: se espera a que el usuario digite un
+  // ICAO o toque un chip rápido.
+
+  // ========== NOTICIAS AERONÁUTICAS ==========
+  // Consume /.netlify/functions/noticias — el fetch y parseo RSS ocurre
+  // en el servidor (sin problema de CORS ni thumbnails rotos).
+
+  const newsGrid    = document.getElementById('newsGrid');
+  const newsFilters = document.getElementById('newsFilters');
+  const newsUpdated = document.getElementById('newsUpdated');
+
+  let activeSource = 'all';
+  let allArticles  = [];
+
+  // ── Skeletons mientras carga ──
+  function renderSkeletons(n = 6){
+    newsGrid.innerHTML = Array.from({length:n}).map(() => `
+      <div class="news-skeleton">
+        <div class="skel-img"></div>
+        <div class="skel-body">
+          <div class="skel-line w60"></div>
+          <div class="skel-line h18 w95"></div>
+          <div class="skel-line w80"></div>
+          <div class="skel-line w80"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Formatea fecha ──
+  function formatNewsDate(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(dateStr);
+    if(isNaN(d)) return '';
+    return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  // ── Thumbnail o placeholder ──
+  function thumbEl(item){
+    const badge = `<span class="news-source-badge">${item.sourceLabel}</span>`;
+    if(item.thumbnail && item.thumbnail.startsWith('http')){
+      return `<div class="news-thumb">
+        ${badge}
+        <img src="${item.thumbnail}" alt="" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="news-thumb-placeholder" style="display:none">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+      </div>`;
+    }
+    return `<div class="news-thumb">
+      ${badge}
+      <div class="news-thumb-placeholder">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+      </div>
+    </div>`;
+  }
+
+  // ── Renderiza tarjetas ──
+  function renderCards(articles){
+    if(!articles.length){
+      newsGrid.innerHTML = `<div class="news-error">
+        <strong>Sin noticias disponibles</strong>
+        No se encontraron artículos para esta fuente en este momento.
+      </div>`;
+      return;
+    }
+    newsGrid.innerHTML = articles.map(a => `
+      <a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer" data-source="${a.sourceId}">
+        ${thumbEl(a)}
+        <div class="news-body">
+          <span class="news-date">${formatNewsDate(a.pubDate)}</span>
+          <div class="news-title">${a.title || 'Sin título'}</div>
+          <div class="news-excerpt">${a.excerpt || ''}</div>
+          <span class="news-cta">Leer noticia →</span>
+        </div>
+      </a>`).join('');
+  }
+
+  // ── Filtro por fuente ──
+  function applyFilter(sourceId){
+    activeSource = sourceId;
+    newsFilters.querySelectorAll('.news-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.source === sourceId);
+    });
+    const filtered = sourceId === 'all'
+      ? allArticles
+      : allArticles.filter(a => a.sourceId === sourceId);
+    renderCards(filtered);
+  }
+
+  // ── Construye botones de filtro ──
+  function buildFilters(sources){
+    newsFilters.querySelectorAll('[data-source]:not([data-source="all"])').forEach(el => el.remove());
+    sources.forEach(src => {
+      const btn = document.createElement('button');
+      btn.className = 'news-filter-btn';
+      btn.dataset.source = src.id;
+      btn.textContent = src.label;
+      btn.addEventListener('click', () => applyFilter(src.id));
+      newsFilters.appendChild(btn);
+    });
+    // Re-enlaza el botón "Todas" (se crea en HTML estático)
+    newsFilters.querySelector('[data-source="all"]')
+      .addEventListener('click', () => applyFilter('all'));
+  }
+
+  // ── Carga principal desde la Netlify Function ──
+  async function loadNews(){
+    renderSkeletons(6);
+    try{
+      const res  = await fetch('/.netlify/functions/noticias');
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if(!data.articles || !data.articles.length){
+        newsGrid.innerHTML = `<div class="news-error">
+          <strong>Sin noticias por el momento</strong>
+          Las fuentes no devolvieron artículos. Intenta de nuevo más tarde.
+        </div>`;
+        return;
+      }
+
+      allArticles = data.articles;
+      buildFilters(data.sources || []);
+      renderCards(allArticles);
+
+      const now = new Date();
+      newsUpdated.textContent =
+        `Actualizado: ${now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})}`;
+
+    }catch(err){
+      newsGrid.innerHTML = `<div class="news-error">
+        <strong>No se pudo cargar el feed de noticias</strong>
+        Verifica que la función <code>noticias</code> esté desplegada en Netlify.
+      </div>`;
+      console.error('[noticias]', err);
+    }
+  }
+
+  // Carga al iniciar; refresca cada 90 minutos
+  loadNews();
+  setInterval(loadNews, 90 * 60 * 1000);
+</script>
+
+</body>
+</html>
