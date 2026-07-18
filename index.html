@@ -654,29 +654,16 @@
     border-color:var(--accent);
     box-shadow:0 8px 24px -10px rgba(var(--accent-rgb),0.25);
   }
-  .news-thumb{
-    width:100%; height:160px; overflow:hidden; flex-shrink:0;
-    background:var(--panel-alt);
-    position:relative;
-  }
-  .news-thumb img{
-    width:100%; height:100%; object-fit:cover;
-    display:block; transition:transform .4s;
-  }
-  .news-card:hover .news-thumb img{ transform:scale(1.04); }
-  .news-thumb-placeholder{
-    width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .news-thumb-placeholder svg{ opacity:0.2; }
-  .news-source-badge{
-    position:absolute; top:10px; left:10px;
-    font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; letter-spacing:0.09em;
-    background:rgba(var(--accent-rgb),0.92); color:#fff;
-    padding:3px 8px; border-radius:4px;
-  }
+  .news-card{ border-left:3px solid transparent; transition:transform .22s cubic-bezier(.4,0,.2,1), border-color .22s, box-shadow .22s; }
+  .news-card:hover{ border-left-color:var(--accent); }
   .news-body{
-    flex:1; padding:18px 20px; display:flex; flex-direction:column; gap:10px;
+    flex:1; padding:20px 22px; display:flex; flex-direction:column; gap:10px;
+  }
+  .news-source-tag{
+    align-self:flex-start;
+    font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; letter-spacing:0.09em;
+    text-transform:uppercase; color:var(--accent);
+    border:1px solid var(--accent); border-radius:4px; padding:2px 8px;
   }
   .news-date{
     font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; color:var(--text-muted);
@@ -701,8 +688,7 @@
   .news-skeleton{
     background:var(--panel); border:1px solid var(--hairline); border-radius:12px; overflow:hidden;
   }
-  .skel-img{ height:160px; background:var(--panel-alt); }
-  .skel-body{ padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+  .skel-body{ padding:20px 22px; display:flex; flex-direction:column; gap:10px; }
   .skel-line{
     height:12px; border-radius:4px; background:var(--hairline);
     animation:skelPulse 1.4s ease-in-out infinite;
@@ -721,22 +707,6 @@
     color:var(--text-muted); font-size:0.9rem;
   }
   .news-error strong{ display:block; font-family:'Archivo'; font-size:1.05rem; color:var(--text); margin-bottom:6px; }
-
-  /* source filter pills */
-  .news-filters{
-    display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
-  }
-  .news-filter-btn{
-    font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; letter-spacing:0.06em;
-    background:none; border:1px solid var(--hairline); color:var(--text-muted);
-    padding:5px 14px; border-radius:20px; cursor:pointer;
-    transition:border-color .2s, color .2s, background .2s;
-  }
-  .news-filter-btn:hover{ color:var(--accent); border-color:var(--accent); }
-  .news-filter-btn.active{
-    background:var(--accent); border-color:var(--accent); color:#fff;
-  }
-  [data-theme="dark"] .news-filter-btn.active{ color:#0B1220; }
 
   @media (max-width:600px){
     .news-section{ padding:0 16px 48px; }
@@ -949,10 +919,7 @@
       <h2>Noticias del sector</h2>
       <span class="news-updated mono" id="newsUpdated"></span>
     </div>
-    <p>Titulares recientes de fuentes especializadas en aviación civil y operaciones aeronáuticas. Se actualizan automáticamente.</p>
-  </div>
-  <div class="news-filters" id="newsFilters">
-    <button class="news-filter-btn active" data-source="all">Todas</button>
+    <p>Titulares recientes de Aviacionline, medio especializado en aviación comercial. El listado se actualiza cada 48 horas.</p>
   </div>
   <div class="news-grid" id="newsGrid">
     <!-- skeletons inserted by JS -->
@@ -1280,17 +1247,12 @@
   // en el servidor (sin problema de CORS ni thumbnails rotos).
 
   const newsGrid    = document.getElementById('newsGrid');
-  const newsFilters = document.getElementById('newsFilters');
   const newsUpdated = document.getElementById('newsUpdated');
-
-  let activeSource = 'all';
-  let allArticles  = [];
 
   // ── Skeletons mientras carga ──
   function renderSkeletons(n = 6){
     newsGrid.innerHTML = Array.from({length:n}).map(() => `
       <div class="news-skeleton">
-        <div class="skel-img"></div>
         <div class="skel-body">
           <div class="skel-line w60"></div>
           <div class="skel-line h18 w95"></div>
@@ -1308,80 +1270,25 @@
     return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
   }
 
-  // ── Thumbnail o placeholder ──
-  function thumbEl(item){
-    const badge = `<span class="news-source-badge">${item.sourceLabel}</span>`;
-    if(item.thumbnail && item.thumbnail.startsWith('http')){
-      return `<div class="news-thumb">
-        ${badge}
-        <img src="${item.thumbnail}" alt="" loading="lazy"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="news-thumb-placeholder" style="display:none">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-          </svg>
-        </div>
-      </div>`;
-    }
-    return `<div class="news-thumb">
-      ${badge}
-      <div class="news-thumb-placeholder">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".25">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-        </svg>
-      </div>
-    </div>`;
-  }
-
-  // ── Renderiza tarjetas ──
+  // ── Renderiza tarjetas (solo texto, sin imágenes) ──
   function renderCards(articles){
     if(!articles.length){
       newsGrid.innerHTML = `<div class="news-error">
         <strong>Sin noticias disponibles</strong>
-        No se encontraron artículos para esta fuente en este momento.
+        No se encontraron artículos en este momento.
       </div>`;
       return;
     }
     newsGrid.innerHTML = articles.map(a => `
-      <a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer" data-source="${a.sourceId}">
-        ${thumbEl(a)}
+      <a class="news-card" href="${a.link}" target="_blank" rel="noopener noreferrer">
         <div class="news-body">
+          <span class="news-source-tag">${a.sourceLabel || 'Aviacionline'}</span>
           <span class="news-date">${formatNewsDate(a.pubDate)}</span>
           <div class="news-title">${a.title || 'Sin título'}</div>
           <div class="news-excerpt">${a.excerpt || ''}</div>
           <span class="news-cta">Leer noticia →</span>
         </div>
       </a>`).join('');
-  }
-
-  // ── Filtro por fuente ──
-  function applyFilter(sourceId){
-    activeSource = sourceId;
-    newsFilters.querySelectorAll('.news-filter-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.source === sourceId);
-    });
-    const filtered = sourceId === 'all'
-      ? allArticles
-      : allArticles.filter(a => a.sourceId === sourceId);
-    renderCards(filtered);
-  }
-
-  // ── Construye botones de filtro ──
-  function buildFilters(sources){
-    newsFilters.querySelectorAll('[data-source]:not([data-source="all"])').forEach(el => el.remove());
-    sources.forEach(src => {
-      const btn = document.createElement('button');
-      btn.className = 'news-filter-btn';
-      btn.dataset.source = src.id;
-      btn.textContent = src.label;
-      btn.addEventListener('click', () => applyFilter(src.id));
-      newsFilters.appendChild(btn);
-    });
-    // Re-enlaza el botón "Todas" (se crea en HTML estático)
-    newsFilters.querySelector('[data-source="all"]')
-      .addEventListener('click', () => applyFilter('all'));
   }
 
   // ── Carga principal desde la Netlify Function ──
@@ -1395,18 +1302,18 @@
       if(!data.articles || !data.articles.length){
         newsGrid.innerHTML = `<div class="news-error">
           <strong>Sin noticias por el momento</strong>
-          Las fuentes no devolvieron artículos. Intenta de nuevo más tarde.
+          La fuente no devolvió artículos. Intenta de nuevo más tarde.
         </div>`;
         return;
       }
 
-      allArticles = data.articles;
-      buildFilters(data.sources || []);
-      renderCards(allArticles);
+      renderCards(data.articles);
 
       const now = new Date();
-      newsUpdated.textContent =
-        `Actualizado: ${now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})}`;
+      const hhmm = now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+      newsUpdated.textContent = data.cached
+        ? `En caché · próxima actualización en ≤48h`
+        : `Actualizado: ${hhmm}`;
 
     }catch(err){
       newsGrid.innerHTML = `<div class="news-error">
@@ -1417,9 +1324,11 @@
     }
   }
 
-  // Carga al iniciar; refresca cada 90 minutos
+  // Carga al iniciar. El refresco real ocurre server-side cada 48h (caché de
+  // la función); este intervalo solo refleja esa caché en pantalla sin
+  // generar tráfico extra hacia la fuente.
   loadNews();
-  setInterval(loadNews, 90 * 60 * 1000);
+  setInterval(loadNews, 6 * 60 * 60 * 1000); // cada 6h revisa la caché local
 </script>
 
 </body>
