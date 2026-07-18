@@ -1,41 +1,48 @@
 // netlify/functions/noticias.js
-// Fetch y parseo server-side de feeds RSS aeronáuticos.
+// Noticias de aviación — SOLO TEXTO (sin imágenes), 8 artículos, fuente única:
+// Aviacionline.com (sección "Aviación Comercial").
 // Ruta: /.netlify/functions/noticias
-// Query params opcionales:
-//   ?source=avweb          → solo esa fuente
-//   ?count=12              → máximo artículos totales (default 15)
+//
+// ── Estrategia de caché (para no gastar créditos de Netlify) ────────────────
+// 1) Cache-Control con max-age=48h + stale-while-revalidate: la CDN de Netlify
+//    devuelve la respuesta cacheada directamente sin volver a invocar la
+//    función durante 48 horas. Esta es la vía principal de ahorro.
+// 2) Caché en memoria (variable de módulo): si el contenedor de la función
+//    sigue "caliente" entre invocaciones, evita repetir el fetch/parseo a
+//    aviacionline.com aunque la CDN llegue a re-invocar la función.
+// 3) Si el fetch a la fuente falla, se sirve la última copia buena guardada
+//    en memoria (mejor mostrar noticias "viejas" que un error).
 
 const https = require("https");
-const http  = require("http");
 
-// ── Fuentes RSS ──────────────────────────────────────────────────────────────
-const SOURCES = [
-  { id: "avweb",        label: "AVweb",         url: "https://www.avweb.com/feed/" },
-  { id: "aviationweek", label: "Aviation Week",  url: "https://aviationweek.com/rss.xml" },
-  { id: "aopa",         label: "AOPA",           url: "https://www.aopa.org/news-and-media/all-news/rss-feed" },
-  { id: "flightglobal", label: "Flight Global",  url: "https://www.flightglobal.com/rss/news" },
-  { id: "aeronoticias", label: "Aeronoticias",   url: "https://www.aeronoticias.com.pe/aeronautica/feed/" },
-];
+// ── Fuente única ──────────────────────────────────────────────────────────
+const SOURCE = {
+  id: "aviacionline",
+  label: "Aviacionline",
+  url: "https://www.aviacionline.com/espanol/aviacion-comercial_c68cdfd44a0ea712e1fb00314",
+};
 
-const MAX_PER_SOURCE = 6;
+const MAX_ARTICLES   = 8;
 const TIMEOUT_MS     = 8000;
+const CACHE_MS       = 48 * 60 * 60 * 1000; // 48 horas
 
-// ── HTTP fetch con timeout ───────────────────────────────────────────────────
+// Caché en memoria del proceso (persiste mientras el contenedor esté vivo)
+let memoryCache = { data: null, timestamp: 0 };
+
+// ── HTTP GET con timeout ─────────────────────────────────────────────────
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
-    const lib    = url.startsWith("https") ? https : http;
-    const timer  = setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS);
-    const req = lib.get(
+    const timer = setTimeout(() => { req.destroy(); reject(new Error("timeout")); }, TIMEOUT_MS);
+    const req = https.get(
       url,
       {
         headers: {
           "User-Agent":
             "Mozilla/5.0 (compatible; SoyAeronautico-Bot/1.0; +https://soyaeronautico.com)",
-          Accept: "application/rss+xml, application/xml, text/xml, */*",
+          Accept: "text/html,application/xhtml+xml",
         },
       },
       (res) => {
-        // Sigue redirecciones (301/302)
         if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
           clearTimeout(timer);
           req.destroy();
@@ -60,144 +67,174 @@ function fetchUrl(url) {
   });
 }
 
-// ── Extrae texto de una etiqueta XML ────────────────────────────────────────
-function tag(xml, name) {
-  // Prueba CDATA primero, luego texto plano
-  const cdataRe = new RegExp(
-    `<${name}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${name}>`,
-    "i"
-  );
-  const plainRe = new RegExp(`<${name}[^>]*>([\\s\\S]*?)<\\/${name}>`, "i");
-  const m = xml.match(cdataRe) || xml.match(plainRe);
-  return m ? m[1].trim() : "";
-}
-
-// ── Extrae valor de un atributo ─────────────────────────────────────────────
-function attr(xml, tagName, attrName) {
-  const re = new RegExp(`<${tagName}[^>]+${attrName}="([^"]*)"`, "i");
-  const m  = xml.match(re);
-  return m ? m[1] : "";
-}
-
-// ── Limpia HTML del excerpt ──────────────────────────────────────────────────
-function stripHtml(str) {
+// ── Decodifica entidades HTML básicas ────────────────────────────────────
+function decodeEntities(str) {
   return str
-    .replace(/<[^>]+>/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
+    .replace(/&#0?39;/g, "'")
     .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/&aacute;/g, "á").replace(/&eacute;/g, "é").replace(/&iacute;/g, "í")
+    .replace(/&oacute;/g, "ó").replace(/&uacute;/g, "ú").replace(/&ntilde;/g, "ñ")
+    .replace(/&Aacute;/g, "Á").replace(/&Eacute;/g, "É").replace(/&Iacute;/g, "Í")
+    .replace(/&Oacute;/g, "Ó").replace(/&Uacute;/g, "Ú").replace(/&Ntilde;/g, "Ñ")
+    .replace(/&#x?([0-9a-fA-F]+);/g, (_, code) =>
+      String.fromCodePoint(parseInt(code, code[0] && /^[0-9]+$/.test(code) ? 10 : 16))
+    );
 }
 
-// ── Intenta extraer la primera URL de imagen del contenido ──────────────────
-function extractImage(itemXml) {
-  // 1) <media:content url="...">
-  let m = itemXml.match(/<media:content[^>]+url="([^"]+)"/i);
-  if (m && /\.(jpe?g|png|webp|gif)/i.test(m[1])) return m[1];
+// ── Detecta un prefijo de fecha en español: "sábado 18/7/2026" ──────────────
+const DIAS_RE = /(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i;
 
-  // 2) <media:thumbnail url="...">
-  m = itemXml.match(/<media:thumbnail[^>]+url="([^"]+)"/i);
-  if (m && /\.(jpe?g|png|webp|gif)/i.test(m[1])) return m[1];
-
-  // 3) <enclosure url="..." type="image/...">
-  m = itemXml.match(/<enclosure[^>]+url="([^"]+)"[^>]+type="image/i);
-  if (m) return m[1];
-
-  // 4) Primera <img src="..."> dentro del contenido o description
-  m = itemXml.match(/<img[^>]+src="([^"]+)"/i);
-  if (m && /\.(jpe?g|png|webp|gif)/i.test(m[1])) return m[1];
-
-  return "";
+function parseSpanishDateToISO(str) {
+  const m = str.match(DIAS_RE);
+  if (!m) return null;
+  const [, , dd, mm, yyyy] = m;
+  const pad = (n) => n.toString().padStart(2, "0");
+  return `${yyyy}-${pad(mm)}-${pad(dd)}T00:00:00-05:00`;
 }
 
-// ── Parsea un feed RSS completo ──────────────────────────────────────────────
-function parseFeed(xml, source) {
-  // Parte el XML en bloques <item>…</item>
-  const itemBlocks = [];
-  const itemRe = /<item[\s>]([\s\S]*?)<\/item>/gi;
+// ── Convierte el HTML interno de una tarjeta en bloques de texto limpios ───
+function extractTextBlocks(innerHtml) {
+  let html = innerHtml
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<img[^>]*>/gi, "");
+
+  // Marca un separador después de cada cierre de bloque de texto típico
+  html = html.replace(/<\/(h[1-6]|p|li|time|small|span|div)>/gi, (m) => `${m}\u0001`);
+
+  const text = decodeEntities(html.replace(/<[^>]+>/g, ""));
+
+  return text
+    .split("\u0001")
+    .map((s) => s.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .filter((s) => !/^no disponible sin conexi[oó]n\.?$/i.test(s))
+    .filter((s, i, arr) => i === 0 || s !== arr[i - 1]); // sin duplicados consecutivos
+}
+
+// ── Arma un excerpt corto y prolijo ─────────────────────────────────────────
+function buildExcerpt(text, maxLen = 180) {
+  if (!text) return "";
+  if (text.length <= maxLen) return text;
+  const cut = text.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 60 ? lastSpace : maxLen)}…`;
+}
+
+// ── Parsea la página de listado y devuelve hasta N artículos ────────────────
+function parseListing(html, source, max) {
+  const ANCHOR_RE =
+    /<a\s+[^>]*href="(https:\/\/www\.aviacionline\.com\/(?:espanol|english)\/[^"?#]+_a[0-9a-f]{15,})[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+
+  const seen = new Set();
+  const articles = [];
   let match;
-  while ((match = itemRe.exec(xml)) !== null) {
-    itemBlocks.push(match[1]);
-  }
 
-  return itemBlocks.slice(0, MAX_PER_SOURCE).map((block) => {
-    const title     = stripHtml(tag(block, "title"));
-    const link      = tag(block, "link") || attr(block, "link", "href");
-    const pubDate   = tag(block, "pubDate") || tag(block, "dc:date") || tag(block, "published");
-    const descRaw   = tag(block, "description") || tag(block, "summary") || tag(block, "content:encoded");
-    const excerpt   = stripHtml(descRaw).slice(0, 280);
-    const thumbnail = extractImage(block);
+  while ((match = ANCHOR_RE.exec(html)) !== null && articles.length < max) {
+    const link = match[1];
+    if (seen.has(link)) continue;
 
-    return {
+    const blocks = extractTextBlocks(match[2]);
+    if (!blocks.length) continue;
+
+    let title, excerptParts, pubDate = null;
+
+    const isDateLine = DIAS_RE.test(blocks[0]);
+    if (isDateLine) {
+      pubDate = parseSpanishDateToISO(blocks[0]);
+      title = blocks[1];
+      excerptParts = blocks.slice(2);
+    } else {
+      title = blocks[0];
+      excerptParts = blocks.slice(1);
+    }
+
+    if (!title || title.length < 8 || title.length > 220) continue;
+
+    seen.add(link);
+    articles.push({
       sourceId:    source.id,
       sourceLabel: source.label,
       title,
       link,
       pubDate,
-      excerpt,
-      thumbnail,
-    };
-  }).filter((item) => item.title && item.link);
+      excerpt: buildExcerpt(excerptParts.join(" ")),
+    });
+  }
+
+  return articles;
 }
 
-// ── Handler principal ────────────────────────────────────────────────────────
-exports.handler = async (event) => {
+// ── Handler principal ────────────────────────────────────────────────────
+exports.handler = async () => {
   const CORS = {
     "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type":                 "application/json",
-    // Netlify Edge puede cachear la respuesta hasta 10 min para reducir fetches
-    "Cache-Control":                "public, max-age=600, stale-while-revalidate=1800",
+    // La CDN de Netlify puede servir esta respuesta durante 48h sin volver
+    // a invocar la función (stale-while-revalidate da 24h extra de margen).
+    "Cache-Control":
+      "public, max-age=172800, stale-while-revalidate=86400",
   };
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 204, headers: CORS, body: "" };
-  }
+  const now = Date.now();
 
-  const params     = event.queryStringParameters || {};
-  const sourceFilter = params.source || "all";
-  const maxTotal   = Math.min(parseInt(params.count, 10) || 15, 30);
-
-  // Filtra fuentes si se pidió una específica
-  const sources = sourceFilter === "all"
-    ? SOURCES
-    : SOURCES.filter((s) => s.id === sourceFilter);
-
-  if (!sources.length) {
+  // 1) Caché en memoria todavía vigente → no se hace ningún fetch externo.
+  if (memoryCache.data && now - memoryCache.timestamp < CACHE_MS) {
     return {
-      statusCode: 400,
+      statusCode: 200,
       headers: CORS,
-      body: JSON.stringify({ error: "source not found" }),
+      body: JSON.stringify({
+        articles: memoryCache.data,
+        sources: [{ id: SOURCE.id, label: SOURCE.label }],
+        cached: true,
+      }),
     };
   }
 
-  // Fetch en paralelo — los que fallen simplemente no aportan artículos
-  const results = await Promise.allSettled(
-    sources.map(async (src) => {
-      const xml   = await fetchUrl(src.url);
-      return parseFeed(xml, src);
-    })
-  );
+  // 2) Toca refrescar: se intenta el fetch a la fuente.
+  try {
+    const html = await fetchUrl(SOURCE.url);
+    const articles = parseListing(html, SOURCE, MAX_ARTICLES);
 
-  const articles = results
-    .filter((r) => r.status === "fulfilled")
-    .flatMap((r) => r.value)
-    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
-    .slice(0, maxTotal);
-
-  // Fuentes que sí respondieron (para que el front construya los filtros)
-  const activeSources = sources
-    .filter((_, i) => results[i].status === "fulfilled" && results[i].value.length > 0)
-    .map((s) => ({ id: s.id, label: s.label }));
-
-  return {
-    statusCode: 200,
-    headers: CORS,
-    body: JSON.stringify({ articles, sources: activeSources }),
-  };
+    if (articles.length) {
+      memoryCache = { data: articles, timestamp: now };
+      return {
+        statusCode: 200,
+        headers: CORS,
+        body: JSON.stringify({
+          articles,
+          sources: [{ id: SOURCE.id, label: SOURCE.label }],
+          cached: false,
+        }),
+      };
+    }
+    throw new Error("sin artículos parseados");
+  } catch (err) {
+    // 3) Falló el fetch/parseo: si hay una copia vieja en memoria, se sirve
+    //    igual (mejor noticias desactualizadas que un error en pantalla).
+    if (memoryCache.data) {
+      return {
+        statusCode: 200,
+        headers: CORS,
+        body: JSON.stringify({
+          articles: memoryCache.data,
+          sources: [{ id: SOURCE.id, label: SOURCE.label }],
+          cached: true,
+          stale: true,
+        }),
+      };
+    }
+    return {
+      statusCode: 502,
+      headers: CORS,
+      body: JSON.stringify({ error: "No se pudo obtener noticias", detail: err.message }),
+    };
+  }
 };
+
