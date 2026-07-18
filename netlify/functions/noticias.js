@@ -14,6 +14,7 @@
 //    en memoria (mejor mostrar noticias "viejas" que un error).
 
 const https = require("https");
+const zlib  = require("zlib");
 
 // ── Fuente única ──────────────────────────────────────────────────────────
 const SOURCE = {
@@ -29,7 +30,7 @@ const CACHE_MS       = 48 * 60 * 60 * 1000; // 48 horas
 // Caché en memoria del proceso (persiste mientras el contenedor esté vivo)
 let memoryCache = { data: null, timestamp: 0 };
 
-// ── HTTP GET con timeout ─────────────────────────────────────────────────
+// ── HTTP GET con timeout + descompresión (gzip/deflate/br) ───────────────
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => { req.destroy(); reject(new Error("timeout")); }, TIMEOUT_MS);
@@ -38,15 +39,20 @@ function fetchUrl(url) {
       {
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (compatible; SoyAeronautico-Bot/1.0; +https://soyaeronautico.com)",
-          Accept: "text/html,application/xhtml+xml",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "es-ES,es;q=0.9",
+          "Accept-Encoding": "gzip, deflate, br",
         },
       },
       (res) => {
         if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
           clearTimeout(timer);
           req.destroy();
-          fetchUrl(res.headers.location).then(resolve).catch(reject);
+          const nextUrl = res.headers.location.startsWith("http")
+            ? res.headers.location
+            : new URL(res.headers.location, url).toString();
+          fetchUrl(nextUrl).then(resolve).catch(reject);
           return;
         }
         if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -58,7 +64,18 @@ function fetchUrl(url) {
         res.on("data", (c) => chunks.push(c));
         res.on("end", () => {
           clearTimeout(timer);
-          resolve(Buffer.concat(chunks).toString("utf-8"));
+          try {
+            const buf = Buffer.concat(chunks);
+            const encoding = (res.headers["content-encoding"] || "").toLowerCase();
+            let out;
+            if (encoding.includes("br")) out = zlib.brotliDecompressSync(buf);
+            else if (encoding.includes("gzip")) out = zlib.gunzipSync(buf);
+            else if (encoding.includes("deflate")) out = zlib.inflateSync(buf);
+            else out = buf;
+            resolve(out.toString("utf-8"));
+          } catch (e) {
+            reject(e);
+          }
         });
         res.on("error", (e) => { clearTimeout(timer); reject(e); });
       }
@@ -127,15 +144,19 @@ function buildExcerpt(text, maxLen = 180) {
 
 // ── Parsea la página de listado y devuelve hasta N artículos ────────────────
 function parseListing(html, source, max) {
+  // Acepta tanto href="https://www.aviacionline.com/espanol/..._aXXXX"
+  // como href="/espanol/..._aXXXX" (rutas relativas).
   const ANCHOR_RE =
-    /<a\s+[^>]*href="(https:\/\/www\.aviacionline\.com\/(?:espanol|english)\/[^"?#]+_a[0-9a-f]{15,})[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+    /<a\s+[^>]*href="((?:https:\/\/www\.aviacionline\.com)?\/(?:espanol|english)\/[^"?#]+_a[0-9a-f]{15,})[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
 
   const seen = new Set();
   const articles = [];
   let match;
 
   while ((match = ANCHOR_RE.exec(html)) !== null && articles.length < max) {
-    const link = match[1];
+    const link = match[1].startsWith("http")
+      ? match[1]
+      : `https://www.aviacionline.com${match[1]}`;
     if (seen.has(link)) continue;
 
     const blocks = extractTextBlocks(match[2]);
@@ -170,7 +191,7 @@ function parseListing(html, source, max) {
 }
 
 // ── Handler principal ────────────────────────────────────────────────────
-exports.handler = async () => {
+exports.handler = async (event) => {
   const CORS = {
     "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -181,6 +202,37 @@ exports.handler = async () => {
     "Cache-Control":
       "public, max-age=172800, stale-while-revalidate=86400",
   };
+
+  const params = (event && event.queryStringParameters) || {};
+
+  // ── Modo diagnóstico: /.netlify/functions/noticias?debug=1 ──────────────
+  // Bypasea toda caché y devuelve datos crudos para ver qué está llegando
+  // realmente desde aviacionline.com, sin tener que adivinar a ciegas.
+  if (params.debug) {
+    try {
+      const html = await fetchUrl(SOURCE.url);
+      const anchorCount = (html.match(/<a\s+[^>]*href="[^"]*_a[0-9a-f]{15,}/gi) || []).length;
+      const articles = parseListing(html, SOURCE, MAX_ARTICLES);
+      return {
+        statusCode: 200,
+        headers: { ...CORS, "Cache-Control": "no-store" },
+        body: JSON.stringify({
+          debug: true,
+          htmlLength: html.length,
+          anchorMatches: anchorCount,
+          htmlSample: html.slice(0, 1500),
+          parsedCount: articles.length,
+          parsedSample: articles.slice(0, 2),
+        }, null, 2),
+      };
+    } catch (err) {
+      return {
+        statusCode: 200,
+        headers: { ...CORS, "Cache-Control": "no-store" },
+        body: JSON.stringify({ debug: true, error: err.message }, null, 2),
+      };
+    }
+  }
 
   const now = Date.now();
 
@@ -237,4 +289,3 @@ exports.handler = async () => {
     };
   }
 };
-
