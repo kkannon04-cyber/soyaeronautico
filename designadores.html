@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designadores de Lugar | SoyAeronautico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --vfr:#2E9E6D;
+    --mvfr:#3E7BFA;
+    --ifr:#D64545;
+    --lifr:#8B5CF6;
+    --warn:#E08E3E;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --vfr:#4FA88C;
+    --mvfr:#4A8FD1;
+    --ifr:#C9564F;
+    --lifr:#B15FC7;
+    --warn:#D19A55;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- STICKY HEADER (misma estructura que glosario.html) ---------- */
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--mvfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--mvfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- HERO SIMPLE ---------- */
+  .hero-simple{ max-width:960px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--mvfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 3.6vw, 2.5rem); line-height:1.15; margin-bottom:12px; }
+  .hero-simple p.lead{ color:var(--text-muted); max-width:680px; font-size:1rem; line-height:1.6; margin:0; }
+
+  /* ---------- SEARCH BOX ---------- */
+  .search-wrap{ max-width:960px; margin:26px auto 0; padding:0 32px; position:sticky; top:65px; z-index:40; }
+  .search-instrument{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
+    padding:18px 20px; box-shadow:var(--shadow-card);
+  }
+  .search-row{ display:flex; gap:10px; align-items:center; }
+  .search-icon{ flex-shrink:0; color:var(--text-muted); }
+  .search-input{
+    flex:1; background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:12px 14px; font-size:1rem; color:var(--text); font-family:'IBM Plex Mono';
+    outline:none; transition:border-color .15s;
+  }
+  .search-input:focus{ border-color:var(--accent); }
+  .clear-btn{
+    flex-shrink:0; background:none; border:1px solid var(--hairline); color:var(--text-muted);
+    border-radius:8px; width:38px; height:38px; cursor:pointer; font-size:0.95rem; display:flex;
+    align-items:center; justify-content:center; transition:.15s;
+  }
+  .clear-btn:hover{ color:var(--danger); border-color:var(--danger); }
+
+  .filter-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+  .filter-chip{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.03em;
+    padding:6px 13px; border-radius:20px; border:1px solid var(--hairline);
+    background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; user-select:none;
+  }
+  .filter-chip:hover{ border-color:var(--accent); color:var(--text); }
+  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .dept-select-wrap{ position:relative; margin-left:auto; }
+  @media (max-width:700px){ .dept-select-wrap{ margin-left:0; width:100%; } }
+  .dept-select{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.03em;
+    padding:7px 30px 7px 13px; border-radius:20px; border:1px solid var(--hairline);
+    background:var(--bg); color:var(--text); cursor:pointer; appearance:none;
+    -webkit-appearance:none; transition:.15s; max-width:220px;
+  }
+  @media (max-width:700px){ .dept-select{ max-width:100%; width:100%; } }
+  .dept-select:hover{ border-color:var(--accent); }
+  .dept-select:focus{ outline:none; border-color:var(--accent); }
+  .dept-select-wrap::after{
+    content:'▾'; position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:0.65rem; color:var(--text-muted); pointer-events:none;
+  }
+
+  .sort-row{ display:flex; gap:6px; align-items:center; margin-top:10px; }
+  .sort-label{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); letter-spacing:0.05em; text-transform:uppercase; margin-right:2px; }
+  .sort-btn{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; padding:4px 10px; border-radius:7px;
+    border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s;
+  }
+  .sort-btn:hover{ color:var(--text); border-color:var(--accent); }
+  .sort-btn.active{ background:var(--panel-alt); color:var(--accent); border-color:var(--accent); font-weight:600; }
+
+  .result-meta{
+    max-width:960px; margin:14px auto 0; padding:0 32px;
+    font-family:'IBM Plex Mono'; font-size:0.76rem; color:var(--text-muted);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;
+  }
+  .active-dept-tag{
+    display:inline-flex; align-items:center; gap:6px; background:rgba(var(--accent-rgb),0.12);
+    color:var(--accent); border-radius:20px; padding:3px 10px 3px 12px; font-weight:600;
+  }
+  .active-dept-tag button{
+    background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.85rem; line-height:1;
+    padding:0; display:flex;
+  }
+
+  /* ---------- A-Z JUMP BAR ---------- */
+  .az-bar{ max-width:960px; margin:10px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:4px; }
+  .az-btn{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; width:24px; height:24px;
+    display:flex; align-items:center; justify-content:center; border-radius:5px;
+    color:var(--text-muted); text-decoration:none; border:1px solid transparent; transition:.15s;
+  }
+  .az-btn:hover{ border-color:var(--hairline); color:var(--accent); }
+  .az-btn.disabled{ opacity:0.25; pointer-events:none; }
+
+  /* ---------- LIST ---------- */
+  .content{ max-width:960px; margin:0 auto; padding:20px 32px 90px; }
+  .letter-group{ margin-bottom:8px; scroll-margin-top:250px; }
+  .letter-heading{
+    font-family:'Archivo'; font-weight:800; font-size:1.1rem; color:var(--mvfr);
+    padding:22px 0 8px; position:sticky; top:180px; background:var(--bg); z-index:5;
+  }
+  .term-row{
+    display:flex; gap:16px; align-items:flex-start; padding:13px 4px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .term-abbr{
+    flex-shrink:0; width:96px; font-family:'IBM Plex Mono'; font-weight:700;
+    font-size:0.92rem; color:var(--accent); padding-top:1px;
+  }
+  .term-body{ flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; }
+  .term-meaning{ font-size:0.9rem; line-height:1.5; color:var(--text); font-weight:600; flex-basis:100%; }
+  .term-tags{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .term-badge{
+    display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono';
+    font-weight:700; font-size:0.62rem; border-radius:5px; padding:2px 8px;
+    letter-spacing:0.03em; background:rgba(var(--accent-rgb),0.13); color:var(--accent);
+  }
+  .term-badge.dept-badge{ cursor:pointer; }
+  .term-badge.dept-badge:hover{ background:rgba(var(--accent-rgb),0.24); }
+  .term-badge.restricted{ background:rgba(224,142,62,0.16); color:var(--warn); }
+  .term-badge.public{ background:rgba(46,158,109,0.16); color:var(--vfr); }
+
+  mark{ background:rgba(var(--accent-rgb),0.28); color:inherit; border-radius:3px; padding:0 2px; }
+
+  .no-results{ text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .no-results .big{ font-size:2.4rem; margin-bottom:10px; }
+
+  .source-note{
+    max-width:960px; margin:10px auto 0; padding:14px 32px 0;
+    font-size:0.76rem; color:var(--text-muted); line-height:1.6;
+  }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:600px){
+    .term-abbr{ width:78px; font-size:0.84rem; }
+    .search-wrap{ top:57px; }
+    .letter-heading{ top:230px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
+          <g transform="rotate(-40 20 20)">
+            <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
+            <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        SoyAeronautico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html">ATS</a>
+      <a href="designadores.html" class="active">Designadores</a>
+      <a href="meteorologia.html">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <div class="search-wrap">
+    <div class="search-instrument">
+      <div class="search-row">
+        <span class="search-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Busca un aeródromo, código ICAO o departamento… ej. SKBO, Rionegro, Casanare" autocomplete="off">
+        <button class="clear-btn" id="clearBtn" aria-label="Limpiar búsqueda" type="button">✕</button>
+      </div>
+      <div class="filter-row" id="filterRow">
+        <span class="filter-chip active" data-use="ALL">Todos</span>
+        <span class="filter-chip" data-use="PUB">Aeropuertos públicos</span>
+        <span class="filter-chip" data-use="RES">Uso restringido (*)</span>
+        <div class="dept-select-wrap">
+          <select class="dept-select mono" id="deptSelect" aria-label="Filtrar por departamento">
+            <option value="ALL">Todos los departamentos</option>
+          </select>
+        </div>
+      </div>
+      <div class="sort-row">
+        <span class="sort-label">Ordenar por</span>
+        <button class="sort-btn active" id="sortName" type="button">Nombre A–Z</button>
+        <button class="sort-btn" id="sortCode" type="button">Código ICAO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-meta">
+    <span id="resultCount">— designadores</span>
+    <span id="deptTagWrap"></span>
+    <span id="az-hint" class="mono" style="opacity:.7;">Salta a una letra ↓</span>
+  </div>
+
+  <div class="az-bar" id="azBar"></div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">GEN 2.4 · AIP COLOMBIA · AIS/COM/MET</div>
+  <h1>Designadores de Lugar (Indicadores OACI)</h1>
+  
+</section>
+
+<main class="content" id="glossaryContent"></main>
+
+<p class="source-note">Listado extraído de AIP Colombia, GEN 2.4 "Indicadores de Lugar" (Aeronáutica Civil de Colombia — AIS Colombia), columna CODIFICAR/Encode. Los indicadores marcados con asterisco (*) son de uso restringido según el documento fuente. Contenido con fines de estudio; ante cualquier duda operacional consulta siempre el AIP vigente.</p>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Fuente: AIP Colombia GEN 2.4</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- ZULU MINI CLOCK ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function p(n){ return n.toString().padStart(2,'0'); }
+  function tickZulu(){
+    const now = new Date();
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  tickZulu();
+  setInterval(tickZulu, 1000);
+
+  // ---------- DATOS: DESIGNADORES DE LUGAR ----------
+  // n = nombre del aeródromo, d = departamento/ciudad, c = código ICAO, r = uso restringido (llevaba * en el AIP)
+  const DESIGNADORES = [{"n":"ACANDI","d":"CHOCÓ","c":"SKAD","r":true,"dept":"CHOCÓ"},{"n":"ACAPULCO","d":"CASANARE","c":"SQPU","r":true,"dept":"CASANARE"},{"n":"AEROCLUB BARI","d":"NORTE DE SANTANDER","c":"SKBY","r":true,"dept":"NORTE DE SANTANDER"},{"n":"AERODROMO DE VILLANUEVA CAPITAN RAF","d":"CASANARE","c":"SKVN","r":true,"dept":"CASANARE"},{"n":"AEROFLANDES","d":"TOLIMA","c":"SQFF","r":true,"dept":"TOLIMA"},{"n":"AEROSPORT.C.A.","d":"TOLIMA","c":"SKEF","r":true,"dept":"TOLIMA"},{"n":"AFGANISTAN","d":"CASANARE","c":"SKFS","r":true,"dept":"CASANARE"},{"n":"AGROLAR","d":"CASANARE","c":"SKXO","r":true,"dept":"CASANARE"},{"n":"AGUA BLANCA","d":"TOLIMA","c":"SQGC","r":true,"dept":"TOLIMA"},{"n":"AGUA BLANCA","d":"TOLIMA","c":"SQGL","r":true,"dept":"TOLIMA"},{"n":"AGUAS BLANCAS","d":"CESAR","c":"SQAB","r":true,"dept":"CESAR"},{"n":"AGUAS CLARAS","d":"OCAÑA","c":"SKOC","r":false,"dept":"NORTE DE SANTANDER"},{"n":"AGUAS CLARAS","d":"SANTANDER","c":"SQAK","r":true,"dept":"SANTANDER"},{"n":"AKAE","d":"VICHADA","c":"SQKA","r":true,"dept":"VICHADA"},{"n":"ALBERTO LLERAS CAMARGO","d":"BOYACÁ","c":"SKSO","r":true,"dept":"BOYACÁ"},{"n":"ALCALDIA DE MEDELLIN","d":"ANTIOQUIA","c":"SQMD","r":true,"dept":"ANTIOQUIA"},{"n":"ALFONSO BONILLA ARAGON","d":"CALI","c":"SKCL","r":false,"dept":"VALLE DEL CAUCA"},{"n":"ALFONSO LOPEZ PUMAREJO","d":"VALLEDUPAR","c":"SKVP","r":false,"dept":"CESAR"},{"n":"ALFREDO VASQUEZ COBO","d":"LETICIA","c":"SKLT","r":false,"dept":"AMAZONAS"},{"n":"ALGARROBO FANOR","d":"MAGDALENA","c":"SQGF","r":true,"dept":"MAGDALENA"},{"n":"ALMIRANTE PADILLA","d":"RIOHACHA","c":"SKRH","r":false,"dept":"GUAJIRA"},{"n":"ALTAMIRA","d":"CASANARE","c":"SKTK","r":true,"dept":"CASANARE"},{"n":"AMALFI","d":"ANTIOQUIA","c":"SKAM","r":true,"dept":"ANTIOQUIA"},{"n":"ANA MARIA","d":"CESAR","c":"SQMB","r":true,"dept":"CESAR"},{"n":"ANIVERSARIO","d":"TOLIMA","c":"SQAV","r":true,"dept":"TOLIMA"},{"n":"ANTONIO NARIÑO","d":"PASTO","c":"SKPS","r":false,"dept":"NARIÑO"},{"n":"ANTONIO ROLDAN BETANCOURT","d":"CAREPA","c":"SKLC","r":false,"dept":"ANTIOQUIA"},{"n":"APOTEMA","d":"DISTRITO CAPITAL","c":"SKPH","r":true,"dept":"DISTRITO CAPITAL"},{"n":"ARACAL","d":"CASANARE","c":"SKQL","r":true,"dept":"CASANARE"},{"n":"ARAGUANEY","d":"CASANARE","c":"SKEY","r":true,"dept":"CASANARE"},{"n":"ARARACUARA","d":"CAQUETÁ","c":"SKAC","r":true,"dept":"CAQUETÁ"},{"n":"ARMENIA","d":"CASANARE","c":"SQNI","r":true,"dept":"CASANARE"},{"n":"ASA SAN MARTIN","d":"GUAJIRA","c":"SQAS","r":true,"dept":"GUAJIRA"},{"n":"ASTA","d":"TOLIMA","c":"SQIT","r":true,"dept":"TOLIMA"},{"n":"ATACO","d":"TOLIMA","c":"SKAK","r":true,"dept":"TOLIMA"},{"n":"AUSTRIA","d":"VICHADA","c":"SKDM","r":true,"dept":"VICHADA"},{"n":"BALMORAL","d":"CASANARE","c":"SQBL","r":true,"dept":"CASANARE"},{"n":"BANCO CAFETERO","d":"CALDAS","c":"SKBF","r":true,"dept":"CALDAS"},{"n":"BANCO DE BOGOTA","d":"DISTRITO CAPITAL","c":"SQTA","r":true,"dept":"DISTRITO CAPITAL"},{"n":"BANCO DE LA REPUBLICA","d":"ANTIOQUIA","c":"SKBL","r":true,"dept":"ANTIOQUIA"},{"n":"BANCO DE LA REPUBLICA","d":"CUNDINAMARCA","c":"SKIL","r":true,"dept":"CUNDINAMARCA"},{"n":"BANCO DE LA REPUBLICA","d":"NARIÑO","c":"SKNB","r":true,"dept":"NARIÑO"},{"n":"BANCO DE LA REPUBLICA","d":"VALLE DEL CAUCA","c":"SQAL","r":true,"dept":"VALLE DEL CAUCA"},{"n":"BANCO DE LA REPUBLICA","d":"CHOCÓ","c":"SQDQ","r":true,"dept":"CHOCÓ"},{"n":"BANCO DE LA REPUBLICA","d":"CHOCÓ","c":"SQEL","r":true,"dept":"CHOCÓ"},{"n":"BANCO DE LA REPUBLICA","d":"ANTIOQUIA","c":"SQKZ","r":true,"dept":"ANTIOQUIA"},{"n":"BANCO DE LA REPUBLICA","d":"NARIÑO","c":"SQUC","r":true,"dept":"NARIÑO"},{"n":"BANCO DE OCCIDENTE","d":"VALLE DEL CAUCA","c":"SQTE","r":true,"dept":"VALLE DEL CAUCA"},{"n":"BANCO LARGO","d":"CASANARE","c":"SQGO","r":true,"dept":"CASANARE"},{"n":"BANCO POPULAR","d":"ANTIOQUIA","c":"SQPP","r":true,"dept":"ANTIOQUIA"},{"n":"BARACOA","d":"MAGANGUE","c":"SKMG","r":true,"dept":"BOLÍVAR"},{"n":"BARBASCAL","d":"META","c":"SQXB","r":true,"dept":"META"},{"n":"BARINAS","d":"CASANARE","c":"SQBS","r":true,"dept":"CASANARE"},{"n":"BARLOVENTO","d":"CASANARE","c":"SQBP","r":true,"dept":"CASANARE"},{"n":"BARRANCOMINAS","d":"GUAINÍA","c":"SKBM","r":true,"dept":"GUAINÍA"},{"n":"BARU","d":"BOLÍVAR","c":"SQBU","r":true,"dept":"BOLÍVAR"},{"n":"BARU  HIDROPUERTO","d":"BOLÍVAR","c":"SKHI","r":true,"dept":"BOLÍVAR"},{"n":"BASE NAVAL COVEÑAS","d":"SUCRE","c":"SKCV","r":true,"dept":"SUCRE"},{"n":"BASE PRINCIPAL CELTA","d":"CESAR","c":"SQRS","r":true,"dept":"CESAR"},{"n":"BAVARIA","d":"DISTRITO CAPITAL","c":"SKBV","r":true,"dept":"DISTRITO CAPITAL"},{"n":"BEBEA","d":"CASANARE","c":"SKBK","r":true,"dept":"CASANARE"},{"n":"BECERRIL","d":"CESAR","c":"SKBE","r":true,"dept":"CESAR"},{"n":"BELEN DE INAMBU","d":"VAUPÉS","c":"SQBK","r":true,"dept":"VAUPÉS"},{"n":"BELGRADO","d":"CASANARE","c":"SKBB","r":true,"dept":"CASANARE"},{"n":"BELLA CRUZ","d":"CESAR","c":"SQBZ","r":true,"dept":"CESAR"},{"n":"BELLAVISTA","d":"VICHADA","c":"SKWV","r":true,"dept":"VICHADA"},{"n":"BENEFICENCIA DE CUNDINAMARCA","d":"DISTRITO CAPITAL","c":"SQNF","r":true,"dept":"DISTRITO CAPITAL"},{"n":"BENEFICENCIA DEL TOLIMA","d":"TOLIMA","c":"SKEE","r":true,"dept":"TOLIMA"},{"n":"BENITO SALAS","d":"NEIVA","c":"SKNV","r":false,"dept":"HUILA"},{"n":"BERASTEGUI","d":"CÓRDOBA","c":"SKBR","r":true,"dept":"CÓRDOBA"},{"n":"BERLIN","d":"HUILA","c":"SQBV","r":true,"dept":"HUILA"},{"n":"BETANIA","d":"CASANARE","c":"SQBD","r":true,"dept":"CASANARE"},{"n":"BETHANIA","d":"CESAR","c":"SQBE","r":true,"dept":"CESAR"},{"n":"BIZERTA","d":"CASANARE","c":"SKZT","r":true,"dept":"CASANARE"},{"n":"BOCAS DE SATINGA","d":"NARIÑO","c":"SQBC","r":true,"dept":"NARIÑO"},{"n":"BOCOA QUERARI","d":"VAUPÉS","c":"SQBQ","r":true,"dept":"VAUPÉS"},{"n":"BOLUGA","d":"TOLIMA","c":"SQOV","r":true,"dept":"TOLIMA"},{"n":"BONAIRE","d":"CÓRDOBA","c":"SKAE","r":true,"dept":"CÓRDOBA"},{"n":"BOSQUES DE LA PRIMAVERA","d":"VICHADA","c":"SKQV","r":true,"dept":"VICHADA"},{"n":"BUCARELIA","d":"SANTANDER","c":"SQBW","r":true,"dept":"SANTANDER"},{"n":"BUENA VISTA","d":"CASANARE","c":"SKBT","r":true,"dept":"CASANARE"},{"n":"BUENA VISTA","d":"CASANARE","c":"SQQV","r":true,"dept":"CASANARE"},{"n":"BUENAVISTA","d":"GUAJIRA","c":"SKBN","r":true,"dept":"GUAJIRA"},{"n":"BUENOS AIRES","d":"SANTANDER","c":"SKBA","r":true,"dept":"SANTANDER"},{"n":"BUENOS AIRES","d":"CASANARE","c":"SQBR","r":true,"dept":"CASANARE"},{"n":"BUENOS AIRES","d":"VAUPÉS","c":"SQER","r":true,"dept":"VAUPÉS"},{"n":"BUENOS AIRES FADELCE CESA","d":"BUENOS AIRES FADELCE CESA","c":"SQBA","r":true,"dept":"CESAR"},{"n":"BUNGALOW","d":"ANTIOQUIA","c":"SKBW","r":true,"dept":"ANTIOQUIA"},{"n":"CABARALEZ","d":"SANTANDER","c":"SKBZ","r":true,"dept":"SANTANDER"},{"n":"CABO MARZO","d":"CHOCÓ","c":"SQCM","r":true,"dept":"CHOCÓ"},{"n":"CACHIMBALITO","d":"CAUCA","c":"SKAH","r":true,"dept":"CAUCA"},{"n":"CACHIPORRO","d":"VAUPÉS","c":"SQHV","r":true,"dept":"VAUPÉS"},{"n":"CAJA DE VIVIENDA MILITAR","d":"DISTRITO CAPITAL","c":"SQVM","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CAJA DE VIVIENDA MILITAR","d":"ANTIOQUIA","c":"SQYI","r":true,"dept":"ANTIOQUIA"},{"n":"CALAMAR GUAVIARE","d":"GUAVIARE","c":"SQGJ","r":true,"dept":"GUAVIARE"},{"n":"CALDERAS","d":"ANTIOQUIA","c":"SQDR","r":true,"dept":"ANTIOQUIA"},{"n":"CALICANTO","d":"TOLIMA","c":"SQTV","r":true,"dept":"TOLIMA"},{"n":"CALIMA","d":"CESAR","c":"SQCG","r":true,"dept":"CESAR"},{"n":"CAMARA DE COMERCIO DE BOGOTA","d":"DISTRITO CAPITAL","c":"SQCC","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CAMARUCOS","d":"CASANARE","c":"SQMU","r":true,"dept":"CASANARE"},{"n":"CAMILO DAZA","d":"CÚCUTA","c":"SKCC","r":false,"dept":"NORTE DE SANTANDER"},{"n":"CAMPO ALEGRE","d":"GUAINÍA","c":"SKMH","r":true,"dept":"GUAINÍA"},{"n":"CAMPO ALEGRE","d":"CESAR","c":"SQCP","r":true,"dept":"CESAR"},{"n":"CAMPO ALEGRE","d":"CASANARE","c":"SQMQ","r":true,"dept":"CASANARE"},{"n":"CAMPO EL PALOMAR","d":"QUINDÍO","c":"SKAX","r":true,"dept":"QUINDÍO"},{"n":"CAMPO ESTERO","d":"CASANARE","c":"SQCT","r":true,"dept":"CASANARE"},{"n":"CAMPO VENECIA","d":"VALLE DEL CAUCA","c":"SQZV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"CAMPOALEGRE","d":"HUILA","c":"SQOG","r":true,"dept":"HUILA"},{"n":"CANANARI","d":"VAUPÉS","c":"SKNN","r":true,"dept":"VAUPÉS"},{"n":"CANARIAS","d":"CASANARE","c":"SQAH","r":true,"dept":"CASANARE"},{"n":"CANDILEJAS","d":"QUINDÍO","c":"SKDJ","r":true,"dept":"QUINDÍO"},{"n":"CANTA CLARO","d":"CASANARE","c":"SKNO","r":true,"dept":"CASANARE"},{"n":"CANTADELICIAS","d":"TOLIMA","c":"SKNS","r":true,"dept":"TOLIMA"},{"n":"CAPRI 1","d":"ARAUCA","c":"SQKC","r":true,"dept":"ARAUCA"},{"n":"CAPRICHITO DE LUNA","d":"CASANARE","c":"SQKT","r":true,"dept":"CASANARE"},{"n":"CAPURGANA","d":"CHOCÓ","c":"SKCA","r":true,"dept":"CHOCÓ"},{"n":"CARIMAGUA","d":"META","c":"SKCI","r":true,"dept":"META"},{"n":"CARMEN DE BOLIVAR","d":"BOLÍVAR","c":"SKCB","r":true,"dept":"BOLÍVAR"},{"n":"CARUPANA","d":"CASANARE","c":"SQWP","r":true,"dept":"CASANARE"},{"n":"CARURU","d":"VAUPÉS","c":"SKCR","r":true,"dept":"VAUPÉS"},{"n":"CASA COIMA","d":"ANTIOQUIA","c":"SQAC","r":true,"dept":"ANTIOQUIA"},{"n":"CASACARA CAYTA","d":"CESAR","c":"SKCY","r":true,"dept":"CESAR"},{"n":"CASTILLO","d":"ATLÁNTICO","c":"SQSL","r":true,"dept":"ATLÁNTICO"},{"n":"CAVASA","d":"VALLE DEL CAUCA","c":"SQCV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"CAÑO COLORADO","d":"GUAINÍA","c":"SKCJ","r":true,"dept":"GUAINÍA"},{"n":"CAÑO COLORADO","d":"VAUPÉS","c":"SQVP","r":true,"dept":"VAUPÉS"},{"n":"CAÑO GANDUL","d":"CASANARE","c":"SKDU","r":true,"dept":"CASANARE"},{"n":"CAÑO GARZA","d":"CASANARE","c":"SKAA","r":true,"dept":"CASANARE"},{"n":"CENTRAL CASTILLA","d":"VALLE DEL CAUCA","c":"SQCA","r":true,"dept":"VALLE DEL CAUCA"},{"n":"CENTRO ADMINISTRATIVO MUNICIPAL DE CALI","d":"VALLE DEL CAUCA","c":"SQEA","r":true,"dept":"VALLE DEL CAUCA"},{"n":"CENTRO COMERCIAL ANDINO","d":"DISTRITO CAPITAL","c":"SKCK","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CENTRO DISTRITAL DE SALUD","d":"DISTRITO CAPITAL","c":"SKSK","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CENTRO DISTRITAL DE SALUDBOG","d":"DISTRITO CAPITAL","c":"SKDC","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CENTRO HOSPITALARIO SERENA DEL MAR","d":"BOLÍVAR","c":"SQQP","r":true,"dept":"BOLÍVAR"},{"n":"CENTRO INTERNACIONAL TEQUENDAMA","d":"DISTRITO CAPITAL","c":"SQIQ","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CERREJON CENTRAL","d":"GUAJIRA","c":"SQCE","r":true,"dept":"GUAJIRA"},{"n":"CERRITOS","d":"TOLIMA","c":"SQIB","r":true,"dept":"TOLIMA"},{"n":"CERRO DE PIEDRA","d":"CESAR","c":"SKDP","r":true,"dept":"CESAR"},{"n":"CESAR GAVIRIA","d":"INÍRIDA","c":"SKPD","r":true,"dept":"GUAINÍA"},{"n":"CHAMBIMBAL","d":"VALLE DEL CAUCA","c":"SQHM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"CHAPARRITO","d":"CASANARE","c":"SKHR","r":true,"dept":"CASANARE"},{"n":"CHAPINERO","d":"CÓRDOBA","c":"SQHP","r":true,"dept":"CÓRDOBA"},{"n":"CHICORAL ESTRA","d":"TOLIMA","c":"SQHS","r":true,"dept":"TOLIMA"},{"n":"CICUCO","d":"BOLÍVAR","c":"SKIO","r":true,"dept":"BOLÍVAR"},{"n":"CIENAGA","d":"CASANARE","c":"SKYC","r":true,"dept":"CASANARE"},{"n":"CIENFUEGO","d":"CASANARE","c":"SKIF","r":true,"dept":"CASANARE"},{"n":"CINERA","d":"NORTE DE SANTANDER","c":"SQTU","r":true,"dept":"NORTE DE SANTANDER"},{"n":"CIUDAD YARI","d":"CAQUETÁ","c":"SKUY","r":true,"dept":"CAQUETÁ"},{"n":"CLINICA CTIC","d":"DISTRITO CAPITAL","c":"SKZS","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CLINICA SANTA GRACIA","d":"CAUCA","c":"SQQC","r":true,"dept":"CAUCA"},{"n":"CLINICA SHAIO","d":"DISTRITO CAPITAL","c":"SKOH","r":true,"dept":"DISTRITO CAPITAL"},{"n":"COFA","d":"VALLE DEL CAUCA","c":"SQCR","r":true,"dept":"VALLE DEL CAUCA"},{"n":"COFA","d":"VALLE DEL CAUCA","c":"SQFP","r":true,"dept":"VALLE DEL CAUCA"},{"n":"COFA","d":"QUINDÍO","c":"SQKF","r":true,"dept":"QUINDÍO"},{"n":"COFA BUGA","d":"VALLE DEL CAUCA","c":"SQOB","r":true,"dept":"VALLE DEL CAUCA"},{"n":"COLEGIAL","d":"CASANARE","c":"SQEG","r":true,"dept":"CASANARE"},{"n":"COLINERAS","d":"CASANARE","c":"SKLZ","r":true,"dept":"CASANARE"},{"n":"COLOMBA","d":"VALLE DEL CAUCA","c":"SQKO","r":true,"dept":"VALLE DEL CAUCA"},{"n":"COLOMBAIMA","d":"CUNDINAMARCA","c":"SQCO","r":true,"dept":"CUNDINAMARCA"},{"n":"COLONIZADORES","d":"SARAVENA","c":"SKSA","r":false,"dept":"ARAUCA"},{"n":"COMUNEROS","d":"SANTANDER","c":"SKUD","r":true,"dept":"SANTANDER"},{"n":"CONTADOR","d":"PITALITO","c":"SKPI","r":true,"dept":"HUILA"},{"n":"CORCEL","d":"META","c":"SQRE","r":true,"dept":"META"},{"n":"COROCITO","d":"META","c":"SQOO","r":true,"dept":"META"},{"n":"COROCORA","d":"CASANARE","c":"SKRO","r":true,"dept":"CASANARE"},{"n":"COROZITO","d":"CASANARE","c":"SQCZ","r":true,"dept":"CASANARE"},{"n":"CORRAL NUEVO","d":"MAGDALENA","c":"SQCN","r":true,"dept":"MAGDALENA"},{"n":"COSTA RICA","d":"META","c":"SQCY","r":true,"dept":"META"},{"n":"COTOPRIX","d":"GUAJIRA","c":"SKOP","r":true,"dept":"GUAJIRA"},{"n":"CR. LUIS ARTURO RODRÍGUEZ MENESES","d":"MARANDÚA","c":"SKUA","r":false,"dept":"VICHADA"},{"n":"CRAVO NORTE","d":"ARAUCA","c":"SKCN","r":true,"dept":"ARAUCA"},{"n":"CRAVO SUR","d":"CASANARE","c":"SQCS","r":true,"dept":"CASANARE"},{"n":"CRUZ VERDE","d":"TOLIMA","c":"SKCE","r":true,"dept":"TOLIMA"},{"n":"CT. ERNESTO ESGUERRA CUBIDES","d":"TRES ESQUINAS","c":"SKTQ","r":false,"dept":"CAQUETÁ"},{"n":"CT. GERMÁN OLANO","d":"PALANQUERO","c":"SKPQ","r":false,"dept":"CUNDINAMARCA"},{"n":"CT. JULIO CESAR SANABRIA RIVERA","d":"TOLIMA","c":"SKFJ","r":true,"dept":"TOLIMA"},{"n":"CT. LUIS F. GÓMEZ NIÑO","d":"APIAY","c":"SKAP","r":false,"dept":"META"},{"n":"CUATRO VIENTOS","d":"TOLIMA","c":"SQCU","r":true,"dept":"TOLIMA"},{"n":"CUCURA","d":"VICHADA","c":"SQWC","r":true,"dept":"VICHADA"},{"n":"CUERPO OFICIAL DE BOMBEROS","d":"DISTRITO CAPITAL","c":"SQBM","r":true,"dept":"DISTRITO CAPITAL"},{"n":"CUMARE","d":"META","c":"SKKM","r":true,"dept":"META"},{"n":"CUMARIBO","d":"VICHADA","c":"SKUM","r":true,"dept":"VICHADA"},{"n":"CUPICA","d":"CHOCÓ","c":"SKCP","r":true,"dept":"CHOCÓ"},{"n":"CURALITO","d":"CESAR","c":"SQAI","r":true,"dept":"CESAR"},{"n":"CURUMANI","d":"CESAR","c":"SKUU","r":true,"dept":"CESAR"},{"n":"DOROTEA B1","d":"CASANARE","c":"SKDB","r":true,"dept":"CASANARE"},{"n":"DRUMMOND","d":"MAGDALENA","c":"SKDD","r":true,"dept":"MAGDALENA"},{"n":"DUBAI","d":"CÓRDOBA","c":"SKBI","r":true,"dept":"CÓRDOBA"},{"n":"DUMACITA","d":"CASANARE","c":"SQDU","r":true,"dept":"CASANARE"},{"n":"ECOPETROL","d":"SANTANDER","c":"SQET","r":true,"dept":"SANTANDER"},{"n":"EDGAR CALDAS POTES","d":"VALLE DEL CAUCA","c":"SKDS","r":true,"dept":"VALLE DEL CAUCA"},{"n":"EDIFICIO BANCO DE OCCIDENTE","d":"DISTRITO CAPITAL","c":"SQEB","r":true,"dept":"DISTRITO CAPITAL"},{"n":"EDIFICIO RCN TELEVISION","d":"DISTRITO CAPITAL","c":"SQNV","r":true,"dept":"DISTRITO CAPITAL"},{"n":"EL ACEITUNO","d":"TOLIMA","c":"SQII","r":true,"dept":"TOLIMA"},{"n":"EL ALCARAVÁN","d":"EL YOPAL","c":"SKYP","r":false,"dept":"CASANARE"},{"n":"EL ALGARROBO","d":"SUCRE","c":"SQAW","r":true,"dept":"SUCRE"},{"n":"EL BANCO","d":"MAGDALENA","c":"SKBC","r":true,"dept":"MAGDALENA"},{"n":"EL BORAL","d":"CASANARE","c":"SKEO","r":true,"dept":"CASANARE"},{"n":"EL BORREGO","d":"CESAR","c":"SKLB","r":true,"dept":"CESAR"},{"n":"EL BOSQUE","d":"CESAR","c":"SKEQ","r":true,"dept":"CESAR"},{"n":"EL BRILLANTE","d":"CÓRDOBA","c":"SQEX","r":true,"dept":"CÓRDOBA"},{"n":"EL CABRESTERO","d":"CASANARE","c":"SQKB","r":true,"dept":"CASANARE"},{"n":"EL CAFUCHE","d":"VICHADA","c":"SKCF","r":true,"dept":"VICHADA"},{"n":"EL CAIMAN","d":"CASANARE","c":"SKEA","r":true,"dept":"CASANARE"},{"n":"EL CAIRANO","d":"BOLÍVAR","c":"SQIR","r":true,"dept":"BOLÍVAR"},{"n":"EL CAIRO","d":"CASANARE","c":"SQCI","r":true,"dept":"CASANARE"},{"n":"EL CAPRICHO","d":"META","c":"SQEH","r":true,"dept":"META"},{"n":"EL CARAÑO","d":"QUIBDÓ","c":"SKUI","r":false,"dept":"CHOCÓ"},{"n":"EL CARIBE","d":"CASANARE","c":"SQZR","r":true,"dept":"CASANARE"},{"n":"EL CARMEN DE CHUCURI","d":"SANTANDER","c":"SQIJ","r":true,"dept":"SANTANDER"},{"n":"EL CARMEN DE GUAMAL","d":"MAGDALENA","c":"SKMM","r":true,"dept":"MAGDALENA"},{"n":"EL CEBRUNO","d":"CÓRDOBA","c":"SKOY","r":true,"dept":"CÓRDOBA"},{"n":"EL CEDRITO","d":"QUINDÍO","c":"SQCQ","r":true,"dept":"QUINDÍO"},{"n":"EL CHARCO","d":"NARIÑO","c":"SKEH","r":true,"dept":"NARIÑO"},{"n":"EL CIELO","d":"CASANARE","c":"SKKC","r":true,"dept":"CASANARE"},{"n":"EL CIMARRON","d":"VICHADA","c":"SQEO","r":true,"dept":"VICHADA"},{"n":"EL CONCHAL","d":"VALLE DEL CAUCA","c":"SQNH","r":true,"dept":"VALLE DEL CAUCA"},{"n":"EL CONDOR","d":"TOLIMA","c":"SKOO","r":true,"dept":"TOLIMA"},{"n":"EL CONVENTO","d":"META","c":"SKON","r":true,"dept":"META"},{"n":"EL CORAJE","d":"MAGDALENA","c":"SQJG","r":true,"dept":"MAGDALENA"},{"n":"EL COROZO","d":"ARAUCA","c":"SKOZ","r":true,"dept":"ARAUCA"},{"n":"EL DANUBIO","d":"CASANARE","c":"SKDN","r":true,"dept":"CASANARE"},{"n":"EL DELIRIO","d":"ARAUCA","c":"SQED","r":true,"dept":"ARAUCA"},{"n":"EL DESECHO","d":"CASANARE","c":"SQDH","r":true,"dept":"CASANARE"},{"n":"EL DIAMANTE","d":"META","c":"SKDT","r":true,"dept":"META"},{"n":"EL DIAMANTE","d":"TOLIMA","c":"SQDT","r":true,"dept":"TOLIMA"},{"n":"EL DOLAR","d":"CASANARE","c":"SKEI","r":true,"dept":"CASANARE"},{"n":"EL DORADO","d":"BOGOTÁ","c":"SKBO","r":false,"dept":"DISTRITO CAPITAL"},{"n":"EL EDEN","d":"ARMENIA","c":"SKAR","r":false,"dept":"QUINDÍO"},{"n":"EL EDEN","d":"MAGDALENA","c":"SKLD","r":true,"dept":"MAGDALENA"},{"n":"EL EMBRUJO","d":"PROVIDENCIA","c":"SKPV","r":false,"dept":"SAN ANDRÉS Y PROVIDENCIA"},{"n":"EL ENCANTO","d":"VICHADA","c":"SKNT","r":true,"dept":"VICHADA"},{"n":"EL ENCANTO","d":"AMAZONAS","c":"SQZN","r":true,"dept":"AMAZONAS"},{"n":"EL ESCOBAL","d":"TOLIMA","c":"SQSI","r":true,"dept":"TOLIMA"},{"n":"EL ESFUERZO","d":"ATLÁNTICO","c":"SKZM","r":true,"dept":"ATLÁNTICO"},{"n":"EL ESPINO","d":"BOYACÁ","c":"SQSY","r":true,"dept":"BOYACÁ"},{"n":"EL FARO","d":"CESAR","c":"SKFB","r":true,"dept":"CESAR"},{"n":"EL GAVILAN","d":"VICHADA","c":"SKEN","r":true,"dept":"VICHADA"},{"n":"EL GUAMO","d":"TOLIMA","c":"SQUO","r":true,"dept":"TOLIMA"},{"n":"EL GUAYABAL","d":"CAUCA","c":"SKEG","r":true,"dept":"CAUCA"},{"n":"EL GUAYABETO","d":"META","c":"SKKG","r":true,"dept":"META"},{"n":"EL JUNCAL","d":"HUILA","c":"SQJN","r":true,"dept":"HUILA"},{"n":"EL LAGO","d":"TOLIMA","c":"SKGC","r":true,"dept":"TOLIMA"},{"n":"EL LAGUNAZO","d":"VICHADA","c":"SQZO","r":true,"dept":"VICHADA"},{"n":"EL LIMONAR","d":"HUILA","c":"SQAG","r":true,"dept":"HUILA"},{"n":"EL MARNE","d":"SANTANDER","c":"SQEM","r":true,"dept":"SANTANDER"},{"n":"EL MEDANO","d":"CASANARE","c":"SQEN","r":true,"dept":"CASANARE"},{"n":"EL MILAGRO","d":"VALLE DEL CAUCA","c":"SKEM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"EL MONASTERIO","d":"META","c":"SQMS","r":true,"dept":"META"},{"n":"EL MORICHE","d":"CASANARE","c":"SQHZ","r":true,"dept":"CASANARE"},{"n":"EL NARANJAL","d":"SANTANDER","c":"SKNL","r":true,"dept":"SANTANDER"},{"n":"EL NOGAL","d":"META","c":"SQLL","r":true,"dept":"META"},{"n":"EL PACIFICO","d":"CAQUETÁ","c":"SKCH","r":true,"dept":"CAQUETÁ"},{"n":"EL PAILON","d":"VALLE DEL CAUCA","c":"SKPK","r":true,"dept":"VALLE DEL CAUCA"},{"n":"EL PALMAR","d":"CASANARE","c":"SQRH","r":true,"dept":"CASANARE"},{"n":"EL PALMAR 2","d":"CASANARE","c":"SKWM","r":true,"dept":"CASANARE"},{"n":"EL PANELÓN","d":"VICHADA","c":"SQOW","r":true,"dept":"VICHADA"},{"n":"EL PARAISO","d":"CESAR","c":"SKAO","r":true,"dept":"CESAR"},{"n":"EL PARAISO","d":"VICHADA","c":"SQIO","r":true,"dept":"VICHADA"},{"n":"EL PARAISO","d":"CASANARE","c":"SQOC","r":true,"dept":"CASANARE"},{"n":"EL PARAISO","d":"TOLIMA","c":"SQOI","r":true,"dept":"TOLIMA"},{"n":"EL PEDRAL BONANZA","d":"SANTANDER","c":"SKDZ","r":true,"dept":"SANTANDER"},{"n":"EL PINDO","d":"MONTELIBANO","c":"SKML","r":true,"dept":"CÓRDOBA"},{"n":"EL PLACER","d":"VICHADA","c":"SQJP","r":true,"dept":"VICHADA"},{"n":"EL PORTAL","d":"CESAR","c":"SKTT","r":true,"dept":"CESAR"},{"n":"EL PORVENIR","d":"MAGDALENA","c":"SKEP","r":true,"dept":"MAGDALENA"},{"n":"EL PORVENIR","d":"CASANARE","c":"SKER","r":true,"dept":"CASANARE"},{"n":"EL PROGRESO","d":"META","c":"SQGM","r":true,"dept":"META"},{"n":"EL RASTRO","d":"VICHADA","c":"SQRW","r":true,"dept":"VICHADA"},{"n":"EL RECREO","d":"CASANARE","c":"SQEQ","r":true,"dept":"CASANARE"},{"n":"EL REFUGIO","d":"SANTANDER","c":"SKFO","r":true,"dept":"SANTANDER"},{"n":"EL REFUGIO","d":"LA MACARENA","c":"SKNA","r":true,"dept":"META"},{"n":"EL REMANSO","d":"CASANARE","c":"SQXS","r":true,"dept":"CASANARE"},{"n":"EL RINCON DE MUCURA","d":"SUCRE","c":"SQRU","r":true,"dept":"SUCRE"},{"n":"EL RODEO","d":"CASANARE","c":"SKTA","r":true,"dept":"CASANARE"},{"n":"EL RODEO","d":"META","c":"SQRD","r":true,"dept":"META"},{"n":"EL RODEO","d":"CASANARE","c":"SQRO","r":true,"dept":"CASANARE"},{"n":"EL RUBY","d":"META","c":"SQUY","r":true,"dept":"META"},{"n":"EL SANTISIMO","d":"SANTANDER","c":"SQXO","r":true,"dept":"SANTANDER"},{"n":"EL SILENCIO","d":"CASANARE","c":"SQNZ","r":true,"dept":"CASANARE"},{"n":"EL SOÑADOR","d":"CASANARE","c":"SQDO","r":true,"dept":"CASANARE"},{"n":"EL TAMBO","d":"BOLÍVAR","c":"SKEL","r":true,"dept":"BOLÍVAR"},{"n":"EL TAPON","d":"VICHADA","c":"SQTK","r":true,"dept":"VICHADA"},{"n":"EL TESORITO","d":"CASANARE","c":"SQYO","r":true,"dept":"CASANARE"},{"n":"EL TESORO","d":"CASANARE","c":"SQTJ","r":true,"dept":"CASANARE"},{"n":"EL TOMIN","d":"EL BAGRE","c":"SKEB","r":true,"dept":"ANTIOQUIA"},{"n":"EL TORNILLO","d":"SANTANDER","c":"SQRN","r":true,"dept":"SANTANDER"},{"n":"EL TOTUMO","d":"CASANARE","c":"SQTT","r":true,"dept":"CASANARE"},{"n":"EL TOTUMO 1","d":"CASANARE","c":"SQMO","r":true,"dept":"CASANARE"},{"n":"EL TRIANGULO","d":"MAGDALENA","c":"SKTG","r":true,"dept":"MAGDALENA"},{"n":"EL TRIUNFO","d":"TOLIMA","c":"SQEF","r":true,"dept":"TOLIMA"},{"n":"EL TRIUNFO","d":"CASANARE","c":"SQTO","r":true,"dept":"CASANARE"},{"n":"EL TRONCAL","d":"ARAUCA","c":"SKAT","r":true,"dept":"ARAUCA"},{"n":"EL VATICANO","d":"CUNDINAMARCA","c":"SKVO","r":true,"dept":"CUNDINAMARCA"},{"n":"EL VERGEL","d":"META","c":"SQVY","r":true,"dept":"META"},{"n":"EL VIEJO CARMEN","d":"CASANARE","c":"SKEV","r":true,"dept":"CASANARE"},{"n":"EL VIGIA","d":"CASANARE","c":"SQVU","r":true,"dept":"CASANARE"},{"n":"EL VISO","d":"HUILA","c":"SKVI","r":true,"dept":"HUILA"},{"n":"EL ZAMURO","d":"CASANARE","c":"SQEZ","r":true,"dept":"CASANARE"},{"n":"ELEMENTO","d":"DISTRITO CAPITAL","c":"SQXU","r":true,"dept":"DISTRITO CAPITAL"},{"n":"ELF TRINIDAD","d":"CASANARE","c":"SKFT","r":true,"dept":"CASANARE"},{"n":"ELTREBOL","d":"ANTIOQUIA","c":"SKWE","r":true,"dept":"ANTIOQUIA"},{"n":"EMAUS","d":"CASANARE","c":"SQEU","r":true,"dept":"CASANARE"},{"n":"ENTREMARES","d":"BOLÍVAR","c":"SQZX","r":true,"dept":"BOLÍVAR"},{"n":"ERNESTO CORTISSOZ","d":"BARRANQUILLA","c":"SKBQ","r":false,"dept":"ATLÁNTICO"},{"n":"ESTACION DE BOMBEROS","d":"SANTANDER","c":"SQBH","r":true,"dept":"SANTANDER"},{"n":"EXPOPALMIRA","d":"VALLE DEL CAUCA","c":"SKEX","r":true,"dept":"VALLE DEL CAUCA"},{"n":"FABAL COALCESAR","d":"CESAR","c":"SQFB","r":true,"dept":"CESAR"},{"n":"FABIO A LEON BENTLEY","d":"MITU","c":"SKMU","r":false,"dept":"VAUPÉS"},{"n":"FADECO","d":"CESAR","c":"SQDZ","r":true,"dept":"CESAR"},{"n":"FALCON","d":"TOLIMA","c":"SQFC","r":true,"dept":"TOLIMA"},{"n":"FARFAN HERIBERTO GIL MARTINEZ","d":"TULUÁ","c":"SKUL","r":true,"dept":"VALLE DEL CAUCA"},{"n":"FASCA","d":"CASANARE","c":"SQFS","r":true,"dept":"CASANARE"},{"n":"FISCALIA GENERAL DE LA NACION","d":"ANTIOQUIA","c":"SKFN","r":true,"dept":"ANTIOQUIA"},{"n":"FISCALIA GENERAL DE LA NACION","d":"DISTRITO CAPITAL","c":"SQFG","r":true,"dept":"DISTRITO CAPITAL"},{"n":"FLAMINIO SUAREZ CAMACHO","d":"CHIA","c":"SKGY","r":false,"dept":"CUNDINAMARCA"},{"n":"FORTUL","d":"ARAUCA","c":"SKFF","r":true,"dept":"ARAUCA"},{"n":"FRONTINO EL PLATEADO","d":"ANTIOQUIA","c":"SKFE","r":true,"dept":"ANTIOQUIA"},{"n":"FUNDACION CARDIOVASCULAR DE COLOMBIA","d":"SANTANDER","c":"SKFC","r":true,"dept":"SANTANDER"},{"n":"FUNDACION FOSUNAB","d":"SANTANDER","c":"SQZF","r":true,"dept":"SANTANDER"},{"n":"FUNDACION OFTALMOLOGICA DE SANTANDER","d":"SANTANDER","c":"SQUA","r":true,"dept":"SANTANDER"},{"n":"FUNDACION VALLE DE LILI","d":"VALLE DEL CAUCA","c":"SKFV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"FUNDICION ESCOBAR","d":"ANTIOQUIA","c":"SKFI","r":true,"dept":"ANTIOQUIA"},{"n":"FUNDICION GUTIERREZ","d":"ANTIOQUIA","c":"SKFD","r":true,"dept":"ANTIOQUIA"},{"n":"FURATENA","d":"BOYACÁ","c":"SKFR","r":true,"dept":"BOYACÁ"},{"n":"GABRIELAS","d":"VALLE DEL CAUCA","c":"SKGJ","r":true,"dept":"VALLE DEL CAUCA"},{"n":"GANADERIA EL TRIUNFO","d":"TOLIMA","c":"SKGT","r":true,"dept":"TOLIMA"},{"n":"GARIBALDY","d":"CASANARE","c":"SQLD","r":true,"dept":"CASANARE"},{"n":"GARZA MORICHAL","d":"GUAINÍA","c":"SQJM","r":true,"dept":"GUAINÍA"},{"n":"GAVANES","d":"META","c":"SQGV","r":true,"dept":"META"},{"n":"GAVILAN DE LA PASCUA","d":"VICHADA","c":"SQGU","r":true,"dept":"VICHADA"},{"n":"GAVIOTAS","d":"META","c":"SKGF","r":true,"dept":"META"},{"n":"GEMELOS DORADOS","d":"SANTANDER","c":"SKGD","r":true,"dept":"SANTANDER"},{"n":"GENERAL ADELMO RUIZ MARES","d":"CUNDINAMARCA","c":"SKAZ","r":true,"dept":"CUNDINAMARCA"},{"n":"GERARDO TOBAR LOPEZ","d":"BUENAVENTURA","c":"SKBU","r":false,"dept":"VALLE DEL CAUCA"},{"n":"GERMAN ALBERTO","d":"CASANARE","c":"SQMY","r":true,"dept":"CASANARE"},{"n":"GERMAN OLANO","d":"PUERTO CARREÑO","c":"SKPC","r":false,"dept":"VICHADA"},{"n":"GETSEMANI","d":"CASANARE","c":"SKMI","r":true,"dept":"CASANARE"},{"n":"GOBERNACION DE ANTIOQUIA","d":"ANTIOQUIA","c":"SQGA","r":true,"dept":"ANTIOQUIA"},{"n":"GOLFO DE MORROSQUILLO","d":"TOLÚ","c":"SKTL","r":true,"dept":"SUCRE"},{"n":"GONZALO MEJIA","d":"ANTIOQUIA","c":"SKTU","r":true,"dept":"ANTIOQUIA"},{"n":"GRISMANIA","d":"CASANARE","c":"SQGS","r":true,"dept":"CASANARE"},{"n":"GUACAMAYAS","d":"CAQUETÁ","c":"SKYV","r":true,"dept":"CAQUETÁ"},{"n":"GUACHARACAS","d":"CUNDINAMARCA","c":"SQRC","r":true,"dept":"CUNDINAMARCA"},{"n":"GUADALAJARA","d":"TOLIMA","c":"SKGU","r":true,"dept":"TOLIMA"},{"n":"GUADALUPE","d":"CASANARE","c":"SKJJ","r":true,"dept":"CASANARE"},{"n":"GUADUALITO","d":"CASANARE","c":"SKGH","r":true,"dept":"CASANARE"},{"n":"GUAFITAS","d":"CASANARE","c":"SQAF","r":true,"dept":"CASANARE"},{"n":"GUAICARAMO","d":"META","c":"SKBP","r":true,"dept":"META"},{"n":"GUAMITOS","d":"HUILA","c":"SKUH","r":true,"dept":"HUILA"},{"n":"GUANAGUANARE","d":"VICHADA","c":"SKNR","r":true,"dept":"VICHADA"},{"n":"GUANAPALO","d":"CASANARE","c":"SQGP","r":true,"dept":"CASANARE"},{"n":"GUANAYAS","d":"META","c":"SQGY","r":true,"dept":"META"},{"n":"GUARANDINGAS","d":"CASANARE","c":"SQUI","r":true,"dept":"CASANARE"},{"n":"GUARILAQUE","d":"CASANARE","c":"SKGQ","r":true,"dept":"CASANARE"},{"n":"GUAYABAL DEL CRAVO","d":"CASANARE","c":"SKGV","r":true,"dept":"CASANARE"},{"n":"GUERIMA","d":"VICHADA","c":"SKUV","r":true,"dept":"VICHADA"},{"n":"GUILLERMO LEÓN VALENCIA","d":"POPAYÁN","c":"SKPP","r":false,"dept":"CAUCA"},{"n":"GUINULERO","d":"NARIÑO","c":"SKIN","r":true,"dept":"NARIÑO"},{"n":"GUSTAVO ARTUNDUAGA PAREDES","d":"FLORENCIA","c":"SKFL","r":false,"dept":"CAQUETÁ"},{"n":"GUSTAVO ROJAS","d":"SANTANDER","c":"SKCM","r":true,"dept":"SANTANDER"},{"n":"GUSTAVO ROJAS PINILLA","d":"SAN ANDRÉS","c":"SKSP","r":false,"dept":"SAN ANDRÉS Y PROVIDENCIA"},{"n":"GUSTAVO ROJAS PINILLA","d":"BOYACÁ","c":"SKTJ","r":true,"dept":"BOYACÁ"},{"n":"GUSTAVO VARGAS","d":"TAME","c":"SKTM","r":false,"dept":"ARAUCA"},{"n":"HACARITAMA","d":"AGUACHICA","c":"SKAG","r":true,"dept":"CESAR"},{"n":"HACIENDA CASCABELES","d":"META","c":"SQHX","r":true,"dept":"META"},{"n":"HACIENDA GARCIA","d":"TOLIMA","c":"SKHG","r":true,"dept":"TOLIMA"},{"n":"HACIENDA LA JOYA","d":"BOLÍVAR","c":"SQHY","r":true,"dept":"BOLÍVAR"},{"n":"HACIENDA LA MARQUEZA","d":"CUNDINAMARCA","c":"SQMK","r":true,"dept":"CUNDINAMARCA"},{"n":"HALCONES","d":"META","c":"SQHF","r":true,"dept":"META"},{"n":"HATICO","d":"CASANARE","c":"SQHK","r":true,"dept":"CASANARE"},{"n":"HATO COROZAL","d":"CASANARE","c":"SKHC","r":true,"dept":"CASANARE"},{"n":"HATO DE OPIA","d":"TOLIMA","c":"SQHT","r":true,"dept":"TOLIMA"},{"n":"HATO GARIBAY","d":"CASANARE","c":"SKHY","r":true,"dept":"CASANARE"},{"n":"HATO GRANDE","d":"META","c":"SQWH","r":true,"dept":"META"},{"n":"HATO LA AURORA","d":"CASANARE","c":"SQHA","r":true,"dept":"CASANARE"},{"n":"HATO LOS MERECURES","d":"VICHADA","c":"SKYH","r":true,"dept":"VICHADA"},{"n":"HATO SAN JOSE","d":"VICHADA","c":"SKHT","r":true,"dept":"VICHADA"},{"n":"HATO VELADERO","d":"CASANARE","c":"SQHE","r":true,"dept":"CASANARE"},{"n":"HATO VIEJO","d":"ARAUCA","c":"SKHV","r":true,"dept":"ARAUCA"},{"n":"HELI AIR RIONEGRO","d":"ANTIOQUIA","c":"SQHO","r":true,"dept":"ANTIOQUIA"},{"n":"HELICENTRO","d":"CUNDINAMARCA","c":"SKHL","r":true,"dept":"CUNDINAMARCA"},{"n":"HELITAXI","d":"DISTRITO CAPITAL","c":"SKHX","r":true,"dept":"DISTRITO CAPITAL"},{"n":"HELITOURS GUATAPE","d":"ANTIOQUIA","c":"SQWU","r":true,"dept":"ANTIOQUIA"},{"n":"HELIVALLE","d":"VALLE DEL CAUCA","c":"SQEV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"HIPILANDIA","d":"CESAR","c":"SKHD","r":true,"dept":"CESAR"},{"n":"HONDURAS","d":"BOLÍVAR","c":"SKHJ","r":true,"dept":"BOLÍVAR"},{"n":"HOSPITAL DE CALDAS","d":"CALDAS","c":"SKHS","r":true,"dept":"CALDAS"},{"n":"HOSPITAL DE ENGATIVA","d":"DISTRITO CAPITAL","c":"SQHG","r":true,"dept":"DISTRITO CAPITAL"},{"n":"HOSPITAL GENERAL DE MEDELLIN","d":"ANTIOQUIA","c":"SQHI","r":true,"dept":"ANTIOQUIA"},{"n":"HOSPITAL INTERNACIONAL DE COLOMBIA","d":"SANTANDER","c":"SQHJ","r":true,"dept":"SANTANDER"},{"n":"HOSPITAL REGIONAL DE ALTA COMPLEJIDAD CAROLINA LARRARTE NSR","d":"RISARALDA","c":"SKHH","r":true,"dept":"RISARALDA"},{"n":"HOSPITAL SAN VICENTE DE PAUL","d":"ANTIOQUIA","c":"SKHP","r":true,"dept":"ANTIOQUIA"},{"n":"HOTEL DEL CAMPO","d":"QUINDÍO","c":"SQLP","r":true,"dept":"QUINDÍO"},{"n":"HOTEL HYATT BOGOTA","d":"DISTRITO CAPITAL","c":"SQMH","r":true,"dept":"DISTRITO CAPITAL"},{"n":"HOTEL INTERCONTINENTAL DE MEDELLIN","d":"ANTIOQUIA","c":"SQWI","r":true,"dept":"ANTIOQUIA"},{"n":"HOTEL LAS AMERICAS","d":"BOLÍVAR","c":"SQHR","r":true,"dept":"BOLÍVAR"},{"n":"HOTEL RUITOQUE","d":"SANTANDER","c":"SQQE","r":true,"dept":"SANTANDER"},{"n":"HOTEL SAN DIEGO","d":"META","c":"SQSD","r":true,"dept":"META"},{"n":"I.N.G. BARINGS","d":"DISTRITO CAPITAL","c":"SQGB","r":true,"dept":"DISTRITO CAPITAL"},{"n":"IBACABA","d":"VAUPÉS","c":"SQIG","r":true,"dept":"VAUPÉS"},{"n":"ICP ECOPETROL","d":"SANTANDER","c":"SQCL","r":true,"dept":"SANTANDER"},{"n":"INDIRA","d":"ANTIOQUIA","c":"SQND","r":true,"dept":"ANTIOQUIA"},{"n":"INGENIO CARMELITA","d":"VALLE DEL CAUCA","c":"SKII","r":true,"dept":"VALLE DEL CAUCA"},{"n":"INGENIO DEL OCCIDENTE","d":"CAUCA","c":"SQIX","r":true,"dept":"CAUCA"},{"n":"INGENIO INCAUCA","d":"CAUCA","c":"SQIC","r":true,"dept":"CAUCA"},{"n":"INGENIO MANUELITA","d":"VALLE DEL CAUCA","c":"SQIM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"INGENIO MAYAGUEZ","d":"VALLE DEL CAUCA","c":"SKIY","r":true,"dept":"VALLE DEL CAUCA"},{"n":"INGENIO PICHICHI","d":"VALLE DEL CAUCA","c":"SQIH","r":true,"dept":"VALLE DEL CAUCA"},{"n":"INGENIO PROVIDENCIA","d":"VALLE DEL CAUCA","c":"SQIV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"INGENIO RISARALDA","d":"RISARALDA","c":"SKDA","r":true,"dept":"RISARALDA"},{"n":"IRHO","d":"CESAR","c":"SKHO","r":true,"dept":"CESAR"},{"n":"IRLANDA","d":"CAUCA","c":"SKIX","r":true,"dept":"CAUCA"},{"n":"ISA","d":"ANTIOQUIA","c":"SKID","r":true,"dept":"ANTIOQUIA"},{"n":"ISA","d":"VALLE DEL CAUCA","c":"SQAR","r":true,"dept":"VALLE DEL CAUCA"},{"n":"ISA","d":"SANTANDER","c":"SQSO","r":true,"dept":"SANTANDER"},{"n":"ISCUANDE","d":"NARIÑO","c":"SQST","r":true,"dept":"NARIÑO"},{"n":"JABALCON","d":"TOLIMA","c":"SKJB","r":true,"dept":"TOLIMA"},{"n":"JABIRU","d":"TOLIMA","c":"SKVB","r":true,"dept":"TOLIMA"},{"n":"JAGUAR","d":"META","c":"SKJR","r":true,"dept":"META"},{"n":"JAGUAS","d":"ANTIOQUIA","c":"SQJA","r":true,"dept":"ANTIOQUIA"},{"n":"JAGUEYES","d":"CASANARE","c":"SKJX","r":true,"dept":"CASANARE"},{"n":"JAIME ORTIZ BETANCUR","d":"ANTIOQUIA","c":"SKIG","r":true,"dept":"ANTIOQUIA"},{"n":"JAMAICA","d":"CASANARE","c":"SKJM","r":true,"dept":"CASANARE"},{"n":"JIBICI","d":"VICHADA","c":"SQJC","r":true,"dept":"VICHADA"},{"n":"JORGE E. GONZALEZ T.","d":"SAN JOSÉ DEL GUAVIARE","c":"SKSJ","r":false,"dept":"GUAVIARE"},{"n":"JORGE ISAAC","d":"MAICAO","c":"SKLM","r":false,"dept":"GUAJIRA"},{"n":"JOSE CELESTINO MUTIS","d":"BAHÍA SOLANO","c":"SKBS","r":false,"dept":"CHOCÓ"},{"n":"JOSE CELESTINO MUTIS","d":"MARIQUITA","c":"SKQU","r":false,"dept":"TOLIMA"},{"n":"JOSÉ MARÍA CÓRDOVA","d":"RIONEGRO","c":"SKRG","r":false,"dept":"ANTIOQUIA"},{"n":"JUAN CASIANO","d":"GUAPI","c":"SKGP","r":false,"dept":"CAUCA"},{"n":"JUAN HENRY WHITE","d":"ANTIOQUIA","c":"SKCU","r":true,"dept":"ANTIOQUIA"},{"n":"JUAN JOSE RONDON","d":"PAIPA","c":"SKPA","r":false,"dept":"BOYACÁ"},{"n":"JUANCHACO","d":"JUANCHACO","c":"SKJC","r":true,"dept":"VALLE DEL CAUCA"},{"n":"JULIA CAROLINA","d":"CESAR","c":"SQJL","r":true,"dept":"CESAR"},{"n":"JULIAN","d":"META","c":"SQJU","r":true,"dept":"META"},{"n":"JURADO","d":"CHOCÓ","c":"SKJU","r":true,"dept":"CHOCÓ"},{"n":"JUTUVEY","d":"META","c":"SQJY","r":true,"dept":"META"},{"n":"KAMANAOS","d":"VAUPÉS","c":"SQKM","r":true,"dept":"VAUPÉS"},{"n":"L. LEGUA","d":"MAGDALENA","c":"SQGK","r":true,"dept":"MAGDALENA"},{"n":"LA ABEJITA","d":"CASANARE","c":"SKBJ","r":true,"dept":"CASANARE"},{"n":"LA AMALIA","d":"MAGDALENA","c":"SQMI","r":true,"dept":"MAGDALENA"},{"n":"LA ARABIA","d":"META","c":"SQRY","r":true,"dept":"META"},{"n":"LA ARROBLEDA","d":"CAUCA","c":"SQRA","r":true,"dept":"CAUCA"},{"n":"LA ATARRAYA","d":"CÓRDOBA","c":"SKAY","r":true,"dept":"CÓRDOBA"},{"n":"LA AURORA","d":"CUNDINAMARCA","c":"SKRB","r":true,"dept":"CUNDINAMARCA"},{"n":"LA AURORA","d":"CÓRDOBA","c":"SQAU","r":true,"dept":"CÓRDOBA"},{"n":"LA BANDOLA","d":"CASANARE","c":"SKDL","r":true,"dept":"CASANARE"},{"n":"LA BASE FUMIVALLE","d":"VALLE DEL CAUCA","c":"SQFM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA BASTILLA","d":"TOLIMA","c":"SQBG","r":true,"dept":"TOLIMA"},{"n":"LA BENDICION","d":"VICHADA","c":"SQBN","r":true,"dept":"VICHADA"},{"n":"LA BENDICION DE ARAUCA","d":"ARAUCA","c":"SQBB","r":true,"dept":"ARAUCA"},{"n":"LA BENDICIÓN DE MANARE","d":"CASANARE","c":"SQWE","r":true,"dept":"CASANARE"},{"n":"LA BENGALA","d":"CASANARE","c":"SQZB","r":true,"dept":"CASANARE"},{"n":"LA BOHEMIA","d":"CASANARE","c":"SKKA","r":true,"dept":"CASANARE"},{"n":"LA BONANZA","d":"CASANARE","c":"SKZB","r":true,"dept":"CASANARE"},{"n":"LA BRAMADORA","d":"CASANARE","c":"SKLO","r":true,"dept":"CASANARE"},{"n":"LA CABAÑA","d":"CAUCA","c":"SQCB","r":true,"dept":"CAUCA"},{"n":"LA CABAÑA","d":"META","c":"SQLB","r":true,"dept":"META"},{"n":"LA CACICA","d":"CESAR","c":"SQLI","r":true,"dept":"CESAR"},{"n":"LA CAIMANA","d":"CASANARE","c":"SQMZ","r":true,"dept":"CASANARE"},{"n":"LA CAMPECHANA","d":"CASANARE","c":"SQHN","r":true,"dept":"CASANARE"},{"n":"LA CANDELARIA","d":"META","c":"SKDR","r":true,"dept":"META"},{"n":"LA CANDELARIA","d":"CASANARE","c":"SKLX","r":true,"dept":"CASANARE"},{"n":"LA CARMELITA","d":"TOLIMA","c":"SKCT","r":true,"dept":"TOLIMA"},{"n":"LA CAROLINA","d":"CESAR","c":"SQRL","r":true,"dept":"CESAR"},{"n":"LA CARPETA","d":"CASANARE","c":"SKET","r":true,"dept":"CASANARE"},{"n":"LA CEIBA","d":"MAGDALENA","c":"SQGG","r":true,"dept":"MAGDALENA"},{"n":"LA CEIBA","d":"CASANARE","c":"SQUH","r":true,"dept":"CASANARE"},{"n":"LA CHAPA","d":"CASANARE","c":"SQHH","r":true,"dept":"CASANARE"},{"n":"LA COLINA","d":"META","c":"SQNM","r":true,"dept":"META"},{"n":"LA COLONIA","d":"CASANARE","c":"SKZE","r":true,"dept":"CASANARE"},{"n":"LA COMARCA","d":"CASANARE","c":"SQOM","r":true,"dept":"CASANARE"},{"n":"LA CONCEPCION","d":"CÓRDOBA","c":"SKPO","r":true,"dept":"CÓRDOBA"},{"n":"LA CONCORDIA","d":"CASANARE","c":"SQCD","r":true,"dept":"CASANARE"},{"n":"LA CONCORDIA","d":"ATLÁNTICO","c":"SQDI","r":true,"dept":"ATLÁNTICO"},{"n":"LA CULEBRA","d":"CASANARE","c":"SKLE","r":true,"dept":"CASANARE"},{"n":"LA DALIA","d":"ARAUCA","c":"SQDL","r":true,"dept":"ARAUCA"},{"n":"LA DILIA","d":"CESAR","c":"SKIA","r":true,"dept":"CESAR"},{"n":"LA DIVA","d":"MAGDALENA","c":"SKDV","r":true,"dept":"MAGDALENA"},{"n":"LA ELVIRA","d":"VALLE DEL CAUCA","c":"SQVO","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA ENVIDIA","d":"CASANARE","c":"SQLV","r":true,"dept":"CASANARE"},{"n":"LA ESCONDIDA","d":"META","c":"SQLN","r":true,"dept":"META"},{"n":"LA ESMERALDA","d":"VALLE DEL CAUCA","c":"SQDD","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA ESMERALDA","d":"META","c":"SQDV","r":true,"dept":"META"},{"n":"LA ESPERANCITA","d":"META","c":"SQZE","r":true,"dept":"META"},{"n":"LA ESPERANZA","d":"CÓRDOBA","c":"SKEZ","r":true,"dept":"CÓRDOBA"},{"n":"LA ESPERANZA","d":"CUNDINAMARCA","c":"SKNZ","r":true,"dept":"CUNDINAMARCA"},{"n":"LA ESPERANZA","d":"SANTANDER","c":"SKRZ","r":true,"dept":"SANTANDER"},{"n":"LA ESPERANZA","d":"CESAR","c":"SQPZ","r":true,"dept":"CESAR"},{"n":"LA ESTRELLA","d":"META","c":"SQEE","r":true,"dept":"META"},{"n":"LA ESTRELLA","d":"VALLE DEL CAUCA","c":"SQEK","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA FAHENA","d":"CASANARE","c":"SKXF","r":true,"dept":"CASANARE"},{"n":"LA FAZENDA","d":"META","c":"SQFZ","r":true,"dept":"META"},{"n":"LA FE","d":"CESAR","c":"SQLA","r":true,"dept":"CESAR"},{"n":"LA FLORA","d":"CASANARE","c":"SKLF","r":true,"dept":"CASANARE"},{"n":"LA FLORESTA","d":"HUILA","c":"SQLF","r":true,"dept":"HUILA"},{"n":"LA FLORIDA","d":"TUMACO","c":"SKCO","r":false,"dept":"NARIÑO"},{"n":"LA FLORIDA","d":"META","c":"SQFL","r":true,"dept":"META"},{"n":"LA FORTALEZA","d":"CASANARE","c":"SQFT","r":true,"dept":"CASANARE"},{"n":"LA FORTUNA","d":"META","c":"SKFZ","r":true,"dept":"META"},{"n":"LA FORTUNA 1","d":"META","c":"SQFU","r":true,"dept":"META"},{"n":"LA FRANCIA","d":"CESAR","c":"SQFR","r":true,"dept":"CESAR"},{"n":"LA FUGA","d":"META","c":"SKUG","r":true,"dept":"META"},{"n":"LA FUNDACIÓN","d":"CASANARE","c":"SQFD","r":true,"dept":"CASANARE"},{"n":"LA FÉ","d":"MAGDALENA","c":"SQFE","r":true,"dept":"MAGDALENA"},{"n":"LA GAITANA","d":"META","c":"SKXT","r":true,"dept":"META"},{"n":"LA GAVIOTA","d":"VICHADA","c":"SKGA","r":true,"dept":"VICHADA"},{"n":"LA GAVIOTA","d":"MAGDALENA","c":"SKVA","r":true,"dept":"MAGDALENA"},{"n":"LA GLORIA","d":"CASANARE","c":"SKGL","r":true,"dept":"CASANARE"},{"n":"LA HERMOSA","d":"CASANARE","c":"SQLH","r":true,"dept":"CASANARE"},{"n":"LA HERRERA","d":"TOLIMA","c":"SKHB","r":true,"dept":"TOLIMA"},{"n":"LA ILUSION","d":"CASANARE","c":"SQLS","r":true,"dept":"CASANARE"},{"n":"LA IRLANDA","d":"CESAR","c":"SKRL","r":true,"dept":"CESAR"},{"n":"LA ISLA","d":"META","c":"SKLI","r":true,"dept":"META"},{"n":"LA JAGUA","d":"HUILA","c":"SKGZ","r":true,"dept":"HUILA"},{"n":"LA JAGUA DE IBIRICO","d":"CESAR","c":"SKJI","r":true,"dept":"CESAR"},{"n":"LA JAULA","d":"VICHADA","c":"SQLJ","r":true,"dept":"VICHADA"},{"n":"LA LIBELULA","d":"CUNDINAMARCA","c":"SQBJ","r":true,"dept":"CUNDINAMARCA"},{"n":"LA LOMA","d":"META","c":"SQOL","r":true,"dept":"META"},{"n":"LA LORENA","d":"CASANARE","c":"SQLO","r":true,"dept":"CASANARE"},{"n":"LA LUCHA","d":"MAGDALENA","c":"SKGM","r":true,"dept":"MAGDALENA"},{"n":"LA LUNA","d":"META","c":"SQUF","r":true,"dept":"META"},{"n":"LA MACARENA","d":"VALLE DEL CAUCA","c":"SQLM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA MACOYA","d":"CASANARE","c":"SKLY","r":true,"dept":"CASANARE"},{"n":"LA MANGA","d":"HUILA","c":"SKNH","r":true,"dept":"HUILA"},{"n":"LA MAPORA","d":"CASANARE","c":"SKOA","r":true,"dept":"CASANARE"},{"n":"LA MARIA","d":"META","c":"SQMM","r":true,"dept":"META"},{"n":"LA MARIA","d":"TOLIMA","c":"SQRF","r":true,"dept":"TOLIMA"},{"n":"LA MARINA","d":"MAGDALENA","c":"SQMR","r":true,"dept":"MAGDALENA"},{"n":"LA MATA","d":"ARAUCA","c":"SKMK","r":true,"dept":"ARAUCA"},{"n":"LA MATUA","d":"CESAR","c":"SQTS","r":true,"dept":"CESAR"},{"n":"LA MESA","d":"VALLE DEL CAUCA","c":"SKMS","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LA MILAGROSA","d":"CASANARE","c":"SQWS","r":true,"dept":"CASANARE"},{"n":"LA MONICA","d":"CASANARE","c":"SKOM","r":true,"dept":"CASANARE"},{"n":"LA MORELA","d":"ANTIOQUIA","c":"SKPR","r":true,"dept":"ANTIOQUIA"},{"n":"LA NENA CAYTA","d":"CESAR","c":"SQNY","r":true,"dept":"CESAR"},{"n":"LA NEVERA","d":"CASANARE","c":"SQVH","r":true,"dept":"CASANARE"},{"n":"LA NUBIA","d":"MANIZALES","c":"SKMZ","r":false,"dept":"CALDAS"},{"n":"LA OLGA","d":"GUAJIRA","c":"SKOL","r":true,"dept":"GUAJIRA"},{"n":"LA OPIA","d":"TOLIMA","c":"SQOP","r":true,"dept":"TOLIMA"},{"n":"LA PALESTINA","d":"CALDAS","c":"SQIP","r":true,"dept":"CALDAS"},{"n":"LA PALESTINA","d":"MAGDALENA","c":"SQPY","r":true,"dept":"MAGDALENA"},{"n":"LA PALMA","d":"CESAR","c":"SQOS","r":true,"dept":"CESAR"},{"n":"LA PAMELA","d":"VICHADA","c":"SKPM","r":true,"dept":"VICHADA"},{"n":"LA PASTORA","d":"ARAUCA","c":"SQPA","r":true,"dept":"ARAUCA"},{"n":"LA PAULINA","d":"CESAR","c":"SQPN","r":true,"dept":"CESAR"},{"n":"LA PAZ","d":"CUNDINAMARCA","c":"SQLZ","r":true,"dept":"CUNDINAMARCA"},{"n":"LA PEDRERA","d":"AMAZONAS","c":"SKLP","r":true,"dept":"AMAZONAS"},{"n":"LA PIEDRA","d":"CASANARE","c":"SKJL","r":true,"dept":"CASANARE"},{"n":"LA PIEDRA","d":"ANTIOQUIA","c":"SQZQ","r":true,"dept":"ANTIOQUIA"},{"n":"LA PINTADA","d":"CASANARE","c":"SKIT","r":true,"dept":"CASANARE"},{"n":"LA PLATA PUERTO TRUJILLO","d":"META","c":"SQJI","r":true,"dept":"META"},{"n":"LA PONDEROSA","d":"META","c":"SKDG","r":true,"dept":"META"},{"n":"LA PONDEROSA","d":"CUNDINAMARCA","c":"SQON","r":true,"dept":"CUNDINAMARCA"},{"n":"LA PONDEROSA","d":"SANTANDER","c":"SQPO","r":true,"dept":"SANTANDER"},{"n":"LA POREÑA","d":"CASANARE","c":"SQPE","r":true,"dept":"CASANARE"},{"n":"LA POTRA","d":"ARAUCA","c":"SKLW","r":true,"dept":"ARAUCA"},{"n":"LA PRECIOSA","d":"CASANARE","c":"SQAX","r":true,"dept":"CASANARE"},{"n":"LA PRIMAVERA","d":"VICHADA","c":"SKIM","r":true,"dept":"VICHADA"},{"n":"LA PROVIDENCIA","d":"ANTIOQUIA","c":"SKAQ","r":true,"dept":"ANTIOQUIA"},{"n":"LA PROVINCIA","d":"CASANARE","c":"SQVN","r":true,"dept":"CASANARE"},{"n":"LA REALIDAD","d":"META","c":"SQRV","r":true,"dept":"META"},{"n":"LA REDENCION","d":"CASANARE","c":"SQDP","r":true,"dept":"CASANARE"},{"n":"LA REFORMA","d":"CASANARE","c":"SQFO","r":true,"dept":"CASANARE"},{"n":"LA REFORMA","d":"META","c":"SQRZ","r":true,"dept":"META"},{"n":"LA RINCONADA","d":"META","c":"SQLQ","r":true,"dept":"META"},{"n":"LA ROCA","d":"BOYACÁ","c":"SKQP","r":true,"dept":"BOYACÁ"},{"n":"LA RUBIERA","d":"ARAUCA","c":"SKRW","r":true,"dept":"ARAUCA"},{"n":"LA SALVACION","d":"CASANARE","c":"SQVC","r":true,"dept":"CASANARE"},{"n":"LA SIERRITA","d":"CESAR","c":"SQSH","r":true,"dept":"CESAR"},{"n":"LA TORMENTA","d":"CASANARE","c":"SQXT","r":true,"dept":"CASANARE"},{"n":"LA TRANQUERA","d":"META","c":"SQKQ","r":true,"dept":"META"},{"n":"LA TRINIDAD","d":"META","c":"SKDI","r":true,"dept":"META"},{"n":"LA UNION","d":"CASANARE","c":"SKLU","r":true,"dept":"CASANARE"},{"n":"LA UNION","d":"META","c":"SQUU","r":true,"dept":"META"},{"n":"LA VEGA","d":"BOLÍVAR","c":"SKLV","r":true,"dept":"BOLÍVAR"},{"n":"LA VENGANZA","d":"CASANARE","c":"SKZA","r":true,"dept":"CASANARE"},{"n":"LA VENTUROSA","d":"VICHADA","c":"SKVS","r":true,"dept":"VICHADA"},{"n":"LA VENTUROSA","d":"CASANARE","c":"SQVT","r":true,"dept":"CASANARE"},{"n":"LA VEREMOS","d":"CASANARE","c":"SQVR","r":true,"dept":"CASANARE"},{"n":"LA VETILLA","d":"ANTIOQUIA","c":"SQVX","r":true,"dept":"ANTIOQUIA"},{"n":"LA VICTORIA","d":"CASANARE","c":"SKXA","r":true,"dept":"CASANARE"},{"n":"LA VICTORIA","d":"VICHADA","c":"SQVK","r":true,"dept":"VICHADA"},{"n":"LA VICTORIA","d":"CESAR","c":"SQVZ","r":true,"dept":"CESAR"},{"n":"LA YE","d":"MAGDALENA","c":"SQLY","r":true,"dept":"MAGDALENA"},{"n":"LABRADOR","d":"CESAR","c":"SQKP","r":true,"dept":"CESAR"},{"n":"LAJITAS","d":"META","c":"SKLJ","r":true,"dept":"META"},{"n":"LARANDIA","d":"CAQUETÁ","c":"SKLR","r":true,"dept":"CAQUETÁ"},{"n":"LAS ACACIAS","d":"CUNDINAMARCA","c":"SKAI","r":true,"dept":"CUNDINAMARCA"},{"n":"LAS AGUILAS","d":"VALLE DEL CAUCA","c":"SQLG","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LAS AMERICAS","d":"MAGDALENA","c":"SQAE","r":true,"dept":"MAGDALENA"},{"n":"LAS BRUJAS","d":"COROZAL","c":"SKCZ","r":false,"dept":"SUCRE"},{"n":"LAS CAMASAS","d":"CASANARE","c":"SQKW","r":true,"dept":"CASANARE"},{"n":"LAS CAMELIAS","d":"CASANARE","c":"SKLQ","r":true,"dept":"CASANARE"},{"n":"LAS CANDELARIAS","d":"SUCRE","c":"SQKK","r":true,"dept":"SUCRE"},{"n":"LAS CRUCES","d":"SANTANDER","c":"SKRU","r":true,"dept":"SANTANDER"},{"n":"LAS DELICIAS","d":"CASANARE","c":"SKIC","r":true,"dept":"CASANARE"},{"n":"LAS FLORES","d":"MAGDALENA","c":"SKPL","r":true,"dept":"MAGDALENA"},{"n":"LAS FLORES","d":"CESAR","c":"SQLR","r":true,"dept":"CESAR"},{"n":"LAS FURIAS","d":"CASANARE","c":"SQFA","r":true,"dept":"CASANARE"},{"n":"LAS GARZAS","d":"TOLIMA","c":"SQGZ","r":true,"dept":"TOLIMA"},{"n":"LAS GAVIOTAS","d":"QUINDÍO","c":"SQVQ","r":true,"dept":"QUINDÍO"},{"n":"LAS GUABINAS","d":"CASANARE","c":"SKGN","r":true,"dept":"CASANARE"},{"n":"LAS GUAMAS","d":"CASANARE","c":"SKQA","r":true,"dept":"CASANARE"},{"n":"LAS JUANAS","d":"META","c":"SQJS","r":true,"dept":"META"},{"n":"LAS LUCHAS","d":"CASANARE","c":"SQQL","r":true,"dept":"CASANARE"},{"n":"LAS NUBES","d":"META","c":"SQNW","r":true,"dept":"META"},{"n":"LAS PALMAS","d":"CESAR","c":"SQPF","r":true,"dept":"CESAR"},{"n":"LAS TAPIAS","d":"CESAR","c":"SKYS","r":true,"dept":"CESAR"},{"n":"LAS TRES MARIAS","d":"META","c":"SQTX","r":true,"dept":"META"},{"n":"LAS VEGAS","d":"CHOCÓ","c":"SKWO","r":true,"dept":"CHOCÓ"},{"n":"LAS VEGAS","d":"CASANARE","c":"SQSV","r":true,"dept":"CASANARE"},{"n":"LAS VIOLETAS","d":"META","c":"SKVT","r":true,"dept":"META"},{"n":"LETICIA","d":"TOLIMA","c":"SQLT","r":true,"dept":"TOLIMA"},{"n":"LIBANO","d":"CESAR","c":"SQNO","r":true,"dept":"CESAR"},{"n":"LIMA","d":"MAGDALENA","c":"SQIA","r":true,"dept":"MAGDALENA"},{"n":"LIVINEY","d":"META","c":"SQXL","r":true,"dept":"META"},{"n":"LLANO CAUCHO","d":"VICHADA","c":"SKLH","r":true,"dept":"VICHADA"},{"n":"LOMA GRANDE","d":"CÓRDOBA","c":"SQGR","r":true,"dept":"CÓRDOBA"},{"n":"LOMAS DEL VIENTO","d":"VALLE DEL CAUCA","c":"SKNX","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LOPEZ DE MICAI","d":"CAUCA","c":"SKZI","r":true,"dept":"CAUCA"},{"n":"LOS ACACIOS","d":"META","c":"SQUZ","r":true,"dept":"META"},{"n":"LOS ALMENDROS","d":"ANTIOQUIA","c":"SQOA","r":true,"dept":"ANTIOQUIA"},{"n":"LOS ALPES","d":"ANTIOQUIA","c":"SKKP","r":true,"dept":"ANTIOQUIA"},{"n":"LOS ANDES","d":"BOYACÁ","c":"SKES","r":true,"dept":"BOYACÁ"},{"n":"LOS ANGELES","d":"VAUPÉS","c":"SQGW","r":true,"dept":"VAUPÉS"},{"n":"LOS ARUCOS","d":"CASANARE","c":"SQWL","r":true,"dept":"CASANARE"},{"n":"LOS BALTICOS","d":"META","c":"SQOZ","r":true,"dept":"META"},{"n":"LOS CABROS","d":"CASANARE","c":"SQBY","r":true,"dept":"CASANARE"},{"n":"LOS CACTUS","d":"CASANARE","c":"SKCQ","r":true,"dept":"CASANARE"},{"n":"LOS CAMPANOS","d":"ATLÁNTICO","c":"SQKS","r":true,"dept":"ATLÁNTICO"},{"n":"LOS CATIOS","d":"ANTIOQUIA","c":"SQKI","r":true,"dept":"ANTIOQUIA"},{"n":"LOS FERIA GIRON","d":"TOLIMA","c":"SKFG","r":true,"dept":"TOLIMA"},{"n":"LOS GANSOS","d":"VICHADA","c":"SQGI","r":true,"dept":"VICHADA"},{"n":"LOS GARZONES","d":"MONTERÍA","c":"SKMR","r":false,"dept":"CÓRDOBA"},{"n":"LOS GAVANES","d":"ARAUCA","c":"SKGS","r":true,"dept":"ARAUCA"},{"n":"LOS GUIRES","d":"CASANARE","c":"SQGH","r":true,"dept":"CASANARE"},{"n":"LOS HALCONES","d":"VALLE DEL CAUCA","c":"SQHC","r":true,"dept":"VALLE DEL CAUCA"},{"n":"LOS INDIOS","d":"CASANARE","c":"SKWP","r":true,"dept":"CASANARE"},{"n":"LOS KIOSKOS","d":"META","c":"SKLK","r":true,"dept":"META"},{"n":"LOS LAURELES","d":"CASANARE","c":"SQLX","r":true,"dept":"CASANARE"},{"n":"LOS LOBITOS","d":"CASANARE","c":"SQWB","r":true,"dept":"CASANARE"},{"n":"LOS LOBOS","d":"CASANARE","c":"SQBT","r":true,"dept":"CASANARE"},{"n":"LOS MANGOS","d":"TOLIMA","c":"SKLN","r":true,"dept":"TOLIMA"},{"n":"LOS MANGOS","d":"TOLIMA","c":"SQGT","r":true,"dept":"TOLIMA"},{"n":"LOS MANGOS","d":"CÓRDOBA","c":"SQNG","r":true,"dept":"CÓRDOBA"},{"n":"LOS MILAGROS","d":"CASANARE","c":"SQGN","r":true,"dept":"CASANARE"},{"n":"LOS MOCHUELOS","d":"CÓRDOBA","c":"SQHU","r":true,"dept":"CÓRDOBA"},{"n":"LOS MONJES","d":"CESAR","c":"SKJS","r":true,"dept":"CESAR"},{"n":"LOS MULATOS","d":"NARIÑO","c":"SKTH","r":true,"dept":"NARIÑO"},{"n":"LOS PATOS","d":"CASANARE","c":"SQAT","r":true,"dept":"CASANARE"},{"n":"LOS PLANES","d":"ANTIOQUIA","c":"SQPS","r":true,"dept":"ANTIOQUIA"},{"n":"LOS POZOS","d":"SAN GIL","c":"SKSG","r":true,"dept":"SANTANDER"},{"n":"LOS QUIJOTES","d":"CASANARE","c":"SQQJ","r":true,"dept":"CASANARE"},{"n":"LOS REMANSOS","d":"SANTANDER","c":"SQRM","r":true,"dept":"SANTANDER"},{"n":"LOS RIPIOS","d":"CASANARE","c":"SQXR","r":true,"dept":"CASANARE"},{"n":"LOS SABANALES","d":"META","c":"SQSF","r":true,"dept":"META"},{"n":"LOS TOROS","d":"CASANARE","c":"SKLS","r":true,"dept":"CASANARE"},{"n":"LOS VENADOS","d":"VICHADA","c":"SKVD","r":true,"dept":"VICHADA"},{"n":"LUCITANIA","d":"CASANARE","c":"SQLU","r":true,"dept":"CASANARE"},{"n":"LUNA PARK","d":"VICHADA","c":"SQLK","r":true,"dept":"VICHADA"},{"n":"MACOLLA","d":"CASANARE","c":"SQML","r":true,"dept":"CASANARE"},{"n":"MADREVIEJA","d":"CASANARE","c":"SQEJ","r":true,"dept":"CASANARE"},{"n":"MADRIGAL","d":"VALLE DEL CAUCA","c":"SKXM","r":true,"dept":"VALLE DEL CAUCA"},{"n":"MAFE","d":"CASANARE","c":"SQDE","r":true,"dept":"CASANARE"},{"n":"MAGUI PAYAN","d":"NARIÑO","c":"SKYN","r":true,"dept":"NARIÑO"},{"n":"MAHANAIM","d":"META","c":"SQJH","r":true,"dept":"META"},{"n":"MAJAGUAL","d":"META","c":"SQMJ","r":true,"dept":"META"},{"n":"MAJAGUILLO","d":"CASANARE","c":"SKJA","r":true,"dept":"CASANARE"},{"n":"MALABARES","d":"CASANARE","c":"SKAB","r":true,"dept":"CASANARE"},{"n":"MALAGA","d":"SANTANDER","c":"SKLA","r":true,"dept":"SANTANDER"},{"n":"MALVINAS","d":"META","c":"SQVD","r":true,"dept":"META"},{"n":"MANAGUA","d":"CASANARE","c":"SQWW","r":true,"dept":"CASANARE"},{"n":"MANARE","d":"CASANARE","c":"SQAM","r":true,"dept":"CASANARE"},{"n":"MANAURE","d":"GUAJIRA","c":"SKRJ","r":true,"dept":"GUAJIRA"},{"n":"MANDALA","d":"META","c":"SQQM","r":true,"dept":"META"},{"n":"MANDINGA","d":"CHOCÓ","c":"SKCD","r":true,"dept":"CHOCÓ"},{"n":"MANI","d":"CASANARE","c":"SKMN","r":true,"dept":"CASANARE"},{"n":"MANUELITA","d":"CASANARE","c":"SKMW","r":true,"dept":"CASANARE"},{"n":"MAPIRIPÁN","d":"META","c":"SKIR","r":true,"dept":"META"},{"n":"MAPORAL","d":"CASANARE","c":"SQQO","r":true,"dept":"CASANARE"},{"n":"MARAREY","d":"CASANARE","c":"SQEY","r":true,"dept":"CASANARE"},{"n":"MARCO FIDEL SUÁREZ","d":"GUABITO","c":"SKGB","r":false,"dept":"CHOCÓ"},{"n":"MARE MARE","d":"CASANARE","c":"SQME","r":true,"dept":"CASANARE"},{"n":"MARIA ALEJANDRA","d":"CASANARE","c":"SQJR","r":true,"dept":"CASANARE"},{"n":"MARIA ANGELICA","d":"CASANARE","c":"SQRG","r":true,"dept":"CASANARE"},{"n":"MARIA ISABEL","d":"CASANARE","c":"SKQE","r":true,"dept":"CASANARE"},{"n":"MARIA ISABELLA","d":"CASANARE","c":"SKWI","r":true,"dept":"CASANARE"},{"n":"MARIA JUANA","d":"CASANARE","c":"SQRJ","r":true,"dept":"CASANARE"},{"n":"MARIA PAZ","d":"VICHADA","c":"SQMP","r":true,"dept":"VICHADA"},{"n":"MATA DE AGUA","d":"CASANARE","c":"SQTG","r":true,"dept":"CASANARE"},{"n":"MATA DE INDIO","d":"CESAR","c":"SQYF","r":true,"dept":"CESAR"},{"n":"MATABRAVA","d":"CASANARE","c":"SKRV","r":true,"dept":"CASANARE"},{"n":"MATAGUARO","d":"VICHADA","c":"SKWW","r":true,"dept":"VICHADA"},{"n":"MATECAÑA","d":"PEREIRA","c":"SKPE","r":false,"dept":"RISARALDA"},{"n":"MATENOVILLOS","d":"CASANARE","c":"SKMV","r":true,"dept":"CASANARE"},{"n":"MAXIMENA","d":"CASANARE","c":"SKMX","r":true,"dept":"CASANARE"},{"n":"MAYORCA","d":"MAGDALENA","c":"SKMY","r":true,"dept":"MAGDALENA"},{"n":"MEDICAL DUARTE","d":"NORTE DE SANTANDER","c":"SQMT","r":true,"dept":"NORTE DE SANTANDER"},{"n":"MESA DE LOS SANTOS","d":"SANTANDER","c":"SQSX","r":true,"dept":"SANTANDER"},{"n":"MEXICO","d":"CASANARE","c":"SQMX","r":true,"dept":"CASANARE"},{"n":"MIEL I","d":"CALDAS","c":"SKIE","r":true,"dept":"CALDAS"},{"n":"MILLAN VARGAS","d":"BOLÍVAR","c":"SKST","r":true,"dept":"BOLÍVAR"},{"n":"MINPRO","d":"CASANARE","c":"SQUP","r":true,"dept":"CASANARE"},{"n":"MIRADOR","d":"CASANARE","c":"SKTC","r":true,"dept":"CASANARE"},{"n":"MIRAFLORES","d":"GUAVIARE","c":"SKMF","r":true,"dept":"GUAVIARE"},{"n":"MIRAMAR DE GUANAPALO","d":"CASANARE","c":"SQMG","r":true,"dept":"CASANARE"},{"n":"MIRAVISTA","d":"CASANARE","c":"SQMV","r":true,"dept":"CASANARE"},{"n":"MIRITI PARANA","d":"AMAZONAS","c":"SQYT","r":true,"dept":"AMAZONAS"},{"n":"MONA PRIETA","d":"BOLÍVAR","c":"SQPM","r":true,"dept":"BOLÍVAR"},{"n":"MONACO","d":"CASANARE","c":"SQCX","r":true,"dept":"CASANARE"},{"n":"MONFORT","d":"VAUPÉS","c":"SKNF","r":true,"dept":"VAUPÉS"},{"n":"MONTECARLO","d":"CASANARE","c":"SQKL","r":true,"dept":"CASANARE"},{"n":"MONTECIELO I","d":"ANTIOQUIA","c":"SQWO","r":true,"dept":"ANTIOQUIA"},{"n":"MONTECIELO II","d":"ANTIOQUIA","c":"SQZW","r":true,"dept":"ANTIOQUIA"},{"n":"MONTELIBANO","d":"CESAR","c":"SKTO","r":true,"dept":"CESAR"},{"n":"MONTERREY","d":"BOLÍVAR","c":"SQYB","r":true,"dept":"BOLÍVAR"},{"n":"MORELIA","d":"PUERTO GAITAN","c":"SKMO","r":true,"dept":"META"},{"n":"MORICHAL VIEJO","d":"GUAVIARE","c":"SQDM","r":true,"dept":"GUAVIARE"},{"n":"MORICHITO","d":"CASANARE","c":"SQCH","r":true,"dept":"CASANARE"},{"n":"MORICHITO II","d":"CASANARE","c":"SKQM","r":true,"dept":"CASANARE"},{"n":"MOROCOTAS","d":"CASANARE","c":"SKOB","r":true,"dept":"CASANARE"},{"n":"MOSQUERA","d":"NARIÑO","c":"SKSQ","r":true,"dept":"NARIÑO"},{"n":"MULETOS","d":"CASANARE","c":"SKUT","r":true,"dept":"CASANARE"},{"n":"MUNDO NUEVO","d":"META","c":"SQWN","r":true,"dept":"META"},{"n":"MURIBA","d":"CASANARE","c":"SQUB","r":true,"dept":"CASANARE"},{"n":"MURINDO","d":"ANTIOQUIA","c":"SKUQ","r":true,"dept":"ANTIOQUIA"},{"n":"MUTATA","d":"ANTIOQUIA","c":"SQQT","r":true,"dept":"ANTIOQUIA"},{"n":"MUZO","d":"BOYACÁ","c":"SKUZ","r":true,"dept":"BOYACÁ"},{"n":"MY. JUSTINO MARIÑO","d":"CUNDINAMARCA","c":"SKMA","r":true,"dept":"CUNDINAMARCA"},{"n":"NATALIA","d":"META","c":"SQTZ","r":true,"dept":"META"},{"n":"NAVAS PARDO","d":"CHAPARRAL","c":"SKHA","r":true,"dept":"TOLIMA"},{"n":"NECOCLI","d":"ANTIOQUIA","c":"SKNC","r":true,"dept":"ANTIOQUIA"},{"n":"NEIVA YORK MILENA","d":"META","c":"SQNP","r":true,"dept":"META"},{"n":"NI","d":"VAUPÉS","c":"SQNX","r":true,"dept":"VAUPÉS"},{"n":"NUEVA CANAIMA","d":"META","c":"SQKN","r":true,"dept":"META"},{"n":"NUEVA CHEKA","d":"MAGDALENA","c":"SKNW","r":true,"dept":"MAGDALENA"},{"n":"NUEVA GRANADA","d":"CESAR","c":"SQVJ","r":true,"dept":"CESAR"},{"n":"NUEVA ROMA","d":"MAGDALENA","c":"SKVR","r":true,"dept":"MAGDALENA"},{"n":"NUEVA UNION","d":"MAGDALENA","c":"SKNK","r":true,"dept":"MAGDALENA"},{"n":"NUEVA YORK","d":"TOLIMA","c":"SQRK","r":true,"dept":"TOLIMA"},{"n":"NUEVO HOSPITAL USME","d":"CUNDINAMARCA","c":"SQFH","r":true,"dept":"CUNDINAMARCA"},{"n":"NUEVO MUNDO","d":"CASANARE","c":"SQOU","r":true,"dept":"CASANARE"},{"n":"NUNCHIA LOS LIBERTADORES","d":"CASANARE","c":"SQHB","r":true,"dept":"CASANARE"},{"n":"OCELOTE","d":"META","c":"SQOT","r":true,"dept":"META"},{"n":"OLAYA HERRERA","d":"MEDELLÍN","c":"SKMD","r":false,"dept":"ANTIOQUIA"},{"n":"OREGANAL","d":"GUAJIRA","c":"SQOR","r":true,"dept":"GUAJIRA"},{"n":"ORIHUECA","d":"MAGDALENA","c":"SQOH","r":true,"dept":"MAGDALENA"},{"n":"ORITO","d":"PUTUMAYO","c":"SKOR","r":true,"dept":"PUTUMAYO"},{"n":"OROCUÉ","d":"CASANARE","c":"SKOE","r":true,"dept":"CASANARE"},{"n":"PABLO TOBON URIBE","d":"ANTIOQUIA","c":"SKAN","r":true,"dept":"ANTIOQUIA"},{"n":"PACOA","d":"VAUPÉS","c":"SQPK","r":true,"dept":"VAUPÉS"},{"n":"PACU","d":"VAUPÉS","c":"SQPD","r":true,"dept":"VAUPÉS"},{"n":"PAJONALES","d":"TOLIMA","c":"SQPJ","r":true,"dept":"TOLIMA"},{"n":"PALACIO MUNICIPAL","d":"ANTIOQUIA","c":"SQPL","r":true,"dept":"ANTIOQUIA"},{"n":"PALMAR DE ORIENTE","d":"CASANARE","c":"SKRT","r":true,"dept":"CASANARE"},{"n":"PALMARITO 2","d":"CASANARE","c":"SQPI","r":true,"dept":"CASANARE"},{"n":"PALMAROSA","d":"CASANARE","c":"SQPH","r":true,"dept":"CASANARE"},{"n":"PALMAS DE TUMACO","d":"NARIÑO","c":"SQPT","r":true,"dept":"NARIÑO"},{"n":"PALMAS DEL CASANARE","d":"CASANARE","c":"SQSR","r":true,"dept":"CASANARE"},{"n":"PALMASOLA","d":"META","c":"SKSZ","r":true,"dept":"META"},{"n":"PALONEGRO","d":"BUCARAMANGA","c":"SKBG","r":false,"dept":"SANTANDER"},{"n":"PANORAMA","d":"VICHADA","c":"SQOX","r":true,"dept":"VICHADA"},{"n":"PAOLA","d":"META","c":"SKPF","r":true,"dept":"META"},{"n":"PAPARE","d":"MAGDALENA","c":"SKZC","r":true,"dept":"MAGDALENA"},{"n":"PAPUNAGUA","d":"GUAVIARE","c":"SKGG","r":true,"dept":"GUAVIARE"},{"n":"PAPUNAGUA","d":"VAUPÉS","c":"SQMF","r":true,"dept":"VAUPÉS"},{"n":"PARQUE CENTRAL BAVARIA","d":"DISTRITO CAPITAL","c":"SQPB","r":true,"dept":"DISTRITO CAPITAL"},{"n":"PAZ DE ARIPORO","d":"CASANARE","c":"SKPZ","r":true,"dept":"CASANARE"},{"n":"PENSILVANIA","d":"CALDAS","c":"SKVK","r":true,"dept":"CALDAS"},{"n":"PERALES","d":"IBAGUÉ","c":"SKIB","r":false,"dept":"TOLIMA"},{"n":"PETRIBA","d":"META","c":"SQRB","r":true,"dept":"META"},{"n":"PETROLEA","d":"NORTE DE SANTANDER","c":"SQTW","r":true,"dept":"NORTE DE SANTANDER"},{"n":"PIEDRA ÑI","d":"VAUPÉS","c":"SQPV","r":true,"dept":"VAUPÉS"},{"n":"PILMAIQUEN","d":"ANTIOQUIA","c":"SQPQ","r":true,"dept":"ANTIOQUIA"},{"n":"PINOQUIA","d":"VICHADA","c":"SKIQ","r":true,"dept":"VICHADA"},{"n":"PIRACUARA","d":"VAUPÉS","c":"SQPC","r":true,"dept":"VAUPÉS"},{"n":"PIVIJAY","d":"VICHADA","c":"SKVJ","r":true,"dept":"VICHADA"},{"n":"PIZARRO","d":"CHOCÓ","c":"SQZJ","r":true,"dept":"CHOCÓ"},{"n":"PLANADAS","d":"TOLIMA","c":"SKPX","r":true,"dept":"TOLIMA"},{"n":"PLAZA DE LA LIBERTAD","d":"ANTIOQUIA","c":"SKZL","r":true,"dept":"ANTIOQUIA"},{"n":"POLONIA","d":"HUILA","c":"SKOW","r":true,"dept":"HUILA"},{"n":"PORE","d":"CASANARE","c":"SKEK","r":true,"dept":"CASANARE"},{"n":"PORORO","d":"CESAR","c":"SQPR","r":true,"dept":"CESAR"},{"n":"PORTUGALITO","d":"QUINDÍO","c":"SQGQ","r":true,"dept":"QUINDÍO"},{"n":"POTRERITO","d":"TOLIMA","c":"SQOE","r":true,"dept":"TOLIMA"},{"n":"PRAGA","d":"VALLE DEL CAUCA","c":"SQGD","r":true,"dept":"VALLE DEL CAUCA"},{"n":"PRIMERO DE MAYO","d":"CUNDINAMARCA","c":"SKPY","r":true,"dept":"CUNDINAMARCA"},{"n":"PROMA","d":"DISTRITO CAPITAL","c":"SQMA","r":true,"dept":"DISTRITO CAPITAL"},{"n":"PROVIDENCIA","d":"CASANARE","c":"SKOV","r":true,"dept":"CASANARE"},{"n":"PUERTO ALVIRA CAÑO JABON","d":"META","c":"SKQJ","r":true,"dept":"META"},{"n":"PUERTO ARICA","d":"AMAZONAS","c":"SQQK","r":true,"dept":"AMAZONAS"},{"n":"PUERTO BOLÍVAR  PORTETE","d":"PUERTO BOLÍVAR","c":"SKPB","r":false,"dept":"GUAJIRA"},{"n":"PUERTO ESTRELLA","d":"GUAJIRA","c":"SKPJ","r":true,"dept":"GUAJIRA"},{"n":"PUERTO GAITAN","d":"META","c":"SKPG","r":true,"dept":"META"},{"n":"PUERTO LEGUÍZAMO","d":"PUERTO LEGUÍZAMO","c":"SKLG","r":true,"dept":"PUTUMAYO"},{"n":"PUERTO LLERAS","d":"META","c":"SKLL","r":true,"dept":"META"},{"n":"PUERTO NARE","d":"ANTIOQUIA","c":"SKPN","r":true,"dept":"ANTIOQUIA"},{"n":"PUERTO PERALES","d":"ANTIOQUIA","c":"SQPX","r":true,"dept":"ANTIOQUIA"},{"n":"PUERTO RICO","d":"CAQUETÁ","c":"SKQW","r":true,"dept":"CAQUETÁ"},{"n":"PUERTO RICO","d":"META","c":"SKUW","r":true,"dept":"META"},{"n":"PUNTA PIEDRA","d":"SANTANDER","c":"SKPU","r":true,"dept":"SANTANDER"},{"n":"PUNTA TIGRE","d":"GUAINÍA","c":"SQKG","r":true,"dept":"GUAINÍA"},{"n":"RAFAEL NUÑEZ","d":"CARTAGENA","c":"SKCG","r":false,"dept":"BOLÍVAR"},{"n":"RANCHO ALEGRE","d":"VICHADA","c":"SKRE","r":true,"dept":"VICHADA"},{"n":"RANCHO AÉREO","d":"ANTIOQUIA","c":"SQHQ","r":true,"dept":"ANTIOQUIA"},{"n":"RANCHO COLIBRI","d":"VALLE DEL CAUCA","c":"SQRI","r":true,"dept":"VALLE DEL CAUCA"},{"n":"RANCHO GRANDE","d":"TOLIMA","c":"SQHD","r":true,"dept":"TOLIMA"},{"n":"REMACHE SUR","d":"CASANARE","c":"SQES","r":true,"dept":"CASANARE"},{"n":"REMEDIOS","d":"ANTIOQUIA","c":"SKOT","r":false,"dept":"ANTIOQUIA"},{"n":"RENSO","d":"CASANARE","c":"SQRX","r":true,"dept":"CASANARE"},{"n":"REPRESA DE LAS CANARIAS","d":"CASANARE","c":"SKRC","r":true,"dept":"CASANARE"},{"n":"REYES MURILLO","d":"NUQUÍ","c":"SKNQ","r":true,"dept":"CHOCÓ"},{"n":"RIOPAILA","d":"VALLE DEL CAUCA","c":"SQRP","r":true,"dept":"VALLE DEL CAUCA"},{"n":"RIOSUCIO","d":"CHOCÓ","c":"SQSC","r":true,"dept":"CHOCÓ"},{"n":"RONDÓN","d":"ARAUCA","c":"SKRD","r":true,"dept":"ARAUCA"},{"n":"ROSENDAS","d":"VICHADA","c":"SQWR","r":true,"dept":"VICHADA"},{"n":"SABANETA","d":"CESAR","c":"SKNE","r":true,"dept":"CESAR"},{"n":"SALA 77","d":"CESAR","c":"SQAD","r":true,"dept":"CESAR"},{"n":"SAN AGUSTIN","d":"TOLIMA","c":"SKUS","r":true,"dept":"TOLIMA"},{"n":"SAN ANTONIO","d":"VAUPÉS","c":"SQSK","r":true,"dept":"VAUPÉS"},{"n":"SAN BARTEL","d":"ATLÁNTICO","c":"SQNB","r":true,"dept":"ATLÁNTICO"},{"n":"SAN BERNARDO","d":"MOMPÓS","c":"SKMP","r":true,"dept":"BOLÍVAR"},{"n":"SAN CAMILO","d":"VICHADA","c":"SQJK","r":true,"dept":"VICHADA"},{"n":"SAN CARLOS","d":"CASANARE","c":"SKMC","r":true,"dept":"CASANARE"},{"n":"SAN CARLOS","d":"VALLE DEL CAUCA","c":"SKTV","r":true,"dept":"VALLE DEL CAUCA"},{"n":"SAN CARLOS","d":"ANTIOQUIA","c":"SQNC","r":true,"dept":"ANTIOQUIA"},{"n":"SAN DIEGO","d":"HUILA","c":"SQTD","r":true,"dept":"HUILA"},{"n":"SAN EDUARDO","d":"CASANARE","c":"SQSU","r":true,"dept":"CASANARE"},{"n":"SAN ESTEBAN","d":"CASANARE","c":"SKSE","r":true,"dept":"CASANARE"},{"n":"SAN FELIPE","d":"GUAINÍA","c":"SKFP","r":true,"dept":"GUAINÍA"},{"n":"SAN FELIPE","d":"CASANARE","c":"SQAP","r":true,"dept":"CASANARE"},{"n":"SAN FELIPE DEL PAUTO","d":"CASANARE","c":"SKSU","r":true,"dept":"CASANARE"},{"n":"SAN FERNANDO","d":"CASANARE","c":"SKND","r":true,"dept":"CASANARE"},{"n":"SAN FRANCISCO","d":"HUILA","c":"SKAF","r":true,"dept":"HUILA"},{"n":"SAN FRANCISCO","d":"META","c":"SQFN","r":true,"dept":"META"},{"n":"SAN GERARDO","d":"VAUPÉS","c":"SKGK","r":true,"dept":"VAUPÉS"},{"n":"SAN GERARDO","d":"VALLE DEL CAUCA","c":"SKNG","r":true,"dept":"VALLE DEL CAUCA"},{"n":"SAN GERMAN","d":"TOLIMA","c":"SKGE","r":true,"dept":"TOLIMA"},{"n":"SAN ISIDRO","d":"META","c":"SQID","r":true,"dept":"META"},{"n":"SAN ISIDRO II","d":"META","c":"SKIS","r":true,"dept":"META"},{"n":"SAN JACINTO","d":"CAUCA","c":"SKAJ","r":true,"dept":"CAUCA"},{"n":"SAN JACINTO","d":"ANTIOQUIA","c":"SKJZ","r":true,"dept":"ANTIOQUIA"},{"n":"SAN JAVIER","d":"TOLIMA","c":"SKJV","r":true,"dept":"TOLIMA"},{"n":"SAN JERONIMO","d":"TOLIMA","c":"SQJF","r":true,"dept":"TOLIMA"},{"n":"SAN JOSE","d":"TOLIMA","c":"SQSJ","r":true,"dept":"TOLIMA"},{"n":"SAN JOSE DE MULATOS","d":"ANTIOQUIA","c":"SKMQ","r":true,"dept":"ANTIOQUIA"},{"n":"SAN JOSE DE OCUNE","d":"VICHADA","c":"SQCJ","r":true,"dept":"VICHADA"},{"n":"SAN JOSE DEL ARIPORO","d":"CASANARE","c":"SKJP","r":true,"dept":"CASANARE"},{"n":"SAN JUAN","d":"CASANARE","c":"SKNM","r":true,"dept":"CASANARE"},{"n":"SAN JUAN","d":"META","c":"SQJT","r":true,"dept":"META"},{"n":"SAN JUAN DE URABA","d":"ANTIOQUIA","c":"SQJQ","r":true,"dept":"ANTIOQUIA"},{"n":"SAN JUAN DEL CESAR","d":"GUAJIRA","c":"SKNJ","r":true,"dept":"GUAJIRA"},{"n":"SAN LUIS","d":"IPIALES","c":"SKIP","r":false,"dept":"NARIÑO"},{"n":"SAN LUIS","d":"META","c":"SKNI","r":true,"dept":"META"},{"n":"SAN LUIS","d":"HUILA","c":"SKNU","r":true,"dept":"HUILA"},{"n":"SAN LUIS","d":"NORTE DE SANTANDER","c":"SQIS","r":true,"dept":"NORTE DE SANTANDER"},{"n":"SAN LUIS DE PACA","d":"VAUPÉS","c":"SQDA","r":true,"dept":"VAUPÉS"},{"n":"SAN LUIS DE PALENQUE","d":"CASANARE","c":"SKNP","r":true,"dept":"CASANARE"},{"n":"SAN MARINO","d":"VALLE DEL CAUCA","c":"SQIZ","r":true,"dept":"VALLE DEL CAUCA"},{"n":"SAN MARTIN","d":"META","c":"SQSA","r":true,"dept":"META"},{"n":"SAN MARTIN","d":"CESAR","c":"SQSM","r":true,"dept":"CESAR"},{"n":"SAN MIGUEL","d":"VAUPÉS","c":"SQNE","r":true,"dept":"VAUPÉS"},{"n":"SAN MIGUEL","d":"META","c":"SQSG","r":true,"dept":"META"},{"n":"SAN NICOLAS","d":"CASANARE","c":"SQNK","r":true,"dept":"CASANARE"},{"n":"SAN PABLO","d":"VALLE DEL CAUCA","c":"SKSN","r":true,"dept":"VALLE DEL CAUCA"},{"n":"SAN PABLO","d":"VAUPÉS","c":"SQAN","r":true,"dept":"VAUPÉS"},{"n":"SAN PABLO","d":"BOLÍVAR","c":"SQNA","r":true,"dept":"BOLÍVAR"},{"n":"SAN PABLO","d":"CASANARE","c":"SQSN","r":true,"dept":"CASANARE"},{"n":"SAN PABLO","d":"CÓRDOBA","c":"SQSP","r":true,"dept":"CÓRDOBA"},{"n":"SAN PEDRO","d":"SUCRE","c":"SQSE","r":true,"dept":"SUCRE"},{"n":"SAN PEDRO","d":"CASANARE","c":"SQXP","r":true,"dept":"CASANARE"},{"n":"SAN PEDRO DE URABA","d":"ANTIOQUIA","c":"SQNQ","r":true,"dept":"ANTIOQUIA"},{"n":"SAN RAFAEL","d":"HUILA","c":"SKFA","r":true,"dept":"HUILA"},{"n":"SAN RAFAEL","d":"BOLÍVAR","c":"SKRS","r":true,"dept":"BOLÍVAR"},{"n":"SAN RAFAEL DE GUANAPALO","d":"CASANARE","c":"SKSX","r":true,"dept":"CASANARE"},{"n":"SAN ROQUE","d":"VALLE DEL CAUCA","c":"SQNR","r":true,"dept":"VALLE DEL CAUCA"},{"n":"SAN SEBASTIAN","d":"META","c":"SKSY","r":true,"dept":"META"},{"n":"SAN VICENTE","d":"META","c":"SQNU","r":true,"dept":"META"},{"n":"SAN VICENTE DE CHUCURI","d":"SANTANDER","c":"SKQR","r":true,"dept":"SANTANDER"},{"n":"SAN VICENTE DEL CAGUÁN","d":"SAN VICENTE DEL CAGUÁN","c":"SKSV","r":false,"dept":"CAQUETÁ"},{"n":"SANTA ANA","d":"CARTAGO","c":"SKGO","r":false,"dept":"VALLE DEL CAUCA"},{"n":"SANTA ANA","d":"CASANARE","c":"SQAA","r":true,"dept":"CASANARE"},{"n":"SANTA ANA","d":"TOLIMA","c":"SQNN","r":true,"dept":"TOLIMA"},{"n":"SANTA BARBARA","d":"META","c":"SKSB","r":true,"dept":"META"},{"n":"SANTA BARBARA","d":"HUILA","c":"SQSB","r":true,"dept":"HUILA"},{"n":"SANTA CLARA","d":"META","c":"SKCX","r":true,"dept":"META"},{"n":"SANTA CLARA","d":"CASANARE","c":"SQRT","r":true,"dept":"CASANARE"},{"n":"SANTA CRUZ","d":"META","c":"SQAZ","r":true,"dept":"META"},{"n":"SANTA DEBORA","d":"ANTIOQUIA","c":"SQDS","r":true,"dept":"ANTIOQUIA"},{"n":"SANTA HELENA DE UPIA","d":"CASANARE","c":"SKHU","r":true,"dept":"CASANARE"},{"n":"SANTA ISABEL","d":"META","c":"SQTI","r":true,"dept":"META"},{"n":"SANTA ISABEL","d":"VAUPÉS","c":"SQTL","r":true,"dept":"VAUPÉS"},{"n":"SANTA LUCIA","d":"NORTE DE SANTANDER","c":"SKSW","r":true,"dept":"NORTE DE SANTANDER"},{"n":"SANTA LUCIA","d":"VAUPÉS","c":"SQSW","r":true,"dept":"VAUPÉS"},{"n":"SANTA MARIA DEL CAFÉ","d":"CASANARE","c":"SQCF","r":true,"dept":"CASANARE"},{"n":"SANTA MARTA","d":"CASANARE","c":"SQXM","r":true,"dept":"CASANARE"},{"n":"SANTA RITA","d":"VAUPÉS","c":"SKRF","r":true,"dept":"VAUPÉS"},{"n":"SANTA RITA DE ITUANGO","d":"ANTIOQUIA","c":"SKRQ","r":true,"dept":"ANTIOQUIA"},{"n":"SANTA ROSA DEL SUR","d":"BOLÍVAR","c":"SKSR","r":true,"dept":"BOLÍVAR"},{"n":"SANTA ROSALIA","d":"VICHADA","c":"SKSL","r":true,"dept":"VICHADA"},{"n":"SANTAFE DE ANTIOQUIA","d":"ANTIOQUIA","c":"SKSF","r":true,"dept":"ANTIOQUIA"},{"n":"SANTIAGO NO.1","d":"CASANARE","c":"SKSI","r":true,"dept":"CASANARE"},{"n":"SANTIAGO PEREZ QUIROZ","d":"ARAUCA","c":"SKUC","r":false,"dept":"ARAUCA"},{"n":"SANTIAGO VILA","d":"GIRARDOT","c":"SKGI","r":false,"dept":"CUNDINAMARCA"},{"n":"SANTILLANA","d":"ANTIOQUIA","c":"SQAQ","r":true,"dept":"ANTIOQUIA"},{"n":"SARDINAS","d":"CASANARE","c":"SKSD","r":true,"dept":"CASANARE"},{"n":"SAVANNA","d":"CASANARE","c":"SQUS","r":true,"dept":"CASANARE"},{"n":"SEATECH","d":"BOLÍVAR","c":"SKSH","r":true,"dept":"BOLÍVAR"},{"n":"SEDE ADMINISTRATIVA AVIANCA","d":"DISTRITO CAPITAL","c":"SKAV","r":true,"dept":"DISTRITO CAPITAL"},{"n":"SEVILLA","d":"CASANARE","c":"SQVL","r":true,"dept":"CASANARE"},{"n":"SEVILLANO","d":"MAGDALENA","c":"SKVY","r":true,"dept":"MAGDALENA"},{"n":"SEÑORIAS","d":"CASANARE","c":"SQUN","r":true,"dept":"CASANARE"},{"n":"SHANGRILA","d":"GUAJIRA","c":"SKHN","r":true,"dept":"GUAJIRA"},{"n":"SILVANA","d":"VICHADA","c":"SKQS","r":true,"dept":"VICHADA"},{"n":"SIMON BOLIVAR","d":"SANTA MARTA","c":"SKSM","r":false,"dept":"MAGDALENA"},{"n":"SINAI","d":"HUILA","c":"SKIH","r":true,"dept":"HUILA"},{"n":"SIRENAS","d":"CASANARE","c":"SQSS","r":true,"dept":"CASANARE"},{"n":"SOCEAGRO","d":"CASANARE","c":"SKOS","r":true,"dept":"CASANARE"},{"n":"SOLANO","d":"CAQUETÁ","c":"SQSQ","r":true,"dept":"CAQUETÁ"},{"n":"SONAÑA","d":"VAUPÉS","c":"SQOD","r":true,"dept":"VAUPÉS"},{"n":"SOPETRAN","d":"ANTIOQUIA","c":"SKPT","r":true,"dept":"ANTIOQUIA"},{"n":"SOTAVENTO","d":"VALLE DEL CAUCA","c":"SQZH","r":true,"dept":"VALLE DEL CAUCA"},{"n":"TABLÓN DE TÁMARA","d":"TABLÓN DE TÁMARA","c":"SQUJ","r":true,"dept":"CASANARE"},{"n":"TALANQUERAS","d":"META","c":"SQTQ","r":true,"dept":"META"},{"n":"TAMACA","d":"CESAR","c":"SQTM","r":true,"dept":"CESAR"},{"n":"TAMARINDO","d":"TOLIMA","c":"SQTY","r":true,"dept":"TOLIMA"},{"n":"TAPURUCUARA","d":"VAUPÉS","c":"SKTP","r":true,"dept":"VAUPÉS"},{"n":"TARAIRA","d":"VAUPÉS","c":"SKTR","r":true,"dept":"VAUPÉS"},{"n":"TARAPACA","d":"AMAZONAS","c":"SKRA","r":true,"dept":"AMAZONAS"},{"n":"TARQUI","d":"CASANARE","c":"SKQI","r":true,"dept":"CASANARE"},{"n":"TC. LUIS FRANCISCO PINTO","d":"TOLIMA","c":"SKME","r":true,"dept":"TOLIMA"},{"n":"TEQUENDAMA","d":"MAGDALENA","c":"SQQU","r":true,"dept":"MAGDALENA"},{"n":"TERESITA","d":"VAUPÉS","c":"SQIK","r":true,"dept":"VAUPÉS"},{"n":"TESALIA","d":"HUILA","c":"SKTS","r":true,"dept":"HUILA"},{"n":"TEUCALI","d":"TOLIMA","c":"SKEU","r":true,"dept":"TOLIMA"},{"n":"TG. GUSTAVO ROJAS PINILLA","d":"TOLIMA","c":"SKTI","r":true,"dept":"TOLIMA"},{"n":"TIBIRI","d":"META","c":"SKBD","r":true,"dept":"META"},{"n":"TIBU","d":"NORTE DE SANTANDER","c":"SKTB","r":true,"dept":"NORTE DE SANTANDER"},{"n":"TIERRA BLANCA","d":"VALLE DEL CAUCA","c":"SQTB","r":true,"dept":"VALLE DEL CAUCA"},{"n":"TIERRA FIRME","d":"DISTRITO CAPITAL","c":"SKTF","r":true,"dept":"DISTRITO CAPITAL"},{"n":"TIJERETA","d":"SANTANDER","c":"SKTX","r":true,"dept":"SANTANDER"},{"n":"TIKI BAR","d":"ANTIOQUIA","c":"SQUT","r":true,"dept":"ANTIOQUIA"},{"n":"TIMBIQUI","d":"CAUCA","c":"SKMB","r":true,"dept":"CAUCA"},{"n":"TIO BAYO","d":"CASANARE","c":"SQIY","r":true,"dept":"CASANARE"},{"n":"TIQUIE","d":"VAUPÉS","c":"SKTE","r":true,"dept":"VAUPÉS"},{"n":"TOBASIA","d":"META","c":"SKTZ","r":true,"dept":"META"},{"n":"TOMACHIPAN","d":"GUAVIARE","c":"SQTH","r":true,"dept":"GUAVIARE"},{"n":"TORRE COLFONDOS","d":"DISTRITO CAPITAL","c":"SQTF","r":true,"dept":"DISTRITO CAPITAL"},{"n":"TORRE COLPATRIA","d":"DISTRITO CAPITAL","c":"SQEC","r":true,"dept":"DISTRITO CAPITAL"},{"n":"TORRE EMPRESARIAL PACIFIC","d":"CUNDINAMARCA","c":"SQTP","r":true,"dept":"CUNDINAMARCA"},{"n":"TRES DE MAYO","d":"PUERTO ASÍS","c":"SKAS","r":false,"dept":"PUTUMAYO"},{"n":"TRINIDAD","d":"CASANARE","c":"SKTD","r":true,"dept":"CASANARE"},{"n":"TROMPILLOS","d":"CASANARE","c":"SQYC","r":true,"dept":"CASANARE"},{"n":"TUCANES","d":"QUINDÍO","c":"SQUQ","r":true,"dept":"QUINDÍO"},{"n":"UDELVA","d":"VALLE DEL CAUCA","c":"SKUJ","r":true,"dept":"VALLE DEL CAUCA"},{"n":"ULTRAMOJANA","d":"ANTIOQUIA","c":"SQOJ","r":true,"dept":"ANTIOQUIA"},{"n":"UMBRIA","d":"META","c":"SQUM","r":true,"dept":"META"},{"n":"URIBE","d":"META","c":"SKUB","r":true,"dept":"META"},{"n":"URRA","d":"CÓRDOBA","c":"SQRR","r":true,"dept":"CÓRDOBA"},{"n":"URRAO","d":"ANTIOQUIA","c":"SKUR","r":true,"dept":"ANTIOQUIA"},{"n":"VALLEMAR","d":"CASANARE","c":"SQWM","r":true,"dept":"CASANARE"},{"n":"VANGUARDIA","d":"VILLAVICENCIO","c":"SKVV","r":false,"dept":"META"},{"n":"VARSOVIA","d":"TOLIMA","c":"SKVU","r":true,"dept":"TOLIMA"},{"n":"VARSOVIA","d":"CASANARE","c":"SQVV","r":true,"dept":"CASANARE"},{"n":"VEGAS DEL RIO","d":"CALDAS","c":"SKVW","r":true,"dept":"CALDAS"},{"n":"VELASQUEZ CALDERÓN","d":"BOYACÁ","c":"SKVL","r":true,"dept":"BOYACÁ"},{"n":"VENADO ISANA","d":"GUAINÍA","c":"SQKV","r":true,"dept":"GUAINÍA"},{"n":"VENECIA","d":"VALLE DEL CAUCA","c":"SQVE","r":true,"dept":"VALLE DEL CAUCA"},{"n":"VENECIA DE GUAMAS","d":"CASANARE","c":"SKVM","r":true,"dept":"CASANARE"},{"n":"VENECIA DE GUANAPALO","d":"CASANARE","c":"SQVG","r":true,"dept":"CASANARE"},{"n":"VENTAQUEMADA","d":"TOLIMA","c":"SKVQ","r":true,"dept":"TOLIMA"},{"n":"VIGIA DEL FUERTE","d":"ANTIOQUIA","c":"SKVF","r":true,"dept":"ANTIOQUIA"},{"n":"VILLA ANDREA","d":"CASANARE","c":"SKVE","r":true,"dept":"CASANARE"},{"n":"VILLA FATIMA","d":"VAUPÉS","c":"SQIF","r":true,"dept":"VAUPÉS"},{"n":"VILLA GARZÓN","d":"VILLA GARZÓN","c":"SKVG","r":true,"dept":"PUTUMAYO"},{"n":"VILLA GEORGINA","d":"CUNDINAMARCA","c":"SKRM","r":true,"dept":"CUNDINAMARCA"},{"n":"VILLA GLADYS","d":"VAUPÉS","c":"SQYA","r":true,"dept":"VAUPÉS"},{"n":"VILLA NUEVA","d":"VAUPÉS","c":"SQIU","r":true,"dept":"VAUPÉS"},{"n":"VILLA OLIVA","d":"CESAR","c":"SQVI","r":true,"dept":"CESAR"},{"n":"VILLA ROSA","d":"CESAR","c":"SKIV","r":true,"dept":"CESAR"},{"n":"VILLA VERONICA","d":"CASANARE","c":"SQVB","r":true,"dept":"CASANARE"},{"n":"VILLANUEVA","d":"ANTIOQUIA","c":"SQLE","r":true,"dept":"ANTIOQUIA"},{"n":"VILLANUEVA","d":"GUAJIRA","c":"SQVA","r":true,"dept":"GUAJIRA"},{"n":"VIRGILIO BARCO VARGAS","d":"AMAZONAS","c":"SKHZ","r":true,"dept":"AMAZONAS"},{"n":"VISTA HERMOSA","d":"CASANARE","c":"SKVH","r":true,"dept":"CASANARE"},{"n":"VOLAR COLOMBIA","d":"ANTIOQUIA","c":"SKVC","r":true,"dept":"ANTIOQUIA"},{"n":"WACARICUARA","d":"VAUPÉS","c":"SKWA","r":true,"dept":"VAUPÉS"},{"n":"WAINAMBI","d":"VAUPÉS","c":"SKWN","r":true,"dept":"VAUPÉS"},{"n":"WASAY","d":"VAUPÉS","c":"SKWS","r":true,"dept":"VAUPÉS"},{"n":"WATERLOO","d":"TOLIMA","c":"SQWA","r":true,"dept":"TOLIMA"},{"n":"WORLD TRADE CENTER","d":"DISTRITO CAPITAL","c":"SQWT","r":true,"dept":"DISTRITO CAPITAL"},{"n":"XIELO","d":"CUNDINAMARCA","c":"SKXE","r":true,"dept":"CUNDINAMARCA"},{"n":"YAGUARITO","d":"META","c":"SKGR","r":true,"dept":"META"},{"n":"YAPIMA","d":"VAUPÉS","c":"SQYP","r":true,"dept":"VAUPÉS"},{"n":"YAPU","d":"VAUPÉS","c":"SKYG","r":true,"dept":"VAUPÉS"},{"n":"YARIGUIES","d":"BARRANCABERMEJA","c":"SKEJ","r":false,"dept":"SANTANDER"},{"n":"YARUMITOS","d":"CASANARE","c":"SKYI","r":true,"dept":"CASANARE"},{"n":"YAVARATE","d":"VAUPÉS","c":"SQYV","r":true,"dept":"VAUPÉS"},{"n":"YURUMI","d":"META","c":"SQYM","r":true,"dept":"META"},{"n":"ZAMAR","d":"CASANARE","c":"SQZS","r":true,"dept":"CASANARE"},{"n":"ZAPATOCA","d":"SANTANDER","c":"SQZP","r":true,"dept":"SANTANDER"},{"n":"ZONA FRANCA DE RIONEGRO","d":"ANTIOQUIA","c":"SKZR","r":true,"dept":"ANTIOQUIA"}];
+
+  // ---------- RENDER ----------
+  const content = document.getElementById('glossaryContent');
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const resultCount = document.getElementById('resultCount');
+  const filterRow = document.getElementById('filterRow');
+  const azBar = document.getElementById('azBar');
+  const deptSelect = document.getElementById('deptSelect');
+  const deptTagWrap = document.getElementById('deptTagWrap');
+  const sortNameBtn = document.getElementById('sortName');
+  const sortCodeBtn = document.getElementById('sortCode');
+
+  let activeUse = 'ALL';
+  let activeDept = 'ALL';
+  let sortBy = 'name';
+
+  // poblar select de departamentos con conteos
+  const deptCounts = {};
+  DESIGNADORES.forEach(item => { deptCounts[item.dept] = (deptCounts[item.dept]||0) + 1; });
+  const deptList = Object.keys(deptCounts).sort((a,b) => a.localeCompare(b, 'es'));
+  deptList.forEach(dep => {
+    const opt = document.createElement('option');
+    opt.value = dep;
+    opt.textContent = `${dep} (${deptCounts[dep]})`;
+    deptSelect.appendChild(opt);
+  });
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  function highlight(text, query){
+    if(!query) return escapeHtml(text);
+    const escaped = escapeHtml(text);
+    const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return escaped.replace(new RegExp(`(${q})`, 'ig'), '<mark>$1</mark>');
+  }
+
+  function buildAzBar(availableLetters){
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    azBar.innerHTML = alphabet.map(l => {
+      const has = availableLetters.has(l);
+      return `<a href="#letter-${l}" class="az-btn${has ? '' : ' disabled'}">${l}</a>`;
+    }).join('');
+  }
+
+  function render(){
+    const query = searchInput.value.trim().toLowerCase();
+    clearBtn.style.display = query ? 'flex' : 'none';
+
+    let filtered = DESIGNADORES.filter(item => {
+      const matchesUse = activeUse === 'ALL' || (activeUse === 'RES' && item.r) || (activeUse === 'PUB' && !item.r);
+      const matchesDept = activeDept === 'ALL' || item.dept === activeDept;
+      const matchesQuery = !query ||
+        item.n.toLowerCase().includes(query) ||
+        item.c.toLowerCase().includes(query) ||
+        item.d.toLowerCase().includes(query);
+      return matchesUse && matchesDept && matchesQuery;
+    });
+
+    filtered = filtered.slice().sort((x,y) => {
+      if(sortBy === 'code') return x.c.localeCompare(y.c);
+      return x.n.localeCompare(y.n, 'es');
+    });
+
+    resultCount.textContent = `${filtered.length} designador${filtered.length === 1 ? '' : 'es'} encontrado${filtered.length === 1 ? '' : 's'}`;
+
+    deptTagWrap.innerHTML = activeDept === 'ALL' ? '' :
+      `<span class="active-dept-tag">${escapeHtml(activeDept)}<button id="deptTagClear" aria-label="Quitar filtro de departamento" type="button">✕</button></span>`;
+    const deptTagClear = document.getElementById('deptTagClear');
+    if(deptTagClear){
+      deptTagClear.addEventListener('click', () => {
+        activeDept = 'ALL';
+        deptSelect.value = 'ALL';
+        render();
+      });
+    }
+
+    if(!filtered.length){
+      content.innerHTML = `
+        <div class="no-results">
+          <div class="big">🔍</div>
+          <p>No encontramos coincidencias para tu búsqueda.<br>Intenta con otro nombre, código ICAO o quita algún filtro.</p>
+        </div>`;
+      buildAzBar(new Set());
+      return;
+    }
+
+    if(sortBy === 'code'){
+      // sin agrupar por letra: lista simple ordenada por código
+      buildAzBar(new Set());
+      content.innerHTML = `<div class="letter-group" id="letter-CODE">
+        ${filtered.map(item => `
+          <div class="term-row">
+            <div class="term-abbr mono">${highlight(item.c, query)}</div>
+            <div class="term-body">
+              <div class="term-meaning">${highlight(item.n, query)}</div>
+              <div class="term-tags">
+                <span class="term-badge dept-badge" data-dept="${escapeHtml(item.dept)}">${highlight(item.d, query)} <span style="opacity:0.65;font-size:0.9em">— ${escapeHtml(item.dept)}</span></span>
+                <span class="term-badge ${item.r ? 'restricted' : 'public'}">${item.r ? 'Restringido *' : 'Público'}</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+      attachDeptBadgeHandlers();
+      return;
+    }
+
+    const groups = {};
+    filtered.forEach(item => {
+      const letter = item.n[0].toUpperCase();
+      if(!groups[letter]) groups[letter] = [];
+      groups[letter].push(item);
+    });
+
+    const letters = Object.keys(groups).sort();
+    buildAzBar(new Set(letters));
+
+    content.innerHTML = letters.map(letter => `
+      <div class="letter-group" id="letter-${letter}">
+        <div class="letter-heading">${letter}</div>
+        ${groups[letter].map(item => `
+          <div class="term-row">
+            <div class="term-abbr mono">${highlight(item.c, query)}</div>
+            <div class="term-body">
+              <div class="term-meaning">${highlight(item.n, query)}</div>
+              <div class="term-tags">
+                <span class="term-badge dept-badge" data-dept="${escapeHtml(item.dept)}">${highlight(item.d, query)} <span style="opacity:0.65;font-size:0.9em">— ${escapeHtml(item.dept)}</span></span>
+                <span class="term-badge ${item.r ? 'restricted' : 'public'}">${item.r ? 'Restringido *' : 'Público'}</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    attachDeptBadgeHandlers();
+  }
+
+  function attachDeptBadgeHandlers(){
+    content.querySelectorAll('.dept-badge').forEach(badge => {
+      badge.addEventListener('click', () => {
+        activeDept = badge.dataset.dept;
+        deptSelect.value = activeDept;
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  }
+
+  searchInput.addEventListener('input', render);
+  clearBtn.addEventListener('click', () => { searchInput.value=''; render(); searchInput.focus(); });
+
+  filterRow.addEventListener('click', (e) => {
+    const chip = e.target.closest('.filter-chip');
+    if(!chip) return;
+    filterRow.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeUse = chip.dataset.use;
+    render();
+  });
+
+  deptSelect.addEventListener('change', () => {
+    activeDept = deptSelect.value;
+    render();
+  });
+
+  sortNameBtn.addEventListener('click', () => {
+    sortBy = 'name';
+    sortNameBtn.classList.add('active');
+    sortCodeBtn.classList.remove('active');
+    render();
+  });
+  sortCodeBtn.addEventListener('click', () => {
+    sortBy = 'code';
+    sortCodeBtn.classList.add('active');
+    sortNameBtn.classList.remove('active');
+    render();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
