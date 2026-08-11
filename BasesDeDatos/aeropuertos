@@ -1,0 +1,458 @@
+[
+  {
+    "icao": "SKUC",
+    "ciudad": "Arauca",
+    "aeropuerto": "Santiago Pérez Quiroz",
+    "coordenadas_arp": "070408.08N 0704413.05W"
+  },
+  {
+    "icao": "SKAR",
+    "ciudad": "Armenia",
+    "aeropuerto": "El Edén",
+    "coordenadas_arp": "042705.91N 0754559.00W"
+  },
+  {
+    "icao": "SKBS",
+    "ciudad": "Bahía Solano",
+    "aeropuerto": "José Celestino Mutis",
+    "coordenadas_arp": "061211.20N 0772341.90W"
+  },
+  {
+    "icao": "SKEJ",
+    "ciudad": "Barrancabermeja",
+    "aeropuerto": "Yariguíes",
+    "coordenadas_arp": "070125.69N 0734825.91W"
+  },
+  {
+    "icao": "SKBQ",
+    "ciudad": "Barranquilla",
+    "aeropuerto": "Ernesto Cortissoz",
+    "coordenadas_arp": "105322.06N 0744650.44W"
+  },
+  {
+    "icao": "SKBO",
+    "ciudad": "Bogotá",
+    "aeropuerto": "El Dorado",
+    "coordenadas_arp": "044205.76N 0740849.00W"
+  },
+  {
+    "icao": "SKBG",
+    "ciudad": "Bucaramanga",
+    "aeropuerto": "Palonegro",
+    "coordenadas_arp": "070734.97N 0731105.01W"
+  },
+  {
+    "icao": "SKBU",
+    "ciudad": "Buenaventura",
+    "aeropuerto": "Gerardo Tobar López",
+    "coordenadas_arp": "034910.46N 0765923.66W"
+  },
+  {
+    "icao": "SKCL",
+    "ciudad": "Cali",
+    "aeropuerto": "Alfonso Bonilla Aragón",
+    "coordenadas_arp": "033235.20N 0762254.09W"
+  },
+  {
+    "icao": "SKLC",
+    "ciudad": "Carepa",
+    "aeropuerto": "Antonio Roldán Betancourt",
+    "coordenadas_arp": "074842.30N 0764259.19W"
+  },
+  {
+    "icao": "SKCG",
+    "ciudad": "Cartagena",
+    "aeropuerto": "Rafael Núñez",
+    "coordenadas_arp": "102630.05N 0753046.52W"
+  },
+  {
+    "icao": "SKGO",
+    "ciudad": "Cartago",
+    "aeropuerto": "Santa Ana",
+    "coordenadas_arp": "044527.24N 0755721.65W"
+  },
+  {
+    "icao": "SKGY",
+    "ciudad": "Chía",
+    "aeropuerto": "Flaminio Suárez Camacho",
+    "coordenadas_arp": "044845.00N 0740354.30W"
+  },
+  {
+    "icao": "SKCZ",
+    "ciudad": "Corozal",
+    "aeropuerto": "Las Brujas",
+    "coordenadas_arp": "091957.35N 0751706.80W"
+  },
+  {
+    "icao": "SKCC",
+    "ciudad": "Cúcuta",
+    "aeropuerto": "Camilo Daza",
+    "coordenadas_arp": "075538.60N 0723041.72W"
+  },
+  {
+    "icao": "SKYP",
+    "ciudad": "Yopal",
+    "aeropuerto": "El Alcaraván",
+    "coordenadas_arp": "051908.92N 0722303.22W"
+  },
+  {
+    "icao": "SKFL",
+    "ciudad": "Florencia",
+    "aeropuerto": "Gustavo Artunduaga Paredes",
+    "coordenadas_arp": "013521.35N 0753351.95W"
+  },
+  {
+    "icao": "SKGI",
+    "ciudad": "Girardot",
+    "aeropuerto": "Santiago Vila",
+    "coordenadas_arp": "041631.25N 0744745.92W"
+  },
+  {
+    "icao": "SKGP",
+    "ciudad": "Guapi",
+    "aeropuerto": "Juan Casiano",
+    "coordenadas_arp": "023412.11N 0775352.76W"
+  },
+  {
+    "icao": "SKIB",
+    "ciudad": "Ibagué",
+    "aeropuerto": "Perales",
+    "coordenadas_arp": "042517.95N 0750801.00W"
+  },
+  {
+    "icao": "SKPD",
+    "ciudad": "Inírida",
+    "aeropuerto": "César Gaviria",
+    "coordenadas_arp": "035115.33N 0675423.28W"
+  },
+  {
+    "icao": "SKIP",
+    "ciudad": "Ipiales",
+    "aeropuerto": "San Luis",
+    "coordenadas_arp": "005141.36N 0774003.03W"
+  },
+  {
+    "icao": "SKLT",
+    "ciudad": "Leticia",
+    "aeropuerto": "Alfredo Vásquez Cobo",
+    "coordenadas_arp": "041130.87S 0695631.93W"
+  },
+  {
+    "icao": "SKMZ",
+    "ciudad": "Manizales",
+    "aeropuerto": "La Nubia",
+    "coordenadas_arp": "050148.17N 0752755.63W"
+  },
+  {
+    "icao": "SKQU",
+    "ciudad": "Mariquita",
+    "aeropuerto": "José Celestino Mutis",
+    "coordenadas_arp": "051245.41N 0745301.35W"
+  },
+  {
+    "icao": "SKMD",
+    "ciudad": "Medellín",
+    "aeropuerto": "Olaya Herrera",
+    "coordenadas_arp": "061313.72N 0753525.54W"
+  },
+  {
+    "icao": "SKMU",
+    "ciudad": "Mitú",
+    "aeropuerto": "Fabio A. León Bentley",
+    "coordenadas_arp": "011512.79N 0701402.61W"
+  },
+  {
+    "icao": "SKMR",
+    "ciudad": "Montería",
+    "aeropuerto": "Los Garzones",
+    "coordenadas_arp": "084922.28N 0754930.61W"
+  },
+  {
+    "icao": "SKNV",
+    "ciudad": "Neiva",
+    "aeropuerto": "Benito Salas",
+    "coordenadas_arp": "025701.03N 0751738.48W"
+  },
+  {
+    "icao": "SKPS",
+    "ciudad": "Pasto",
+    "aeropuerto": "Antonio Nariño",
+    "coordenadas_arp": "012347.28N 0771727.63W"
+  },
+  {
+    "icao": "SKPE",
+    "ciudad": "Pereira",
+    "aeropuerto": "Matecaña",
+    "coordenadas_arp": "044845.24N 0754423.86W"
+  },
+  {
+    "icao": "SKPP",
+    "ciudad": "Popayán",
+    "aeropuerto": "Guillermo León Valencia",
+    "coordenadas_arp": "022715.67N 0763635.27W"
+  },
+  {
+    "icao": "SKPV",
+    "ciudad": "Providencia",
+    "aeropuerto": "El Embrujo",
+    "coordenadas_arp": "132125.79N 0812128.53W"
+  },
+  {
+    "icao": "SKAS",
+    "ciudad": "Puerto Asís",
+    "aeropuerto": "Tres de Mayo",
+    "coordenadas_arp": "003020.54N 0763002.55W"
+  },
+  {
+    "icao": "SKPC",
+    "ciudad": "Puerto Carreño",
+    "aeropuerto": "Germán Olano",
+    "coordenadas_arp": "061106.40N 0672933.03W"
+  },
+  {
+    "icao": "SKUI",
+    "ciudad": "Quibdó",
+    "aeropuerto": "El Caraño",
+    "coordenadas_arp": "054126.87N 0763828.39W"
+  },
+  {
+    "icao": "SKRH",
+    "ciudad": "Riohacha",
+    "aeropuerto": "Almirante Padilla",
+    "coordenadas_arp": "113134.20N 0725536.06W"
+  },
+  {
+    "icao": "SKRG",
+    "ciudad": "Rionegro",
+    "aeropuerto": "José María Córdova",
+    "coordenadas_arp": "060952.06N 0752522.80W"
+  },
+  {
+    "icao": "SKSP",
+    "ciudad": "San Andrés",
+    "aeropuerto": "Gustavo Rojas Pinilla",
+    "coordenadas_arp": "123501.18N 0814240.82W"
+  },
+  {
+    "icao": "SKSJ",
+    "ciudad": "San José del Guaviare",
+    "aeropuerto": "Jorge E. González T.",
+    "coordenadas_arp": "023445.59N 0723821.79W"
+  },
+  {
+    "icao": "SKSM",
+    "ciudad": "Santa Marta",
+    "aeropuerto": "Simón Bolívar",
+    "coordenadas_arp": "110710.88N 0741350.30W"
+  },
+  {
+    "icao": "SKSA",
+    "ciudad": "Saravena",
+    "aeropuerto": "Colonizadores",
+    "coordenadas_arp": "065701.32N 0715122.33W"
+  },
+  {
+    "icao": "SKTM",
+    "ciudad": "Tame",
+    "aeropuerto": "Gustavo Vargas",
+    "coordenadas_arp": "062703.62N 0714536.18W"
+  },
+  {
+    "icao": "SKCO",
+    "ciudad": "Tumaco",
+    "aeropuerto": "La Florida",
+    "coordenadas_arp": "014851.88N 0784457.31W"
+  },
+  {
+    "icao": "SKVP",
+    "ciudad": "Valledupar",
+    "aeropuerto": "Alfonso López Pumarejo",
+    "coordenadas_arp": "102606.47N 0731457.83W"
+  },
+  {
+    "icao": "SKVV",
+    "ciudad": "Villavicencio",
+    "aeropuerto": "Vanguardia",
+    "coordenadas_arp": "041008.60N 0733646.06W"
+  },
+  {
+    "icao": "SKAG",
+    "ciudad": "Aguachica",
+    "aeropuerto": "Hacaritama",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SQHK",
+    "ciudad": "Casanare",
+    "aeropuerto": "Hatico",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKHA",
+    "ciudad": "Chaparral",
+    "aeropuerto": "Navas Pardo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKEB",
+    "ciudad": "El Bagre",
+    "aeropuerto": "El Tomín",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKNA",
+    "ciudad": "La Macarena",
+    "aeropuerto": "El Refugio",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKMG",
+    "ciudad": "Magangué",
+    "aeropuerto": "Baracoa",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKLM",
+    "ciudad": "Maicao",
+    "aeropuerto": "Jorge Isaac",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKMP",
+    "ciudad": "Mompós",
+    "aeropuerto": "San Bernardo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKML",
+    "ciudad": "Montelíbano",
+    "aeropuerto": "El Pindo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKNQ",
+    "ciudad": "Nuquí",
+    "aeropuerto": "Reyes Murillo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKOC",
+    "ciudad": "Ocaña",
+    "aeropuerto": "Aguas Claras",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKPA",
+    "ciudad": "Paipa",
+    "aeropuerto": "Juan José Rondón",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKPI",
+    "ciudad": "Pitalito",
+    "aeropuerto": "Contador",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKPB",
+    "ciudad": "Puerto Bolívar",
+    "aeropuerto": "Puerto Bolívar - Portete",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKMO",
+    "ciudad": "Puerto Gaitán",
+    "aeropuerto": "Morelia",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKLG",
+    "ciudad": "Puerto Leguízamo",
+    "aeropuerto": "Puerto Leguízamo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKSG",
+    "ciudad": "San Gil",
+    "aeropuerto": "Los Pozos",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKSV",
+    "ciudad": "San Vicente del Caguán",
+    "aeropuerto": "San Vicente del Caguán",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SQUJ",
+    "ciudad": "Tablón de Támara",
+    "aeropuerto": "Tablón de Támara",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKTL",
+    "ciudad": "Tolú",
+    "aeropuerto": "Golfo de Morrosquillo",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKUL",
+    "ciudad": "Tuluá",
+    "aeropuerto": "Farfán Heriberto Gil Martínez",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKVG",
+    "ciudad": "Villa Garzón",
+    "aeropuerto": "Villa Garzón",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKAP",
+    "ciudad": "Apiay",
+    "aeropuerto": "CT. Luis F. Gómez Niño",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKGB",
+    "ciudad": "Guabito",
+    "aeropuerto": "Marco Fidel Suárez",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKJC",
+    "ciudad": "Juanchaco",
+    "aeropuerto": "Juanchaco",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKUA",
+    "ciudad": "Marandúa",
+    "aeropuerto": "CR. Luis Arturo Rodríguez Meneses",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKPQ",
+    "ciudad": "Palanquero",
+    "aeropuerto": "CT. Germán Olano",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKTQ",
+    "ciudad": "Tres Esquinas",
+    "aeropuerto": "CT. Ernesto Esguerra Cubides",
+    "coordenadas_arp": ""
+  },
+  {
+    "icao": "SKUQ",
+    "ciudad": "Murindó",
+    "aeropuerto": "Murindó",
+    "coordenadas_arp": "065834.00N 0764845.00W"
+  },
+  {
+    "icao": "SKRQ",
+    "ciudad": "Santa Rita de Ituango",
+    "aeropuerto": "Santa Rita de Ituango",
+    "coordenadas_arp": "072005.00N 0753649.00W"
+  }
+]
