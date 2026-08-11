@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SoyAeronautico — Portal AIS·COM·MET</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -360,7 +361,7 @@
     transform:translateY(-28px);
   }
   .notam-inner{
-    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    display:flex; align-items:center; gap:16px;
     background:var(--notam-grad);
     border:1px solid var(--hairline); border-left:3px solid var(--accent);
     border-radius:10px; padding:18px 24px;
@@ -379,7 +380,28 @@
     white-space:nowrap; transition:gap .2s, color .2s;
   }
   .notam-cta:hover{ gap:10px; color:var(--accent); }
-  @media (max-width:640px){ .notam-strip{ transform:none; padding-top:20px; } }
+
+  /* ---------- NOTAM carousel (varios avisos rotando) ---------- */
+  .notam-slides{ position:relative; flex:1; min-width:200px; display:grid; }
+  .notam-slide{
+    grid-area:1/1;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    opacity:0; visibility:hidden; transition:opacity .4s ease;
+    pointer-events:none;
+  }
+  .notam-slide.is-active{ opacity:1; visibility:visible; pointer-events:auto; }
+  .notam-dots{ display:flex; gap:6px; flex-shrink:0; align-self:center; }
+  .notam-dot{
+    width:7px; height:7px; border-radius:50%; padding:0; border:none;
+    background:var(--hairline); cursor:pointer; transition:background .2s, transform .2s;
+  }
+  .notam-dot:hover{ background:var(--accent); }
+  .notam-dot.is-active{ background:var(--accent); transform:scale(1.35); }
+  @media (max-width:640px){
+    .notam-strip{ transform:none; padding-top:20px; }
+    .notam-inner{ flex-wrap:wrap; }
+    .notam-slide{ flex-wrap:wrap; }
+  }
 
   /* ---------- NAV GRID ---------- */
   .sections{ max-width:1200px; margin:0 auto; padding:64px 32px; }
@@ -422,9 +444,10 @@
   .featured-cta{ display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; color:var(--text); }
   .card-featured:hover .featured-cta{ color:var(--accent); }
 
-  /* Compact list of remaining modules */
+  /* Compact grid of remaining modules — 2 columnas en desktop, la última
+     fila (Quizzes) ocupa el ancho completo a modo de cierre destacado. */
   .module-list{
-    display:flex; flex-direction:column;
+    display:grid; grid-template-columns:1fr 1fr;
     background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
     overflow:hidden;
   }
@@ -434,8 +457,13 @@
     border-bottom:1px solid var(--hairline);
     transition:background .2s, padding-left .2s;
   }
-  .module-row:last-child{ border-bottom:none; }
+  .module-row:nth-child(odd):not(:last-child){ border-right:1px solid var(--hairline); }
+  .module-row:last-child{ grid-column:1 / -1; border-bottom:none; }
   .module-row:hover{ background:var(--panel-alt); padding-left:26px; }
+  @media (max-width:900px){
+    .module-list{ grid-template-columns:1fr; }
+    .module-row{ border-right:none !important; }
+  }
   .row-code{
     flex-shrink:0; width:40px; height:40px; border-radius:8px;
     display:flex; align-items:center; justify-content:center;
@@ -720,12 +748,10 @@
   <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
     <div class="brand-mark">
       <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
-        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>
-        <g transform="rotate(-40 20 20)">
-          <path d="M20 7 L25.5 25 L20 21.5 L14.5 25 Z" fill="currentColor"/>
-          <path d="M20 21.5 L20 31 M20 31 L16.8 28.5 M20 31 L23.2 28.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
       </svg>
     </div>
     <div>
@@ -843,10 +869,25 @@
 </section>
 
 <div class="notam-strip">
-  <div class="notam-inner">
-    <span class="notam-tag">NOTAM A0142/26</span>
-    <span class="notam-text">Nuevo banco de <b>120 preguntas de Meteorología</b> disponible en la Zona de Quizzes — vigente hasta el parcial.</span>
-    <a class="notam-cta" href="quizzes.html">Ir a Quizzes →</a>
+  <div class="notam-inner" id="notamCarousel" role="region" aria-label="Avisos destacados">
+    <div class="notam-slides">
+      <div class="notam-slide is-active">
+        <span class="notam-tag">NOTAM A0142/26</span>
+        <span class="notam-text">Nuevo banco de <b>120 preguntas de Meteorología</b> disponible en la Zona de Quizzes — vigente hasta el parcial.</span>
+        <a class="notam-cta" href="quizzes.html">Ir a Quizzes →</a>
+      </div>
+      <div class="notam-slide">
+        <span class="notam-tag">NOTAM A0143/26</span>
+        <span class="notam-text">Ahora puedes leer <b>noticias de Aviación al Día</b> aquí abajo, actualizadas todos los días.</span>
+        <a class="notam-cta" href="#noticias">Ver noticias →</a>
+      </div>
+      <div class="notam-slide">
+        <span class="notam-tag">NOTAM A0144/26</span>
+        <span class="notam-text">Más de <b>1.000 designadores ICAO</b> de aeródromos colombianos, filtrables por departamento.</span>
+        <a class="notam-cta" href="designadores.html">Explorar →</a>
+      </div>
+    </div>
+    <div class="notam-dots"></div>
   </div>
 </div>
 
@@ -1049,6 +1090,48 @@
     tickRow.appendChild(t);
   }
 
+  // ---------- NOTAM CAROUSEL ----------
+  (function(){
+    const root = document.getElementById('notamCarousel');
+    if(!root) return;
+    const slides = Array.from(root.querySelectorAll('.notam-slide'));
+    const dotsWrap = root.querySelector('.notam-dots');
+    if(slides.length <= 1) return;
+
+    const AUTO_MS = 6000;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idx = 0;
+    let timer = null;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'notam-dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('aria-label', `Aviso ${i + 1} de ${slides.length}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    function goTo(i){
+      slides[idx].classList.remove('is-active');
+      dots[idx].classList.remove('is-active');
+      idx = i;
+      slides[idx].classList.add('is-active');
+      dots[idx].classList.add('is-active');
+    }
+    function next(){ goTo((idx + 1) % slides.length); }
+    function start(){ clearInterval(timer); if(!reduceMotion) timer = setInterval(next, AUTO_MS); }
+    function stop(){ clearInterval(timer); }
+
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+
+    start();
+  })();
+
   // ---------- METAR ----------
   // Estrategia estilo OGIMET: cada hora en punto sale un METAR nuevo en NOAA.
   // Guardamos en caché (por sesión) lo que ya se descargó de cada estación y
@@ -1170,7 +1253,7 @@
 
   async function buscarMetar(icaoRaw){
     const icao = icaoRaw.trim().toUpperCase();
-    if(icao.length !== 4){
+    if(!/^[A-Z]{4}$/.test(icao)){
       metarStatus.textContent = 'Ingresa un código ICAO válido de 4 letras (ej. SKBO).';
       metarStatus.classList.add('error');
       return;
