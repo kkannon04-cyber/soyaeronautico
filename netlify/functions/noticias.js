@@ -1,31 +1,31 @@
 // netlify/functions/noticias.js
-// Noticias de aviación — SOLO TEXTO (sin imágenes), 8 artículos, fuente única:
-// Aviacionline.com (sección "Aviación Comercial").
+// Noticias de aviación — SOLO TEXTO (sin imágenes), 5 artículos, fuente única:
+// Aviación al Día (aviacionaldia.com), vía su RSS oficial.
 // Ruta: /.netlify/functions/noticias
 //
 // ── Estrategia de caché (para no gastar créditos de Netlify) ────────────────
-// 1) Cache-Control con max-age=48h + stale-while-revalidate: la CDN de Netlify
+// 1) Cache-Control con max-age=24h + stale-while-revalidate: la CDN de Netlify
 //    devuelve la respuesta cacheada directamente sin volver a invocar la
-//    función durante 48 horas. Esta es la vía principal de ahorro.
+//    función durante 24 horas. Esta es la vía principal de ahorro.
 // 2) Caché en memoria (variable de módulo): si el contenedor de la función
-//    sigue "caliente" entre invocaciones, evita repetir el fetch/parseo a
-//    aviacionline.com aunque la CDN llegue a re-invocar la función.
+//    sigue "caliente" entre invocaciones, evita repetir el fetch/parseo al
+//    feed aunque la CDN llegue a re-invocar la función.
 // 3) Si el fetch a la fuente falla, se sirve la última copia buena guardada
 //    en memoria (mejor mostrar noticias "viejas" que un error).
 
 const https = require("https");
 const zlib  = require("zlib");
 
-// ── Fuente única ──────────────────────────────────────────────────────────
+// ── Fuente única: RSS real de Aviación al Día ────────────────────────────
 const SOURCE = {
-  id: "aviacionline",
-  label: "Aviacionline",
-  url: "https://www.aviacionline.com/espanol/aviacion-comercial_c68cdfd44a0ea712e1fb00314",
+  id: "aviacionaldia",
+  label: "Aviación al Día",
+  url: "https://aviacionaldia.com/feed/",
 };
 
-const MAX_ARTICLES   = 8;
+const MAX_ARTICLES   = 5;
 const TIMEOUT_MS     = 8000;
-const CACHE_MS       = 48 * 60 * 60 * 1000; // 48 horas
+const CACHE_MS       = 24 * 60 * 60 * 1000; // 24 horas
 
 // Caché en memoria del proceso (persiste mientras el contenedor esté vivo)
 let memoryCache = { data: null, timestamp: 0 };
@@ -40,7 +40,7 @@ function fetchUrl(url) {
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          Accept: "application/rss+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.7",
           "Accept-Language": "es-ES,es;q=0.9",
           "Accept-Encoding": "gzip, deflate, br",
         },
@@ -102,92 +102,60 @@ function decodeEntities(str) {
     );
 }
 
-// ── Detecta un prefijo de fecha en español: "sábado 18/7/2026" ──────────────
-const DIAS_RE = /(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i;
-
-function parseSpanishDateToISO(str) {
-  const m = str.match(DIAS_RE);
-  if (!m) return null;
-  const [, , dd, mm, yyyy] = m;
-  const pad = (n) => n.toString().padStart(2, "0");
-  return `${yyyy}-${pad(mm)}-${pad(dd)}T00:00:00-05:00`;
-}
-
-// ── Convierte el HTML interno de una tarjeta en bloques de texto limpios ───
-function extractTextBlocks(innerHtml) {
-  let html = innerHtml
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<img[^>]*>/gi, "");
-
-  // Marca un separador después de cada cierre de bloque de texto típico
-  html = html.replace(/<\/(h[1-6]|p|li|time|small|span|div)>/gi, (m) => `${m}\u0001`);
-
-  const text = decodeEntities(html.replace(/<[^>]+>/g, ""));
-
-  return text
-    .split("\u0001")
-    .map((s) => s.replace(/\s+/g, " ").trim())
-    .filter(Boolean)
-    .filter((s) => !/^no disponible sin conexi[oó]n\.?$/i.test(s))
-    .filter((s, i, arr) => i === 0 || s !== arr[i - 1]); // sin duplicados consecutivos
-}
-
-// ── Arma un excerpt corto y prolijo ─────────────────────────────────────────
-function buildExcerpt(text, maxLen = 180) {
-  if (!text) return "";
+// ── Arma un excerpt corto y prolijo a partir del <description> del feed ────
+function buildExcerpt(html, maxLen = 180) {
+  if (!html) return "";
+  const text = decodeEntities(html.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
   if (text.length <= maxLen) return text;
   const cut = text.slice(0, maxLen);
   const lastSpace = cut.lastIndexOf(" ");
   return `${cut.slice(0, lastSpace > 60 ? lastSpace : maxLen)}…`;
 }
 
-// ── Parsea la página de listado y devuelve hasta N artículos ────────────────
-function parseListing(html, source, max) {
-  // Acepta tanto href="https://www.aviacionline.com/espanol/..._aXXXX"
-  // como href="/espanol/..._aXXXX" (rutas relativas).
-  const ANCHOR_RE =
-    /<a\s+[^>]*href="((?:https:\/\/www\.aviacionline\.com)?\/(?:espanol|english)\/[^"?#]+_a[0-9a-f]{15,})[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+// ── Extrae el contenido de un tag (con o sin CDATA) dentro de un <item> ────
+function extractTag(itemXml, tag) {
+  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
+  const m = itemXml.match(re);
+  if (!m) return "";
+  const raw = m[1].trim();
+  const cdata = raw.match(/^<!\[CDATA\[([\s\S]*)\]\]>$/);
+  return (cdata ? cdata[1] : raw).trim();
+}
 
-  const seen = new Set();
+// ── Parsea un feed RSS 2.0 estándar y devuelve hasta N artículos ──────────
+function parseRss(xml, source, max) {
+  const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
   const articles = [];
-  let match;
 
-  while ((match = ANCHOR_RE.exec(html)) !== null && articles.length < max) {
-    const link = match[1].startsWith("http")
-      ? match[1]
-      : `https://www.aviacionline.com${match[1]}`;
-    if (seen.has(link)) continue;
+  for (const itemXml of items) {
+    const title = decodeEntities(extractTag(itemXml, "title"));
+    const link  = extractTag(itemXml, "link");
+    const pubDateRaw = extractTag(itemXml, "pubDate");
+    const description = extractTag(itemXml, "description");
 
-    const blocks = extractTextBlocks(match[2]);
-    if (!blocks.length) continue;
+    if (!title || !link) continue;
 
-    let title, excerptParts, pubDate = null;
+    const parsedDate = pubDateRaw ? new Date(pubDateRaw) : null;
+    const pubDate = parsedDate && !isNaN(parsedDate) ? parsedDate.toISOString() : null;
 
-    const isDateLine = DIAS_RE.test(blocks[0]);
-    if (isDateLine) {
-      pubDate = parseSpanishDateToISO(blocks[0]);
-      title = blocks[1];
-      excerptParts = blocks.slice(2);
-    } else {
-      title = blocks[0];
-      excerptParts = blocks.slice(1);
-    }
-
-    if (!title || title.length < 8 || title.length > 220) continue;
-
-    seen.add(link);
     articles.push({
       sourceId:    source.id,
       sourceLabel: source.label,
       title,
       link,
       pubDate,
-      excerpt: buildExcerpt(excerptParts.join(" ")),
+      excerpt: buildExcerpt(description),
     });
   }
 
-  return articles;
+  // Más reciente primero; los que no traigan fecha válida van al final.
+  articles.sort((a, b) => {
+    if (!a.pubDate) return 1;
+    if (!b.pubDate) return -1;
+    return new Date(b.pubDate) - new Date(a.pubDate);
+  });
+
+  return articles.slice(0, max);
 }
 
 // ── Handler principal ────────────────────────────────────────────────────
@@ -197,32 +165,31 @@ exports.handler = async (event) => {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type":                 "application/json",
-    // La CDN de Netlify puede servir esta respuesta durante 48h sin volver
-    // a invocar la función (stale-while-revalidate da 24h extra de margen).
+    // La CDN de Netlify puede servir esta respuesta durante 24h sin volver
+    // a invocar la función (stale-while-revalidate da 12h extra de margen).
     "Cache-Control":
-      "public, max-age=172800, stale-while-revalidate=86400",
+      "public, max-age=86400, stale-while-revalidate=43200",
   };
 
   const params = (event && event.queryStringParameters) || {};
 
   // ── Modo diagnóstico: /.netlify/functions/noticias?debug=1 ──────────────
   // Bypasea toda caché y devuelve datos crudos para ver qué está llegando
-  // realmente desde aviacionline.com, sin tener que adivinar a ciegas.
+  // realmente del feed RSS, sin tener que adivinar a ciegas.
   if (params.debug) {
     try {
-      const html = await fetchUrl(SOURCE.url);
-      const anchorCount = (html.match(/<a\s+[^>]*href="[^"]*_a[0-9a-f]{15,}/gi) || []).length;
-      const articles = parseListing(html, SOURCE, MAX_ARTICLES);
+      const xml = await fetchUrl(SOURCE.url);
+      const itemCount = (xml.match(/<item>/gi) || []).length;
+      const articles = parseRss(xml, SOURCE, MAX_ARTICLES);
       return {
         statusCode: 200,
         headers: { ...CORS, "Cache-Control": "no-store" },
         body: JSON.stringify({
           debug: true,
-          htmlLength: html.length,
-          anchorMatches: anchorCount,
-          htmlSample: html.slice(0, 1500),
+          xmlLength: xml.length,
+          itemMatches: itemCount,
           parsedCount: articles.length,
-          parsedSample: articles.slice(0, 2),
+          parsedSample: articles,
         }, null, 2),
       };
     } catch (err) {
@@ -251,8 +218,8 @@ exports.handler = async (event) => {
 
   // 2) Toca refrescar: se intenta el fetch a la fuente.
   try {
-    const html = await fetchUrl(SOURCE.url);
-    const articles = parseListing(html, SOURCE, MAX_ARTICLES);
+    const xml = await fetchUrl(SOURCE.url);
+    const articles = parseRss(xml, SOURCE, MAX_ARTICLES);
 
     if (articles.length) {
       memoryCache = { data: articles, timestamp: now };
