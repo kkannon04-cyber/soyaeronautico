@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meteorología | SoyAeronautico</title>
+<title>Fraseología Aeronáutica · SoyAeronautico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,17 +71,22 @@
   .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
   .hero-note b{ color:var(--text); }
+  .hero-cta{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
+  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
 
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
 
-  /* ---- grid de módulos/ejes ---- */
+  /* ---- grid de módulos/bloques ---- */
   .modules-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:32px 0; }
   .module-card{ border:1px solid var(--hairline); border-radius:14px; padding:24px; background:var(--panel); transition:.2s; position:relative; overflow:hidden; }
   .module-card::before{ content:''; position:absolute; inset:-8px; border:1px dashed rgba(var(--muted-rgb),0.15); border-radius:6px; pointer-events:none; }
   .module-card a{ text-decoration:none; display:block; position:relative; z-index:1; }
   .module-card:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow-card); }
-  .module-card.locked{ opacity:0.6; cursor:default; }
-  .module-card.locked:hover{ border-color:var(--hairline); transform:none; box-shadow:none; }
 
   .module-icon{ font-size:2.4rem; margin-bottom:12px; }
   .module-number{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:block; }
@@ -89,7 +94,6 @@
   .module-desc{ font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px; }
   .module-status{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:6px 10px; border-radius:6px; display:inline-block; margin-bottom:6px; }
   .module-status.completed{ background:rgba(46,158,109,0.15); color:var(--vfr); }
-  .module-status.upcoming{ background:rgba(var(--muted-rgb),0.12); color:var(--text-muted); }
 
   .module-meta{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-top:12px; }
   .module-meta-item{ display:inline-block; margin-right:14px; }
@@ -101,50 +105,14 @@
   .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
   .mobile-nav.open{ display:block; }
   .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
-  .mobile-nav-panel{
-    position:absolute; top:0; right:0; bottom:0;
-    width:min(300px, 85vw);
-    background:var(--panel);
-    border-left:1px solid var(--hairline);
-    padding:24px 0;
-    display:flex; flex-direction:column;
-    overflow-y:auto;
-    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
-  }
-  .mobile-nav-header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 24px 20px;
-    border-bottom:1px solid var(--hairline);
-    margin-bottom:12px;
-  }
-  .mobile-nav-close{
-    background:none; border:1px solid var(--hairline);
-    color:var(--text); width:34px; height:34px;
-    border-radius:8px; font-size:1.1rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .mobile-nav-links a{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 24px;
-    text-decoration:none; color:var(--text);
-    font-size:0.95rem; font-weight:500;
-    border-bottom:1px solid var(--hairline);
-    transition:background .15s, color .15s, padding-left .15s;
-  }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:34px; height:34px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
   .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
   .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
-  .mobile-nav-footer{
-    margin-top:auto; padding:20px 24px 0;
-    display:flex; align-items:center; justify-content:space-between;
-    border-top:1px solid var(--hairline);
-  }
-  .mobile-nav-footer .theme-toggle{
-    display:flex; align-items:center; gap:8px;
-    background:none; border:1px solid var(--hairline);
-    color:var(--text-muted); padding:8px 14px; border-radius:8px;
-    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
-    transition:color .2s, border-color .2s;
-  }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
 </head>
@@ -169,10 +137,10 @@
     <nav class="desktop-nav">
       <a href="ats.html">ATS</a>
       <a href="designadores.html">Designadores</a>
-      <a href="meteorologia.html" class="active">Meteorología</a>
+      <a href="meteorologia.html">Meteorología</a>
       <a href="metar-taf.html">METAR y TAF</a>
       <a href="plan-de-vuelo.html">Plan de Vuelo</a>
-      <a href="fraseologia.html">Fraseología</a>
+      <a href="fraseologia.html" class="active">Fraseología</a>
       <a href="glosario.html">Glosario</a>
       <a href="quizzes.html">Quizzes</a>
     </nav>
@@ -201,10 +169,10 @@
     <nav class="mobile-nav-links">
       <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
       <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
-      <a href="meteorologia.html" class="active">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
-      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html" class="active">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
     </nav>
@@ -220,62 +188,79 @@
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Módulo MET — Curso Básico Operador AIS·COM·MET</div>
-  <h1>Meteorología Aeronáutica.</h1>
-  <p class="lead">Entiende cómo funciona la atmósfera, cómo se mide el viento, la temperatura, la presión y la humedad, y cómo leer las nubes y los fenómenos meteorológicos que afectan tu vuelo. El módulo se divide en 3 ejes temáticos progresivos: desde lo general a lo específico.</p>
-  <div class="hero-note">
-    <span>🌤️</span>
-    <span><b>Estructura:</b> cada eje temático está dividido en bloques cortos con chequeos rápidos. Completa un eje para desbloquear el siguiente.</span>
+  <div class="eyebrow">Fraseología Aeronáutica</div>
+  <h1>Cómo se habla por radio: fraseología estándar OACI y coordinación ATC</h1>
+  <p class="lead">Cada llamada entre un piloto y un controlador sigue un guion fijo — la <b>fraseología</b> — pensado para que un mensaje corto, dicho en cualquier acento y bajo presión, se entienda sin ambigüedad. El módulo se divide en 4 bloques temáticos: desde el alfabeto y los números OACI hasta las emergencias y la coordinación tierra-tierra entre dependencias.</p>
+  <div class="hero-note">🎧 <div><b>Cómo estudiar cada bloque:</b> cada frase tiene un botón 🔊 para escucharla en voz alta con el acento correcto (inglés para fraseología OACI, español para coordinación doméstica). Lee, escucha y responde el chequeo rápido de cada tema.</div></div>
+  <div class="hero-cta">
+    <a href="quiz-fraseologia.html" class="btn btn-primary">📝 Practicar con el quiz de fraseología →</a>
+    <a href="simulador-fraseologia.html" class="btn btn-outline">🎯 Simulador ATC por voz →</a>
   </div>
 </section>
 
 <main class="content">
   <div class="modules-grid">
 
-    <!-- Eje 1: Generalidades y Atmósfera (DISPONIBLE) -->
+    <!-- Bloque 1: OACI general -->
     <div class="module-card">
-      <a href="meteorologia-generalidades.html">
-        <div class="module-icon">🌍</div>
-        <span class="module-number">Eje Temático 1</span>
-        <div class="module-title">Generalidades y Atmósfera</div>
-        <div class="module-desc">Definiciones base de Meteorología, qué es la atmósfera, su composición y sus capas: tropósfera, estratosfera, mesosfera, termosfera y exosfera.</div>
+      <a href="fraseologia-oaci.html">
+        <div class="module-icon">🔤</div>
+        <span class="module-number">Bloque 1 de 4</span>
+        <div class="module-title">OACI general</div>
+        <div class="module-desc">Alfabeto fonético, números y niveles de vuelo, indicativos de llamada, readback/roger/wilco, prueba de radio, prioridad de mensajes y estela turbulenta.</div>
         <span class="module-status completed">✓ Disponible</span>
         <div class="module-meta">
-          <div class="module-meta-item">8 bloques</div>
-          <div class="module-meta-item">8 chequeos</div>
-          <div class="module-meta-item">~25 min</div>
+          <div class="module-meta-item">7 temas</div>
+          <div class="module-meta-item">7 chequeos</div>
+          <div class="module-meta-item">~20 min</div>
         </div>
       </a>
     </div>
 
-    <!-- Eje 2: Variables Meteorológicas (DISPONIBLE) -->
+    <!-- Bloque 2: Fases de vuelo -->
     <div class="module-card">
-      <a href="meteorologia-variables.html">
-        <div class="module-icon">💨</div>
-        <span class="module-number">Eje Temático 2</span>
-        <div class="module-title">Variables Meteorológicas</div>
-        <div class="module-desc">Viento, visibilidad, humedad, temperatura y presión: qué son, cómo se miden, cómo se representan y qué fuerzas e implicaciones tienen para el vuelo.</div>
+      <a href="fraseologia-fases.html">
+        <div class="module-icon">✈️</div>
+        <span class="module-number">Bloque 2 de 4</span>
+        <div class="module-title">Fases de vuelo</div>
+        <div class="module-desc">Rodaje, despegue, ruta, aproximación y aterrizaje, circuito de tránsito VFR, aeródromos no controlados, ATIS, deshielo en plataforma y TCAS/RVSM/ATFM.</div>
         <span class="module-status completed">✓ Disponible</span>
         <div class="module-meta">
-          <div class="module-meta-item">13 bloques</div>
-          <div class="module-meta-item">13 chequeos</div>
-          <div class="module-meta-item">~45 min</div>
+          <div class="module-meta-item">10 temas</div>
+          <div class="module-meta-item">10 chequeos</div>
+          <div class="module-meta-item">~30 min</div>
         </div>
       </a>
     </div>
 
-    <!-- Eje 3: Nubosidad y Meteoros (DISPONIBLE) -->
+    <!-- Bloque 3: Emergencias -->
     <div class="module-card">
-      <a href="meteorologia-nubosidad.html">
-        <div class="module-icon">⛅</div>
-        <span class="module-number">Eje Temático 3</span>
-        <div class="module-title">Nubosidad y Meteoros</div>
-        <div class="module-desc">Génesis y clasificación de las nubes, y los fenómenos meteorológicos que debes conocer para el vuelo: hidrometeoros, fotometeoros, litometeoros y electrometeoros.</div>
+      <a href="fraseologia-emergencias.html">
+        <div class="module-icon">🚨</div>
+        <span class="module-number">Bloque 3 de 4</span>
+        <div class="module-title">Emergencias</div>
+        <div class="module-desc">MAYDAY, PAN-PAN, combustible mínimo, códigos 7500/7600/7700, pérdida de comunicaciones, proximidad al terreno y servicio de alerta/SAR.</div>
         <span class="module-status completed">✓ Disponible</span>
         <div class="module-meta">
-          <div class="module-meta-item">13 bloques</div>
-          <div class="module-meta-item">13 chequeos</div>
-          <div class="module-meta-item">~45 min</div>
+          <div class="module-meta-item">7 temas</div>
+          <div class="module-meta-item">7 chequeos</div>
+          <div class="module-meta-item">~20 min</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Bloque 4: Tierra-tierra / ATC -->
+    <div class="module-card">
+      <a href="fraseologia-tierra.html">
+        <div class="module-icon">📡</div>
+        <span class="module-number">Bloque 4 de 4</span>
+        <div class="module-title">Tierra-tierra / ATC</div>
+        <div class="module-desc">Coordinación de transferencia, secuenciación y aceptación de control, coordinación de niveles y rutas entre centros, y renegociación cuando hay desacuerdo.</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">4 temas</div>
+          <div class="module-meta-item">4 chequeos</div>
+          <div class="module-meta-item">~15 min</div>
         </div>
       </a>
     </div>
@@ -285,7 +270,7 @@
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Módulo MET — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Módulo Fraseología — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
 </footer>
 
 <script>

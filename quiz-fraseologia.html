@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Fraseología · 40 preguntas · SoyAeronautico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --panel: #F5F8FC;
+    --panel-alt: #EAF1FB;
+    --accent: #1657C6;
+    --accent-rgb: 22,87,198;
+    --navy: #0A2647;
+    --text: #0F1B2D;
+    --text-muted: #5B6B7F;
+    --hairline: #E1E7EF;
+    --shadow-rgb: 15,23,42;
+    --danger: #D64545;
+    --danger-rgb: 214,69,69;
+    --vfr: #2E9E6D;
+    --vfr-rgb: 46,158,109;
+    --mvfr: #3E7BFA;
+    --ifr: #D64545;
+    --lifr: #8B5CF6;
+    --lifr-rgb: 139,92,246;
+    --live: #2E9E6D;
+    --live-rgb: 46,158,109;
+    --topbar-bg: rgba(255,255,255,0.85);
+    --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"] {
+    --bg: #0B1220;
+    --panel: #121C2E;
+    --panel-alt: #17223A;
+    --accent: #4F8EF7;
+    --accent-rgb: 79,142,247;
+    --navy: #0A2647;
+    --text: #EDEFF3;
+    --text-muted: #8894A8;
+    --hairline: #2A3548;
+    --shadow-rgb: 0,0,0;
+    --danger: #C9564F;
+    --danger-rgb: 201,86,79;
+    --vfr: #4FA88C;
+    --vfr-rgb: 79,168,140;
+    --mvfr: #4A8FD1;
+    --ifr: #C9564F;
+    --lifr: #B15FC7;
+    --lifr-rgb: 177,95,199;
+    --live: #4FA88C;
+    --live-rgb: 79,168,140;
+    --topbar-bg: rgba(11,18,32,0.85);
+    --shadow-card: 0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html { transition: background .2s; scroll-behavior: smooth; }
+  body { transition: background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  h1,h2,h3,h4 { font-family:'Archivo', sans-serif; margin:0; }
+  .mono { font-family:'IBM Plex Mono', monospace; }
+  a { color:inherit; text-decoration:none; }
+
+  /* topbar (idéntico al portal) */
+  .topbar {
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; text-decoration:none; color:var(--text); }
+  .brand-mark { width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg { display:block; }
+  .brand small { display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot { 0%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55); } 70%{ box-shadow:0 0 0 6px rgba(var(--live-rgb),0); } 100%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0); } }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav { display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500; }
+  nav.desktop-nav a { position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after { content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible { color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after { right:0; }
+  nav.desktop-nav a.active { color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after { right:0; background:var(--vfr); }
+  .nav-divider { width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover { color:var(--accent); border-color:var(--hairline); }
+  .nav-right { display:flex; align-items:center; gap:14px; }
+  .zulu-mini { font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg { display:block; }
+  .theme-toggle .icon-moon { display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display:block; }
+  .menu-btn { display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem; }
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  /* hero simple */
+  .hero-simple { max-width:960px; margin:0 auto; padding:40px 32px 20px; }
+  .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1 { font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
+  .hero-simple p.lead { color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; margin-bottom:4px; }
+  .hero-note { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 10px; font-size:0.9rem; color:var(--text-muted); }
+  .hero-note b { color:var(--text); }
+  .btn-quiz-back { display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:10px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .btn-quiz-back:hover { filter:brightness(1.08); }
+
+  .quiz-container { max-width:900px; margin:0 auto; padding:20px 32px 60px; }
+  .question-card { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:24px; transition:border-color .2s; }
+  .question-card.correct { border-left:6px solid var(--vfr); }
+  .question-card.wrong { border-left:6px solid var(--danger); }
+  .q-header { display:flex; align-items:baseline; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .q-num { font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
+  .q-tag { font-family:'IBM Plex Mono'; font-size:0.65rem; color:var(--text-muted); background:var(--bg); padding:2px 10px; border-radius:12px; border:1px solid var(--hairline); }
+  .cat-badge { font-family:'IBM Plex Mono'; font-size:0.65rem; font-weight:700; padding:2px 10px; border-radius:12px; letter-spacing:0.04em; text-transform:uppercase; }
+  .cat-badge.oaci { background:rgba(var(--accent-rgb),0.14); color:var(--accent); }
+  .cat-badge.fases { background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); }
+  .cat-badge.emergencias { background:rgba(var(--danger-rgb),0.14); color:var(--danger); }
+  .cat-badge.tierra { background:rgba(var(--lifr-rgb),0.14); color:var(--lifr); }
+  .q-context { font-size:0.86rem; color:var(--text-muted); margin-bottom:10px; }
+  .q-context b { color:var(--text); }
+  .q-message-box { background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .q-message-label { font-family:'IBM Plex Mono'; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); width:100%; }
+  .q-message-text { font-family:'IBM Plex Mono'; font-size:0.88rem; flex:1; min-width:200px; line-height:1.5; }
+  .q-play-btn { flex-shrink:0; background:var(--panel-alt); border:1px solid var(--hairline); color:var(--accent); border-radius:8px; padding:6px 12px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Sans'; transition:.15s; }
+  .q-play-btn:hover { border-color:var(--accent); background:var(--bg); }
+  .q-play-btn.playing { background:var(--accent); color:#fff; border-color:var(--accent); }
+  body.no-tts .q-play-btn { display:none; }
+  .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
+  .options { display:flex; flex-direction:column; gap:8px; }
+  .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .opt-btn.mono { font-family:'IBM Plex Mono'; font-size:0.83rem; }
+  .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
+  .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.12); }
+  .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); }
+  .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.08); }
+  .opt-btn:disabled { cursor:default; opacity:0.85; }
+  .feedback { margin-top:12px; font-size:0.9rem; padding:8px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--hairline); display:none; }
+  .feedback.show { display:block; }
+  .feedback.correct { border-color:var(--vfr); color:var(--vfr); }
+  .feedback.wrong { border-color:var(--danger); color:var(--danger); }
+  .feedback .q-explain { margin-top:6px; color:var(--text-muted); font-weight:400; line-height:1.55; }
+
+  .score-panel { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px; }
+  .score-panel .mono { font-weight:600; }
+  .score-panel .nota { font-size:1.2rem; font-weight:700; color:var(--accent); }
+  .reset-btn { background:var(--accent); color:#fff; border:none; padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s; font-family:'IBM Plex Sans'; }
+  .reset-btn:hover { filter:brightness(1.08); }
+
+  footer { border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:600px) { .topbar { padding:12px 16px; } .quiz-container { padding:12px 16px; } .question-card { padding:18px; } .score-panel { padding:12px 16px; } }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{
+    position:absolute; top:0; right:0; bottom:0;
+    width:min(300px, 85vw);
+    background:var(--panel);
+    border-left:1px solid var(--hairline);
+    padding:24px 0;
+    display:flex; flex-direction:column;
+    overflow-y:auto;
+    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
+  }
+  .mobile-nav-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px 20px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:12px;
+  }
+  .mobile-nav-close{
+    background:none; border:1px solid var(--hairline);
+    color:var(--text); width:34px; height:34px;
+    border-radius:8px; font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mobile-nav-links a{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    text-decoration:none; color:var(--text);
+    font-size:0.95rem; font-weight:500;
+    border-bottom:1px solid var(--hairline);
+    transition:background .15s, color .15s, padding-left .15s;
+  }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{
+    margin-top:auto; padding:20px 24px 0;
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px solid var(--hairline);
+  }
+  .mobile-nav-footer .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--hairline);
+    color:var(--text-muted); padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
+    transition:color .2s, border-color .2s;
+  }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="designadores.html">Designadores</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="fraseologia.html">Fraseología</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <button class="nav-icon-btn" aria-label="Buscar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Quiz de Fraseología · 40 preguntas</div>
+  <h1>Fraseología Aeronáutica — teoría y situaciones aplicadas</h1>
+  <p class="lead">40 preguntas de opción múltiple sobre la teoría de fraseología OACI, fases de vuelo, emergencias y coordinación tierra-tierra, más situaciones de radio en español e inglés para identificar la respuesta correcta. No necesitas hablar ni usar micrófono.</p>
+  <div class="hero-note">
+    <span>📋</span>
+    <span><b>Instrucciones:</b> cada pregunta tiene una única opción correcta. En las preguntas de tipo "Situación" puedes pulsar <b>🔊 Escuchar</b> para oír el mensaje de radio antes de elegir tu respuesta. Selecciona una opción para ver la retroalimentación y reinicia cuando quieras con el botón de abajo.</span>
+  </div>
+  <a href="fraseologia.html" class="btn-quiz-back">← Volver a la guía de Fraseología</a>
+</section>
+
+<div class="quiz-container" id="quizContainer">
+  <!-- las preguntas se inyectan acá -->
+</div>
+
+<div class="score-panel" id="scorePanel">
+  <span><span class="mono" id="answeredCount">0</span> / 40 respondidas</span>
+  <span class="nota" id="notaFinal">—</span>
+  <button class="reset-btn" id="resetQuiz">Reiniciar quiz</button>
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Fraseología · Parte 1 — Teórico, 40 preguntas de opción múltiple.</span>
+</footer>
+
+<script>
+  // ---------- TEMAS ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){ document.documentElement.setAttribute('data-theme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  themeToggle.addEventListener('click',()=>{ const isDark=document.documentElement.getAttribute('data-theme')==='dark'; if(isDark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme','light'); themeToggle.setAttribute('aria-label','Cambiar a modo oscuro'); }else{ document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('aisTheme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); } });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- SÍNTESIS DE VOZ (botón "Escuchar" — solo reproduce, la respuesta siempre es de opción múltiple) ----------
+  let voicesCache = [];
+  function loadVoices(){ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }
+  if('speechSynthesis' in window){
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  } else {
+    document.body.classList.add('no-tts');
+  }
+  function speak(text, lang, btn){
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || 'en-US';
+    utter.rate = 0.92;
+    const short = utter.lang.split('-')[0];
+    const match = voicesCache.find(v => v.lang === utter.lang) || voicesCache.find(v => v.lang && v.lang.startsWith(short));
+    if(match) utter.voice = match;
+    if(btn){
+      btn.classList.add('playing');
+      utter.onend = () => btn.classList.remove('playing');
+      utter.onerror = () => btn.classList.remove('playing');
+    }
+    window.speechSynthesis.speak(utter);
+  }
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.q-play-btn');
+    if(!btn) return;
+    speak(btn.dataset.say, btn.dataset.lang, btn);
+  });
+
+  // ---------- 40 PREGUNTAS (Fraseología: teoría + situaciones ES/EN) ----------
+  const CAT_LABEL = { oaci:'OACI general', fases:'Fases de vuelo', emergencias:'Emergencias', tierra:'Tierra-tierra / ATC' };
+
+  const questions = [
+    // ================= BLOQUE 1 · OACI GENERAL =================
+    { cat:'oaci', type:'teoria', q:'¿Cuál es la palabra OACI para la letra "V"?',
+      options:['Vector','Victor','Violet'], correct:1 },
+    { cat:'oaci', type:'teoria', q:'¿Por qué el número 9 se pronuncia "NINER" en fraseología OACI?',
+      options:['Porque suena mejor con acento estadounidense','Para evitar que se confunda con la palabra "no" en otros idiomas (p. ej. "nein" en alemán)','Porque es más corto de transmitir'], correct:1 },
+    { cat:'oaci', type:'teoria', q:'¿Quién debe iniciar la abreviación de un indicativo de llamada en la frecuencia?',
+      options:['El piloto, en cuanto le resulte cómodo','El controlador, y el piloto lo sigue después','Cualquiera de los dos, no importa el orden'], correct:1 },
+    { cat:'oaci', type:'teoria', q:'Si un piloto responde "ROGER" a una instrucción de descenso, ¿qué está confirmando?',
+      options:['Que ya inició el descenso','Solo que recibió el mensaje, no necesariamente que lo va a ejecutar','Que rechaza la instrucción'], correct:1 },
+    { cat:'oaci', type:'teoria', q:'En la escala de legibilidad del Anexo 10, ¿qué significa "reading you fife" (5)?',
+      options:['Que la señal es ilegible','Que solo se escucha por momentos','Que la señal es perfectamente legible'], correct:2 },
+    { cat:'oaci', type:'teoria', q:'Según el orden de prioridad de mensajes del Anexo 10, ¿qué va primero?',
+      options:['Los mensajes de socorro (MAYDAY)','Los mensajes meteorológicos','Los mensajes de regularidad del vuelo'], correct:0 },
+    { cat:'oaci', type:'teoria', q:'¿Para qué sirve añadir "heavy" (pesado) al indicativo de llamada?',
+      options:['Para pedir prioridad de aterrizaje automática','Para que ATC aplique la separación por estela turbulenta correspondiente a esa categoría','Para indicar que la aeronave tiene sobrepeso de equipaje'], correct:1 },
+
+    { cat:'oaci', type:'situacion', context:'Cambio de nivel en ruta', message:'Avianca zero seven eight, descend and maintain flight level two four zero.', lang:'en-US',
+      q:'¿Cuál es el readback correcto?',
+      options:[
+        'Descend and maintain flight level two four zero, Avianca zero seven eight.',
+        'Climb and maintain flight level two four zero, Avianca zero seven eight.',
+        'Descend and maintain flight level four two zero, Avianca zero seven eight.',
+        'Maintain flight level two four zero, Avianca zero seven eight.'
+      ], correct:0,
+      explanation:'El readback debe repetir la instrucción de descenso, el nivel exacto y el indicativo — no basta con confirmar parte del mensaje.' },
+    { cat:'oaci', type:'situacion', context:'Prueba de radio y escala de legibilidad', message:'Bogotá Tower, Hotel Kilo one two tree four, radio check, how do you read?', lang:'en-US',
+      q:'¿Cuál es la respuesta correcta a este radio check?',
+      options:[
+        'Hotel Kilo one two tree four, Bogotá Tower, reading you fife.',
+        'Hotel Kilo one two tree four, standby.',
+        'Hotel Kilo one two tree four, say again.',
+        'Hotel Kilo one two tree four, negative contact.'
+      ], correct:0,
+      explanation:'La respuesta a un radio check usa la escala numérica 1 a 5 del Anexo 10, no una frase genérica como "se escucha bien".' },
+    { cat:'oaci', type:'situacion', context:'Estela turbulenta en el readback', message:'Giant zero eight seven, Cali Approach, descend and maintain flight level two four zero.', lang:'en-US',
+      q:'¿Cuál es el readback correcto para esta aeronave categoría "heavy"?',
+      options:[
+        'Descend and maintain flight level two four zero, Giant zero eight seven.',
+        'Descend and maintain flight level two four zero, Giant zero eight seven, heavy.',
+        'Climb and maintain flight level two four zero, Giant zero eight seven, heavy.',
+        'Descend and maintain flight level four two zero, Giant zero eight seven, heavy.'
+      ], correct:1,
+      explanation:'Las aeronaves categoría "heavy" añaden la palabra a su indicativo en cada nueva llamada para que ATC aplique la separación por estela turbulenta correcta.' },
+
+    // ================= BLOQUE 2 · FASES DE VUELO =================
+    { cat:'fases', type:'teoria', q:'¿Qué tipo de instrucciones exigen siempre readback textual del piloto?',
+      options:['Solo el cambio de frecuencia','Las que implican entrar, cruzar o mantener posición en una pista','Ninguna, basta con decir "Roger"'], correct:1 },
+    { cat:'fases', type:'teoria', q:'La instrucción "line up and wait" autoriza a...',
+      options:['Despegar de inmediato','Entrar y alinearse en pista, pero sin autorización de despegue','Cruzar la pista sin detenerse'], correct:1 },
+    { cat:'fases', type:'teoria', q:'¿Cuándo es más necesario transmitir un reporte de posición completo?',
+      options:['Cuando se vuela fuera de cobertura de radar continua','Solo durante el rodaje en tierra','Únicamente si lo pide la aerolínea'], correct:0 },
+    { cat:'fases', type:'teoria', q:'¿Qué debe repetir siempre el piloto tras recibir una autorización de descenso?',
+      options:['El nivel o altitud asignada, textualmente','Solo decir "Roger"','Nada, el controlador ya lo registró'], correct:0 },
+    { cat:'fases', type:'teoria', q:'En una autorización de aterrizaje, ¿en qué orden se transmite la información del viento?',
+      options:['Dirección y luego velocidad','Velocidad y luego dirección','No se transmite el viento en la autorización de aterrizaje'], correct:0 },
+    { cat:'fases', type:'teoria', q:'¿Qué tramo del circuito de tránsito va paralelo a la pista, en sentido contrario al aterrizaje?',
+      options:['Final','Base','Downwind (viento en cola)'], correct:2 },
+    { cat:'fases', type:'teoria', q:'En un aeródromo no controlado, ¿a quién se dirige el anuncio de tránsito?',
+      options:['Solo a la torre de control más cercana','A todas las estaciones que puedan estar escuchando en esa frecuencia','No es necesario anunciarse si no hay torre'], correct:1 },
+    { cat:'fases', type:'teoria', q:'¿Qué debe hacer el piloto al contactar por primera vez con una dependencia que transmite ATIS?',
+      options:['Confirmar que tiene copiada la letra de información ATIS vigente','Repetir el ATIS completo palabra por palabra','Nada, el ATIS no requiere confirmación'], correct:0 },
+    { cat:'fases', type:'teoria', q:'¿Qué indica el "holdover time" en un reporte de deshielo?',
+      options:['El tiempo estimado en que el fluido sigue protegiendo la superficie antes de que pueda volver a formarse hielo','El tiempo que la aeronave debe esperar en plataforma antes de solicitar rodaje','La duración total del vuelo'], correct:0 },
+    { cat:'fases', type:'teoria', q:'Ante un aviso de resolución (RA) de TCAS, ¿qué debe hacer primero el piloto?',
+      options:['Pedirle instrucciones a ATC antes de maniobrar','Ejecutar la maniobra indicada por el RA de inmediato, y reportar a ATC después','Ignorarlo si no ve tráfico visualmente'], correct:1 },
+
+    { cat:'fases', type:'situacion', context:'Entrar y esperar en pista', message:'Avianca zero seven eight, runway two zero, line up and wait.', lang:'en-US',
+      q:'¿Cuál es el readback correcto?',
+      options:[
+        'Line up and wait runway two zero, Avianca zero seven eight.',
+        'Cleared for takeoff runway two zero, Avianca zero seven eight.',
+        'Hold short runway two zero, Avianca zero seven eight.',
+        'Taxi to holding point runway two zero, Avianca zero seven eight.'
+      ], correct:0,
+      explanation:'"Line up and wait" no autoriza a despegar, solo a entrar y alinearse en la pista.' },
+    { cat:'fases', type:'situacion', context:'Autorización de aterrizaje', message:'Avianca zero seven eight, wind two two zero degrees eight knots, runway two zero, cleared to land.', lang:'en-US',
+      q:'¿Cuál es el readback correcto?',
+      options:[
+        'Cleared for takeoff runway two zero, Avianca zero seven eight.',
+        'Go around, Avianca zero seven eight.',
+        'Continue approach, runway two zero, Avianca zero seven eight.',
+        'Cleared to land runway two zero, Avianca zero seven eight.'
+      ], correct:3,
+      explanation:'Se repite "cleared to land" y la pista; el viento se informa pero no se repite en el readback.' },
+    { cat:'fases', type:'situacion', context:'Ingreso al circuito de tránsito VFR', message:'Foxtrot Alpha Bravo, join right downwind runway one tree.', lang:'en-US',
+      q:'¿Cuál es el readback correcto?',
+      options:[
+        'Join left downwind runway one tree, Foxtrot Alpha Bravo.',
+        'Join right base runway one tree, Foxtrot Alpha Bravo.',
+        'Join right downwind runway one tree, Foxtrot Alpha Bravo.',
+        'Cleared to land runway one tree, Foxtrot Alpha Bravo.'
+      ], correct:2,
+      explanation:'Se repite el sentido del circuito (right), el tramo asignado (downwind) y la pista.' },
+
+    // ================= BLOQUE 3 · EMERGENCIAS =================
+    { cat:'emergencias', type:'teoria', q:'¿Cuántas veces se transmite la palabra "MAYDAY" al declarar una emergencia?',
+      options:['Una vez','Dos veces','Tres veces'], correct:2 },
+    { cat:'emergencias', type:'teoria', q:'¿Qué diferencia principal hay entre "PAN-PAN" y "MAYDAY"?',
+      options:['PAN-PAN es urgencia sin peligro inminente para la aeronave; MAYDAY sí implica peligro grave e inminente','No hay ninguna diferencia real, son sinónimos','PAN-PAN solo se usa en tierra, nunca en vuelo'], correct:0 },
+    { cat:'emergencias', type:'teoria', q:'¿Cuándo se declara "MAYDAY FUEL" en lugar de solo "MINIMUM FUEL"?',
+      options:['Cuando el piloto simplemente prefiere aterrizar más rápido','Cuando el combustible utilizable al llegar al aeródromo previsto será menor a la reserva final requerida','Nunca — "MAYDAY FUEL" no existe en fraseología OACI'], correct:1 },
+    { cat:'emergencias', type:'teoria', q:'¿Qué código de transpondedor corresponde a interferencia ilícita?',
+      options:['7600','7700','7500'], correct:2 },
+    { cat:'emergencias', type:'teoria', q:'¿Qué código de transpondedor selecciona una aeronave con falla de comunicaciones (NORDO)?',
+      options:['7500','7600','7700'], correct:1 },
+    { cat:'emergencias', type:'teoria', q:'Si ATC transmite "check your altitude immediately", ¿qué debe hacer el piloto?',
+      options:['Confirmar por radio antes de tomar cualquier acción','Verificar y corregir su altitud de inmediato, como acción prioritaria','Ignorarlo si confía en su instrumentación'], correct:1 },
+    { cat:'emergencias', type:'teoria', q:'¿Cuál de estas tres fases del servicio de alerta representa el mayor nivel de gravedad?',
+      options:['INCERFA','ALERFA','DETRESFA'], correct:2 },
+
+    { cat:'emergencias', type:'situacion', context:'Incendio de motor — declarar MAYDAY', message:'Se declara un incendio en el motor, diez millas al sur de Bogotá, nivel de vuelo uno dos cero, con ciento cuarenta y cinco personas a bordo. Transmite tu llamada de socorro completa.', lang:'es-CO',
+      q:'¿Cuál es la llamada de socorro correcta?',
+      options:[
+        'PAN-PAN, PAN-PAN, PAN-PAN, Avianca zero seven eight, engine fire, request priority landing.',
+        'MAYDAY, MAYDAY, MAYDAY, Avianca zero seven eight, engine fire, request immediate return, ten miles south of Bogotá, flight level one two zero, one four five souls on board.',
+        'Avianca zero seven eight, minimum fuel, request priority approach.',
+        'Roger, Avianca zero seven eight, continuing normally.'
+      ], correct:1,
+      explanation:'MAYDAY se transmite tres veces, seguido de indicativo, naturaleza de la emergencia, intención del piloto, posición, nivel y personas a bordo.' },
+    { cat:'emergencias', type:'situacion', context:'Combustible mínimo (sin emergencia formal)', message:'El combustible calculado alcanza para llegar, pero sin margen para demoras adicionales. Informa tu situación de combustible sin declarar emergencia.', lang:'es-CO',
+      q:'¿Cuál es el aviso correcto?',
+      options:[
+        'Avianca zero seven eight, minimum fuel, request direct routing and priority approach.',
+        'MAYDAY FUEL, Avianca zero seven eight, request immediate priority landing.',
+        'Avianca zero seven eight, engine flame out, request lower level.',
+        'Avianca zero seven eight, fuel normal, no request.'
+      ], correct:0,
+      explanation:'"Minimum fuel" es un aviso de precaución, no una declaración formal de emergencia.' },
+    { cat:'emergencias', type:'situacion', context:'Transmisión a ciegas por pérdida de comunicaciones', message:'Perdiste la capacidad de recibir por radio pero aún puedes transmitir. Pasas el VOR de Bucaramanga en nivel de vuelo tres tres cero. Haz tu transmisión a ciegas.', lang:'es-CO',
+      q:'¿Cuál es la transmisión a ciegas correcta?',
+      options:[
+        'MAYDAY, MAYDAY, MAYDAY, Avianca zero seven eight, radio failure.',
+        'Transmitting blind, Avianca zero seven eight, passing Bucaramanga VOR, flight level tree tree zero.',
+        'Avianca zero seven eight, say again, not received.',
+        'Avianca zero seven eight, standing by for instructions.'
+      ], correct:1,
+      explanation:'Sin poder recibir, se anuncia "transmitting blind" seguido de indicativo, posición y nivel, en los puntos donde normalmente se reportaría.' },
+
+    // ================= BLOQUE 4 · TIERRA-TIERRA / ATC =================
+    { cat:'tierra', type:'teoria', q:'La coordinación de transferencia entre torre y aproximación ocurre...',
+      options:['En la misma frecuencia que escucha el piloto','Por línea telefónica o interfonía dedicada entre dependencias','Por mensaje de texto AFTN únicamente'], correct:1 },
+    { cat:'tierra', type:'teoria', q:'La secuenciación entre dependencias sirve principalmente para...',
+      options:['Establecer y coordinar el orden de llegada de varias aeronaves al mismo aeródromo','Decidir qué aerolínea paga menos tasas aeroportuarias','Reemplazar el plan de vuelo presentado'], correct:0 },
+    { cat:'tierra', type:'teoria', q:'En la coordinación entre dos centros de control (ACC), ¿qué datos del vuelo se coordinan típicamente?',
+      options:['Nivel de vuelo, ruta y punto/hora estimada de cruce entre FIR','El número de pasajeros y su equipaje','El precio del tiquete aéreo'], correct:0 },
+    { cat:'tierra', type:'teoria', q:'Si un centro no puede aceptar el nivel propuesto por tráfico opuesto, ¿qué debe hacer?',
+      options:['Aceptar igual y resolver el conflicto en el aire','Proponer una alternativa (por ejemplo, otro nivel) y esperar la confirmación de la otra dependencia','No responder hasta que la aeronave ya haya cruzado'], correct:1 },
+
+    { cat:'tierra', type:'situacion', context:'Coordinación de transferencia Torre → Aproximación', message:'Aproximación Bogotá, Torre Rionegro, tráfico Avianca cero siete ocho, en despegue pista dos cero, ascendiendo a nivel de vuelo uno cero cero, ¿acepta transferencia?', lang:'es-CO',
+      q:'¿Cuál es la respuesta correcta de la dependencia receptora?',
+      options:[
+        'Torre Rionegro, Aproximación Bogotá, transferencia rechazada, mantenga en frecuencia actual.',
+        'Torre Rionegro, Aproximación Bogotá, tráfico no identificado.',
+        'Torre Rionegro, Aproximación Bogotá, espere, verificando separación.',
+        'Torre Rionegro, Aproximación Bogotá, transferencia aceptada, cambio de frecuencia autorizado.'
+      ], correct:3,
+      explanation:'La dependencia receptora confirma identificación propia, aceptación y autoriza el cambio de frecuencia.' },
+    { cat:'tierra', type:'situacion', context:'Coordinación de cruce entre centros', message:'Centro Barranquilla, Centro Bogotá, coordino cruce de tráfico Avianca cero siete ocho, nivel de vuelo tres cinco cero, estimado punto ARUBA a las cero tres cuatro cinco.', lang:'es-CO',
+      q:'¿Cuál es la respuesta correcta de aceptación?',
+      options:[
+        'Centro Bogotá, Centro Barranquilla, coordinación rechazada, solicite otro nivel.',
+        'Centro Bogotá, Centro Barranquilla, coordinación aceptada, nivel de vuelo tres cinco cero, punto ARUBA a las cero tres cuatro cinco.',
+        'Centro Bogotá, Centro Barranquilla, tráfico no visible en radar.',
+        'Centro Bogotá, Centro Barranquilla, repita el punto de estimado.'
+      ], correct:1,
+      explanation:'El centro receptor confirma la coordinación repitiendo nivel y punto/hora de cruce.' },
+    { cat:'tierra', type:'situacion', context:'Renegociación de nivel entre dos centros', message:'Centro Cali, Centro Bogotá, coordino tráfico Avianca cero siete ocho, nivel de vuelo tres cinco cero, punto POREX.', lang:'es-CO',
+      q:'Si Centro Cali no puede aceptar ese nivel por tráfico opuesto, ¿cuál es la respuesta correcta?',
+      options:[
+        'Centro Bogotá, Centro Cali, coordinación aceptada, nivel tres cinco cero.',
+        'Centro Bogotá, Centro Cali, tráfico no identificado.',
+        'Centro Bogotá, Centro Cali, repita el punto de estimado.',
+        'Centro Bogotá, Centro Cali, no puedo aceptar nivel tres cinco cero por tráfico opuesto, ¿puede coordinar nivel tres cuatro cero?'
+      ], correct:3,
+      explanation:'Cuando una dependencia no puede aceptar la propuesta tal como se coordinó, responde con una contrapropuesta concreta en vez de un simple rechazo.' }
+  ];
+
+  // ---------- ESTADO ----------
+  let answered = new Array(questions.length).fill(false);
+  let correctAnswers = 0;
+  let totalAnswered = 0;
+
+  const container = document.getElementById('quizContainer');
+  const answeredSpan = document.getElementById('answeredCount');
+  const notaSpan = document.getElementById('notaFinal');
+
+  function renderQuestions() {
+    container.innerHTML = '';
+    questions.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.dataset.idx = idx;
+
+      const header = document.createElement('div');
+      header.className = 'q-header';
+      header.innerHTML = `<span class="q-num">${idx+1}/${questions.length}</span><span class="cat-badge ${item.cat}">${CAT_LABEL[item.cat]}</span><span class="q-tag">${item.type === 'situacion' ? 'Situación' : 'Teoría'}</span>`;
+      card.appendChild(header);
+
+      if(item.type === 'situacion'){
+        const ctx = document.createElement('div');
+        ctx.className = 'q-context';
+        ctx.innerHTML = `<b>${item.context}</b>`;
+        card.appendChild(ctx);
+
+        const msgBox = document.createElement('div');
+        msgBox.className = 'q-message-box';
+        const langLabel = (item.lang || '').startsWith('es') ? 'Mensaje (español)' : 'Mensaje (inglés)';
+        msgBox.innerHTML = `
+          <div class="q-message-label">${langLabel}</div>
+          <div class="q-message-text mono">${item.message}</div>
+          <button class="q-play-btn" type="button" data-say="${item.message.replace(/"/g,'&quot;')}" data-lang="${item.lang}">🔊 Escuchar</button>
+        `;
+        card.appendChild(msgBox);
+      }
+
+      const qText = document.createElement('div');
+      qText.className = 'q-text';
+      qText.textContent = item.q;
+      card.appendChild(qText);
+
+      const optsDiv = document.createElement('div');
+      optsDiv.className = 'options';
+
+      item.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        btn.className = item.type === 'situacion' ? 'opt-btn mono' : 'opt-btn';
+        btn.textContent = opt;
+        btn.dataset.optIdx = oi;
+        btn.addEventListener('click', () => handleAnswer(idx, oi));
+        optsDiv.appendChild(btn);
+      });
+      card.appendChild(optsDiv);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback';
+      feedback.id = `fb-${idx}`;
+      card.appendChild(feedback);
+
+      container.appendChild(card);
+    });
+    updateUI();
+  }
+
+  function handleAnswer(qIdx, optIdx) {
+    if (answered[qIdx]) return;
+    const item = questions[qIdx];
+    const correct = item.correct;
+    const isCorrect = optIdx === correct;
+
+    answered[qIdx] = true;
+    totalAnswered++;
+    if (isCorrect) correctAnswers++;
+
+    const card = container.querySelector(`.question-card[data-idx="${qIdx}"]`);
+    const btns = card.querySelectorAll('.opt-btn');
+    btns.forEach((b, i) => {
+      b.disabled = true;
+      if (i === correct) b.classList.add('reveal-correct');
+      if (i === optIdx && isCorrect) b.classList.add('selected-correct');
+      if (i === optIdx && !isCorrect) b.classList.add('selected-wrong');
+    });
+
+    card.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    const fb = document.getElementById(`fb-${qIdx}`);
+    fb.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+    let html = isCorrect ? '✅ Correcto.' : `❌ Incorrecto. La respuesta correcta era: "${item.options[correct]}"`;
+    if(item.explanation) html += `<div class="q-explain">${item.explanation}</div>`;
+    fb.innerHTML = html;
+
+    updateUI();
+  }
+
+  function updateUI() {
+    answeredSpan.textContent = totalAnswered;
+    const total = questions.length;
+    if (totalAnswered === total) {
+      notaSpan.textContent = `${Math.round((correctAnswers / total) * 100)}%`;
+    } else if (totalAnswered > 0) {
+      notaSpan.textContent = `${Math.round((correctAnswers / totalAnswered) * 100)}% (parcial)`;
+    } else {
+      notaSpan.textContent = '—';
+    }
+  }
+
+  function resetQuiz() {
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    answered = new Array(questions.length).fill(false);
+    correctAnswers = 0;
+    totalAnswered = 0;
+    renderQuestions();
+    updateUI();
+    notaSpan.textContent = '—';
+  }
+
+  document.getElementById('resetQuiz').addEventListener('click', resetQuiz);
+
+  // render inicial
+  renderQuestions();
+</script>
+<script>
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

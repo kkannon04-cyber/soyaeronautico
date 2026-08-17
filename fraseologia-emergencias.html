@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraseología de Emergencias · SoyAeronautico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box;}
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:26px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:900px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+  @media (max-width:700px){ .subtab span:not(.n){ display:none; } }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .breadcrumb{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-bottom:16px; display:inline-block; text-decoration:none; }
+  .breadcrumb:hover{ color:var(--accent); }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+  .hero-cta{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
+  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+  .quiz-progress-pill{ font-family:'IBM Plex Mono'; font-size:0.76rem; color:var(--text-muted); background:var(--panel-alt); border-radius:20px; padding:6px 14px; }
+
+  .toc{ max-width:900px; margin:14px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+
+  .topic{ margin-bottom:60px; scroll-margin-top:100px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; flex:1; }
+  .lang-badge{ flex-shrink:0; font-family:'IBM Plex Mono'; font-size:0.66rem; font-weight:700; letter-spacing:0.06em; padding:4px 10px; border-radius:12px; background:var(--panel-alt); color:var(--text-muted); }
+  .lang-badge.en{ color:var(--accent); }
+  .lang-badge.es{ color:var(--warn); }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  table.ats-table td.mono{ font-family:'IBM Plex Mono'; color:var(--accent); font-weight:600; }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  /* ---- tarjetas de frase (llamada / readback, con TTS) ---- */
+  .phrase-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:2px 18px; margin:18px 0; }
+  .phrase-row{ display:flex; align-items:flex-start; gap:14px; padding:14px 0; }
+  .phrase-row + .phrase-row{ border-top:1px dashed var(--hairline); }
+  .phrase-role{ flex-shrink:0; width:60px; font-family:'IBM Plex Mono'; font-size:0.66rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-muted); padding-top:4px; }
+  .phrase-row.role-atc .phrase-role{ color:var(--accent); }
+  .phrase-row.role-pilot .phrase-role{ color:var(--vfr); }
+  .phrase-main{ flex:1; min-width:0; }
+  .phrase-text{ font-family:'IBM Plex Mono'; font-size:0.88rem; line-height:1.5; color:var(--text); }
+  .phrase-gloss{ font-size:0.81rem; color:var(--text-muted); margin-top:5px; line-height:1.5; }
+  .speak-btn{ flex-shrink:0; width:34px; height:34px; border-radius:8px; border:1px solid var(--hairline); background:var(--bg); color:var(--accent); cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:.15s; }
+  .speak-btn:hover{ border-color:var(--accent); background:var(--panel-alt); }
+  .speak-btn.speaking{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .no-tts-note{ font-size:0.78rem; color:var(--text-muted); text-align:center; padding:10px; display:none; }
+  body.no-tts .speak-btn{ display:none; }
+  body.no-tts .no-tts-note{ display:block; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-w{ background:rgba(224,142,62,0.18); color:var(--warn); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:34px; height:34px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+    </a>
+    <nav class="desktop-nav">
+      <a href="ats.html">ATS</a>
+      <a href="designadores.html">Designadores</a>
+      <a href="meteorologia.html">Meteorología</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+      <a href="fraseologia.html" class="active">Fraseología</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <button class="nav-icon-btn" aria-label="Buscar en el portal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV DRAWER -->
+  <div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+    <div class="mobile-nav-panel">
+      <div class="mobile-nav-header">
+        <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+      </div>
+      <nav class="mobile-nav-links">
+        <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+        <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+        <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+        <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+        <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+        <a href="fraseologia.html" class="active">Fraseología <span class="mnav-arrow">→</span></a>
+        <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+        <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      </nav>
+      <div class="mobile-nav-footer">
+        <button class="theme-toggle" id="themeToggleMobile" type="button">
+          <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+          Modo oscuro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="fraseologia-oaci.html" class="subtab"><span class="n">1</span> <span>OACI general</span></a>
+      <a href="fraseologia-fases.html" class="subtab"><span class="n">2</span> <span>Fases de vuelo</span></a>
+      <a href="fraseologia-emergencias.html" class="subtab active"><span class="n">3</span> <span>Emergencias</span></a>
+      <a href="fraseologia-tierra.html" class="subtab"><span class="n">4</span> <span>Tierra-tierra / ATC</span></a>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <a class="breadcrumb" href="fraseologia.html">← Volver a Fraseología</a><br>
+  <div class="eyebrow">Fraseología — Bloque 3 de 4</div>
+  <h1>Emergencias: fraseología que interrumpe cualquier otro tráfico</h1>
+  <p class="lead">MAYDAY, PAN-PAN, combustible mínimo, pérdida de comunicaciones, interferencia ilícita y alertas de proximidad al terreno. Reconocer esta fraseología de inmediato, tanto en el rol de piloto como de controlador, es crítico para la seguridad del vuelo.</p>
+  <div class="hero-note">🚨 <div><b>Cómo estudiar esta página:</b> presta especial atención a las diferencias entre niveles de gravedad — no toda anomalía es un MAYDAY, y confundirlos tiene consecuencias operacionales reales.</div></div>
+  <div class="hero-note">📖 <div><b>Base normativa:</b> este bloque sigue el Anexo 10 Vol. II (Telecomunicaciones Aeronáuticas) de la OACI y el manual MSER 10.0-05-060 de fraseología aeronáutica de Colombia.</div></div>
+  <div class="hero-cta">
+    <a href="quiz-fraseologia.html" class="btn btn-primary">📝 Practicar con el quiz de fraseología →</a>
+    <span class="quiz-progress-pill mono" id="quizProgress">0 de 7 chequeos respondidos</span>
+  </div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. MAYDAY</a>
+  <a href="#t2">2. PAN-PAN</a>
+  <a href="#t3">3. Falla de motor y combustible</a>
+  <a href="#t4">4. Interferencia ilícita (7500/7600/7700)</a>
+  <a href="#t5">5. Pérdida de comunicaciones (NORDO)</a>
+  <a href="#t6">6. Proximidad al terreno (GPWS)</a>
+  <a href="#t7">7. Servicio de alerta y SAR</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>MAYDAY — emergencia de socorro</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p><b>MAYDAY</b> se declara cuando la aeronave o sus ocupantes están amenazados por un peligro grave e inminente y requieren asistencia inmediata. Se transmite <b>tres veces seguidas</b> al inicio del mensaje para que sea inconfundible incluso con interferencia.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Elemento del mensaje</th><th>Ejemplo</th></tr>
+        <tr><td>Llamada de socorro (x3)</td><td class="mono">MAYDAY, MAYDAY, MAYDAY</td></tr>
+        <tr><td>Indicativo</td><td class="mono">Avianca zero seven eight</td></tr>
+        <tr><td>Naturaleza de la emergencia</td><td class="mono">engine fire</td></tr>
+        <tr><td>Intención del piloto</td><td class="mono">request immediate return</td></tr>
+        <tr><td>Posición y nivel</td><td class="mono">ten miles south of Bogotá, flight level one two zero</td></tr>
+        <tr><td>Personas a bordo (POB)</td><td class="mono">one four five souls on board</td></tr>
+      </table>
+      </div>
+      <div class="phrase-card">
+        <div class="phrase-row role-pilot">
+          <div class="phrase-role">Piloto</div>
+          <div class="phrase-main">
+            <div class="phrase-text">MAYDAY, MAYDAY, MAYDAY, Avianca zero seven eight, engine fire, request immediate return, ten miles south of Bogotá, flight level one two zero, one four five souls on board.</div>
+            <div class="phrase-gloss">MAYDAY, MAYDAY, MAYDAY, Avianca cero siete ocho, incendio de motor, solicito regreso inmediato, diez millas al sur de Bogotá, nivel de vuelo uno dos cero, ciento cuarenta y cinco personas a bordo.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="MAYDAY, MAYDAY, MAYDAY, Avianca zero seven eight, engine fire, request immediate return, ten miles south of Bogota, flight level one two zero, one four five souls on board." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+        <div class="phrase-row role-atc">
+          <div class="phrase-role">Centro</div>
+          <div class="phrase-main">
+            <div class="phrase-text">Avianca zero seven eight, Bogotá Center, MAYDAY acknowledged, descend and maintain flight level one zero zero, radar vectors for immediate approach runway two zero.</div>
+            <div class="phrase-gloss">Avianca cero siete ocho, Centro Bogotá, MAYDAY recibido, descienda y mantenga nivel de vuelo uno cero cero, vectores radar para aproximación inmediata pista dos cero.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="Avianca zero seven eight, Bogota Center, MAYDAY acknowledged, descend and maintain flight level one zero zero, radar vectors for immediate approach runway two zero." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>🗣️ Acuse de recibo formal ("AQUÍ")</h4>
+        <p style="margin:0;">El Anexo 10 define el acuse de recibo de socorro con la fórmula: <span class="mono">MAYDAY (indicativo de la estación llamada) AQUÍ / THIS IS (indicativo de la estación que responde) RECIBIDO MAYDAY</span> — confirma que el mensaje de socorro fue copiado y que esa estación asume la coordinación de la emergencia.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/7</div>
+      <div class="quiz-q">¿Cuántas veces se transmite la palabra "MAYDAY" al declarar una emergencia?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Una vez</button>
+        <button class="quiz-opt" data-correct="false">Dos veces</button>
+        <button class="quiz-opt" data-correct="true">Tres veces</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>PAN-PAN — urgencia</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p><b>PAN-PAN</b> (también repetido tres veces) se usa cuando existe una situación de urgencia respecto a la seguridad de la aeronave o de una persona a bordo, pero <b>sin</b> que exista un peligro grave e inminente que amenace a la aeronave misma — un nivel por debajo de MAYDAY.</p>
+      <div class="phrase-card">
+        <div class="phrase-row role-pilot">
+          <div class="phrase-role">Piloto</div>
+          <div class="phrase-main">
+            <div class="phrase-text">PAN-PAN, PAN-PAN, PAN-PAN, Avianca zero seven eight, medical emergency on board, request priority landing.</div>
+            <div class="phrase-gloss">PAN-PAN, PAN-PAN, PAN-PAN, Avianca cero siete ocho, emergencia médica a bordo, solicito aterrizaje prioritario.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="PAN-PAN, PAN-PAN, PAN-PAN, Avianca zero seven eight, medical emergency on board, request priority landing." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+      </div>
+      <div class="mnemo"><b>🧠 Diferencia clave:</b> MAYDAY = peligro grave e inminente para la aeronave. PAN-PAN = urgencia que requiere asistencia y prioridad, pero la aeronave no está en peligro inmediato de pérdida. Ambas interrumpen cualquier otro tráfico en la frecuencia.</div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/7</div>
+      <div class="quiz-q">¿Qué diferencia principal hay entre "PAN-PAN" y "MAYDAY"?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">PAN-PAN es urgencia sin peligro inminente para la aeronave; MAYDAY sí implica peligro grave e inminente</button>
+        <button class="quiz-opt" data-correct="false">No hay ninguna diferencia real, son sinónimos</button>
+        <button class="quiz-opt" data-correct="false">PAN-PAN solo se usa en tierra, nunca en vuelo</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>Falla de motor y combustible mínimo</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p>No toda anomalía se declara como MAYDAY. En combustible existen dos niveles claramente distintos:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Aviso</th><th>Qué significa</th><th>¿Es emergencia formal?</th></tr>
+        <tr><td class="mono">MINIMUM FUEL</td><td>El combustible calculado permite llegar al destino, pero sin margen para demoras adicionales; se pide prioridad, no emergencia.</td><td>No</td></tr>
+        <tr><td class="mono">MAYDAY FUEL</td><td>El combustible utilizable estimado al aterrizar en el aeródromo previsto será inferior a la reserva final requerida.</td><td>Sí, es MAYDAY formal</td></tr>
+      </table>
+      </div>
+      <div class="phrase-card">
+        <div class="phrase-row role-pilot">
+          <div class="phrase-role">Piloto</div>
+          <div class="phrase-main">
+            <div class="phrase-text">Avianca zero seven eight, engine number two flame out, request lower level and vectors to nearest suitable airport.</div>
+            <div class="phrase-gloss">Avianca cero siete ocho, apagado del motor número dos, solicito nivel inferior y vectores al aeropuerto adecuado más cercano.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="Avianca zero seven eight, engine number two flame out, request lower level and vectors to nearest suitable airport." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+        <div class="phrase-row role-pilot">
+          <div class="phrase-role">Piloto</div>
+          <div class="phrase-main">
+            <div class="phrase-text">Avianca zero seven eight, minimum fuel, request direct routing and priority approach.</div>
+            <div class="phrase-gloss">Avianca cero siete ocho, combustible mínimo, solicito ruta directa y aproximación prioritaria.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="Avianca zero seven eight, minimum fuel, request direct routing and priority approach." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/7</div>
+      <div class="quiz-q">¿Cuándo se declara "MAYDAY FUEL" en lugar de solo "MINIMUM FUEL"?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Cuando el piloto simplemente prefiere aterrizar más rápido</button>
+        <button class="quiz-opt" data-correct="true">Cuando el combustible utilizable al llegar al aeródromo previsto será menor a la reserva final requerida</button>
+        <button class="quiz-opt" data-correct="false">Nunca — "MAYDAY FUEL" no existe en fraseología OACI</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Interferencia ilícita — códigos 7500 / 7600 / 7700</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p>El código seleccionado en el transpondedor le dice a ATC, sin necesidad de palabras, qué tipo de situación anormal está ocurriendo a bordo.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Código</th><th>Significado</th></tr>
+        <tr><td class="mono">7500</td><td>Interferencia ilícita (secuestro/toma de control no autorizada).</td></tr>
+        <tr><td class="mono">7600</td><td>Falla de comunicaciones (radio).</td></tr>
+        <tr><td class="mono">7700</td><td>Emergencia general.</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>🔒 Manejo del código 7500</h4>
+        <p style="margin:0;">A diferencia de 7700 y 7600, que normalmente se comunican también por radio, el código 7500 puede seleccionarse sin anunciar nada en frecuencia, precisamente porque puede no ser seguro hacerlo abiertamente. Si ATC observa 7500 sin comunicación previa, confirma la situación de forma indirecta (por ejemplo, con preguntas que el piloto pueda responder de forma disimulada) en vez de preguntar abiertamente "¿tiene una interferencia ilícita a bordo?".</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/7</div>
+      <div class="quiz-q">¿Qué código de transpondedor corresponde a interferencia ilícita?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">7600</button>
+        <button class="quiz-opt" data-correct="false">7700</button>
+        <button class="quiz-opt" data-correct="true">7500</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Pérdida de comunicaciones (NORDO) y transmisión a ciegas</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p>Cuando una aeronave pierde la capacidad de comunicarse por radio (<b>NORDO</b>), selecciona el código de transpondedor <b>7600</b> y sigue el plan de vuelo/última autorización recibida. Si aún puede transmitir pero no recibir, se anuncia "transmitiendo a ciegas" en los puntos y horas donde normalmente reportaría.</p>
+      <div class="phrase-card">
+        <div class="phrase-row role-pilot">
+          <div class="phrase-role">Piloto</div>
+          <div class="phrase-main">
+            <div class="phrase-text">Transmitting blind, Avianca nine six eight one, passing Bucaramanga VOR, flight level tree tree zero, estimating destination as per flight plan.</div>
+            <div class="phrase-gloss">Transmitiendo a ciegas, Avianca nueve seis ocho uno, pasando VOR Bucaramanga, nivel de vuelo tres tres cero, estimando destino según plan de vuelo.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="Transmitting blind, Avianca nine six eight one, passing Bucaramanga VOR, flight level tree tree zero, estimating destination as per flight plan." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>🎙️ Comprobación por "oprimir la portadora"</h4>
+        <p style="margin:0;">Si ATC sospecha que la aeronave puede transmitir pero no recibir, puede pedirle que confirme oprimiendo el botón de transmisión (PTT) un número determinado de veces en lugar de responder por voz: <span class="mono">"[Indicativo], si me escucha, oprima la portadora dos veces."</span></p>
+      </div>
+      <div class="mnemo"><b>🧠 Regla general NORDO:</b> volar la última autorización recibida, o en su defecto el plan de vuelo presentado; para el aterrizaje, unirse al circuito de tránsito y observar las señales luminosas de la torre si el aeródromo está controlado.</div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/7</div>
+      <div class="quiz-q">¿Qué código de transpondedor selecciona una aeronave con falla de comunicaciones (NORDO)?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">7500</button>
+        <button class="quiz-opt" data-correct="true">7600</button>
+        <button class="quiz-opt" data-correct="false">7700</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>Alerta de proximidad al terreno</h2><span class="lang-badge en">EN</span></div>
+    <div class="topic-body">
+      <p>A bordo, el sistema de alerta de proximidad al terreno (<b>GPWS/EGPWS</b>) emite avisos sonoros automáticos cuando detecta una trayectoria peligrosa respecto al terreno. Desde tierra, si el controlador observa en su sistema que una aeronave está a una altitud peligrosamente baja, emite un aviso urgente e inequívoco.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Origen</th><th>Aviso</th></tr>
+        <tr><td>ATC (aviso de baja altitud)</td><td class="mono">"[Indicativo], LOW ALTITUDE, CHECK YOUR ALTITUDE IMMEDIATELY"</td></tr>
+        <tr><td>GPWS/EGPWS a bordo</td><td class="mono">"TERRAIN, TERRAIN, PULL UP"</td></tr>
+        <tr><td>GPWS/EGPWS a bordo</td><td class="mono">"SINK RATE" / "TOO LOW TERRAIN"</td></tr>
+      </table>
+      </div>
+      <div class="phrase-card">
+        <div class="phrase-row role-atc">
+          <div class="phrase-role">Centro</div>
+          <div class="phrase-main">
+            <div class="phrase-text">Avianca zero seven eight, low altitude, check your altitude immediately.</div>
+            <div class="phrase-gloss">Avianca cero siete ocho, altitud baja, chequee su altitud inmediatamente.</div>
+          </div>
+          <button class="speak-btn" type="button" data-say="Avianca zero seven eight, low altitude, check your altitude immediately." data-lang="en-US" aria-label="Escuchar">🔊</button>
+        </div>
+      </div>
+      <div class="mnemo"><b>🧠 Prioridad absoluta:</b> ante un aviso de terreno (a bordo o desde ATC), la acción correctiva es inmediata — el piloto maniobra primero y reporta después, exactamente igual que ante un aviso de resolución de TCAS.</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/7</div>
+      <div class="quiz-q">Si ATC transmite "check your altitude immediately", ¿qué debe hacer el piloto?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Confirmar por radio antes de tomar cualquier acción</button>
+        <button class="quiz-opt" data-correct="true">Verificar y corregir su altitud de inmediato, como acción prioritaria</button>
+        <button class="quiz-opt" data-correct="false">Ignorarlo si confía en su instrumentación</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Servicio de alerta y búsqueda y salvamento (SAR)</h2><span class="lang-badge es">ES</span></div>
+    <div class="topic-body">
+      <p>Cuando una aeronave deja de reportarse o de responder sin explicación, los servicios de tránsito aéreo activan progresivamente el <b>servicio de alerta</b>, en coordinación con los centros de búsqueda y salvamento (SAR).</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Fase</th><th>Qué significa</th></tr>
+        <tr><td class="mono">INCERFA</td><td>Fase de incertidumbre — existe duda sobre la seguridad de la aeronave (por ejemplo, no se recibió el reporte de posición esperado).</td></tr>
+        <tr><td class="mono">ALERFA</td><td>Fase de alerta — existe aprensión sobre la seguridad de la aeronave y sus ocupantes.</td></tr>
+        <tr><td class="mono">DETRESFA</td><td>Fase de socorro — existe certeza razonable de que la aeronave y sus ocupantes están amenazados por un peligro grave e inminente.</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>📡 Reportes periódicos en rutas remotas</h4>
+        <p style="margin:0;">En tramos sin cobertura de radar o fuera de zonas pobladas, se recomienda mantener reportes de posición periódicos; su ausencia prolongada, sin contacto, es precisamente lo que puede activar la fase de incertidumbre (INCERFA) en el centro de control responsable.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/7</div>
+      <div class="quiz-q">¿Cuál de estas tres fases del servicio de alerta representa el mayor nivel de gravedad?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">INCERFA</button>
+        <button class="quiz-opt" data-correct="false">ALERFA</button>
+        <button class="quiz-opt" data-correct="true">DETRESFA</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="no-tts-note">🔇 Tu navegador no soporta síntesis de voz (speechSynthesis) — los botones de audio están ocultos, pero puedes leer todas las frases igualmente.</div>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Fraseología · Bloque 3 — Emergencias</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- SÍNTESIS DE VOZ (botones "Escuchar") ----------
+  let voicesCache = [];
+  function loadVoices(){ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }
+  if('speechSynthesis' in window){
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  } else {
+    document.body.classList.add('no-tts');
+  }
+
+  function speak(text, lang, btn){
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || 'en-US';
+    utter.rate = 0.92;
+    const short = utter.lang.split('-')[0];
+    const match = voicesCache.find(v => v.lang === utter.lang) || voicesCache.find(v => v.lang && v.lang.startsWith(short));
+    if(match) utter.voice = match;
+    if(btn){
+      btn.classList.add('speaking');
+      utter.onend = () => btn.classList.remove('speaking');
+      utter.onerror = () => btn.classList.remove('speaking');
+    }
+    window.speechSynthesis.speak(utter);
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.speak-btn');
+    if(!btn) return;
+    speak(btn.dataset.say, btn.dataset.lang, btn);
+  });
+
+  // ---------- CHEQUEOS RÁPIDOS (mini-quizzes de la guía) ----------
+  const TOTAL_QUIZ = 7;
+  let answeredCount = 0;
+  const quizProgress = document.getElementById('quizProgress');
+
+  function renderQuizProgress(){
+    quizProgress.textContent = `${answeredCount} de ${TOTAL_QUIZ} chequeos respondidos`;
+  }
+  renderQuizProgress();
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    answeredCount++;
+    if(isCorrect){
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = '✅ ¡Correcto!';
+    }else{
+      btn.classList.add('incorrect');
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '❌ No es la respuesta correcta — revisa la explicación resaltada.';
+    }
+    renderQuizProgress();
+  }
+
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+</script>
+<script>
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

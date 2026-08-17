@@ -230,10 +230,33 @@
 
   /* ---------- mapa de rutas ---------- */
   #flightMap{ width:100%; height:520px; background:var(--panel); border:1px solid var(--hairline); border-radius:8px; }
-  .map-legend{ display:flex; gap:14px; align-items:center; font-size:.66rem; color:var(--text-muted); padding:6px 4px 0; flex-wrap:wrap; }
-  .map-legend .lg-item{ display:flex; align-items:center; gap:4px; }
-  .map-legend .sw{ width:10px; height:10px; border-radius:50%; display:inline-block; }
-  .map-toolbar{ display:flex; gap:8px; align-items:center; padding:6px 4px 2px; flex-wrap:wrap; }
+
+  /* Leyenda del mapa de rutas: agrupada por tipo de capa (tráfico / espacio aéreo /
+     referencia) en vez de una sola fila de puntos de color. Cada símbolo reproduce
+     literalmente cómo se dibuja esa capa en Leaflet — el avión reutiliza .plane-icon
+     (mismas clases que los marcadores reales), el círculo con borde imita el L.circle
+     de las zonas ENR 5.1, y el punto sólido el circleMarker ámbar de los aeródromos. */
+  .map-legend{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px;
+    padding:9px 14px; margin-bottom:8px;
+  }
+  .map-legend .lg-group{ display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
+  .map-legend .lg-group-label{ font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; }
+  .map-legend .lg-div{ width:1px; align-self:stretch; background:var(--hairline); }
+  .map-legend .lg-item{ display:flex; align-items:center; gap:5px; font-size:.68rem; color:var(--text); white-space:nowrap; }
+
+  .lg-plane{ font-size:.85rem; display:inline-block; transform:rotate(45deg); }
+  .lg-dot{ width:9px; height:9px; border-radius:50%; flex:none; background:var(--warn); box-shadow:0 0 5px rgba(var(--warn-rgb),.7); }
+  .lg-zone{ width:12px; height:12px; border-radius:50%; flex:none; border:1.5px solid var(--danger); background:rgba(var(--danger-rgb),.15); }
+  .lg-zone.lg-zone--warn{ border-color:var(--warn); border-style:dashed; background:rgba(var(--warn-rgb),.15); }
+
+  .map-status-bar{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:.64rem; color:var(--text-muted); padding:2px 4px 10px; }
+  .map-status-bar .map-hint{ flex:1 1 320px; }
+  .map-status-bar .map-speed{ margin-left:auto; white-space:nowrap; }
+  .map-status-bar .map-speed b{ color:var(--accent); font-family:var(--font-ui); }
+
+  .map-toolbar{ display:flex; gap:8px; align-items:center; padding:0 4px 10px; flex-wrap:wrap; }
   .map-toolbar select.tb-btn{ appearance:auto; }
   .plane-icon{ color:var(--vfr); filter:drop-shadow(0 0 3px rgba(var(--vfr-rgb),.9)); }
   .plane-icon.queued{ color:var(--warn); filter:drop-shadow(0 0 3px rgba(var(--warn-rgb),.9)); }
@@ -242,12 +265,27 @@
   @keyframes blinkCollision{ 0%{opacity:1; transform:scale(1);} 100%{opacity:.35; transform:scale(1.3);} }
   .leaflet-tooltip.fp-tooltip{ background:var(--panel); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:.68rem; padding:3px 6px; border-radius:4px; }
   .leaflet-tooltip.airport-label{ background:transparent; border:none; box-shadow:none; color:var(--text); font-family:var(--font-ui); font-size:.62rem; font-weight:600; text-shadow:0 0 3px var(--panel), 0 0 3px var(--panel), 0 0 3px var(--panel); padding:0; }
+
+  /* Zonas ENR 5.1 (prohibida/restringida/peligrosa): el círculo responde al hover con una
+     transición suave en vez de un salto brusco, y el tooltip se arma como una pequeña ficha
+     (badge de tipo + nombre + rango de altitud) en vez de una sola línea de texto plana. */
+  .zone-path{ transition: fill-opacity .15s ease, stroke-width .15s ease; cursor:pointer; }
+  .leaflet-tooltip.zone-tooltip{ padding:7px 10px; line-height:1.45; }
+  .zone-tip-badge{ display:inline-block; font-family:var(--font-ui); font-size:.58rem; font-weight:700; letter-spacing:.05em; color:#fff; padding:1px 7px; border-radius:99px; }
+  .zone-tip-name{ font-weight:600; font-size:.7rem; margin-top:4px; }
+  .zone-tip-alt{ color:var(--text-muted); font-size:.64rem; margin-top:1px; font-variant-numeric:tabular-nums; }
   .ap-popup{ font-family:var(--font-ui); font-size:.72rem; color:var(--text); min-width:200px; }
   .ap-popup .ap-title{ font-size:.8rem; font-weight:700; margin-bottom:2px; }
   .ap-popup .ap-elev{ color:var(--text-muted); margin-bottom:6px; }
   .ap-popup table{ width:100%; border-collapse:collapse; font-size:.68rem; }
   .ap-popup th, .ap-popup td{ border:1px solid var(--hairline); padding:2px 5px; text-align:center; }
   .ap-popup th{ background:var(--panel); }
+  .ap-metar-block{ margin-top:7px; padding-top:6px; border-top:1px dashed var(--hairline); }
+  .ap-metar-label{ color:var(--text-muted); font-size:.64rem; text-transform:uppercase; letter-spacing:.03em; margin-bottom:2px; }
+  .ap-metar-raw{ font-family:var(--font-ui); font-size:.66rem; line-height:1.35; word-break:break-word; }
+  .ap-metar-time{ color:var(--text-muted); font-size:.62rem; margin-top:2px; }
+  .ap-metar-loading{ color:var(--text-muted); font-style:italic; }
+  .ap-metar-error{ color:var(--warn); font-size:.66rem; }
   .leaflet-popup-content-wrapper{ background:var(--bg); color:var(--text); border:1px solid var(--hairline); }
   .leaflet-popup-tip{ background:var(--bg); }
 
@@ -324,6 +362,7 @@
     <a href="meteorologia.html">Meteorología</a>
     <a href="metar-taf.html">METAR y TAF</a>
     <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="fraseologia.html">Fraseología</a>
     <a href="glosario.html">Glosario</a>
     <a href="quizzes.html">Quizzes</a>
   </nav>
@@ -357,6 +396,7 @@
       <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
     </nav>
@@ -546,14 +586,27 @@
       </div>
       <div class="win-body" style="padding:10px;">
         <div class="map-legend">
-          <div class="lg-item"><span class="sw" style="background:var(--vfr)"></span>Vuelo activo en ruta</div>
-          <div class="lg-item"><span class="sw" style="background:var(--warn)"></span>Encolado / pendiente</div>
-          <div class="lg-item"><span class="sw" style="background:var(--warn)"></span>Aeropuerto</div>
-          <div class="lg-item"><span class="sw" style="background:var(--danger)"></span>Riesgo de colisión</div>
-          <div class="lg-item"><span class="sw" style="background:var(--danger); border-radius:2px;"></span>Zona prohibida (ENR 5.1)</div>
-          <div class="lg-item"><span class="sw" style="background:var(--warn); border-radius:2px;"></span>Zona restringida / peligrosa (ENR 5.1)</div>
-          <div class="lg-item" style="font-size:.63rem;">Click en una aeronave para emitir instrucción ATC (nivel / rumbo) · Click en un aeropuerto para ver pistas y elevación</div>
-          <div class="lg-item" style="margin-left:auto;">Velocidad sim: <b id="mapSpeedLabel">x60</b></div>
+          <div class="lg-group">
+            <span class="lg-group-label">Tráfico</span>
+            <div class="lg-item"><span class="plane-icon lg-plane">✈</span>En ruta</div>
+            <div class="lg-item"><span class="plane-icon queued lg-plane">✈</span>Encolado</div>
+            <div class="lg-item"><span class="plane-icon collision lg-plane">✈</span>Colisión</div>
+          </div>
+          <div class="lg-div"></div>
+          <div class="lg-group">
+            <span class="lg-group-label">Espacio aéreo</span>
+            <div class="lg-item"><span class="lg-zone"></span>Prohibida (ENR 5.1)</div>
+            <div class="lg-item"><span class="lg-zone lg-zone--warn"></span>Restringida / peligrosa</div>
+          </div>
+          <div class="lg-div"></div>
+          <div class="lg-group">
+            <span class="lg-group-label">Referencia</span>
+            <div class="lg-item"><span class="lg-dot"></span>Aeródromo</div>
+          </div>
+        </div>
+        <div class="map-status-bar">
+          <span class="map-hint">Click en una aeronave para instrucción ATC (nivel / rumbo) · Click en un aeródromo para pistas, elevación y METAR</span>
+          <span class="map-speed">Velocidad sim <b id="mapSpeedLabel">x60</b></span>
         </div>
         <div class="map-toolbar">
           <button type="button" class="tb-btn" id="btnToggleLabels" onclick="toggleAirportLabels()">Etiquetas: ocultas</button>
@@ -563,6 +616,7 @@
             <option value="topo">Mapa — Topográfico (Esri)</option>
           </select>
           <button type="button" class="tb-btn" id="btnToggleGoes" onclick="toggleGoesLayer()">Satélite GOES: apagado</button>
+          <button type="button" class="tb-btn" id="btnToggleZones" onclick="toggleZones()">Zonas ENR 5.1: visibles</button>
         </div>
         <div id="flightMap"></div>
       </div>
@@ -1023,6 +1077,11 @@ function checkRouteTokens(routeStr) {
 // Fuente: aeropuertos.json (coordenadas ARP en formato DMS, convertidas a decimal).
 // Solo los aeropuertos con ARP publicado entran aquí (se pueden ubicar en el mapa).
 const AIRPORTS = {
+  // Aeródromos No Controlados con ARP publicado en AIP Colombia AD 2, AIRAC A 73-26
+  // (eAIP Colombia, Aerocivil) — coordenadas y elevación tomadas el 2026-08-16
+  // directamente de la ficha AD 2.2 de cada aeródromo, no adivinadas ni interpoladas.
+  'SKAG': { lat: 8.24633, lon: -73.57955 }, // Aguachica — Hacaritama
+  'SKAP': { lat: 4.07607, lon: -73.56273 }, // Apiay — CT. Luis F. Gómez Niño
   'SKAR': { lat: 4.45164, lon: -75.76639 }, // Armenia — El Edén
   'SKAS': { lat: 0.50571, lon: -76.50071 }, // Puerto Asís — Tres de Mayo
   'SKBG': { lat: 7.12638, lon: -73.18473 }, // Bucaramanga — Palonegro
@@ -1035,47 +1094,72 @@ const AIRPORTS = {
   'SKCL': { lat: 3.54311, lon: -76.38169 }, // Cali — Alfonso Bonilla Aragón
   'SKCO': { lat: 1.81441, lon: -78.74925 }, // Tumaco — La Florida
   'SKCZ': { lat: 9.3326, lon: -75.28522 }, // Corozal — Las Brujas
+  'SKEB': { lat: 7.59579, lon: -74.809 }, // El Bagre — El Tomín
   'SKEJ': { lat: 7.0238, lon: -73.8072 }, // Barrancabermeja — Yariguíes
   'SKFL': { lat: 1.58926, lon: -75.56443 }, // Florencia — Gustavo Artunduaga Paredes
+  'SKGB': { lat: 3.45853, lon: -76.49725 }, // Guabito — Marco Fidel Suárez
   'SKGI': { lat: 4.27535, lon: -74.79609 }, // Girardot — Santiago Vila
   'SKGO': { lat: 4.75757, lon: -75.95601 }, // Cartago — Santa Ana
   'SKGP': { lat: 2.57003, lon: -77.89799 }, // Guapi — Juan Casiano
   'SKGY': { lat: 4.8125, lon: -74.06508 }, // Chía — Flaminio Suárez Camacho
+  'SKHA': { lat: 3.72436, lon: -75.4654 }, // Chaparral — Navas Pardo
   'SKIB': { lat: 4.42165, lon: -75.13361 }, // Ibagué — Perales
   'SKIP': { lat: 0.86149, lon: -77.66751 }, // Ipiales — San Luis
+  'SKJC': { lat: 3.9342, lon: -77.36142 }, // Juanchaco — Juanchaco
   'SKLC': { lat: 7.81175, lon: -76.71644 }, // Carepa — Antonio Roldán Betancourt
+  'SKLG': { lat: -0.18198, lon: -74.77099 }, // Puerto Leguízamo — Puerto Leguízamo
   'SKLT': { lat: -4.19191, lon: -69.9422 }, // Leticia — Alfredo Vásquez Cobo
+  'SKLM': { lat: 11.23258, lon: -72.48928 }, // Maicao — Jorge Isaac
   'SKMD': { lat: 6.22048, lon: -75.59043 }, // Medellín — Olaya Herrera
+  'SKMG': { lat: 9.28488, lon: -74.84646 }, // Magangué — Baracoa
+  'SKML': { lat: 7.97201, lon: -75.43266 }, // Montelíbano — El Pindo
+  'SKMO': { lat: 3.75066, lon: -71.45594 }, // Puerto Gaitán — Morelia
+  'SKMP': { lat: 9.25847, lon: -74.43833 }, // Mompós — San Bernardo
   'SKMR': { lat: 8.82286, lon: -75.82517 }, // Montería — Los Garzones
   'SKMU': { lat: 1.25355, lon: -70.23406 }, // Mitú — Fabio A. León Bentley
   'SKMZ': { lat: 5.03005, lon: -75.46545 }, // Manizales — La Nubia
+  'SKNA': { lat: 2.17353, lon: -73.78618 }, // La Macarena — El Refugio
+  'SKNQ': { lat: 5.71124, lon: -77.26099 }, // Nuquí — Reyes Murillo
   'SKNV': { lat: 2.95029, lon: -75.29402 }, // Neiva — Benito Salas
+  'SKOC': { lat: 8.31511, lon: -73.35842 }, // Ocaña — Aguas Claras
+  'SKPA': { lat: 5.76496, lon: -73.10531 }, // Paipa — Juan José Rondón
+  'SKPB': { lat: 12.22154, lon: -71.98425 }, // Puerto Bolívar — Puerto Bolívar - Portete
   'SKPC': { lat: 6.18511, lon: -67.49251 }, // Puerto Carreño — Germán Olano
   'SKPD': { lat: 3.85426, lon: -67.90647 }, // Inírida — César Gaviria
   'SKPE': { lat: 4.81257, lon: -75.73996 }, // Pereira — Matecaña
+  'SKPI': { lat: 1.85771, lon: -76.08599 }, // Pitalito — Contador
   'SKPP': { lat: 2.45435, lon: -76.6098 }, // Popayán — Guillermo León Valencia
+  'SKPQ': { lat: 5.48348, lon: -74.65738 }, // Palanquero — CT. Germán Olano
   'SKPS': { lat: 1.39647, lon: -77.29101 }, // Pasto — Antonio Nariño
   'SKPV': { lat: 13.35716, lon: -81.35792 }, // Providencia — El Embrujo
   'SKRG': { lat: 6.16446, lon: -75.423 }, // Rionegro — José María Córdova
   'SKRH': { lat: 11.52617, lon: -72.92668 }, // Riohacha — Almirante Padilla
   'SKSA': { lat: 6.95037, lon: -71.8562 }, // Saravena — Colonizadores
+  'SKSG': { lat: 6.59064, lon: -73.12903 }, // San Gil — Los Pozos
   'SKSJ': { lat: 2.57933, lon: -72.63939 }, // San José del Guaviare — Jorge E. González T.
   'SKSM': { lat: 11.11969, lon: -74.23064 }, // Santa Marta — Simón Bolívar
   'SKSP': { lat: 12.58366, lon: -81.71134 }, // San Andrés — Gustavo Rojas Pinilla
+  'SKSV': { lat: 2.15228, lon: -74.76648 }, // San Vicente del Caguán — San Vicente del Caguán
+  'SKTL': { lat: 9.50963, lon: -75.58603 }, // Tolú — Golfo de Morrosquillo
   'SKTM': { lat: 6.45101, lon: -71.76005 }, // Tame — Gustavo Vargas
+  'SKTQ': { lat: 0.74591, lon: -75.23406 }, // Tres Esquinas — CT. Ernesto Esguerra Cubides
+  'SKUA': { lat: 5.52889, lon: -68.67688 }, // Marandúa — CR. Luis Arturo Rodríguez Meneses
   'SKUC': { lat: 7.06891, lon: -70.73696 }, // Arauca — Santiago Pérez Quiroz
   'SKUI': { lat: 5.6908, lon: -76.64122 }, // Quibdó — El Caraño
+  'SKUL': { lat: 4.09449, lon: -76.22392 }, // Tuluá — Farfán Heriberto Gil Martínez
   'SKQU': { lat: 5.21261, lon: -74.88371 }, // Mariquita — José Celestino Mutis
+  'SKVG': { lat: 0.98117, lon: -76.60381 }, // Villa Garzón — Villa Garzón
   'SKVP': { lat: 10.43513, lon: -73.2494 }, // Valledupar — Alfonso López Pumarejo
   'SKVV': { lat: 4.16906, lon: -73.61279 }, // Villavicencio — Vanguardia
   'SKYP': { lat: 5.31914, lon: -72.38423 }, // Yopal — El Alcaraván
+  'SQHK': { lat: 4.56491, lon: -72.05904 }, // Casanare — Hatico
+  'SQUJ': { lat: 5.72586, lon: -72.10058 }, // Tablón de Támara — Tablón de Támara
 };
 
-// Aeropuertos colombianos reconocidos como designadores válidos, pero sin ARP
-// publicado en la fuente: no se pueden ubicar en el mapa ni recibir ETA físico,
-// pero SÍ deben aceptarse como DEP/DEST (no son un error).
 // Nombre de ciudad/aeropuerto para cada ICAO de AIRPORTS (usado en la ficha emergente del mapa).
 const AIRPORT_NAMES = {
+  'SKAG': { ciudad: 'Aguachica', aeropuerto: 'Hacaritama' },
+  'SKAP': { ciudad: 'Apiay', aeropuerto: 'CT. Luis F. Gómez Niño' },
   'SKAR': { ciudad: 'Armenia', aeropuerto: 'El Edén' },
   'SKAS': { ciudad: 'Puerto Asís', aeropuerto: 'Tres de Mayo' },
   'SKBG': { ciudad: 'Bucaramanga', aeropuerto: 'Palonegro' },
@@ -1088,48 +1172,86 @@ const AIRPORT_NAMES = {
   'SKCL': { ciudad: 'Cali', aeropuerto: 'Alfonso Bonilla Aragón' },
   'SKCO': { ciudad: 'Tumaco', aeropuerto: 'La Florida' },
   'SKCZ': { ciudad: 'Corozal', aeropuerto: 'Las Brujas' },
+  'SKEB': { ciudad: 'El Bagre', aeropuerto: 'El Tomín' },
   'SKEJ': { ciudad: 'Barrancabermeja', aeropuerto: 'Yariguíes' },
   'SKFL': { ciudad: 'Florencia', aeropuerto: 'Gustavo Artunduaga Paredes' },
+  'SKGB': { ciudad: 'Guabito', aeropuerto: 'Marco Fidel Suárez' },
   'SKGI': { ciudad: 'Girardot', aeropuerto: 'Santiago Vila' },
   'SKGO': { ciudad: 'Cartago', aeropuerto: 'Santa Ana' },
   'SKGP': { ciudad: 'Guapi', aeropuerto: 'Juan Casiano' },
   'SKGY': { ciudad: 'Chía', aeropuerto: 'Flaminio Suárez Camacho' },
+  'SKHA': { ciudad: 'Chaparral', aeropuerto: 'Navas Pardo' },
   'SKIB': { ciudad: 'Ibagué', aeropuerto: 'Perales' },
   'SKIP': { ciudad: 'Ipiales', aeropuerto: 'San Luis' },
+  'SKJC': { ciudad: 'Juanchaco', aeropuerto: 'Juanchaco' },
   'SKLC': { ciudad: 'Carepa', aeropuerto: 'Antonio Roldán Betancourt' },
+  'SKLG': { ciudad: 'Puerto Leguízamo', aeropuerto: 'Puerto Leguízamo' },
   'SKLT': { ciudad: 'Leticia', aeropuerto: 'Alfredo Vásquez Cobo' },
+  'SKLM': { ciudad: 'Maicao', aeropuerto: 'Jorge Isaac' },
   'SKMD': { ciudad: 'Medellín', aeropuerto: 'Olaya Herrera' },
+  'SKMG': { ciudad: 'Magangué', aeropuerto: 'Baracoa' },
+  'SKML': { ciudad: 'Montelíbano', aeropuerto: 'El Pindo' },
+  'SKMO': { ciudad: 'Puerto Gaitán', aeropuerto: 'Morelia' },
+  'SKMP': { ciudad: 'Mompós', aeropuerto: 'San Bernardo' },
   'SKMR': { ciudad: 'Montería', aeropuerto: 'Los Garzones' },
   'SKMU': { ciudad: 'Mitú', aeropuerto: 'Fabio A. León Bentley' },
   'SKMZ': { ciudad: 'Manizales', aeropuerto: 'La Nubia' },
+  'SKNA': { ciudad: 'La Macarena', aeropuerto: 'El Refugio' },
+  'SKNQ': { ciudad: 'Nuquí', aeropuerto: 'Reyes Murillo' },
   'SKNV': { ciudad: 'Neiva', aeropuerto: 'Benito Salas' },
+  'SKOC': { ciudad: 'Ocaña', aeropuerto: 'Aguas Claras' },
+  'SKPA': { ciudad: 'Paipa', aeropuerto: 'Juan José Rondón' },
+  'SKPB': { ciudad: 'Puerto Bolívar', aeropuerto: 'Puerto Bolívar - Portete' },
   'SKPC': { ciudad: 'Puerto Carreño', aeropuerto: 'Germán Olano' },
   'SKPD': { ciudad: 'Inírida', aeropuerto: 'César Gaviria' },
   'SKPE': { ciudad: 'Pereira', aeropuerto: 'Matecaña' },
+  'SKPI': { ciudad: 'Pitalito', aeropuerto: 'Contador' },
   'SKPP': { ciudad: 'Popayán', aeropuerto: 'Guillermo León Valencia' },
+  'SKPQ': { ciudad: 'Palanquero', aeropuerto: 'CT. Germán Olano' },
   'SKPS': { ciudad: 'Pasto', aeropuerto: 'Antonio Nariño' },
   'SKPV': { ciudad: 'Providencia', aeropuerto: 'El Embrujo' },
   'SKRG': { ciudad: 'Rionegro', aeropuerto: 'José María Córdova' },
   'SKRH': { ciudad: 'Riohacha', aeropuerto: 'Almirante Padilla' },
   'SKSA': { ciudad: 'Saravena', aeropuerto: 'Colonizadores' },
+  'SKSG': { ciudad: 'San Gil', aeropuerto: 'Los Pozos' },
   'SKSJ': { ciudad: 'San José del Guaviare', aeropuerto: 'Jorge E. González T.' },
   'SKSM': { ciudad: 'Santa Marta', aeropuerto: 'Simón Bolívar' },
   'SKSP': { ciudad: 'San Andrés', aeropuerto: 'Gustavo Rojas Pinilla' },
+  'SKSV': { ciudad: 'San Vicente del Caguán', aeropuerto: 'San Vicente del Caguán' },
+  'SKTL': { ciudad: 'Tolú', aeropuerto: 'Golfo de Morrosquillo' },
   'SKTM': { ciudad: 'Tame', aeropuerto: 'Gustavo Vargas' },
+  'SKTQ': { ciudad: 'Tres Esquinas', aeropuerto: 'CT. Ernesto Esguerra Cubides' },
+  'SKUA': { ciudad: 'Marandúa', aeropuerto: 'CR. Luis Arturo Rodríguez Meneses' },
   'SKUC': { ciudad: 'Arauca', aeropuerto: 'Santiago Pérez Quiroz' },
   'SKUI': { ciudad: 'Quibdó', aeropuerto: 'El Caraño' },
+  'SKUL': { ciudad: 'Tuluá', aeropuerto: 'Farfán Heriberto Gil Martínez' },
   'SKQU': { ciudad: 'Mariquita', aeropuerto: 'José Celestino Mutis' },
+  'SKVG': { ciudad: 'Villa Garzón', aeropuerto: 'Villa Garzón' },
   'SKVP': { ciudad: 'Valledupar', aeropuerto: 'Alfonso López Pumarejo' },
   'SKVV': { ciudad: 'Villavicencio', aeropuerto: 'Vanguardia' },
   'SKYP': { ciudad: 'Yopal', aeropuerto: 'El Alcaraván' },
+  'SQHK': { ciudad: 'Casanare', aeropuerto: 'Hatico' },
+  'SQUJ': { ciudad: 'Tablón de Támara', aeropuerto: 'Tablón de Támara' },
 };
 
 // Pistas (designador, longitud/ancho en metros, superficie) y elevación de referencia (FT),
 // según AIP Colombia AD 2, AIRAC A 73-26 vigente desde 09 JUL 2026 (eAIP Colombia, Aerocivil).
 // Elevación = punto de referencia del aeródromo (AD 2.2), AMSL. superficie: 'NOT PUBLISHED' en
-// SKCC/SKGI/SKMD significa que el AIP publica "No" en vez de un tipo de superficie en AD 2.12
-// para este AIRAC (son pistas pavimentadas conocidas, pero no se adivina el dato no publicado).
+// SKGI/SKMD significa que el AIP publica "No" en vez de un tipo de superficie en AD 2.12 para
+// este AIRAC (son pistas pavimentadas conocidas, pero no se adivina el dato no publicado).
+// SKCC se completó como 'PAVIMENTADA' el 2026-08-16 tras contrastar contra
+// aviationweather.gov/api/data/airport (surface:"H"), que además confirmó dimensiones
+// idénticas (1925×45 y 2244×45 m) a las ya cargadas — ver BasesDeDatos/aviationweather_raw.json.
+// Los 28 aeródromos "No Controlados" (SKAG…SQUJ) se agregaron el 2026-08-16 tomando
+// pistas y elevación directamente de su propia ficha AD 2.2 / AD 2.12 en el eAIP (antes
+// solo tenían ciudad/nombre en AIRPORTS_SIN_COORD, sin ARP y por tanto invisibles en el mapa).
+// surface: 'NOT PUBLISHED' en SKEB/SKHA/SKMO reproduce que el AIP pone "No" en la celda de
+// superficie de AD 2.12 en vez de un tipo — no se adivina asfalto solo porque tengan PCN.
+// SQHK no tiene tabla AD 2.12 publicada: se cargó su ARP/elevación con runways: [] (ficha
+// vacía en el popup) en vez de inventar una pista.
 const AIRPORT_DETAILS = {
+  'SKAG': { elevFt: 554,  runways: [ { id: '12/30', lengthM: 1200, widthM: 18, surface: 'ASPHALT' } ] },
+  'SKAP': { elevFt: 1213, runways: [ { id: '10/28', lengthM: 2506, widthM: 50, surface: 'ASPHALT' } ] },
   'SKAR': { elevFt: 3976, runways: [ { id: '02/20', lengthM: 2320, widthM: 36, surface: 'ASPHALT' } ] },
   'SKAS': { elevFt: 813,  runways: [ { id: '01/19', lengthM: 1460, widthM: 20, surface: 'ASPHALT' } ] },
   'SKBG': { elevFt: 3901, runways: [ { id: '17/35', lengthM: 2102, widthM: 45, surface: 'ASPHALT' } ] },
@@ -1137,86 +1259,84 @@ const AIRPORT_DETAILS = {
   'SKBQ': { elevFt: 95,   runways: [ { id: '05/23', lengthM: 3001, widthM: 45, surface: 'ASPHALT' } ] },
   'SKBS': { elevFt: 79,   runways: [ { id: '18/36', lengthM: 1200, widthM: 30, surface: 'ASPHALT' } ] },
   'SKBU': { elevFt: 44,   runways: [ { id: '09/27', lengthM: 1200, widthM: 30, surface: 'ASPHALT' } ] },
-  'SKCC': { elevFt: 1089, runways: [ { id: '03/21', lengthM: 1925, widthM: 45, surface: 'NOT PUBLISHED' }, { id: '16/34', lengthM: 2244, widthM: 45, surface: 'NOT PUBLISHED' } ] },
+  'SKCC': { elevFt: 1089, runways: [ { id: '03/21', lengthM: 1925, widthM: 45, surface: 'PAVIMENTADA' }, { id: '16/34', lengthM: 2244, widthM: 45, surface: 'PAVIMENTADA' } ] },
   'SKCG': { elevFt: 7,    runways: [ { id: '01/19', lengthM: 2390, widthM: 45, surface: 'ASPHALT' } ] },
   'SKCL': { elevFt: 3162, runways: [ { id: '02/20', lengthM: 3000, widthM: 45, surface: 'ASPHALT' } ] },
   'SKCO': { elevFt: 20,   runways: [ { id: '06/24', lengthM: 1600, widthM: 30, surface: 'ASPHALT' } ] },
   'SKCZ': { elevFt: 525,  runways: [ { id: '03/21', lengthM: 1445, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKEB': { elevFt: 177,  runways: [ { id: '01/19', lengthM: 1182, widthM: 15, surface: 'NOT PUBLISHED' } ] },
   'SKEJ': { elevFt: 414,  runways: [ { id: '04/22', lengthM: 1607, widthM: 45, surface: 'ASPHALT' } ] },
   'SKFL': { elevFt: 792,  runways: [ { id: '12/30', lengthM: 1340, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKGB': { elevFt: 3148, runways: [ { id: '07/25', lengthM: 1890, widthM: 29.5, surface: 'ASPHALT' } ] },
   'SKGI': { elevFt: 902,  runways: [ { id: '02/20', lengthM: 1600, widthM: 28, surface: 'NOT PUBLISHED' } ] },
   'SKGO': { elevFt: 2981, runways: [ { id: '01/19', lengthM: 2025, widthM: 40, surface: 'ASPHALT' } ] },
   'SKGP': { elevFt: 32,   runways: [ { id: '02/20', lengthM: 1300, widthM: 16, surface: 'ASPHALT' } ] },
   'SKGY': { elevFt: 8389, runways: [ { id: '11/29', lengthM: 1720, widthM: 20, surface: 'ASPHALT' } ] },
+  'SKHA': { elevFt: 2729, runways: [ { id: '09/27', lengthM: 1200, widthM: 15, surface: 'NOT PUBLISHED' } ] },
   'SKIB': { elevFt: 3041, runways: [ { id: '14/32', lengthM: 1800, widthM: 30, surface: 'ASPHALT' } ] },
   'SKIP': { elevFt: 9760, runways: [ { id: '08/26', lengthM: 2500, widthM: 36, surface: 'ASPHALT' } ] },
+  'SKJC': { elevFt: 55,   runways: [ { id: '18/36', lengthM: 1200, widthM: 20, surface: 'ASPHALT' } ] },
   'SKLC': { elevFt: 52,   runways: [ { id: '15/33', lengthM: 1964, widthM: 45, surface: 'ASPHALT' } ] },
+  'SKLG': { elevFt: 626,  runways: [ { id: '12/30', lengthM: 1199, widthM: 15, surface: 'ASPHALT' } ] },
   'SKLT': { elevFt: 271,  runways: [ { id: '03/21', lengthM: 2010, widthM: 40, surface: 'ASPHALT' } ] },
+  'SKLM': { elevFt: 328,  runways: [ { id: '10/28', lengthM: 1700, widthM: 45, surface: 'ASPHALT' } ] },
   'SKMD': { elevFt: 4922, runways: [ { id: '02/20', lengthM: 1800, widthM: 35, surface: 'NOT PUBLISHED' } ] },
+  'SKMG': { elevFt: 195,  runways: [ { id: '11/29', lengthM: 1410, widthM: 20, surface: 'ASPHALT' } ] },
+  'SKML': { elevFt: 157,  runways: [ { id: '18/36', lengthM: 1060, widthM: 26, surface: 'ASPHALT' } ] },
+  'SKMO': { elevFt: 648,  runways: [ { id: '18/36', lengthM: 1280, widthM: 23, surface: 'NOT PUBLISHED' } ] },
+  'SKMP': { elevFt: 72,   runways: [ { id: '02/20', lengthM: 1201, widthM: 23, surface: 'ASPHALT' } ] },
   'SKMR': { elevFt: 41,   runways: [ { id: '14/32', lengthM: 2298, widthM: 45, surface: 'ASPHALT' } ] },
   'SKMU': { elevFt: 557,  runways: [ { id: '02/20', lengthM: 1754, widthM: 30, surface: 'ASPHALT' } ] },
   'SKMZ': { elevFt: 6860, runways: [ { id: '10/28', lengthM: 1400, widthM: 15, surface: 'ASPHALT' } ] },
+  'SKNA': { elevFt: 790,  runways: [ { id: '17/35', lengthM: 1581, widthM: 16, surface: 'ASPHALT' } ] },
+  'SKNQ': { elevFt: 16,   runways: [ { id: '05/23', lengthM: 1340, widthM: 23, surface: 'ASPHALT' } ] },
   'SKNV': { elevFt: 1482, runways: [ { id: '02/20', lengthM: 1688, widthM: 40, surface: 'ASPHALT' } ] },
+  'SKOC': { elevFt: 3839, runways: [ { id: '01/19', lengthM: 1200, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKPA': { elevFt: 8174, runways: [ { id: '05/23', lengthM: 1540, widthM: 23, surface: 'ASPHALT' } ] },
+  'SKPB': { elevFt: 93,   runways: [ { id: '09/27', lengthM: 1600, widthM: 45, surface: 'ASPHALT' } ] },
   'SKPC': { elevFt: 177,  runways: [ { id: '07/25', lengthM: 1800, widthM: 20, surface: 'ASPHALT' } ] },
   'SKPD': { elevFt: 325,  runways: [ { id: '18/36', lengthM: 1930, widthM: 30, surface: 'ASPHALT' } ] },
   'SKPE': { elevFt: 4413, runways: [ { id: '08/26', lengthM: 1915, widthM: 45, surface: 'ASPHALT' } ] },
+  'SKPI': { elevFt: 4221, runways: [ { id: '07/25', lengthM: 1500, widthM: 19, surface: 'ASPHALT' } ] },
   'SKPP': { elevFt: 5687, runways: [ { id: '08/26', lengthM: 1910, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKPQ': { elevFt: 566,  runways: [ { id: '01/19', lengthM: 3037, widthM: 50, surface: 'ASPHALT' } ] },
   'SKPS': { elevFt: 5958, runways: [ { id: '02/20', lengthM: 2175, widthM: 39, surface: 'ASPHALT' } ] },
   'SKPV': { elevFt: 16,   runways: [ { id: '17/35', lengthM: 1290, widthM: 18, surface: 'ASPHALT' } ] },
   'SKQU': { elevFt: 1531, runways: [ { id: '01/19', lengthM: 1790, widthM: 50, surface: 'ASPHALT' } ] },
   'SKRG': { elevFt: 7024, runways: [ { id: '01/19', lengthM: 3440, widthM: 45, surface: 'ASPHALT' } ] },
   'SKRH': { elevFt: 50,   runways: [ { id: '10/28', lengthM: 1900, widthM: 45, surface: 'ASPHALT' } ] },
   'SKSA': { elevFt: 672,  runways: [ { id: '16/34', lengthM: 1200, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKSG': { elevFt: 5579, runways: [ { id: '18/36', lengthM: 1280, widthM: 30, surface: 'ASPHALT' } ] },
   'SKSJ': { elevFt: 613,  runways: [ { id: '01/19', lengthM: 1419, widthM: 20, surface: 'ASPHALT' } ] },
   'SKSM': { elevFt: 22,   runways: [ { id: '01/19', lengthM: 1700, widthM: 40, surface: 'ASPHALT' } ] },
   'SKSP': { elevFt: 18,   runways: [ { id: '06/24', lengthM: 2375, widthM: 45, surface: 'ASPHALT' } ] },
+  'SKSV': { elevFt: 879,  runways: [ { id: '14/32', lengthM: 1380, widthM: 23, surface: 'ASPHALT' } ] },
+  'SKTL': { elevFt: 7,    runways: [ { id: '17/35', lengthM: 1350, widthM: 16, surface: 'ASPHALT' } ] },
   'SKTM': { elevFt: 1241, runways: [ { id: '07/25', lengthM: 2000, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKTQ': { elevFt: 650,  runways: [ { id: '07/25', lengthM: 1900, widthM: 24, surface: 'ASPHALT' } ] },
+  'SKUA': { elevFt: 340,  runways: [ { id: '04/22', lengthM: 1369, widthM: 28, surface: 'GRAVEL' }, { id: '08/26', lengthM: 1832, widthM: 42, surface: 'ASPHALT' } ] },
   'SKUC': { elevFt: 423,  runways: [ { id: '11/29', lengthM: 2100, widthM: 30, surface: 'ASPHALT' } ] },
   'SKUI': { elevFt: 184,  runways: [ { id: '13/31', lengthM: 1800, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKUL': { elevFt: 3132, runways: [ { id: '02/20', lengthM: 1198, widthM: 30, surface: 'ASPHALT' } ] },
+  'SKVG': { elevFt: 1240, runways: [ { id: '17/35', lengthM: 1485, widthM: 14, surface: 'ASPHALT' } ] },
   'SKVP': { elevFt: 485,  runways: [ { id: '02/20', lengthM: 2100, widthM: 35, surface: 'ASPHALT' } ] },
   'SKVV': { elevFt: 1381, runways: [ { id: '05/23', lengthM: 1940, widthM: 30, surface: 'ASPHALT' } ] },
   'SKYP': { elevFt: 1025, runways: [ { id: '05/23', lengthM: 2245, widthM: 36, surface: 'ASPHALT' } ] },
+  'SQHK': { elevFt: 497,  runways: [] },
+  'SQUJ': { elevFt: 1621, runways: [ { id: '01/19', lengthM: 1317, widthM: 30, surface: 'GRASS' } ] },
 };
 
 // Nota: algunas claves de este objeto empiezan por "SQ" en vez de "SK"
 // (ej. SQHK, SQUJ). No es un error de tecleo: son identificadores
 // nacionales colombianos para aeródromos sin designador OACI formal.
 // No "corregirlos" a SK sin verificar primero contra AIP Colombia.
-const AIRPORTS_SIN_COORD = {
-  'SKAG': { ciudad: 'Aguachica', aeropuerto: 'Hacaritama' },
-  'SKAP': { ciudad: 'Apiay', aeropuerto: 'CT. Luis F. Gómez Niño' },
-  'SKEB': { ciudad: 'El Bagre', aeropuerto: 'El Tomín' },
-  'SKGB': { ciudad: 'Guabito', aeropuerto: 'Marco Fidel Suárez' },
-  'SKHA': { ciudad: 'Chaparral', aeropuerto: 'Navas Pardo' },
-  'SKJC': { ciudad: 'Juanchaco', aeropuerto: 'Juanchaco' },
-  'SKLG': { ciudad: 'Puerto Leguízamo', aeropuerto: 'Puerto Leguízamo' },
-  'SKLM': { ciudad: 'Maicao', aeropuerto: 'Jorge Isaac' },
-  'SKMG': { ciudad: 'Magangué', aeropuerto: 'Baracoa' },
-  'SKML': { ciudad: 'Montelíbano', aeropuerto: 'El Pindo' },
-  'SKMO': { ciudad: 'Puerto Gaitán', aeropuerto: 'Morelia' },
-  'SKMP': { ciudad: 'Mompós', aeropuerto: 'San Bernardo' },
-  'SKNA': { ciudad: 'La Macarena', aeropuerto: 'El Refugio' },
-  'SKNQ': { ciudad: 'Nuquí', aeropuerto: 'Reyes Murillo' },
-  'SKOC': { ciudad: 'Ocaña', aeropuerto: 'Aguas Claras' },
-  'SKPA': { ciudad: 'Paipa', aeropuerto: 'Juan José Rondón' },
-  'SKPB': { ciudad: 'Puerto Bolívar', aeropuerto: 'Puerto Bolívar - Portete' },
-  'SKPI': { ciudad: 'Pitalito', aeropuerto: 'Contador' },
-  'SKPQ': { ciudad: 'Palanquero', aeropuerto: 'CT. Germán Olano' },
-  'SKSG': { ciudad: 'San Gil', aeropuerto: 'Los Pozos' },
-  'SKSV': { ciudad: 'San Vicente del Caguán', aeropuerto: 'San Vicente del Caguán' },
-  'SKTL': { ciudad: 'Tolú', aeropuerto: 'Golfo de Morrosquillo' },
-  'SKTQ': { ciudad: 'Tres Esquinas', aeropuerto: 'CT. Ernesto Esguerra Cubides' },
-  'SKUA': { ciudad: 'Marandúa', aeropuerto: 'CR. Luis Arturo Rodríguez Meneses' },
-  'SKUL': { ciudad: 'Tuluá', aeropuerto: 'Farfán Heriberto Gil Martínez' },
-  'SKVG': { ciudad: 'Villa Garzón', aeropuerto: 'Villa Garzón' },
-  'SQHK': { ciudad: 'Casanare', aeropuerto: 'Hatico' },
-  'SQUJ': { ciudad: 'Tablón de Támara', aeropuerto: 'Tablón de Támara' },
-};
 
-// Un DEP/DEST es válido si aparece en cualquiera de las dos bases anteriores.
+// Un DEP/DEST es válido si aparece en AIRPORTS. Hasta el 2026-08-16 existía un segundo
+// objeto, AIRPORTS_SIN_COORD, para aeródromos reconocidos sin ARP publicado; sus 28
+// entradas ya tienen coordenadas (tomadas del eAIP) y se fusionaron en AIRPORTS arriba.
 function isKnownAirport(code){
   code = (code || '').trim().toUpperCase();
-  return !!(AIRPORTS[code] || AIRPORTS_SIN_COORD[code]);
+  return !!AIRPORTS[code];
 }
 
 /* ===================== ZONAS PROHIBIDAS / RESTRINGIDAS / PELIGROSAS (ENR 5.1) ===================== */
@@ -1889,6 +2009,8 @@ let goesVisible = false;
 let airportLabelsVisible = false; // etiquetas ICAO de aeropuertos: por defecto solo al pasar el mouse
 
 // Arma el HTML de la ficha emergente de un aeropuerto (pistas + elevación, AIP AD 2 / AD 2.12).
+// El METAR se agrega aparte, de forma asíncrona, por popupopenMetarHandler() más abajo:
+// el marcador de "Cargando…" que queda aquí se reemplaza cuando llega la respuesta del proxy.
 function airportPopupHtml(code){
   const meta = AIRPORT_NAMES[code];
   const info = AIRPORT_DETAILS[code];
@@ -1903,8 +2025,75 @@ function airportPopupHtml(code){
   } else {
     html += `<div class="ap-elev">Sin datos de pista/elevación disponibles.</div>`;
   }
+  html += `<div class="ap-metar-block"><div class="ap-metar-label">METAR más reciente</div><div class="ap-metar ap-metar-loading">Cargando…</div></div>`;
   html += `</div>`;
   return html;
+}
+
+// Caché en memoria (por icao) del último METAR ya mostrado en un popup: si el usuario
+// cierra y vuelve a abrir el mismo aeródromo en menos de un minuto no repetimos la llamada
+// de red (el proxy /.netlify/functions/metar ya cachea 60s en el servidor; esto evita hasta
+// esa vuelta a Netlify).
+const metarPopupCache = new Map(); // icao -> { html, expira }
+const METAR_POPUP_TTL_MS = 60 * 1000;
+
+function formatMetarObsTime(epochSeconds){
+  if(!epochSeconds) return '';
+  const d = new Date(epochSeconds * 1000);
+  return `${String(d.getUTCDate()).padStart(2,'0')} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}Z`;
+}
+
+// Pide el último METAR de un aeródromo al proxy propio (mismo endpoint que usa metar-taf.html,
+// que a su vez consulta aviationweather.gov desde el servidor de Netlify — sin CORS).
+async function fetchMetarParaPopup(icao){
+  const cacheado = metarPopupCache.get(icao);
+  if(cacheado && cacheado.expira > Date.now()) return cacheado;
+
+  const controller = new AbortController();
+  const timer = setTimeout(()=> controller.abort(), 8000);
+  let resultado;
+  try{
+    const res = await fetch(`/.netlify/functions/metar?icao=${icao}&type=metar&hours=3`, { signal: controller.signal, cache:'no-store' });
+    const data = await res.json();
+    if(!res.ok || (data && data.error)) throw new Error((data && data.error) || 'network');
+    if(!Array.isArray(data) || !data.length) throw new Error('notfound');
+    const ultimo = data[0]; // aviationweather.gov entrega el reporte más reciente primero
+    const raw = (ultimo.rawOb || '').trim() || '—';
+    const hora = formatMetarObsTime(ultimo.obsTime);
+    resultado = {
+      html: `<div class="ap-metar-raw">${raw}</div>${hora ? `<div class="ap-metar-time">Observado: ${hora}</div>` : ''}`,
+      esError: false,
+    };
+  }catch(err){
+    const timedOut = err && err.name === 'AbortError';
+    const msg = timedOut ? 'Tiempo de espera agotado consultando METAR.'
+      : err.message === 'notfound' ? 'Esta estación no reporta METAR (aeródromo sin observación automática).'
+      : 'No se pudo obtener el METAR en este momento.';
+    resultado = { html: `<div class="ap-metar-error">${msg}</div>`, esError: true };
+  }finally{
+    clearTimeout(timer);
+  }
+  // No cacheamos errores/timeouts: queremos que el próximo click reintente en vez de
+  // quedarse pegado a un mensaje de error hasta que expire el TTL.
+  if(!resultado.esError) metarPopupCache.set(icao, { html: resultado.html, expira: Date.now() + METAR_POPUP_TTL_MS });
+  return resultado;
+}
+
+// Se dispara cada vez que se abre un popup de aeródromo: rellena el bloque de METAR
+// que airportPopupHtml() dejó en estado "Cargando…".
+async function popupopenMetarHandler(e){
+  const code = e.popup._source && e.popup._source.__apCode;
+  if(!code) return;
+  const contentNode = e.popup.getElement ? e.popup.getElement() : e.popup._contentNode;
+  const contenedor = contentNode && contentNode.querySelector('.ap-metar');
+  if(!contenedor) return;
+  const { html } = await fetchMetarParaPopup(code);
+  // El usuario pudo haber cerrado el popup mientras esperábamos la respuesta;
+  // si el nodo ya no está en el documento, no tocamos nada.
+  if(!contenedor.isConnected) return;
+  contenedor.classList.remove('ap-metar-loading');
+  contenedor.innerHTML = html;
+  e.popup.update();
 }
 
 // Alterna las etiquetas ICAO permanentes de los aeropuertos (visibles siempre vs. solo al pasar el mouse).
@@ -1955,6 +2144,35 @@ function toggleGoesLayer(){
   }
 }
 
+// Estilo base de una zona ENR 5.1 (prohibida/restringida/peligrosa), centralizado aquí para
+// que initMap(), el mouseout del hover y refreshMapTheme() nunca queden desincronizados.
+function zoneStyle(z){
+  const color = z.kind === 'P' ? PAL.danger : PAL.warn;
+  return {
+    color, fillColor: color, weight: 1.5, fillOpacity: .08,
+    dashArray: z.kind === 'D' ? '6,5' : null,
+    className: 'zone-path',
+  };
+}
+
+// Muestra/oculta las zonas prohibidas/restringidas/peligrosas (ENR 5.1). Algunas comparten
+// coordenadas con un aeródromo (p. ej. SKD36/SKP35 sobre Chía) y su círculo de 5 NM puede tapar
+// el punto — este botón las quita del mapa sin afectar la detección de infracción de zona
+// (fpZoneBustCheck sigue leyendo RESTRICTED_ZONES directamente, no zoneMarkers).
+let zonesVisible = true;
+function toggleZones(){
+  if(!flightMap) return;
+  zonesVisible = !zonesVisible;
+  zoneMarkers.forEach(m=>{
+    if(zonesVisible) m.addTo(flightMap); else flightMap.removeLayer(m);
+  });
+  const zbtn = document.getElementById('btnToggleZones');
+  if(zbtn){
+    zbtn.textContent = zonesVisible ? 'Zonas ENR 5.1: visibles' : 'Zonas ENR 5.1: ocultas';
+    zbtn.classList.toggle('highlight', !zonesVisible);
+  }
+}
+
 function initMap(){
   flightMap = L.map('flightMap', { zoomControl:true }).setView([6.5, -74.5], 6);
 
@@ -1968,6 +2186,27 @@ function initMap(){
     attribution: 'Tiles &copy; Esri — Source: Esri, Garmin, USGS, NPS', maxZoom: 12
   });
   currentBaseLayer = baseLayers.osm.addTo(flightMap);
+
+  // Cada vez que se abre CUALQUIER popup (de aeropuerto o de otra capa) intentamos rellenar
+  // su bloque de METAR; popupopenMetarHandler() sale de inmediato si el popup no es de un
+  // aeródromo (m.__apCode no está definido), así que es seguro colgarlo a nivel de mapa.
+  flightMap.on('popupopen', popupopenMetarHandler);
+
+  // Pintar zonas prohibidas/restringidas/peligrosas (ENR 5.1) ANTES que los aeródromos: así,
+  // aunque una zona de 5 NM caiga justo sobre un aeropuerto (p. ej. SKD36/SKP35 en Chía), el
+  // punto del aeródromo queda dibujado encima y sigue siendo clicable — el toggle de abajo
+  // (btnToggleZones) las quita del todo para quien prefiera despejar el mapa por completo.
+  RESTRICTED_ZONES.forEach(z=>{
+    const tipHtml = `<span class="zone-tip-badge" style="background:${zoneStyle(z).color}">${zoneKindLabel(z.kind)}</span>
+      <div class="zone-tip-name">${z.id} — ${z.name}</div>
+      <div class="zone-tip-alt">${z.lowerFt===0?'GND':z.lowerFt+' FT'} – ${z.upperLabel || z.upperFt+' FT'}</div>`;
+    const m = L.circle([z.lat, z.lon], { radius: ZONE_RADIUS_NM * 1852, ...zoneStyle(z) })
+      .bindTooltip(tipHtml, { className:'fp-tooltip zone-tooltip', sticky:true })
+      .on('mouseover', function(){ this.setStyle({ weight:2.5, fillOpacity:.24 }); this.bringToFront(); })
+      .on('mouseout', function(){ this.setStyle(zoneStyle(z)); })
+      .addTo(flightMap);
+    zoneMarkers.push(m);
+  });
 
   // Pintar todos los aeropuertos conocidos como referencia fija (color de la paleta del portal, tono ámbar/caución).
   // Click abre una ficha con sus pistas y elevación (AIP AD 2); hover muestra el código ICAO.
@@ -1989,19 +2228,6 @@ function initMap(){
       .addTo(flightMap);
     vorMarkers.push(m);
   });
-
-  // Pintar zonas prohibidas/restringidas/peligrosas (ENR 5.1) como círculos ilustrativos
-  RESTRICTED_ZONES.forEach(z=>{
-    const color = z.kind === 'P' ? PAL.danger : PAL.warn;
-    const m = L.circle([z.lat, z.lon], {
-      radius: ZONE_RADIUS_NM * 1852, color, weight:1.5,
-      dashArray: z.kind === 'D' ? '5,5' : null, fillColor:color, fillOpacity:.10
-    }).bindTooltip(
-      `${z.id} ${z.name} — ZONA ${zoneKindLabel(z.kind)}<br>${z.lowerFt===0?'GND':z.lowerFt+' FT'} / ${z.upperLabel || z.upperFt+' FT'}`,
-      { className:'fp-tooltip' }
-    ).addTo(flightMap);
-    zoneMarkers.push(m);
-  });
 }
 
 // Al cambiar de tema (claro/oscuro), retinta el mapa con los colores actuales del portal.
@@ -2009,7 +2235,7 @@ function refreshMapTheme(){
   PAL = getPalette();
   airportMarkers.forEach(m => m.setStyle({ color: PAL.warn, fillColor: PAL.warn }));
   vorMarkers.forEach(m => m.setStyle({ color: PAL.textMuted, fillColor: PAL.textMuted }));
-  zoneMarkers.forEach((m,i) => { const color = RESTRICTED_ZONES[i].kind === 'P' ? PAL.danger : PAL.warn; m.setStyle({ color, fillColor: color }); });
+  zoneMarkers.forEach((m,i) => m.setStyle(zoneStyle(RESTRICTED_ZONES[i])));
   flightPlans.forEach(fp=>{
     const layer = mapLayers[fp.flightId];
     if(!layer || fp.collided) return;

@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador ATC por Voz · SoyAeronautico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --mvfr-rgb:62,123,250; --ifr:#D64545; --lifr:#8B5CF6; --lifr-rgb:139,92,246;
+    --warn:#E08E3E; --warn-rgb:224,142,62;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --on-accent:#FFFFFF;
+    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --mvfr-rgb:74,143,209; --ifr:#C9564F; --lifr:#B15FC7; --lifr-rgb:177,95,199;
+    --warn:#D19A55; --warn-rgb:209,154,85;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --on-accent:#0B1220;
+    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box;}
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .topbar{ position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{animation:none;} }
+  nav.desktop-nav{display:flex; align-items:center; gap:22px; font-size:0.86rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:900px){ nav.desktop-nav{display:none;} .nav-right .nav-icon-btn:first-child{display:none;} .menu-btn{display:block;} }
+
+  .hero-simple{ max-width:1200px; margin:0 auto; padding:48px 32px 8px; }
+  .breadcrumb{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-bottom:16px; display:inline-block; text-decoration:none; }
+  .breadcrumb:hover{ color:var(--accent); }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:820px; }
+  .hero-simple p.lead a{ color:var(--accent); text-decoration:underline; }
+
+  .wrap{ max-width:1200px; margin:0 auto; padding:20px 32px 70px; }
+
+  /* ---------- CONTROL BAR ---------- */
+  .controls{ display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; justify-content:space-between; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px 22px; margin-bottom:22px; box-shadow:var(--shadow-instrument); }
+  .control-group{ display:flex; flex-direction:column; gap:8px; }
+  .control-group .glabel{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pill-btn{ font-family:'IBM Plex Sans'; font-size:0.82rem; font-weight:600; padding:8px 16px; border-radius:30px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:all .15s; }
+  .pill-btn:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+  .pill-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .pill-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--accent); color:var(--on-accent); }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  /* ---------- LAYOUT MAPA + MISIÓN ---------- */
+  .sim-layout{ display:grid; grid-template-columns:1.15fr 1fr; gap:18px; align-items:start; }
+  @media (max-width:960px){ .sim-layout{ grid-template-columns:1fr; } }
+
+  .instrument{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; position:relative; box-shadow:var(--shadow-instrument); margin-bottom:22px; }
+  .instrument::before{ content:''; position:absolute; inset:8px; border:1px dashed rgba(var(--muted-rgb),0.15); border-radius:6px; pointer-events:none; }
+  .instrument-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.14em; color:var(--text-muted); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .exam-progress{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--accent); }
+  .practice-stats{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); }
+
+  .scenario-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; position:relative; z-index:1; margin-bottom:16px; }
+  .scenario-tile{ background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px; padding:12px 14px; }
+  .scenario-tile.instruction{ background:rgba(var(--accent-rgb),0.10); border-color:var(--accent); }
+  .scenario-tile.instruction .tlabel{ color:var(--accent); }
+  .scenario-tile .tlabel{ font-family:'IBM Plex Mono'; font-size:0.64rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:5px; }
+  .scenario-tile .tval{ font-size:0.92rem; font-weight:600; line-height:1.4; }
+  .cat-tag{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; letter-spacing:0.06em; padding:2px 9px; border-radius:10px; text-transform:uppercase; margin-right:6px; }
+  .cat-tag.salida{ background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); }
+  .cat-tag.ruta{ background:rgba(var(--accent-rgb),0.14); color:var(--accent); }
+  .cat-tag.llegada{ background:rgba(var(--warn-rgb),0.14); color:var(--warn); }
+  .cat-tag.lang-en{ background:rgba(var(--mvfr-rgb),0.16); color:var(--mvfr); }
+  .cat-tag.lang-es{ background:rgba(var(--lifr-rgb),0.16); color:var(--lifr); }
+
+  /* ---------- MENSAJE / TTS ---------- */
+  .message-box{ position:relative; z-index:1; background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:16px 18px; margin-bottom:20px; }
+  .message-label{ font-family:'IBM Plex Mono'; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:8px; }
+  .message-text{ font-family:'IBM Plex Mono'; font-size:0.95rem; line-height:1.55; margin-bottom:14px; }
+
+  /* ---------- RESPUESTA POR VOZ ---------- */
+  .response-hint{ text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; }
+  .mic-btn{ width:74px; height:74px; border-radius:50%; border:2px solid var(--accent); background:var(--panel-alt); color:var(--accent); font-size:1.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; margin:6px auto; transition:.2s; }
+  .mic-btn:hover:not(:disabled){ background:var(--accent); color:#fff; }
+  .mic-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+  .mic-btn.listening{ background:var(--danger); border-color:var(--danger); color:#fff; animation:micPulse 1.1s ease-in-out infinite; }
+  @keyframes micPulse{ 0%{box-shadow:0 0 0 0 rgba(var(--danger-rgb),0.5);} 70%{box-shadow:0 0 0 16px rgba(var(--danger-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--danger-rgb),0);} }
+  .mic-status{ text-align:center; font-size:0.85rem; color:var(--text-muted); min-height:20px; margin-top:10px; }
+  .transcript-box{ text-align:center; font-family:'IBM Plex Mono'; font-size:0.92rem; background:var(--panel-alt); border-radius:8px; padding:10px 14px; margin-top:10px; }
+  .link-btn{ background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-family:'IBM Plex Sans'; font-size:0.85rem; padding:0; }
+
+  /* ---------- MULTIPLE CHOICE ---------- */
+  .mc-grid{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:4px; }
+  .mc-option{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:12px 16px; font-family:'IBM Plex Mono'; font-size:0.82rem; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; line-height:1.4; }
+  .mc-option:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
+  .mc-option:disabled{ cursor:not-allowed; }
+  .mc-option.correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); font-weight:600; }
+  .mc-option.wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); color:var(--danger); font-weight:600; }
+
+  /* ---------- FEEDBACK ---------- */
+  .feedback-list{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:12px 16px; background:var(--bg); }
+  .fb-block.ok{ border-left-color:var(--vfr); }
+  .fb-block.bad{ border-left-color:var(--danger); }
+  .fb-block.partial{ border-left-color:var(--warn); }
+  .fb-head{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; margin-bottom:4px; }
+  .fb-icon{ font-size:1rem; line-height:1; }
+  .fb-body{ font-size:0.85rem; color:var(--text-muted); line-height:1.6; }
+  .fb-body b{ color:var(--text); }
+  .fb-body .mono{ background:var(--panel-alt); padding:1px 6px; border-radius:4px; color:var(--accent); }
+  .kw-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .kw-chip{ font-family:'IBM Plex Mono'; font-size:0.7rem; padding:3px 9px; border-radius:10px; }
+  .kw-chip.ok{ background:rgba(var(--vfr-rgb),0.15); color:var(--vfr); }
+  .kw-chip.missing{ background:rgba(var(--danger-rgb),0.12); color:var(--danger); text-decoration:line-through; }
+
+  .score-banner{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel-alt); border:1px solid var(--hairline); border-radius:10px; padding:16px 20px; margin:16px 0; }
+  .score-num{ font-family:'IBM Plex Mono'; font-weight:700; font-size:2rem; color:var(--accent); }
+  .score-text{ color:var(--text-muted); font-size:0.88rem; }
+
+  .exam-table{ width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:10px; }
+  .exam-table th, .exam-table td{ text-align:left; padding:6px 10px; border-bottom:1px solid var(--hairline); }
+  .exam-table th{ color:var(--text-muted); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; }
+  .result-ok{ color:var(--vfr); font-weight:600; }
+  .result-bad{ color:var(--danger); font-weight:600; }
+  .result-partial{ color:var(--warn); font-weight:600; }
+
+  /* ---------- MAPA ---------- */
+  #atcMap{ width:100%; height:380px; background:var(--panel); border:1px solid var(--hairline); border-radius:8px; position:relative; z-index:1; }
+  @media (max-width:960px){ #atcMap{ height:320px; } }
+
+  .map-legend{ position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px; padding:9px 14px; margin-bottom:8px; }
+  .map-legend .lg-item{ display:flex; align-items:center; gap:5px; font-size:0.68rem; color:var(--text); white-space:nowrap; }
+  .lg-plane{ font-size:0.85rem; display:inline-block; transform:rotate(45deg); color:var(--vfr); }
+  .lg-dot{ width:9px; height:9px; border-radius:50%; flex:none; background:var(--warn); box-shadow:0 0 5px rgba(var(--warn-rgb),0.7); }
+  .lg-line{ width:16px; height:0; border-top:2px dashed var(--accent); display:inline-block; }
+
+  .map-status-bar{ position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:0.64rem; color:var(--text-muted); padding:8px 4px 2px; }
+  .map-status-bar .map-hint{ flex:1 1 260px; }
+  .map-status-bar .map-speed{ margin-left:auto; white-space:nowrap; }
+  .map-status-bar .map-speed b{ color:var(--accent); font-family:'IBM Plex Mono'; }
+
+  .plane-icon{ color:var(--vfr); filter:drop-shadow(0 0 3px rgba(var(--vfr-rgb),0.9)); }
+  .plane-icon.landed{ color:var(--text-muted); filter:none; }
+  .plane-icon.pulse{ animation:planePulse .7s ease; }
+  @keyframes planePulse{ 0%{filter:drop-shadow(0 0 2px var(--accent));} 50%{filter:drop-shadow(0 0 12px var(--accent));} 100%{filter:drop-shadow(0 0 2px var(--accent));} }
+  .leaflet-tooltip.fp-tooltip{ background:var(--panel); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Mono'; font-size:0.68rem; padding:3px 6px; border-radius:4px; line-height:1.4; }
+  .leaflet-tooltip.airport-label{ background:transparent; border:none; box-shadow:none; color:var(--text); font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; text-shadow:0 0 3px var(--panel), 0 0 3px var(--panel), 0 0 3px var(--panel); padding:0; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:640px){
+    .controls{ flex-direction:column; align-items:stretch; }
+    .action-row{ justify-content:stretch; }
+    .action-row .btn{ flex:1; }
+  }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:34px; height:34px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronautico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div>SoyAeronautico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
+  </a>
+  <nav class="desktop-nav">
+    <a href="ats.html">ATS</a>
+    <a href="designadores.html">Designadores</a>
+    <a href="meteorologia.html">Meteorología</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+    <a href="fraseologia.html">Fraseología</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <button class="nav-icon-btn" aria-label="Buscar en el portal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <a class="breadcrumb" href="fraseologia.html">← Volver a la guía de Fraseología</a><br>
+  <div class="eyebrow">Parte 2 · Práctica ATC · AIS/COM</div>
+  <h1>Simulador de control por voz — dirige el tráfico</h1>
+  <p class="lead">Ahora tú eres el controlador. La aeronave te llama por voz con su situación; una casilla resaltada te indica qué debes autorizar y tú respondes <b>hablando</b> con la fraseología correcta. Si la instrucción es correcta, la aeronave la ejecuta y avanza en el mapa hacia el objetivo de la misión — si no, puedes reintentar antes de continuar. Hay misiones en inglés (fraseología OACI) y en español (coordinación doméstica) por igual. ¿Prefieres repasar primero el readback del piloto? <a href="quiz-fraseologia.html">Vuelve a la Parte 1 · Teórico</a>.</p>
+</section>
+
+<div class="wrap">
+
+  <div id="voiceUnsupportedNote" class="fb-block bad" style="display:none; margin-bottom:18px;">
+    <div class="fb-head"><span class="fb-icon">🔇</span> Tu navegador no soporta reconocimiento de voz</div>
+    <div class="fb-body">El reconocimiento de voz (SpeechRecognition) solo funciona en Chrome o Edge de escritorio/Android. Mientras tanto, el modo de respuesta quedó fijo en <b>Opción múltiple</b> — puedes practicar igual.</div>
+  </div>
+
+  <!-- ================= CONTROLES ================= -->
+  <div class="controls">
+    <div class="control-group">
+      <div class="glabel">Tipo de misión</div>
+      <div class="pill-row" id="catRow">
+        <button class="pill-btn active" data-cat="todos" type="button">Todas</button>
+        <button class="pill-btn" data-cat="salida" type="button">Salida</button>
+        <button class="pill-btn" data-cat="ruta" type="button">Ruta / vectores</button>
+        <button class="pill-btn" data-cat="llegada" type="button">Llegada</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="glabel">Idioma</div>
+      <div class="pill-row" id="langRow">
+        <button class="pill-btn active" data-lang="todos" type="button">Todos</button>
+        <button class="pill-btn" data-lang="en" type="button">English</button>
+        <button class="pill-btn" data-lang="es" type="button">Español</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="glabel">Modo de respuesta</div>
+      <div class="pill-row" id="respRow">
+        <button class="pill-btn active" data-resp="voz" id="btnRespVoz" type="button">🎤 Voz</button>
+        <button class="pill-btn" data-resp="mc" id="btnRespMc" type="button">☰ Opción múltiple</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="glabel">&nbsp;</div>
+      <div class="action-row">
+        <button class="btn btn-primary" id="btnNuevaMision" type="button">Nueva misión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAPA + MISIÓN ================= -->
+  <div class="sim-layout">
+
+    <div class="instrument" id="mapPanel">
+      <div class="instrument-label">
+        <span>Mapa de ruta</span>
+        <span class="practice-stats" id="missionTitleLabel"></span>
+      </div>
+      <div class="map-legend">
+        <span class="lg-item"><span class="lg-plane">✈</span> Aeronave dirigida</span>
+        <span class="lg-item"><span class="lg-dot"></span> Aeródromo</span>
+        <span class="lg-item"><span class="lg-line"></span> Ruta autorizada</span>
+      </div>
+      <div id="atcMap"></div>
+      <div class="map-status-bar">
+        <span class="map-hint">Arrastra y haz zoom en el mapa para seguir a la aeronave.</span>
+        <span class="map-speed">Nivel / estado: <b id="mapLevelLabel">—</b></span>
+      </div>
+    </div>
+
+    <div class="instrument" id="scenarioPanel">
+      <div class="instrument-label">
+        <span>Instrucciones del vuelo</span>
+        <span class="exam-progress" id="missionStepLabel"></span>
+        <span class="practice-stats" id="practiceStats"></span>
+      </div>
+      <div class="scenario-grid" id="scenarioGrid"></div>
+
+      <div class="message-box" id="messageBox">
+        <div class="message-label" id="messageLabel">Llamada del piloto</div>
+        <div class="message-text" id="messageText"></div>
+        <button class="btn btn-outline" id="btnPlay" type="button">▶ Reproducir llamada</button>
+      </div>
+
+      <!-- Respuesta por voz -->
+      <div id="voiceInputArea">
+        <div class="response-hint">Tu turno — da la instrucción correcta en voz alta, como controlador.</div>
+        <button class="mic-btn" id="btnMic" type="button" aria-label="Tocar para responder por voz">🎤</button>
+        <div class="mic-status" id="micStatus"></div>
+        <div class="transcript-box mono" id="transcriptBox" style="display:none;"></div>
+      </div>
+
+      <!-- Respuesta por opción múltiple -->
+      <div id="mcInputArea" style="display:none;">
+        <div class="response-hint" style="margin-bottom:10px;">Selecciona la instrucción correcta.</div>
+        <div class="mc-grid" id="mcGrid"></div>
+      </div>
+
+      <div id="scoreBanner" style="display:none;"></div>
+      <div class="feedback-list" id="feedbackList"></div>
+
+      <div id="missionSummary" style="display:none; margin-top:18px;">
+        <h3 style="font-size:1.1rem; margin-bottom:10px;">Misión completada</h3>
+        <div class="score-banner">
+          <div class="score-num" id="missionScoreNum">0</div>
+          <div class="score-text">de 100 puntos, promedio de la misión.</div>
+        </div>
+        <table class="exam-table">
+          <thead><tr><th>#</th><th>Paso</th><th>Resultado</th></tr></thead>
+          <tbody id="missionTableBody"></tbody>
+        </table>
+        <div class="action-row" style="margin-top:16px;">
+          <button class="btn btn-primary" id="btnOtraMision" type="button">Nueva misión</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>La calificación por voz es aproximada (cobertura de palabras clave) y la simulación de vuelo es ilustrativa, no física real.</span>
+</footer>
+
+<script>
+/* ======================================================================
+   THEME TOGGLE (idéntico al resto del portal)
+   ====================================================================== */
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('aisTheme');
+if(savedTheme === 'dark'){
+  document.documentElement.setAttribute('data-theme', 'dark');
+  themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+}
+themeToggle.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if(isDark){
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('aisTheme', 'light');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+  }else{
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('aisTheme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  if(typeof refreshMapTheme === 'function') refreshMapTheme();
+});
+
+/* ======================================================================
+   RELOJ ZULU (idéntico al resto del portal)
+   ====================================================================== */
+const zuluMini = document.getElementById('zuluMini');
+function updateZuluMini(){
+  const now = new Date();
+  const p = n => n.toString().padStart(2, '0');
+  zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+}
+updateZuluMini();
+setInterval(updateZuluMini, 1000);
+
+/* ======================================================================
+   SIMULADOR ATC POR VOZ — MOTOR DE MISIONES
+   ====================================================================== */
+(function(){
+
+  // ---------- Puntos geográficos (coordenadas reales, mismas fuentes que Simulador-NALA.html) ----------
+  const POINTS = {
+    SKBO:     { lat:4.7016,  lon:-74.14694 },
+    SKRG:     { lat:6.16446, lon:-75.423   },
+    SKCG:     { lat:10.44168,lon:-75.51292 },
+    SKMD:     { lat:6.22048, lon:-75.59043 },
+    BUV:      { lat:5.53222, lon:-73.85861 },
+    ZIP:      { lat:5.01806, lon:-73.98667 },
+    SKBO_APP: { lat:4.60,    lon:-74.17    },
+    SKBO_FAR: { lat:4.47,    lon:-74.20    },
+    SKCG_APP: { lat:10.35,   lon:-75.53    },
+    SKCG_FAR: { lat:10.20,   lon:-75.55    }
+  };
+  const AIRPORT_INFO = {
+    SKBO: { name:'Bogotá — El Dorado',            lat:POINTS.SKBO.lat, lon:POINTS.SKBO.lon },
+    SKRG: { name:'Rionegro — José María Córdova', lat:POINTS.SKRG.lat, lon:POINTS.SKRG.lon },
+    SKCG: { name:'Cartagena — Rafael Núñez',      lat:POINTS.SKCG.lat, lon:POINTS.SKCG.lon },
+    SKMD: { name:'Medellín — Olaya Herrera',      lat:POINTS.SKMD.lat, lon:POINTS.SKMD.lon }
+  };
+
+  // ---------- Banco de misiones ----------
+  // Cada dato que el controlador debe transmitir (pista, nivel, rumbo, código) aparece
+  // explícito en una casilla "Instrucción" — nada se inventa ni se debe deducir.
+  const MISSIONS = [
+    // ======================= INGLÉS (fraseología OACI) =======================
+    { id:1, cat:'salida', lang:'en', title:'Despegue y ruta directa — SKBO', callsign:'Avianca zero seven eight', airport:'SKBO', start:POINTS.SKBO, startLevel:'En rodaje',
+      steps:[
+        { pilotCall:"Avianca zero seven eight, ready for departure, runway one four left, request clearance.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Punto de espera 14L'},{label:'Pista',value:'14L'},{label:'Nivel',value:'Superficie'}],
+          expected:"Avianca zero seven eight, runway one four left, cleared for takeoff.", expectedLang:'en-US',
+          required:['cleared','takeoff','runway','one','four','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, line up and wait runway one four left.", why:'"Line up and wait" autoriza a entrar y alinearse en pista, pero no a despegar.'},
+            {text:"Avianca zero seven eight, hold position, traffic on final.", why:'Retiene la aeronave en tierra; no responde a la solicitud de despegue.'},
+            {text:"Avianca zero seven eight, taxi to holding point runway one four left.", why:'Es una instrucción de rodaje; la aeronave ya está en el punto de espera.'} ],
+          explanation:'La autorización de despegue debe incluir "cleared for takeoff", la pista exacta y el indicativo.',
+          tip:'Repite primero la autorización ("cleared for takeoff"), luego la pista, y cierra con el indicativo completo.',
+          effect:{ heading:140, distanceKm:12, level:'Ascendiendo' } },
+        { pilotCall:"Avianca zero seven eight, airborne, request direct BUV.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Saliendo de SKBO'},{label:'Nivel',value:'Ascendiendo'},{label:'Instrucción',value:'Autoriza directo a BUV y asciende a FL240',highlight:true}],
+          expected:"Avianca zero seven eight, cleared direct BUV, climb and maintain flight level two four zero.", expectedLang:'en-US',
+          required:['cleared','direct','buv','climb','level','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, maintain runway heading, standby for routing.", why:'No autoriza la ruta directa ni el ascenso indicados.'},
+            {text:"Avianca zero seven eight, descend and maintain flight level one zero zero.", why:'Es un descenso; la instrucción pide autorizar un ascenso a FL240.'},
+            {text:"Avianca zero seven eight, hold at present position, traffic ahead.", why:'Detiene la progresión en vez de autorizar la ruta y el nivel indicados.'} ],
+          explanation:'Se autoriza directo al punto BUV y se asigna el nivel de crucero indicado.',
+          tip:'Usa "cleared direct" seguido del punto exacto, y "climb and maintain flight level" con el nivel indicado.',
+          effect:{ point:'BUV', level:'FL240' } }
+      ] },
+    { id:2, cat:'salida', lang:'en', title:'Despegue y ruta directa — SKRG', callsign:'Copa one two three', airport:'SKRG', start:POINTS.SKRG, startLevel:'En rodaje',
+      steps:[
+        { pilotCall:"Copa one two three, ready for departure, runway zero one, request clearance.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Punto de espera 01'},{label:'Pista',value:'01'},{label:'Nivel',value:'Superficie'}],
+          expected:"Copa one two three, runway zero one, cleared for takeoff.", expectedLang:'en-US',
+          required:['cleared','takeoff','runway','zero','one','copa'],
+          distractors:[
+            {text:"Copa one two three, line up and wait runway zero one.", why:'No autoriza el despegue, solo permite entrar y alinearse en pista.'},
+            {text:"Copa one two three, taxi to holding point runway zero one.", why:'Es una instrucción de rodaje; la aeronave ya está en el punto de espera.'},
+            {text:"Copa one two three, hold position, traffic departing ahead.", why:'Retiene la aeronave en tierra en vez de autorizar el despegue.'} ],
+          explanation:'La autorización de despegue repite "cleared for takeoff", la pista y el indicativo.',
+          tip:'Repite "cleared for takeoff", la pista exacta y el indicativo completo.',
+          effect:{ heading:10, distanceKm:12, level:'Ascendiendo' } },
+        { pilotCall:"Copa one two three, airborne, request direct ZIP and higher level.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Saliendo de SKRG'},{label:'Nivel',value:'Ascendiendo'},{label:'Instrucción',value:'Autoriza directo a ZIP y asciende a FL180',highlight:true}],
+          expected:"Copa one two three, cleared direct ZIP, climb and maintain flight level one eight zero.", expectedLang:'en-US',
+          required:['cleared','direct','zip','climb','level','copa'],
+          distractors:[
+            {text:"Copa one two three, maintain flight level zero eight zero, standby.", why:'No autoriza la ruta directa ni asigna el nivel FL180 indicado.'},
+            {text:"Copa one two three, turn left heading two seven zero.", why:'No responde a la solicitud de ruta directa ni de nivel.'},
+            {text:"Copa one two three, descend and maintain flight level zero six zero.", why:'Es un descenso; la instrucción pide autorizar un ascenso a FL180.'} ],
+          explanation:'Se autoriza directo a ZIP con el nivel de crucero indicado.',
+          tip:'"Cleared direct" + punto, luego "climb and maintain flight level" + nivel indicado.',
+          effect:{ point:'ZIP', level:'FL180' } }
+      ] },
+    { id:3, cat:'ruta', lang:'en', title:'Vectores y cambio de nivel — cerca de BUV', callsign:'Avianca zero seven eight', airport:'SKBO', start:POINTS.BUV, startLevel:'FL240',
+      steps:[
+        { pilotCall:"Avianca zero seven eight, level flight level two four zero, request lower level due turbulence.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'20 NM al norte de SKBO'},{label:'Nivel',value:'FL240'},{label:'Instrucción',value:'Autoriza descenso a FL180',highlight:true}],
+          expected:"Avianca zero seven eight, descend and maintain flight level one eight zero.", expectedLang:'en-US',
+          required:['descend','maintain','flight','level','one','eight','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, climb and maintain flight level three one zero.", why:'Es un ascenso; la instrucción pide autorizar un descenso a FL180.'},
+            {text:"Avianca zero seven eight, maintain flight level two four zero, unable lower.", why:'Niega el descenso que la instrucción indica autorizar.'},
+            {text:"Avianca zero seven eight, maintain present level, traffic below.", why:'No autoriza el descenso a FL180 indicado.'} ],
+          explanation:'Se autoriza el descenso repitiendo "descend and maintain" y el nivel exacto indicado.',
+          tip:'"Descend and maintain flight level" seguido del nivel exacto indicado — no repitas el nivel anterior.',
+          effect:{ level:'FL180' } },
+        { pilotCall:"Avianca zero seven eight, level flight level one eight zero, request turn left for weather.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'En descenso a FL180'},{label:'Nivel',value:'FL180'},{label:'Instrucción',value:'Autoriza viraje a la izquierda, rumbo 090',highlight:true}],
+          expected:"Avianca zero seven eight, turn left heading zero niner zero.", expectedLang:'en-US',
+          required:['turn','left','heading','zero','nine','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, turn right heading zero niner zero.", why:'El sentido del giro es incorrecto; la instrucción pide virar a la izquierda.'},
+            {text:"Avianca zero seven eight, maintain present heading, traffic clear.", why:'No autoriza el viraje solicitado.'},
+            {text:"Avianca zero seven eight, turn left heading one eight zero.", why:'El rumbo no corresponde al indicado (090).'} ],
+          explanation:'El sentido del giro y el rumbo exacto deben repetirse en la instrucción.',
+          tip:'Indica primero el sentido ("turn left"), luego "heading" y el rumbo de tres dígitos indicado.',
+          effect:{ heading:90, distanceKm:35, level:'FL180' } }
+      ] },
+    { id:4, cat:'ruta', lang:'en', title:'Transpondedor y vectores — cerca de ZIP', callsign:'Sky four five six', airport:'SKBO', start:POINTS.ZIP, startLevel:'FL200',
+      steps:[
+        { pilotCall:"Sky four five six, level flight level two zero zero, ready to copy squawk.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Cerca de ZIP'},{label:'Nivel',value:'FL200'},{label:'Instrucción',value:'Asigna código de transpondedor 4621',highlight:true}],
+          expected:"Sky four five six, squawk four six two one.", expectedLang:'en-US',
+          required:['squawk','four','six','two','one','sky'],
+          distractors:[
+            {text:"Sky four five six, squawk one two zero zero, standby.", why:'El código no corresponde al asignado (4621).'},
+            {text:"Sky four five six, ident.", why:'"Ident" no transmite el código de transpondedor asignado.'},
+            {text:"Sky four five six, roger, maintain present code.", why:'No asigna el nuevo código solicitado.'} ],
+          explanation:'El código de transpondedor se repite dígito por dígito.',
+          tip:'El código se transmite dígito por dígito después de "squawk".',
+          effect:{ note:'Squawk 4621' } },
+        { pilotCall:"Sky four five six, request vectors, next waypoint ZIP not sighted.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Cerca de ZIP'},{label:'Nivel',value:'FL200'},{label:'Instrucción',value:'Autoriza viraje a la derecha, rumbo 040, directo ZIP cuando sea posible',highlight:true}],
+          expected:"Sky four five six, turn right heading zero four zero, direct ZIP when able.", expectedLang:'en-US',
+          required:['turn','right','heading','zero','four','sky'],
+          distractors:[
+            {text:"Sky four five six, turn left heading two two zero.", why:'El sentido y el rumbo no corresponden a los indicados (derecha, 040).'},
+            {text:"Sky four five six, maintain present heading, standby.", why:'No proporciona el vector solicitado.'},
+            {text:"Sky four five six, descend and maintain flight level one zero zero.", why:'No responde a la solicitud de vectores.'} ],
+          explanation:'Se indica el sentido y rumbo del vector, y la reincorporación a la ruta cuando sea posible.',
+          tip:'Sentido ("turn right"), "heading" + rumbo, y agrega "direct ZIP when able" para la reincorporación.',
+          effect:{ heading:40, distanceKm:35 } }
+      ] },
+    { id:5, cat:'llegada', lang:'en', title:'Aproximación y aterrizaje — SKBO', callsign:'Avianca zero seven eight', airport:'SKBO', start:POINTS.SKBO_FAR, startLevel:'FL100 descendiendo',
+      steps:[
+        { pilotCall:"Avianca zero seven eight, twenty miles from SKBO, request approach.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'20 NM al sur de SKBO'},{label:'Nivel',value:'FL100 descendiendo'},{label:'Instrucción',value:'Autoriza aproximación ILS pista 14 derecha',highlight:true}],
+          expected:"Avianca zero seven eight, cleared ILS approach runway one four right.", expectedLang:'en-US',
+          required:['cleared','ils','approach','runway','one','four','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, cleared visual approach runway three two left.", why:'El tipo de aproximación y la pista no corresponden a los indicados (ILS, 14 derecha).'},
+            {text:"Avianca zero seven eight, continue present heading, standby for approach clearance.", why:'No autoriza la aproximación solicitada.'},
+            {text:"Avianca zero seven eight, descend and maintain flight level one zero zero.", why:'No autoriza el tipo de aproximación indicado.'} ],
+          explanation:'Se repite el tipo de aproximación autorizada y la pista.',
+          tip:'Indica el tipo de aproximación ("cleared ILS approach") y la pista indicada.',
+          effect:{ point:'SKBO_APP', level:'Aproximación establecida' } },
+        { pilotCall:"Avianca zero seven eight, established ILS runway one four right, request landing clearance.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Aproximación final 14R'},{label:'Nivel',value:'Aproximación establecida'}],
+          expected:"Avianca zero seven eight, runway one four right, cleared to land.", expectedLang:'en-US',
+          required:['cleared','land','runway','one','four','avianca'],
+          distractors:[
+            {text:"Avianca zero seven eight, go around, traffic on runway.", why:'Ordena una aproximación frustrada en vez de autorizar el aterrizaje.'},
+            {text:"Avianca zero seven eight, continue approach, not cleared to land.", why:'No otorga la autorización de aterrizaje.'},
+            {text:"Avianca zero seven eight, cleared for takeoff runway one four right.", why:'Es una autorización de despegue, no de aterrizaje.'} ],
+          explanation:'Se repite "cleared to land" y la pista antes de aterrizar.',
+          tip:'"Cleared to land" es obligatorio para autorizar el aterrizaje — "continue approach" no es suficiente.',
+          effect:{ point:'SKBO', level:'En tierra', land:true } }
+      ] },
+    { id:6, cat:'llegada', lang:'en', title:'Aproximación y aterrizaje — SKCG', callsign:'LATAM seven eight nine', airport:'SKCG', start:POINTS.SKCG_FAR, startLevel:'FL090 descendiendo',
+      steps:[
+        { pilotCall:"LATAM seven eight nine, fifteen miles from SKCG, request approach.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'15 NM al sur de SKCG'},{label:'Nivel',value:'FL090 descendiendo'},{label:'Instrucción',value:'Autoriza aproximación visual pista 01',highlight:true}],
+          expected:"LATAM seven eight nine, cleared visual approach runway zero one.", expectedLang:'en-US',
+          required:['cleared','visual','approach','runway','zero','one','latam'],
+          distractors:[
+            {text:"LATAM seven eight nine, cleared ILS approach runway one nine.", why:'El tipo de aproximación y la pista no corresponden a los indicados (visual, 01).'},
+            {text:"LATAM seven eight nine, hold present position, traffic departing.", why:'No autoriza la aproximación solicitada.'},
+            {text:"LATAM seven eight nine, climb and maintain flight level one zero zero.", why:'No responde a la solicitud de aproximación.'} ],
+          explanation:'Se autoriza la aproximación visual a la pista indicada.',
+          tip:'"Cleared visual approach" seguido de la pista indicada.',
+          effect:{ point:'SKCG_APP', level:'Aproximación establecida' } },
+        { pilotCall:"LATAM seven eight nine, runway zero one in sight, request landing clearance.", pilotLang:'en-US',
+          tiles:[{label:'Posición',value:'Aproximación final 01'},{label:'Nivel',value:'Aproximación establecida'}],
+          expected:"LATAM seven eight nine, runway zero one, cleared to land.", expectedLang:'en-US',
+          required:['cleared','land','runway','zero','one','latam'],
+          distractors:[
+            {text:"LATAM seven eight nine, go around, wind shear reported.", why:'Ordena una aproximación frustrada en lugar de autorizar el aterrizaje.'},
+            {text:"LATAM seven eight nine, continue approach, not cleared to land.", why:'No otorga la autorización de aterrizaje.'},
+            {text:"LATAM seven eight nine, cleared for takeoff runway zero one.", why:'Es una autorización de despegue, no de aterrizaje.'} ],
+          explanation:'Se repite "cleared to land" y la pista.',
+          tip:'No olvides "cleared to land" junto con la pista antes de que la aeronave aterrice.',
+          effect:{ point:'SKCG', level:'En tierra', land:true } }
+      ] },
+
+    // ======================= ESPAÑOL (coordinación doméstica) =======================
+    { id:7, cat:'salida', lang:'es', title:'Despegue y ruta directa — SKMD', callsign:'Sarpa cero cero cinco', airport:'SKMD', start:POINTS.SKMD, startLevel:'En rodaje',
+      steps:[
+        { pilotCall:"Sarpa cero cero cinco, listo para despegue, pista cero dos, solicito autorización.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Punto de espera 02'},{label:'Pista',value:'02'},{label:'Nivel',value:'Superficie'}],
+          expected:"Sarpa cero cero cinco, pista cero dos, autorizado a despegar.", expectedLang:'es-CO',
+          required:['autorizado','despegar','pista','cero','dos','sarpa'],
+          distractors:[
+            {text:"Sarpa cero cero cinco, mantenga posición, tráfico en corta final.", why:'No autoriza el despegue; retiene la aeronave en tierra.'},
+            {text:"Sarpa cero cero cinco, ruede a punto de espera pista cero dos.", why:'Es una instrucción de rodaje; la aeronave ya está en el punto de espera.'},
+            {text:"Sarpa cero cero cinco, entre y espere pista cero dos.", why:'"Entre y espere" autoriza a entrar a pista, pero no a despegar.'} ],
+          explanation:'La autorización de despegue repite "autorizado a despegar", la pista y el indicativo.',
+          tip:'Responde con "autorizado a despegar", la pista y el indicativo — "entre y espere" no autoriza el despegue.',
+          effect:{ heading:20, distanceKm:12, level:'Ascendiendo' } },
+        { pilotCall:"Sarpa cero cero cinco, en el aire, solicito ruta directa a Rionegro.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Saliendo de SKMD'},{label:'Nivel',value:'Ascendiendo'},{label:'Instrucción',value:'Autoriza directo a Rionegro (SKRG) y asciende a FL150',highlight:true}],
+          expected:"Sarpa cero cero cinco, autorizado directo a Rionegro, ascienda y mantenga nivel de vuelo uno cinco cero.", expectedLang:'es-CO',
+          required:['autorizado','directo','rionegro','ascienda','nivel','sarpa'],
+          distractors:[
+            {text:"Sarpa cero cero cinco, mantenga rumbo de pista, espere instrucciones.", why:'No autoriza la ruta directa ni el ascenso indicados.'},
+            {text:"Sarpa cero cero cinco, descienda y mantenga nivel de vuelo cero ocho cero.", why:'Es un descenso; la instrucción pide autorizar un ascenso a FL150.'},
+            {text:"Sarpa cero cero cinco, espere en posición actual, tráfico al frente.", why:'Detiene la progresión en vez de autorizar la ruta y el nivel indicados.'} ],
+          explanation:'Se autoriza directo a Rionegro con el nivel de crucero indicado.',
+          tip:'"Autorizado directo" + punto, luego "ascienda y mantenga nivel de vuelo" + nivel indicado.',
+          effect:{ point:'SKRG', level:'FL150' } }
+      ] },
+    { id:8, cat:'ruta', lang:'es', title:'Vectores y cambio de nivel — cerca de BUV', callsign:'Satena cero cuatro uno', airport:'SKBO', start:POINTS.BUV, startLevel:'FL160',
+      steps:[
+        { pilotCall:"Satena cero cuatro uno, nivel uno seis cero, solicito descenso por turbulencia.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Cerca de BUV'},{label:'Nivel',value:'FL160'},{label:'Instrucción',value:'Autoriza descenso a FL120',highlight:true}],
+          expected:"Satena cero cuatro uno, descienda y mantenga nivel de vuelo uno dos cero.", expectedLang:'es-CO',
+          required:['descienda','mantenga','nivel','uno','dos','satena'],
+          distractors:[
+            {text:"Satena cero cuatro uno, ascienda y mantenga nivel de vuelo dos dos cero.", why:'Es un ascenso; la instrucción pide autorizar un descenso a FL120.'},
+            {text:"Satena cero cuatro uno, mantenga nivel actual, no autorizado a descender.", why:'Niega el descenso que la instrucción indica autorizar.'},
+            {text:"Satena cero cuatro uno, espere, verificando tráfico.", why:'No autoriza el descenso solicitado.'} ],
+          explanation:'Se autoriza el descenso repitiendo "descienda y mantenga" y el nivel indicado.',
+          tip:'"Descienda y mantenga nivel de vuelo" seguido del nivel exacto indicado.',
+          effect:{ level:'FL120' } },
+        { pilotCall:"Satena cero cuatro uno, nivel uno dos cero, solicito viraje a la izquierda por tráfico.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'En descenso a FL120'},{label:'Nivel',value:'FL120'},{label:'Instrucción',value:'Autoriza viraje a la izquierda, rumbo 060',highlight:true}],
+          expected:"Satena cero cuatro uno, vire a la izquierda rumbo cero seis cero.", expectedLang:'es-CO',
+          required:['vire','izquierda','rumbo','cero','seis','satena'],
+          distractors:[
+            {text:"Satena cero cuatro uno, vire a la derecha rumbo cero seis cero.", why:'El sentido del giro es incorrecto; se indicó virar a la izquierda.'},
+            {text:"Satena cero cuatro uno, mantenga rumbo actual, tráfico despejado.", why:'No autoriza el viraje solicitado.'},
+            {text:"Satena cero cuatro uno, vire a la izquierda rumbo uno ocho cero.", why:'El rumbo no corresponde al indicado (060).'} ],
+          explanation:'El sentido del giro y el rumbo exacto deben repetirse en la instrucción.',
+          tip:'Indica el sentido ("vire a la izquierda"), luego "rumbo" y los tres dígitos indicados.',
+          effect:{ heading:60, distanceKm:35, level:'FL120' } }
+      ] },
+    { id:9, cat:'llegada', lang:'es', title:'Aproximación y aterrizaje — SKCG', callsign:'Wingo dos dos tres', airport:'SKCG', start:POINTS.SKCG_FAR, startLevel:'FL090 descendiendo',
+      steps:[
+        { pilotCall:"Wingo dos dos tres, quince millas de Cartagena, solicito aproximación.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'15 NM al sur de SKCG'},{label:'Nivel',value:'FL090 descendiendo'},{label:'Instrucción',value:'Autoriza aproximación visual pista 01',highlight:true}],
+          expected:"Wingo dos dos tres, autorizado aproximación visual pista cero uno.", expectedLang:'es-CO',
+          required:['autorizado','aproximacion','visual','pista','cero','uno','wingo'],
+          distractors:[
+            {text:"Wingo dos dos tres, mantenga posición, tráfico saliendo.", why:'No autoriza la aproximación solicitada.'},
+            {text:"Wingo dos dos tres, autorizado aproximación ILS pista uno nueve.", why:'El tipo de aproximación y la pista no corresponden a los indicados (visual, 01).'},
+            {text:"Wingo dos dos tres, ascienda y mantenga nivel de vuelo uno cero cero.", why:'No responde a la solicitud de aproximación.'} ],
+          explanation:'Se autoriza la aproximación visual a la pista indicada.',
+          tip:'"Autorizado aproximación visual" seguido de la pista indicada.',
+          effect:{ point:'SKCG_APP', level:'Aproximación establecida' } },
+        { pilotCall:"Wingo dos dos tres, pista a la vista, solicito autorización de aterrizaje.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Aproximación final 01'},{label:'Nivel',value:'Aproximación establecida'}],
+          expected:"Wingo dos dos tres, autorizado a aterrizar pista cero uno.", expectedLang:'es-CO',
+          required:['autorizado','aterrizar','pista','cero','uno','wingo'],
+          distractors:[
+            {text:"Wingo dos dos tres, ejecute aproximación frustrada, pista ocupada.", why:'Ordena una aproximación frustrada en lugar de autorizar el aterrizaje.'},
+            {text:"Wingo dos dos tres, continúe aproximación, no autorizado a aterrizar.", why:'No otorga la autorización de aterrizaje.'},
+            {text:"Wingo dos dos tres, autorizado a despegar pista cero uno.", why:'Es una autorización de despegue, no de aterrizaje.'} ],
+          explanation:'Se repite "autorizado a aterrizar" y la pista.',
+          tip:'No olvides "autorizado a aterrizar" junto con la pista.',
+          effect:{ point:'SKCG', level:'En tierra', land:true } }
+      ] },
+    { id:10, cat:'salida', lang:'es', title:'Despegue y ruta directa — SKRG', callsign:'Avianca cero cuatro cinco', airport:'SKRG', start:POINTS.SKRG, startLevel:'En rodaje',
+      steps:[
+        { pilotCall:"Avianca cero cuatro cinco, listo para despegue, pista cero uno, solicito autorización.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Punto de espera 01'},{label:'Pista',value:'01'},{label:'Nivel',value:'Superficie'}],
+          expected:"Avianca cero cuatro cinco, pista cero uno, autorizado a despegar.", expectedLang:'es-CO',
+          required:['autorizado','despegar','pista','cero','uno','avianca'],
+          distractors:[
+            {text:"Avianca cero cuatro cinco, entre y espere pista cero uno.", why:'"Entre y espere" no autoriza el despegue.'},
+            {text:"Avianca cero cuatro cinco, ruede a punto de espera pista cero uno.", why:'La aeronave ya está en el punto de espera; no responde a la solicitud de despegue.'},
+            {text:"Avianca cero cuatro cinco, mantenga posición, tráfico en final.", why:'Retiene la aeronave en tierra en vez de autorizar el despegue.'} ],
+          explanation:'La autorización de despegue repite "autorizado a despegar", la pista y el indicativo.',
+          tip:'Responde con "autorizado a despegar", la pista y el indicativo.',
+          effect:{ heading:10, distanceKm:12, level:'Ascendiendo' } },
+        { pilotCall:"Avianca cero cuatro cinco, en el aire, solicito ruta directa a Zipaquirá.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Saliendo de SKRG'},{label:'Nivel',value:'Ascendiendo'},{label:'Instrucción',value:'Autoriza directo a ZIP y asciende a FL140',highlight:true}],
+          expected:"Avianca cero cuatro cinco, autorizado directo ZIP, ascienda y mantenga nivel de vuelo uno cuatro cero.", expectedLang:'es-CO',
+          required:['autorizado','directo','zip','ascienda','nivel','avianca'],
+          distractors:[
+            {text:"Avianca cero cuatro cinco, descienda y mantenga nivel de vuelo cero seis cero.", why:'Es un descenso; la instrucción pide autorizar un ascenso a FL140.'},
+            {text:"Avianca cero cuatro cinco, mantenga rumbo de pista, espere instrucciones.", why:'No autoriza la ruta directa ni el ascenso indicados.'},
+            {text:"Avianca cero cuatro cinco, espere en posición actual.", why:'Detiene la progresión en vez de autorizar la ruta y el nivel indicados.'} ],
+          explanation:'Se autoriza directo a ZIP con el nivel de crucero indicado.',
+          tip:'"Autorizado directo" + punto, luego "ascienda y mantenga nivel de vuelo" + nivel indicado.',
+          effect:{ point:'ZIP', level:'FL140' } }
+      ] },
+    { id:11, cat:'ruta', lang:'es', title:'Vectores y cambio de nivel — cerca de ZIP', callsign:'Latam siete uno dos', airport:'SKBO', start:POINTS.ZIP, startLevel:'FL190',
+      steps:[
+        { pilotCall:"Latam siete uno dos, nivel uno nueve cero, solicito nivel superior por mejor performance.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Cerca de ZIP'},{label:'Nivel',value:'FL190'},{label:'Instrucción',value:'Autoriza ascenso a FL210',highlight:true}],
+          expected:"Latam siete uno dos, ascienda y mantenga nivel de vuelo dos uno cero.", expectedLang:'es-CO',
+          required:['ascienda','mantenga','nivel','dos','uno','latam'],
+          distractors:[
+            {text:"Latam siete uno dos, descienda y mantenga nivel de vuelo uno cinco cero.", why:'Es un descenso; la instrucción pide autorizar un ascenso a FL210.'},
+            {text:"Latam siete uno dos, mantenga nivel actual, tráfico por encima.", why:'Niega el ascenso que la instrucción indica autorizar.'},
+            {text:"Latam siete uno dos, espere, verificando separación.", why:'No autoriza el ascenso solicitado.'} ],
+          explanation:'Se autoriza el ascenso repitiendo "ascienda y mantenga" y el nivel indicado.',
+          tip:'"Ascienda y mantenga nivel de vuelo" seguido del nivel exacto indicado.',
+          effect:{ level:'FL210' } },
+        { pilotCall:"Latam siete uno dos, nivel dos uno cero, solicito viraje a la derecha por meteorología.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Ascendiendo a FL210'},{label:'Nivel',value:'FL210'},{label:'Instrucción',value:'Autoriza viraje a la derecha, rumbo 120',highlight:true}],
+          expected:"Latam siete uno dos, vire a la derecha rumbo uno dos cero.", expectedLang:'es-CO',
+          required:['vire','derecha','rumbo','uno','dos','latam'],
+          distractors:[
+            {text:"Latam siete uno dos, vire a la izquierda rumbo uno dos cero.", why:'El sentido del giro es incorrecto; se indicó virar a la derecha.'},
+            {text:"Latam siete uno dos, mantenga rumbo actual, meteorología despejada.", why:'No autoriza el viraje solicitado.'},
+            {text:"Latam siete uno dos, vire a la derecha rumbo cero tres cero.", why:'El rumbo no corresponde al indicado (120).'} ],
+          explanation:'El sentido del giro y el rumbo exacto deben repetirse en la instrucción.',
+          tip:'Indica el sentido ("vire a la derecha"), luego "rumbo" y los tres dígitos indicados.',
+          effect:{ heading:120, distanceKm:35, level:'FL210' } }
+      ] },
+    { id:12, cat:'llegada', lang:'es', title:'Aproximación y aterrizaje — SKBO', callsign:'Copa cero cinco seis', airport:'SKBO', start:POINTS.SKBO_FAR, startLevel:'FL100 descendiendo',
+      steps:[
+        { pilotCall:"Copa cero cinco seis, veinte millas al sur de Bogotá, solicito aproximación.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'20 NM al sur de SKBO'},{label:'Nivel',value:'FL100 descendiendo'},{label:'Instrucción',value:'Autoriza aproximación ILS pista 14 derecha',highlight:true}],
+          expected:"Copa cero cinco seis, autorizado aproximación ILS pista uno cuatro derecha.", expectedLang:'es-CO',
+          required:['autorizado','aproximacion','ils','pista','uno','cuatro','copa'],
+          distractors:[
+            {text:"Copa cero cinco seis, mantenga rumbo actual, espere autorización.", why:'No autoriza el tipo de aproximación indicado.'},
+            {text:"Copa cero cinco seis, autorizado aproximación visual pista tres dos izquierda.", why:'El tipo de aproximación y la pista no corresponden a los indicados (ILS, 14 derecha).'},
+            {text:"Copa cero cinco seis, descienda y mantenga nivel de vuelo uno cero cero.", why:'No autoriza el tipo de aproximación indicado.'} ],
+          explanation:'Se repite el tipo de aproximación autorizada y la pista.',
+          tip:'Indica el tipo de aproximación ("autorizado aproximación ILS") y la pista indicada.',
+          effect:{ point:'SKBO_APP', level:'Aproximación establecida' } },
+        { pilotCall:"Copa cero cinco seis, establecido en ILS pista uno cuatro derecha, solicito autorización de aterrizaje.", pilotLang:'es-CO',
+          tiles:[{label:'Posición',value:'Aproximación final 14 derecha'},{label:'Nivel',value:'Aproximación establecida'}],
+          expected:"Copa cero cinco seis, autorizado a aterrizar pista uno cuatro derecha.", expectedLang:'es-CO',
+          required:['autorizado','aterrizar','pista','uno','cuatro','copa'],
+          distractors:[
+            {text:"Copa cero cinco seis, ejecute aproximación frustrada, pista ocupada.", why:'Ordena una aproximación frustrada en lugar de autorizar el aterrizaje.'},
+            {text:"Copa cero cinco seis, continúe aproximación, no autorizado a aterrizar.", why:'No otorga la autorización de aterrizaje.'},
+            {text:"Copa cero cinco seis, autorizado a despegar pista uno cuatro derecha.", why:'Es una autorización de despegue, no de aterrizaje.'} ],
+          explanation:'Se repite "autorizado a aterrizar" y la pista.',
+          tip:'No olvides "autorizado a aterrizar" junto con la pista.',
+          effect:{ point:'SKBO', level:'En tierra', land:true } }
+      ] }
+  ];
+
+  const CAT_LABEL = { salida:'Salida', ruta:'Ruta / vectores', llegada:'Llegada' };
+  const LANG_LABEL = { en:'EN', es:'ES' };
+
+  // ---------- Normalización y calificación por voz ----------
+  const SYN = {
+    'tree':'three', 'niner':'nine', 'fife':'five', 'fower':'four', 'wun':'one', 'ait':'eight', 'ate':'eight',
+    'copy':'roger', 'copied':'roger', 'received':'roger', 'affirmative':'affirm'
+  };
+  // El reconocimiento de voz suele transcribir números dicen dígito por dígito (p. ej. "six eight nine")
+  // como numeral pegado ("689"). En fraseología cada dígito se lee por separado, así que un numeral
+  // detectado se descompone dígito por dígito antes de comparar contra las palabras esperadas.
+  const DIGIT_WORDS = { '0':'zero', '1':'one', '2':'two', '3':'three', '4':'four', '5':'five', '6':'six', '7':'seven', '8':'eight', '9':'nine' };
+  function stripAccents(s){
+    return s.normalize('NFD').split('').filter(function(ch){
+      var code = ch.codePointAt(0);
+      return code < 0x0300 || code > 0x036f;
+    }).join('');
+  }
+  function normalizeToken(tok){ const t = stripAccents(tok.toLowerCase()); return SYN[t] || t; }
+  function tokenize(text){
+    return stripAccents(text.toLowerCase())
+      .replace(/[^\w\s]/g,' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .reduce(function(acc, tok){
+        if(/^\d+$/.test(tok)) acc.push.apply(acc, tok.split('').map(function(d){ return DIGIT_WORDS[d]; }));
+        else acc.push(tok);
+        return acc;
+      }, [])
+      .map(normalizeToken);
+  }
+  function scoreReadback(transcript, step){
+    const heard = new Set(tokenize(transcript));
+    const required = step.required.map(normalizeToken);
+    const matched = required.filter(k => heard.has(k));
+    const missing = required.filter(k => !heard.has(k));
+    const pct = required.length ? matched.length / required.length : 0;
+    const tier = pct >= 0.8 ? 'ok' : pct >= 0.5 ? 'partial' : 'bad';
+    return { pct, matched, missing, tier };
+  }
+
+  // ---------- Síntesis de voz ----------
+  let voicesCache = [];
+  function loadVoices(){ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }
+  if('speechSynthesis' in window){
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  function speakMessage(text, lang){
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang || 'en-US';
+    utter.rate = 0.9;
+    const short = utter.lang.split('-')[0];
+    const match = voicesCache.find(v => v.lang === utter.lang) || voicesCache.find(v => v.lang && v.lang.startsWith(short));
+    if(match) utter.voice = match;
+    window.speechSynthesis.speak(utter);
+  }
+
+  // ---------- Reconocimiento de voz ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  if(SR){
+    recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+  }
+
+  // ---------- Utilidades ----------
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[randInt(0, arr.length-1)]; }
+  function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+  // ---------- Geometría (destino por rumbo/distancia, rumbo entre dos puntos) ----------
+  function destPoint(lat, lon, bearingDeg, distKm){
+    const R = 6371;
+    const brng = bearingDeg * Math.PI/180;
+    const lat1 = lat*Math.PI/180, lon1 = lon*Math.PI/180;
+    const lat2 = Math.asin(Math.sin(lat1)*Math.cos(distKm/R) + Math.cos(lat1)*Math.sin(distKm/R)*Math.cos(brng));
+    const lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(distKm/R)*Math.cos(lat1), Math.cos(distKm/R)-Math.sin(lat1)*Math.sin(lat2));
+    return { lat: lat2*180/Math.PI, lon: lon2*180/Math.PI };
+  }
+  function bearingBetween(lat1, lon1, lat2, lon2){
+    const phi1 = lat1*Math.PI/180, phi2 = lat2*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+    const y = Math.sin(dLon)*Math.cos(phi2);
+    const x = Math.cos(phi1)*Math.sin(phi2) - Math.sin(phi1)*Math.cos(phi2)*Math.cos(dLon);
+    return (Math.atan2(y,x)*180/Math.PI + 360) % 360;
+  }
+  function resolveTarget(fromLat, fromLon, effect){
+    if(effect.point) return { lat:POINTS[effect.point].lat, lon:POINTS[effect.point].lon };
+    if(effect.heading != null) return destPoint(fromLat, fromLon, effect.heading, effect.distanceKm || 40);
+    return { lat:fromLat, lon:fromLon };
+  }
+
+  // ---------- Mapa Leaflet ----------
+  let flightMap = null, planeMarker = null, routeLine = null, airportMarker = null, pathPoints = [];
+  let PAL = {};
+  function readPal(){
+    const cs = getComputedStyle(document.documentElement);
+    return {
+      accent: cs.getPropertyValue('--accent').trim() || '#1657C6',
+      vfr:    cs.getPropertyValue('--vfr').trim()    || '#2E9E6D',
+      warn:   cs.getPropertyValue('--warn').trim()   || '#E08E3E'
+    };
+  }
+  function initMap(){
+    flightMap = L.map('atcMap', { zoomControl:true, scrollWheelZoom:true }).setView([5.0, -74.5], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom:18, attribution:'&copy; OpenStreetMap'
+    }).addTo(flightMap);
+    PAL = readPal();
+  }
+  function refreshMapTheme(){
+    PAL = readPal();
+    if(routeLine) routeLine.setStyle({ color:PAL.accent });
+    if(airportMarker) airportMarker.setStyle({ color:PAL.warn, fillColor:PAL.warn });
+  }
+  window.refreshMapTheme = refreshMapTheme;
+  function planeDivIcon(bearing){
+    return L.divIcon({
+      className:'',
+      html:`<div class="plane-icon" style="transform:rotate(${bearing}deg); font-size:22px; line-height:22px;">✈</div>`,
+      iconSize:[22,22], iconAnchor:[11,11]
+    });
+  }
+  function setPlaneBearing(deg){
+    const el = planeMarker && planeMarker.getElement();
+    const inner = el && el.querySelector('.plane-icon');
+    if(inner) inner.style.transform = `rotate(${deg}deg)`;
+  }
+  function pulsePlaneIcon(){
+    const el = planeMarker && planeMarker.getElement();
+    const inner = el && el.querySelector('.plane-icon');
+    if(!inner) return;
+    inner.classList.add('pulse');
+    setTimeout(() => inner.classList.remove('pulse'), 700);
+  }
+  function updatePlaneTooltip(mission){
+    if(!planeMarker) return;
+    planeMarker.setTooltipContent(`<b>${mission.callsign}</b><br>${mapLevelLabel.textContent}`);
+  }
+  function computeMissionBoundsPoints(mission){
+    let pos = { lat:mission.start.lat, lon:mission.start.lon };
+    const pts = [pos];
+    mission.steps.forEach(s => {
+      const t = resolveTarget(pos.lat, pos.lon, s.effect);
+      pts.push(t);
+      pos = t;
+    });
+    return pts;
+  }
+  function setupMap(mission){
+    PAL = readPal();
+    if(planeMarker){ flightMap.removeLayer(planeMarker); planeMarker = null; }
+    if(routeLine){ flightMap.removeLayer(routeLine); routeLine = null; }
+    if(airportMarker){ flightMap.removeLayer(airportMarker); airportMarker = null; }
+
+    const ap = AIRPORT_INFO[mission.airport];
+    airportMarker = L.circleMarker([ap.lat, ap.lon], { radius:5, color:PAL.warn, weight:1, fillColor:PAL.warn, fillOpacity:0.9 })
+      .bindTooltip(mission.airport, { permanent:true, direction:'top', className:'airport-label', offset:[0,-6] })
+      .addTo(flightMap);
+
+    pathPoints = [[mission.start.lat, mission.start.lon]];
+    routeLine = L.polyline(pathPoints, { color:PAL.accent, weight:2, dashArray:'4,4' }).addTo(flightMap);
+
+    planeMarker = L.marker([mission.start.lat, mission.start.lon], { icon:planeDivIcon(0) })
+      .bindTooltip('', { permanent:true, direction:'right', className:'fp-tooltip', offset:[10,0] })
+      .addTo(flightMap);
+
+    mapLevelLabel.textContent = mission.startLevel || '—';
+    updatePlaneTooltip(mission);
+
+    const boundsPts = [ {lat:ap.lat, lon:ap.lon}, ...computeMissionBoundsPoints(mission) ];
+    const bounds = L.latLngBounds(boundsPts.map(p => [p.lat, p.lon]));
+    flightMap.fitBounds(bounds, { padding:[36,36], maxZoom:10 });
+    setTimeout(() => flightMap.invalidateSize(), 150);
+  }
+  function animatePlaneTo(toLat, toLon, durationMs){
+    return new Promise(resolve => {
+      const from = planeMarker.getLatLng();
+      const bearing = bearingBetween(from.lat, from.lng, toLat, toLon);
+      setPlaneBearing(bearing);
+      const t0 = performance.now();
+      function step(now){
+        const t = Math.min(1, (now - t0) / durationMs);
+        const lat = from.lat + (toLat - from.lat) * t;
+        const lng = from.lng + (toLon - from.lng) * t;
+        planeMarker.setLatLng([lat, lng]);
+        if(t < 1){
+          requestAnimationFrame(step);
+        } else {
+          pathPoints.push([toLat, toLon]);
+          routeLine.setLatLngs(pathPoints);
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  async function applyEffect(effect){
+    const from = planeMarker.getLatLng();
+    const to = resolveTarget(from.lat, from.lng, effect);
+    const moved = Math.abs(to.lat - from.lat) > 1e-6 || Math.abs(to.lon - from.lng) > 1e-6;
+    if(moved) await animatePlaneTo(to.lat, to.lon, 2200);
+    else pulsePlaneIcon();
+    if(effect.level) mapLevelLabel.textContent = effect.level;
+    else if(effect.note) mapLevelLabel.textContent = effect.note;
+    updatePlaneTooltip(missionActual);
+    if(effect.land){
+      const el = planeMarker.getElement();
+      const inner = el && el.querySelector('.plane-icon');
+      if(inner) inner.classList.add('landed');
+    }
+  }
+
+  // ---------- Estado ----------
+  let catActual = 'todos';
+  let langActual = 'todos';
+  let modoRespuesta = 'voz';
+  let missionActual = null;
+  let stepIndex = 0;
+  let respondida = false;
+  let missionDone = false;
+  let stepResultados = [];
+  let sesionAciertos = 0, sesionIntentos = 0;
+
+  // ---------- Referencias DOM ----------
+  const voiceUnsupportedNote = document.getElementById('voiceUnsupportedNote');
+  const catRow = document.getElementById('catRow');
+  const langRow = document.getElementById('langRow');
+  const respRow = document.getElementById('respRow');
+  const btnRespVoz = document.getElementById('btnRespVoz');
+  const btnRespMc = document.getElementById('btnRespMc');
+  const btnNuevaMision = document.getElementById('btnNuevaMision');
+  const missionTitleLabel = document.getElementById('missionTitleLabel');
+  const mapLevelLabel = document.getElementById('mapLevelLabel');
+  const scenarioGrid = document.getElementById('scenarioGrid');
+  const missionStepLabel = document.getElementById('missionStepLabel');
+  const practiceStats = document.getElementById('practiceStats');
+  const messageBox = document.getElementById('messageBox');
+  const messageLabel = document.getElementById('messageLabel');
+  const messageText = document.getElementById('messageText');
+  const btnPlay = document.getElementById('btnPlay');
+  const voiceInputArea = document.getElementById('voiceInputArea');
+  const btnMic = document.getElementById('btnMic');
+  const micStatus = document.getElementById('micStatus');
+  const transcriptBox = document.getElementById('transcriptBox');
+  const mcInputArea = document.getElementById('mcInputArea');
+  const mcGrid = document.getElementById('mcGrid');
+  const scoreBanner = document.getElementById('scoreBanner');
+  const feedbackList = document.getElementById('feedbackList');
+  const missionSummary = document.getElementById('missionSummary');
+  const missionScoreNum = document.getElementById('missionScoreNum');
+  const missionTableBody = document.getElementById('missionTableBody');
+  const btnOtraMision = document.getElementById('btnOtraMision');
+
+  function poolFiltrado(){
+    return MISSIONS.filter(m =>
+      (catActual === 'todos' || m.cat === catActual) &&
+      (langActual === 'todos' || m.lang === langActual)
+    );
+  }
+
+  // ---------- Modo de respuesta ----------
+  function setRespMode(mode){
+    if(mode === 'voz' && !recognition) mode = 'mc';
+    modoRespuesta = mode;
+    respRow.querySelectorAll('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.resp === mode));
+    if(missionActual && !missionDone) renderPaso();
+    else nuevaMision();
+  }
+
+  if(!recognition){
+    btnRespVoz.disabled = true;
+    btnRespVoz.title = 'No soportado en este navegador';
+    voiceUnsupportedNote.style.display = 'block';
+  }
+
+  respRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn || btn.disabled) return;
+    setRespMode(btn.dataset.resp);
+  });
+
+  catRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    catRow.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    catActual = btn.dataset.cat;
+    nuevaMision();
+  });
+
+  langRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    langRow.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    langActual = btn.dataset.lang;
+    nuevaMision();
+  });
+
+  btnNuevaMision.addEventListener('click', () => nuevaMision());
+  btnOtraMision.addEventListener('click', () => nuevaMision());
+
+  btnPlay.addEventListener('click', () => {
+    if(!missionActual) return;
+    const step = missionActual.steps[stepIndex];
+    speakMessage(step.pilotCall, step.pilotLang || 'en-US');
+  });
+
+  // ---------- Construcción de misión / paso ----------
+  function nuevaMision(){
+    if(recognition){ try{ recognition.abort(); }catch(e){} }
+    const pool = poolFiltrado();
+    missionActual = choice(pool);
+    stepIndex = 0;
+    respondida = false;
+    missionDone = false;
+    stepResultados = [];
+
+    setupMap(missionActual);
+    missionTitleLabel.textContent = missionActual.title;
+    missionSummary.style.display = 'none';
+    messageBox.style.display = 'block';
+    limpiarFeedback();
+    renderPaso();
+  }
+
+  function renderPaso(){
+    const step = missionActual.steps[stepIndex];
+    missionStepLabel.textContent = `Paso ${stepIndex + 1} de ${missionActual.steps.length}`;
+    respondida = false;
+
+    scenarioGrid.innerHTML = `
+      <div class="scenario-tile">
+        <div class="tlabel">Tipo</div>
+        <div class="tval">
+          <span class="cat-tag ${missionActual.cat}">${CAT_LABEL[missionActual.cat]}</span>
+          <span class="cat-tag lang-${missionActual.lang}">${LANG_LABEL[missionActual.lang]}</span>
+        </div>
+      </div>
+      <div class="scenario-tile">
+        <div class="tlabel">Indicativo</div>
+        <div class="tval">${missionActual.callsign}</div>
+      </div>
+      ${step.tiles.map(t => `
+        <div class="scenario-tile ${t.highlight ? 'instruction' : ''}">
+          <div class="tlabel">${t.label}</div>
+          <div class="tval">${t.value}</div>
+        </div>
+      `).join('')}
+    `;
+
+    messageText.textContent = step.pilotCall;
+    messageLabel.textContent = (step.pilotLang || 'en-US').startsWith('es') ? 'Llamada del piloto (español)' : 'Llamada del piloto (inglés)';
+
+    if(modoRespuesta === 'voz' && recognition){
+      voiceInputArea.style.display = 'block';
+      mcInputArea.style.display = 'none';
+      micStatus.textContent = '';
+      transcriptBox.style.display = 'none';
+      transcriptBox.textContent = '';
+      btnMic.disabled = false;
+      btnMic.classList.remove('listening');
+    } else {
+      voiceInputArea.style.display = 'none';
+      mcInputArea.style.display = 'block';
+      const options = shuffle([
+        { text: step.expected, correct: true, why: null },
+        ...step.distractors.map(d => ({ text: d.text, correct: false, why: d.why }))
+      ]);
+      mcGrid.innerHTML = options.map((op, i) => `<button class="mc-option" type="button" data-idx="${i}">${op.text}</button>`).join('');
+      mcGrid._options = options;
+      mcGrid.querySelectorAll('.mc-option').forEach(btn => {
+        btn.addEventListener('click', () => comprobarMc(btn, mcGrid._options));
+      });
+    }
+  }
+
+  function limpiarFeedback(){
+    feedbackList.innerHTML = '';
+    scoreBanner.style.display = 'none';
+  }
+
+  // ---------- Evaluación: opción múltiple ----------
+  function comprobarMc(btnSeleccionado, options){
+    if(respondida) return;
+    respondida = true;
+    const idx = Number(btnSeleccionado.dataset.idx);
+    const chosen = options[idx];
+    const ok = chosen.correct;
+    mcGrid.querySelectorAll('.mc-option').forEach((btn, i) => {
+      btn.disabled = true;
+      if(options[i].correct) btn.classList.add('correct');
+      else if(btn === btnSeleccionado) btn.classList.add('wrong');
+    });
+    const extraHtml = (!ok && chosen.why) ? `<div style="margin-top:8px;"><b>Por qué no es correcta:</b> ${chosen.why}</div>` : null;
+    pintarResultado(ok ? 1 : 0, ok ? 'ok' : 'bad', missionActual.steps[stepIndex], extraHtml);
+  }
+
+  // ---------- Evaluación: voz ----------
+  btnMic.addEventListener('click', () => {
+    if(respondida || !recognition) return;
+    const step = missionActual.steps[stepIndex];
+    recognition.lang = step.expectedLang || 'en-US';
+    transcriptBox.style.display = 'block';
+    transcriptBox.textContent = '';
+    micStatus.textContent = '🎙️ Escuchando…';
+    btnMic.classList.add('listening');
+    try{
+      recognition.start();
+    }catch(err){
+      micStatus.textContent = 'No se pudo iniciar el micrófono. Intenta de nuevo.';
+      btnMic.classList.remove('listening');
+    }
+  });
+
+  if(recognition){
+    recognition.addEventListener('result', e => {
+      let finalTranscript = '';
+      let interim = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const t = e.results[i][0].transcript;
+        if(e.results[i].isFinal) finalTranscript += t;
+        else interim += t;
+      }
+      transcriptBox.textContent = finalTranscript || interim;
+      if(finalTranscript) handleVoiceResult(finalTranscript);
+    });
+
+    recognition.addEventListener('end', () => {
+      btnMic.classList.remove('listening');
+      if(!respondida){
+        btnMic.disabled = false;
+        if(!micStatus.textContent.includes('denegado') && !micStatus.textContent.includes('micrófono conectado')){
+          micStatus.textContent = 'No se detectó una respuesta completa. Toca el micrófono para intentar de nuevo.';
+        }
+      } else {
+        btnMic.disabled = true;
+      }
+    });
+
+    recognition.addEventListener('error', e => {
+      btnMic.classList.remove('listening');
+      btnMic.disabled = false;
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+        micStatus.innerHTML = '🚫 Permiso de micrófono denegado. <button class="link-btn" id="btnSwitchToMc" type="button">Cambiar a opción múltiple</button>';
+        const swBtn = document.getElementById('btnSwitchToMc');
+        if(swBtn) swBtn.addEventListener('click', () => setRespMode('mc'));
+      } else if(e.error === 'no-speech'){
+        micStatus.textContent = 'No te escuchamos. Toca el micrófono e intenta de nuevo.';
+      } else if(e.error === 'audio-capture'){
+        micStatus.textContent = '🎙️ No se detectó micrófono conectado.';
+      } else if(e.error === 'network'){
+        micStatus.innerHTML = '📡 Sin conexión al servicio de reconocimiento de voz. Verifica tu internet. <button class="link-btn" id="btnSwitchToMc3" type="button">Cambiar a opción múltiple</button>';
+        const swBtn3 = document.getElementById('btnSwitchToMc3');
+        if(swBtn3) swBtn3.addEventListener('click', () => setRespMode('mc'));
+      } else if(e.error !== 'aborted'){
+        micStatus.innerHTML = 'Ocurrió un error con el reconocimiento de voz. <button class="link-btn" id="btnSwitchToMc2" type="button">Cambiar a opción múltiple</button>';
+        const swBtn2 = document.getElementById('btnSwitchToMc2');
+        if(swBtn2) swBtn2.addEventListener('click', () => setRespMode('mc'));
+      }
+    });
+  }
+
+  function handleVoiceResult(transcript){
+    if(respondida) return;
+    respondida = true;
+    try{ recognition.stop(); }catch(e){}
+    btnMic.disabled = true;
+    micStatus.textContent = '';
+    const step = missionActual.steps[stepIndex];
+    const result = scoreReadback(transcript, step);
+    const missingOriginal = step.required.filter(k => !result.matched.includes(normalizeToken(k)));
+    const chips = step.required.map(k => {
+      const norm = normalizeToken(k);
+      const isOk = result.matched.includes(norm);
+      return `<span class="kw-chip ${isOk ? 'ok' : 'missing'}">${k}</span>`;
+    }).join(' ');
+    const missingLine = missingOriginal.length
+      ? `<div style="margin-top:8px;">Te faltó mencionar: <b>${missingOriginal.join(', ')}</b></div>`
+      : '';
+    const chipsHtml = `<div style="margin-top:8px;">Escuchamos: <span class="mono">"${transcript}"</span></div>${missingLine}<div class="kw-chips">${chips}</div>`;
+    pintarResultado(result.pct, result.tier, step, chipsHtml);
+  }
+
+  // ---------- Feedback + avance de misión ----------
+  function pintarResultado(pct, tier, step, extraHtml){
+    sesionIntentos++;
+    if(tier !== 'bad') sesionAciertos++;
+    practiceStats.textContent = `Aciertos: ${sesionAciertos}/${sesionIntentos}`;
+
+    const tierMeta = {
+      ok:      { icon:'✅', label:'¡Autorización correcta!', cls:'ok',      lead:'Tu instrucción fue clara y completa.' },
+      partial: { icon:'🟡', label:'Parcialmente correcta',   cls:'partial', lead:'Vas por buen camino, pero faltaron elementos clave.' },
+      bad:     { icon:'❌', label:'Instrucción incorrecta',   cls:'bad',     lead:'Tu instrucción no coincide con lo que este paso requiere.' }
+    }[tier];
+
+    scoreBanner.style.display = 'flex';
+    scoreBanner.innerHTML = `<div class="score-num">${tierMeta.icon}</div><div class="score-text">${tierMeta.label}</div>`;
+
+    const canAdvance = tier !== 'bad';
+    const isLastStep = stepIndex === missionActual.steps.length - 1;
+    const btnLabel = !canAdvance ? 'Reintentar este paso' : (isLastStep ? 'Finalizar misión ✓' : 'Continuar misión →');
+    const tipHtml = (tier !== 'ok' && step.tip) ? `<div style="margin-top:8px;"><b>Consejo:</b> ${step.tip}</div>` : '';
+
+    feedbackList.innerHTML = `
+      <div class="fb-block ${tierMeta.cls}">
+        <div class="fb-head"><span class="fb-icon">${tierMeta.icon}</span> ${tierMeta.lead}</div>
+        <div class="fb-body">
+          Instrucción esperada: <span class="mono">${step.expected}</span><br>
+          ${step.explanation || ''}
+          ${tipHtml}
+          ${extraHtml || ''}
+        </div>
+      </div>
+      <div class="action-row" style="margin-top:2px;">
+        <button class="btn btn-primary" id="btnStepAdvance" type="button">${btnLabel}</button>
+      </div>
+    `;
+
+    document.getElementById('btnStepAdvance').addEventListener('click', async () => {
+      const btn = document.getElementById('btnStepAdvance');
+      btn.disabled = true;
+      if(canAdvance){
+        await applyEffect(step.effect);
+        stepResultados.push({ tier, pct });
+        if(isLastStep){
+          finalizarMision();
+        } else {
+          stepIndex++;
+          limpiarFeedback();
+          renderPaso();
+        }
+      } else {
+        limpiarFeedback();
+        renderPaso();
+      }
+    });
+  }
+
+  function finalizarMision(){
+    missionDone = true;
+    voiceInputArea.style.display = 'none';
+    mcInputArea.style.display = 'none';
+    messageBox.style.display = 'none';
+    scoreBanner.style.display = 'none';
+    feedbackList.innerHTML = '';
+    missionStepLabel.textContent = '';
+    scenarioGrid.innerHTML = '';
+
+    const avg = Math.round((stepResultados.reduce((s, r) => s + r.pct, 0) / stepResultados.length) * 100);
+    missionScoreNum.textContent = avg;
+    const tierClass = { ok:'result-ok', partial:'result-partial', bad:'result-bad' };
+    const tierLabel = { ok:'Correcto', partial:'Parcial', bad:'Incorrecto' };
+    missionTableBody.innerHTML = stepResultados.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${missionActual.steps[i].pilotCall}</td>
+        <td class="${tierClass[r.tier]}">${tierLabel[r.tier]}</td>
+      </tr>
+    `).join('');
+    missionSummary.style.display = 'block';
+  }
+
+  // ---------------- Inicio ----------------
+  initMap();
+  if(!recognition) setRespMode('mc');
+  else nuevaMision();
+
+  window.addEventListener('resize', () => { if(flightMap) flightMap.invalidateSize(); });
+
+})();
+</script>
+
+<script>
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>
