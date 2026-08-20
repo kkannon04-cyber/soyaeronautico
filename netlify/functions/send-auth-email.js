@@ -80,7 +80,11 @@ const PLANTILLAS = {
 
 function construirLink(tokenHash, redirectTo, verifyType) {
   const url = new URL(`${SUPABASE_URL}/auth/v1/verify`);
-  url.searchParams.set('token_hash', tokenHash);
+  // El endpoint GET /auth/v1/verify espera el hash en el parámetro "token"
+  // (no "token_hash" — ese nombre es solo el del campo de origen en el
+  // payload del hook); usar "token_hash" como clave es lo que causaba
+  // "Verify requires a token or a token hash".
+  url.searchParams.set('token', tokenHash);
   url.searchParams.set('type', verifyType);
   if (redirectTo) url.searchParams.set('redirect_to', redirectTo);
   return url.toString();
