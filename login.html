@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión · SoyAeronautico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198;
+    --text:#0F1B2D; --text-muted:#5B6B7F;
+    --hairline:#E1E7EF; --vfr:#2E9E6D;
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247;
+    --text:#EDEFF3; --text-muted:#8894A8;
+    --hairline:#2A3548; --vfr:#4FA88C;
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column;
+  }
+  h1{font-family:'Archivo', sans-serif; margin:0;}
+  a{color:var(--accent); text-decoration:none;}
+
+  header{ padding:20px 32px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; color:var(--text); }
+  .brand-mark{ width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--accent); }
+
+  .auth-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .auth-card{
+    width:100%; max-width:380px; margin:0 auto; background:var(--panel); border:1px solid var(--hairline);
+    border-radius:16px; padding:32px 28px; box-shadow:var(--shadow-card);
+  }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.16em; color:var(--vfr); text-transform:uppercase; margin-bottom:10px; }
+  .auth-card h1{ font-size:1.4rem; margin-bottom:6px; }
+  .auth-card p.sub{ color:var(--text-muted); font-size:0.85rem; margin:0 0 22px; line-height:1.5; }
+
+  .tabs{ display:flex; gap:6px; background:var(--panel-alt); border-radius:10px; padding:4px; margin-bottom:22px; }
+  .tab-btn{ flex:1; padding:8px; border:none; background:none; border-radius:8px; font-family:'IBM Plex Sans'; font-size:0.85rem; font-weight:600; color:var(--text-muted); cursor:pointer; }
+  .tab-btn.active{ background:var(--panel); color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+
+  label{ display:block; font-size:0.78rem; font-weight:600; color:var(--text-muted); margin:14px 0 6px; }
+  input[type="email"], input[type="password"], input[type="text"]{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--hairline);
+    background:var(--bg); color:var(--text); font-family:'IBM Plex Sans'; font-size:0.92rem;
+  }
+  input:focus{ outline:2px solid rgba(var(--accent-rgb),0.35); outline-offset:1px; }
+
+  .submit-btn{
+    width:100%; margin-top:22px; background:var(--accent); color:#fff; border:none;
+    padding:11px; border-radius:30px; font-weight:700; font-size:0.92rem; cursor:pointer;
+  }
+  .submit-btn:hover{ filter:brightness(1.08); }
+  .submit-btn:disabled{ opacity:0.6; cursor:default; }
+
+  .msg{ margin-top:14px; font-size:0.82rem; line-height:1.5; padding:10px 12px; border-radius:8px; display:none; }
+  .msg.error{ display:block; background:rgba(220,38,38,0.1); color:#dc2626; }
+  .msg.ok{ display:block; background:rgba(46,158,109,0.12); color:var(--vfr); }
+
+  .back-link{ display:block; text-align:center; margin-top:18px; font-size:0.82rem; color:var(--text-muted); }
+  .back-link a{ color:var(--accent); font-weight:600; }
+
+  .forgot-link{ display:block; text-align:right; margin-top:8px; font-size:0.8rem; }
+
+  .setup-warning{
+    max-width:380px; margin:0 auto 18px; padding:12px 14px; border-radius:10px;
+    background:rgba(220,38,38,0.08); color:#dc2626; font-size:0.78rem; line-height:1.5; display:none;
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="28" height="28" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    SoyAeronautico
+  </a>
+</header>
+
+<div class="auth-wrap">
+  <div style="width:100%;">
+    <div class="setup-warning" id="setupWarning">
+      Supabase todavía no está configurado en <code>supabase-config.js</code>, así que no es posible crear cuentas ni iniciar sesión por ahora. El resto del sitio sigue funcionando en modo invitado.
+    </div>
+    <div class="auth-card">
+      <div class="eyebrow">Panel del Estudiante</div>
+      <h1 id="cardTitle">Iniciar sesión</h1>
+      <p class="sub" id="cardSub">Sincroniza tu progreso de quizzes en la nube y accede desde cualquier dispositivo.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLogin" type="button">Iniciar sesión</button>
+        <button class="tab-btn" id="tabSignup" type="button">Crear cuenta</button>
+      </div>
+
+      <form id="authForm">
+        <div id="signupFields" style="display:none;">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" autocomplete="given-name" maxlength="60">
+          <label for="apellido">Apellido</label>
+          <input type="text" id="apellido" autocomplete="family-name" maxlength="60">
+        </div>
+        <label for="email">Correo</label>
+        <input type="email" id="email" required autocomplete="email">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" required autocomplete="current-password" minlength="6">
+        <a href="#" class="forgot-link" id="forgotPasswordLink">¿Olvidaste tu contraseña?</a>
+        <button class="submit-btn" type="submit" id="submitBtn">Entrar</button>
+      </form>
+
+      <form id="recoveryForm" style="display:none;">
+        <label for="nuevaPassword">Nueva contraseña</label>
+        <input type="password" id="nuevaPassword" required autocomplete="new-password" minlength="6">
+        <button class="submit-btn" type="submit" id="recoverySubmitBtn">Guardar nueva contraseña</button>
+      </form>
+
+      <div class="msg" id="msgBox" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  const savedTheme = localStorage.getItem('aisTheme');
+  if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const cardTitle = document.getElementById('cardTitle');
+  const cardSub = document.getElementById('cardSub');
+  const submitBtn = document.getElementById('submitBtn');
+  const authForm = document.getElementById('authForm');
+  const msgBox = document.getElementById('msgBox');
+  const setupWarning = document.getElementById('setupWarning');
+  const signupFields = document.getElementById('signupFields');
+  const nombreInput = document.getElementById('nombre');
+  const apellidoInput = document.getElementById('apellido');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const recoveryForm = document.getElementById('recoveryForm');
+  const nuevaPasswordInput = document.getElementById('nuevaPassword');
+  const recoverySubmitBtn = document.getElementById('recoverySubmitBtn');
+  const tabsEl = document.querySelector('.tabs');
+
+  let modo = 'login';
+
+  // Nombre legible de la página que el usuario intentaba usar (?next=...), para
+  // explicarle por qué llegó aquí en vez de dejarlo adivinar. auth-gate.js ya
+  // arma esa URL con next=<archivo> antes de redirigir.
+  const NOMBRES_PAGINAS = {
+    'quiz-ats.html': 'el quiz de Servicios de Tránsito Aéreo (ATS)',
+    'quiz-fpl.html': 'el quiz de Plan de Vuelo',
+    'quiz-designadores.html': 'el quiz de Designadores de Aeródromos',
+    'quiz-fraseologia.html': 'el quiz de Fraseología Aeronáutica',
+    'simulador-metar.html': 'el Simulador METAR',
+    'simulador-plan-vuelo.html': 'el Simulador de Plan de Vuelo',
+    'Simulador-NALA.html': 'el Simulador NALA',
+    'simulador-fraseologia.html': 'el Simulador ATC por voz',
+    'Panel_estudiante.html': 'tu Panel del Estudiante',
+  };
+  const nextPagina = new URLSearchParams(window.location.search).get('next');
+  const contextoNext = NOMBRES_PAGINAS[nextPagina] || null;
+
+  function setModo(nuevo){
+    modo = nuevo;
+    tabLogin.classList.toggle('active', modo === 'login');
+    tabSignup.classList.toggle('active', modo === 'signup');
+    cardTitle.textContent = modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta';
+    cardSub.textContent = modo === 'login'
+      ? (contextoNext ? `Inicia sesión para continuar con ${contextoNext}.` : 'Sincroniza tu progreso de quizzes en la nube y accede desde cualquier dispositivo.')
+      : (contextoNext ? `Crea tu cuenta para continuar con ${contextoNext}.` : 'Crea tu cuenta para empezar a guardar tu progreso en la nube.');
+    submitBtn.textContent = modo === 'login' ? 'Entrar' : 'Crear cuenta';
+    signupFields.style.display = modo === 'signup' ? 'block' : 'none';
+    forgotPasswordLink.style.display = modo === 'login' ? 'block' : 'none';
+    nombreInput.required = modo === 'signup';
+    apellidoInput.required = modo === 'signup';
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+  }
+  tabLogin.addEventListener('click', () => setModo('login'));
+  tabSignup.addEventListener('click', () => setModo('signup'));
+  setModo('login');
+
+  // Página a la que volver tras iniciar sesión: la que el usuario intentaba
+  // usar (?next=quiz-ats.html), restringida a una lista conocida para evitar
+  // redirecciones abiertas a otros sitios.
+  const PAGINAS_VALIDAS = [
+    'Panel_estudiante.html', 'quiz-ats.html', 'quiz-fpl.html', 'quiz-designadores.html',
+    'quiz-fraseologia.html', 'simulador-metar.html', 'simulador-plan-vuelo.html',
+    'Simulador-NALA.html', 'simulador-fraseologia.html'
+  ];
+  function destinoTrasLogin() {
+    const next = new URLSearchParams(window.location.search).get('next');
+    return PAGINAS_VALIDAS.includes(next) ? next : 'Panel_estudiante.html';
+  }
+
+  // URL de retorno para los correos de Supabase (confirmación de registro y
+  // recuperación de contraseña): conserva el "next" original para que, tras
+  // volver del correo, destinoTrasLogin() pueda mandar al usuario de vuelta a
+  // la página que quería usar en primer lugar, no siempre al panel.
+  function loginConNext() {
+    const suffix = PAGINAS_VALIDAS.includes(nextPagina) ? ('?next=' + encodeURIComponent(nextPagina)) : '';
+    return window.location.origin + '/login.html' + suffix;
+  }
+
+  // Detecta si Supabase volvió aquí desde un enlace de "recuperar contraseña"
+  // (agrega #...&type=recovery a la URL). En ese caso no debemos redirigir
+  // a ninguna parte todavía: hay que dejar que el usuario escriba su nueva
+  // contraseña primero.
+  let modoRecuperacion = /type=recovery/.test(window.location.hash) ||
+    new URLSearchParams(window.location.search).get('type') === 'recovery';
+
+  // Supabase Auth devuelve sus mensajes de error en inglés — se traducen los
+  // más comunes; si no se reconoce el mensaje, se muestra tal cual llegó en
+  // vez de ocultarlo.
+  function traducirErrorAuth(mensaje){
+    if(!mensaje) return 'Ocurrió un error. Intenta de nuevo.';
+    const m = mensaje.toLowerCase();
+    if(m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.';
+    if(m.includes('already registered')) return 'Ya existe una cuenta con ese correo. Intenta iniciar sesión en vez de crear una nueva.';
+    if(m.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+    if(m.includes('email not confirmed')) return 'Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.';
+    if(m.includes('invalid email') || m.includes('unable to validate email')) return 'El correo no tiene un formato válido.';
+    if(m.includes('for security purposes') && m.includes('seconds')) return 'Ya lo intentaste hace muy poco. Espera unos segundos y vuelve a intentarlo.';
+    if(m.includes('network') || m.includes('failed to fetch')) return 'No se pudo conectar. Revisa tu conexión e intenta de nuevo.';
+    return mensaje;
+  }
+
+  function mostrarFormularioRecuperacion(){
+    modoRecuperacion = true;
+    document.getElementById('cardTitle').textContent = 'Restablecer contraseña';
+    document.getElementById('cardSub').textContent = 'Escribe tu nueva contraseña para tu cuenta de SoyAeronautico.';
+    tabsEl.style.display = 'none';
+    authForm.style.display = 'none';
+    recoveryForm.style.display = 'block';
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+  }
+
+  if (!sbClient) {
+    setupWarning.style.display = 'block';
+    submitBtn.disabled = true;
+  } else {
+    if (modoRecuperacion) mostrarFormularioRecuperacion();
+
+    // Si ya hay sesión activa (por ejemplo, se acaba de confirmar el correo
+    // y Supabase volvió aquí con el token en la URL), pasa directo al destino
+    // — salvo que sea una sesión temporal de recuperación de contraseña.
+    sbClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        mostrarFormularioRecuperacion();
+        return;
+      }
+      if (event === 'SIGNED_IN' && session && !modoRecuperacion) {
+        window.location.href = destinoTrasLogin();
+      }
+    });
+    sbClient.auth.getSession().then(({ data }) => {
+      if (data && data.session && !modoRecuperacion) {
+        window.location.href = destinoTrasLogin();
+      }
+    });
+  }
+
+  forgotPasswordLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!sbClient) return;
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+      msgBox.className = 'msg error';
+      msgBox.textContent = 'Escribe tu correo arriba y vuelve a hacer clic en "¿Olvidaste tu contraseña?".';
+      return;
+    }
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+    try {
+      const { error } = await sbClient.auth.resetPasswordForEmail(email, {
+        redirectTo: loginConNext()
+      });
+      if (error) throw error;
+    } catch (err) {
+      // No confirmamos si el correo existe o no en la cuenta (evita revelar
+      // qué correos están registrados) — solo mostramos error si fue un
+      // problema real (formato inválido, límite de envíos, etc.).
+    }
+    msgBox.className = 'msg ok';
+    msgBox.textContent = 'Si ese correo tiene una cuenta, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada.';
+  });
+
+  recoveryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!sbClient) return;
+    recoverySubmitBtn.disabled = true;
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+    try {
+      const { error } = await sbClient.auth.updateUser({ password: nuevaPasswordInput.value });
+      if (error) throw error;
+      msgBox.className = 'msg ok';
+      msgBox.textContent = 'Contraseña actualizada. Entrando a tu panel...';
+      modoRecuperacion = false;
+      setTimeout(() => { window.location.href = destinoTrasLogin(); }, 1200);
+    } catch (err) {
+      msgBox.className = 'msg error';
+      msgBox.textContent = traducirErrorAuth(err.message);
+      recoverySubmitBtn.disabled = false;
+    }
+  });
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!sbClient) return;
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    submitBtn.disabled = true;
+    msgBox.className = 'msg';
+
+    try {
+      if (modo === 'login') {
+        const { error } = await sbClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        window.location.href = destinoTrasLogin();
+      } else {
+        const nombre = nombreInput.value.trim();
+        const apellido = apellidoInput.value.trim();
+        const { data, error } = await sbClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { nombre, apellido },
+            emailRedirectTo: loginConNext()
+          }
+        });
+        if (error) throw error;
+        if (data.session) {
+          window.location.href = destinoTrasLogin();
+        } else {
+          msgBox.className = 'msg ok';
+          msgBox.textContent = 'Cuenta creada. Revisa tu correo y confirma tu cuenta; al hacer clic en el enlace volverás aquí y entrarás automáticamente a tu panel.';
+        }
+      }
+    } catch (err) {
+      msgBox.className = 'msg error';
+      msgBox.textContent = traducirErrorAuth(err.message);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

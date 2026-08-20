@@ -1,0 +1,13 @@
+# Bloquea el acceso directo a archivos internos que no deben ser públicos.
+# netlify.toml usa publish = "." (toda la raíz del repo), así que sin estas
+# reglas cualquier archivo del repositorio queda descargable en el sitio en
+# vivo. El "!" fuerza la regla incluso cuando el archivo existe físicamente
+# en el directorio publicado (si no, Netlify serviría el archivo real en vez
+# de aplicar la regla). Ver: reportes-seguridad/auditoria-seguridad-2026-08-17.txt
+/supabase-schema.sql    /   404!
+/README.md              /   404!
+/CLAUDE.md              /   404!
+/reportes-auditoria/*   /   404!
+/reportes-seguridad/*   /   404!
+/.claude/*              /   404!
+/netlify/functions/*    /   404!
