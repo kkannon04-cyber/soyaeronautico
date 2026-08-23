@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel del Estudiante · SoyAeronautico</title>
+<title>Panel del Estudiante · SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <style>
   /* === VARIABLES DE DISEÑO === */
@@ -17,6 +17,8 @@
     --text-muted: #6b7280;
     --border-color: #e5e7eb;
     --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
     --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
 
@@ -144,6 +146,33 @@
   .stat-card span.label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
   .stat-card strong { font-size: 28px; color: var(--blue-primary); }
 
+  /* Resumen hero: anillo de progreso + tarjetas de estadísticas */
+  .resumen-hero { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; flex-wrap: wrap; }
+  .ring-card {
+    background-color: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 20px; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 190px;
+  }
+  .progress-ring { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border-color); stroke-width: 12; }
+  .ring-fill { fill: none; stroke: var(--blue-primary); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease; }
+  .ring-wrap { position: relative; width: 150px; height: 150px; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-center strong { font-size: 26px; color: var(--text-main); }
+  .ring-center span { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 4px; text-align: center; }
+  .resumen-hero .stats-grid { flex: 1; margin-bottom: 0; min-width: 260px; }
+
+  /* Racha de estudio (calendario de actividad) */
+  .streak-summary { display: flex; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
+  .streak-stat strong { display: block; font-size: 22px; color: var(--blue-primary); }
+  .streak-stat span { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+  .heatmap-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .heatmap-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; width: max-content; }
+  .heatmap-cell { width: 12px; height: 12px; border-radius: 3px; background: var(--border-color); }
+  .heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+  .heatmap-legend .heatmap-cell { width: 10px; height: 10px; }
+
   /* Layout de dos columnas para herramientas y grupo */
   .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
   @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
@@ -230,17 +259,20 @@
         </svg>
       </div>
       <div class="logo-text">
-        <h1>SoyAeronautico</h1>
+        <h1>SoyAeronáutico</h1>
         <p>ESTACIÓN DE TRABAJO</p>
       </div>
     </a>
     <div class="nav-menu">
       <a class="nav-item active" href="Panel_estudiante.html">Panel Principal</a>
+      <a class="nav-item" href="ats.html">ATS</a>
+      <a class="nav-item" href="designadores.html">Designadores</a>
+      <a class="nav-item" href="meteorologia.html">Meteorología</a>
+      <a class="nav-item" href="metar-taf.html">METAR y TAF</a>
+      <a class="nav-item" href="plan-de-vuelo.html">Plan de Vuelo</a>
+      <a class="nav-item" href="fraseologia.html">Fraseología</a>
+      <a class="nav-item" href="glosario.html">Glosario</a>
       <a class="nav-item" href="quizzes.html">Zona de Quizzes</a>
-      <a class="nav-item" href="Simulador-NALA.html">Simulador NALA (AFTN / Radar)</a>
-      <a class="nav-item" href="simulador-plan-vuelo.html">Simulador Plan de Vuelo</a>
-      <a class="nav-item" href="simulador-metar.html">Simulador METAR</a>
-      <a class="nav-item" href="simulador-fraseologia.html">Fraseología — Simulador ATC</a>
     </div>
     <div id="authNavSlot"></div>
   </aside>
@@ -267,11 +299,14 @@
     <nav class="tab-bar">
       <div class="tab-scroll">
         <a class="tab-item active" href="Panel_estudiante.html">Panel Principal</a>
-        <a class="tab-item" href="quizzes.html">Zona de Quizzes</a>
-        <a class="tab-item" href="Simulador-NALA.html">Simulador NALA</a>
-        <a class="tab-item" href="simulador-plan-vuelo.html">Plan de Vuelo</a>
-        <a class="tab-item" href="simulador-metar.html">Simulador METAR</a>
-        <a class="tab-item" href="simulador-fraseologia.html">Fraseología</a>
+        <a class="tab-item" href="ats.html">ATS</a>
+        <a class="tab-item" href="designadores.html">Designadores</a>
+        <a class="tab-item" href="meteorologia.html">Meteorología</a>
+        <a class="tab-item" href="metar-taf.html">METAR y TAF</a>
+        <a class="tab-item" href="plan-de-vuelo.html">Plan de Vuelo</a>
+        <a class="tab-item" href="fraseologia.html">Fraseología</a>
+        <a class="tab-item" href="glosario.html">Glosario</a>
+        <a class="tab-item" href="quizzes.html">Quizzes</a>
       </div>
       <a class="tab-cta" id="tabCta" href="login.html">Iniciar sesión</a>
     </nav>
@@ -288,22 +323,32 @@
       </div>
 
       <!-- TARJETAS DE MÉTRICAS -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="label">Intentos registrados</span>
-          <strong id="statIntentos">0</strong>
+      <div class="resumen-hero">
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <svg class="progress-ring" width="150" height="150" viewBox="0 0 150 150">
+              <circle class="ring-bg" cx="75" cy="75" r="62"></circle>
+              <circle class="ring-fill" id="ringFill" cx="75" cy="75" r="62"></circle>
+            </svg>
+            <div class="ring-center">
+              <strong id="statPromedio">—</strong>
+              <span>Promedio general</span>
+            </div>
+          </div>
         </div>
-        <div class="stat-card">
-          <span class="label">Promedio general</span>
-          <strong id="statPromedio" style="color: var(--success);">—</strong>
-        </div>
-        <div class="stat-card">
-          <span class="label">Mejor módulo</span>
-          <strong id="statMejorModulo" style="font-size: 17px;">—</strong>
-        </div>
-        <div class="stat-card">
-          <span class="label">Última actividad</span>
-          <strong id="statUltima" style="font-size: 15px;">Sin actividad</strong>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="label">Intentos registrados</span>
+            <strong id="statIntentos">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">Mejor módulo</span>
+            <strong id="statMejorModulo" style="font-size: 17px;">—</strong>
+          </div>
+          <div class="stat-card">
+            <span class="label">Última actividad</span>
+            <strong id="statUltima" style="font-size: 15px;">Sin actividad</strong>
+          </div>
         </div>
       </div>
 
@@ -338,6 +383,34 @@
                 <div class="badge">Próximamente</div>
                 <h5>Grupo de estudio</h5>
                 <p>Ver a tus compañeros en línea y comparar progreso llegará con las cuentas de usuario.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- RACHA DE ESTUDIO -->
+          <div class="panel-card">
+            <div class="panel-header">Racha de estudio</div>
+            <div class="panel-body">
+              <div class="streak-summary">
+                <div class="streak-stat">
+                  <strong id="statRachaActual">0</strong>
+                  <span>Racha actual</span>
+                </div>
+                <div class="streak-stat">
+                  <strong id="statRachaMejor">0</strong>
+                  <span>Mejor racha</span>
+                </div>
+              </div>
+              <div class="heatmap-scroll">
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+              </div>
+              <div class="heatmap-legend">
+                <span>Menos</span>
+                <span class="heatmap-cell" style="background:var(--border-color);"></span>
+                <span class="heatmap-cell" style="background:rgba(16,185,129,0.35);"></span>
+                <span class="heatmap-cell" style="background:rgba(16,185,129,0.65);"></span>
+                <span class="heatmap-cell" style="background:rgba(16,185,129,1);"></span>
+                <span>Más</span>
               </div>
             </div>
           </div>
@@ -467,7 +540,7 @@
     { id: 'quiz-ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', url: 'quiz-ats.html', badge: '50 preguntas' },
     { id: 'quiz-fpl', nombre: 'Plan de Vuelo', url: 'quiz-fpl.html', badge: '25 preguntas' },
     { id: 'quiz-designadores', nombre: 'Designadores de Aeródromos', url: 'quiz-designadores.html', badge: 'Modo examen · 20 preguntas' },
-    { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html', badge: '40 preguntas' },
+    { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html', badge: '50 preguntas' },
     { id: 'simulador-metar', nombre: 'Simulador METAR', url: 'simulador-metar.html', badge: 'Modo examen · 20 reportes' }
   ];
 
@@ -476,6 +549,103 @@
     { nombre: 'Fraseología — Simulador ATC', desc: 'Practica por voz con mapa de ruta en vivo.', url: 'simulador-fraseologia.html' },
     { nombre: 'Simulador NALA — CWP', desc: 'Plan de vuelo, AFTN y radar en un puesto de trabajo real.', url: 'Simulador-NALA.html' }
   ];
+
+  // ---------- ANILLO DE PROGRESO ----------
+  const RING_RADIO = 62;
+  const RING_CIRCUNFERENCIA = 2 * Math.PI * RING_RADIO;
+  const ringFillEl = document.getElementById('ringFill');
+  ringFillEl.style.strokeDasharray = `${RING_CIRCUNFERENCIA}`;
+  ringFillEl.style.strokeDashoffset = `${RING_CIRCUNFERENCIA}`;
+
+  function colorPorPorcentaje(pct){
+    if (pct >= 85) return 'var(--success)';
+    if (pct >= 70) return 'var(--blue-primary)';
+    if (pct >= 50) return 'var(--warning)';
+    return 'var(--danger)';
+  }
+
+  function actualizarAnillo(pct){
+    const valor = pct === null ? 0 : pct;
+    const offset = RING_CIRCUNFERENCIA * (1 - valor / 100);
+    ringFillEl.style.strokeDashoffset = `${offset}`;
+    ringFillEl.style.stroke = pct === null ? 'var(--border-color)' : colorPorPorcentaje(valor);
+  }
+
+  // ---------- RACHA DE ESTUDIO (calendario de actividad) ----------
+  const SEMANAS_HEATMAP = 12;
+  const DIAS_HEATMAP = SEMANAS_HEATMAP * 7;
+
+  function claveDia(date){
+    return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  function calcularRacha(diasConActividad){
+    // Racha actual: días consecutivos con actividad terminando hoy o ayer.
+    let actual = 0;
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    let cursor = new Date(hoy);
+    if (!diasConActividad.has(claveDia(cursor))) {
+      cursor.setDate(cursor.getDate() - 1); // permite que "hoy" sin actividad no rompa la racha de ayer
+    }
+    while (diasConActividad.has(claveDia(cursor))) {
+      actual++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    // Mejor racha histórica dentro de los días registrados.
+    const dias = Array.from(diasConActividad).sort();
+    let mejor = 0, rachaTmp = 0, anterior = null;
+    dias.forEach(d => {
+      const fecha = new Date(d + 'T00:00:00');
+      if (anterior && (fecha - anterior) === 86400000) {
+        rachaTmp++;
+      } else {
+        rachaTmp = 1;
+      }
+      mejor = Math.max(mejor, rachaTmp);
+      anterior = fecha;
+    });
+
+    return { actual, mejor: Math.max(mejor, actual) };
+  }
+
+  async function renderRacha(){
+    const intentos = await obtenerIntentos();
+    const conteoPorDia = new Map();
+    intentos.forEach(i => {
+      const dia = i.fecha.slice(0, 10);
+      conteoPorDia.set(dia, (conteoPorDia.get(dia) || 0) + 1);
+    });
+
+    const { actual, mejor } = calcularRacha(new Set(conteoPorDia.keys()));
+    document.getElementById('statRachaActual').textContent = `${actual} día${actual === 1 ? '' : 's'}`;
+    document.getElementById('statRachaMejor').textContent = `${mejor} día${mejor === 1 ? '' : 's'}`;
+
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = '';
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    const diaInicio = new Date(hoy);
+    diaInicio.setDate(diaInicio.getDate() - (DIAS_HEATMAP - 1));
+
+    for (let i = 0; i < DIAS_HEATMAP; i++) {
+      const dia = new Date(diaInicio);
+      dia.setDate(dia.getDate() + i);
+      const clave = claveDia(dia);
+      const conteo = conteoPorDia.get(clave) || 0;
+
+      const celda = document.createElement('div');
+      celda.className = 'heatmap-cell';
+      let color = 'var(--border-color)';
+      if (conteo === 1) color = 'rgba(16,185,129,0.35)';
+      else if (conteo >= 2 && conteo <= 3) color = 'rgba(16,185,129,0.65)';
+      else if (conteo >= 4) color = 'rgba(16,185,129,1)';
+      celda.style.background = color;
+      celda.title = `${dia.toLocaleDateString('es-CO', { day:'2-digit', month:'short' })} · ${conteo} intento${conteo === 1 ? '' : 's'}`;
+      grid.appendChild(celda);
+    }
+  }
 
   function formatFecha(iso){
     const d = new Date(iso);
@@ -490,6 +660,7 @@
     // Stat cards
     document.getElementById('statIntentos').textContent = stats.totalIntentos;
     document.getElementById('statPromedio').textContent = stats.promedioGeneral !== null ? `${stats.promedioGeneral}%` : '—';
+    actualizarAnillo(stats.promedioGeneral);
 
     let mejorModuloTexto = '—';
     if (stats.totalIntentos > 0) {
@@ -573,6 +744,7 @@
     if (sesion) await migrarProgresoLocalSiHaceFalta();
     await renderNombre();
     await renderPanel();
+    await renderRacha();
   })();
   </script>
 </body>
