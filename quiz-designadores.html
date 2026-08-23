@@ -616,6 +616,25 @@ setInterval(updateZuluMini, 1000);
     return AERODROMOS.filter(a => a.cat === catActual);
   }
 
+  // "Bolsa" de aeródromos: se baraja el pool completo y se van sacando uno a
+  // uno sin reponerlos, así ninguno se repite hasta que la bolsa se vacía;
+  // al rellenarla de nuevo se evita que el primero repita el último mostrado.
+  let bolsaAerodromos = [];
+  let ultimoAerodromoIcao = null;
+
+  function sacarAerodromo(pool){
+    if(bolsaAerodromos.length === 0){
+      bolsaAerodromos = shuffle(pool);
+      const ultimo = bolsaAerodromos.length - 1;
+      if(bolsaAerodromos.length > 1 && bolsaAerodromos[ultimo].icao === ultimoAerodromoIcao){
+        [bolsaAerodromos[0], bolsaAerodromos[ultimo]] = [bolsaAerodromos[ultimo], bolsaAerodromos[0]];
+      }
+    }
+    const aerodromo = bolsaAerodromos.pop();
+    ultimoAerodromoIcao = aerodromo.icao;
+    return aerodromo;
+  }
+
   // ---------- Listado de ayuda ----------
   function renderHelpTable(filtro){
     const f = (filtro||'').trim().toLowerCase();
@@ -643,6 +662,7 @@ setInterval(updateZuluMini, 1000);
     catRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     catActual = btn.dataset.cat;
+    bolsaAerodromos = [];
     if(!examEnCurso) nuevaPregunta();
   });
 
@@ -689,7 +709,7 @@ setInterval(updateZuluMini, 1000);
 
   function nuevaPregunta(){
     const pool = poolFiltrado();
-    const aerodromo = choice(pool);
+    const aerodromo = sacarAerodromo(pool);
     const tipoEfectivo = elegirTipoEfectivo();
     preguntaActual = { aerodromo, tipoEfectivo };
     respondida = false;
@@ -828,6 +848,7 @@ setInterval(updateZuluMini, 1000);
     examEnCurso = true;
     examIndice = 1;
     examResultados = [];
+    bolsaAerodromos = [];
     examSummary.style.display = 'none';
     examProgress.style.display = 'inline';
     practiceStats.textContent = '';

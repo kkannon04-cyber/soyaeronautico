@@ -139,6 +139,7 @@
   /* ---------- INPUT AREA ---------- */
   .metar-textarea{ width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Mono'; font-size:0.98rem; letter-spacing:0.04em; padding:14px 16px; border-radius:8px; text-transform:uppercase; resize:vertical; min-height:64px; line-height:1.5; }
   .metar-textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.25); }
+  .metar-textarea[readonly]{ background:var(--panel-alt); color:var(--text-muted); cursor:not-allowed; resize:none; }
   .input-hint{ font-size:0.78rem; color:var(--text-muted); margin-top:8px; }
 
   /* ---------- FEEDBACK BLOCKS ---------- */
@@ -411,6 +412,11 @@
       <div class="action-row" style="margin-top:14px;">
         <button class="btn btn-primary" id="btnEvaluar" type="button">Evaluar</button>
         <button class="btn btn-outline" id="btnRespuesta" type="button">Mostrar respuesta oficial</button>
+      </div>
+
+      <div id="answerWarning" class="fb-block bad" style="display:none; margin-top:14px;">
+        <div class="fb-head"><span class="fb-icon">⚠️</span> Debes evaluar tu respuesta antes de continuar</div>
+        <div class="fb-body">Escribe el METAR y presiona <b>Evaluar</b> antes de pasar al siguiente reporte.</div>
       </div>
 
       <div id="respuestaOficial" style="display:none; margin-top:14px;">
@@ -1105,11 +1111,13 @@ setInterval(updateZuluMini, 1000);
   const examTableBody = document.getElementById('examTableBody');
   const examScoreNum = document.getElementById('examScoreNum');
   const btnReiniciarExamen = document.getElementById('btnReiniciarExamen');
+  const answerWarning = document.getElementById('answerWarning');
 
   let nivelActual = 1;
   let modoActual = 'practica';
   let escenario = null;
   let tokensEsperados = null;
+  let respondida = false;
 
   // Examen
   let examEnCurso = false;
@@ -1140,6 +1148,7 @@ setInterval(updateZuluMini, 1000);
   });
 
   btnNuevo.addEventListener('click', () => {
+    if(!respondida){ answerWarning.style.display = 'block'; return; }
     if(examEnCurso){ avanzarExamen(); }
     else nuevoEjercicio();
   });
@@ -1155,7 +1164,14 @@ setInterval(updateZuluMini, 1000);
     if(!metarInput.value.trim()){ return; }
     const bloques = evaluar(metarInput.value, escenario, tokensEsperados);
     pintarFeedback(bloques);
-    if(examEnCurso) registrarResultadoExamen(bloques);
+    respondida = true;
+    answerWarning.style.display = 'none';
+    if(examEnCurso){
+      registrarResultadoExamen(bloques);
+      // En examen, una vez validado no se puede seguir corrigiendo la línea.
+      metarInput.readOnly = true;
+      btnEvaluar.disabled = true;
+    }
   });
 
   btnReiniciarExamen.addEventListener('click', () => iniciarExamen());
@@ -1175,6 +1191,10 @@ setInterval(updateZuluMini, 1000);
     respuestaOficial.style.display = 'none';
     btnRespuesta.textContent = 'Mostrar respuesta oficial';
     metarInput.value = '';
+    metarInput.readOnly = false;
+    btnEvaluar.disabled = false;
+    respondida = false;
+    answerWarning.style.display = 'none';
   }
 
   function nuevoEjercicio(){
@@ -1256,6 +1276,9 @@ setInterval(updateZuluMini, 1000);
     feedbackList.innerHTML = '';
     scoreBanner.style.display = 'none';
     metarInput.value='';
+    metarInput.readOnly = false;
+    btnEvaluar.disabled = false;
+    answerWarning.style.display = 'none';
     if (typeof guardarIntento === 'function') {
       guardarIntento('simulador-metar', 'Simulador METAR', notaFinal, 100);
     }
