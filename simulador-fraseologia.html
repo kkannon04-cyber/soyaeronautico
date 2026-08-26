@@ -56,6 +56,24 @@
   nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
   nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
   nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{ display:flex; align-items:center; gap:6px; background:none; border:none; padding:0 0 6px; margin:0; font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500; color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s; }
+  .nav-dropdown-btn::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{ display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); padding-top:14px; z-index:60; }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:8px; min-width:180px; box-shadow:var(--shadow-instrument); }
+  .nav-dropdown-menu a{ display:block; padding:9px 12px; border-radius:6px; font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none; transition:background .15s, color .15s; }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
   .nav-divider{ width:1px; height:18px; background:var(--hairline); }
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
@@ -237,14 +255,25 @@
     <div>SoyAeronáutico <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small></div>
   </a>
   <nav class="desktop-nav">
-    <a href="ats.html">ATS</a>
+    <div class="nav-dropdown" id="modulosDropdown">
+      <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        Módulos
+        <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown-menu" id="modulosMenu">
+        <div class="nav-dropdown-menu-inner">
+          <a href="meteorologia.html">Meteorología</a>
+          <a href="ats.html">ATS</a>
+          <a href="fraseologia.html">Fraseología</a>
+          <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+        </div>
+      </div>
+    </div>
     <a href="designadores.html">Designadores</a>
-    <a href="meteorologia.html">Meteorología</a>
     <a href="metar-taf.html">METAR y TAF</a>
-    <a href="plan-de-vuelo.html">Plan de Vuelo</a>
-    <a href="fraseologia.html">Fraseología</a>
     <a href="glosario.html">Glosario</a>
-    <a href="quizzes.html">Quizzes</a>
+    <a href="quizzes.html" class="active">Quizzes</a>
+    <a href="quienes-somos.html">Quiénes somos</a>
   </nav>
   <div class="nav-right">
     <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
@@ -275,6 +304,7 @@
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
     </nav>
     <div class="mobile-nav-footer">
       <button class="theme-toggle" id="themeToggleMobile" type="button">
@@ -1558,6 +1588,11 @@ setInterval(updateZuluMini, 1000);
       </tr>
     `).join('');
     missionSummary.style.display = 'block';
+
+    if (typeof guardarIntento === 'function') {
+      const correctas = stepResultados.filter(r => r.tier === 'ok').length;
+      guardarIntento('simulador-fraseologia', 'Fraseología — Simulador ATC', correctas, stepResultados.length);
+    }
   }
 
   // ---------------- Inicio ----------------
@@ -1571,6 +1606,21 @@ setInterval(updateZuluMini, 1000);
 </script>
 
 <script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
   // ---------- MOBILE NAV DRAWER ----------
   (function(){
     const menuBtn        = document.getElementById('menuBtn');

@@ -145,6 +145,17 @@ Evitar generar cambios innecesarios que provoquen despliegues adicionales.
 
 No modificar configuraciones de Netlify salvo que el usuario lo solicite.
 
+### Automatización con Claude Code (MCP) — agregado 2026-08-26
+
+Claude Code está conectado directamente a Supabase, Netlify y GitHub vía MCP (ver `.mcp.json`), y puede editar archivos, subirlos a GitHub y disparar el deploy en Netlify sin que el usuario tenga que hacerlo manualmente.
+
+- **Repositorio real**: `kkannon04-cyber/soyaeronautico`, rama `main`. **Sitio Netlify**: `soyaeronautico` (siteId `b4a0433e-a990-422e-bb59-5ee775d4b457`), en vivo en `https://soyaeronautico.com`. **Supabase**: proyecto `yszcglcnbpnyteytpfyc`.
+- El usuario no tiene `git` instalado localmente — antes de esta automatización subía archivos a mano por la interfaz web de GitHub. El token de GitHub vive como variable de entorno de Windows (`GITHUB_PAT`), referenciado en `.mcp.json` como `${GITHUB_PAT}` — **nunca escribir el token literal en `.mcp.json` ni en ningún archivo del repo**.
+- **Cómo subir cambios**: agrupar todo el lote de una tarea/sesión en **un solo commit atómico** vía la Git Data API de GitHub (blobs → tree → commit → actualizar ref), ejecutado desde PowerShell leyendo los archivos directo del disco — nunca retipear contenido de archivos grandes a mano (riesgo real de error de transcripción sobre el sitio en producción). Subir archivo por archivo generaría un commit — y posiblemente un deploy — por archivo. Avisar siempre al usuario qué se va a subir antes de hacer push; no pushear después de cada edición individual.
+- **Créditos de build**: al usuario le preocupa el consumo de créditos de Netlify (cada push a `main` puede disparar un build). El MCP de Netlify no expone una herramienta para activar/desactivar "Stopped builds" — eso solo se hace manualmente en el dashboard (Project configuration → Build & deploy → Continuous deployment → Build settings). Confirmar con el usuario antes de un push grande si quiere pausar los builds primero.
+- **Disparar un deploy manualmente**: la herramienta `deploy-site` del MCP de Netlify no ejecuta el build ella misma — devuelve un comando `npx @netlify/mcp@latest --site-id ... --proxy-path ...` para correr localmente, que normalmente bloquea el clasificador de seguridad de Claude Code (parece ejecución arbitraria con token en la URL). No intentar sortear ese bloqueo. La alternativa simple: pedirle al usuario que entre al dashboard de Netlify y le dé clic a "Trigger deploy" él mismo.
+- Como con cualquier cambio a producción: avisar siempre antes de hacer push o de disparar un deploy.
+
 ---
 
 ## Regla importante
