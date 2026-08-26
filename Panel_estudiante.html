@@ -171,6 +171,16 @@
   .heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted); }
   .heatmap-legend .heatmap-cell { width: 12px; height: 12px; }
 
+  /* Logros / insignias */
+  .achievements-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+  .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; }
+  .achievement { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center; transition: 0.2s; }
+  .achievement .achievement-icon { font-size: 1.6rem; line-height: 1; }
+  .achievement .achievement-label { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 600; color: var(--text-muted); line-height: 1.3; }
+  .achievement.locked { opacity: 0.4; filter: grayscale(1); }
+  .achievement.unlocked { border-color: var(--primary); background: #eff6ff; }
+  .achievement.unlocked .achievement-label { color: var(--text-main); }
+
   /* === SIDEBAR RESPONSIVE (drawer en móvil) === */
   @media (max-width: 900px) {
     .menu-btn { display: flex; }
@@ -304,6 +314,11 @@
         <!-- Columna Izquierda: Herramientas -->
         <div>
           <div class="panel-card">
+            <div class="panel-header">Módulos de aprendizaje</div>
+            <div id="modulosAprendizajeContainer"></div>
+          </div>
+
+          <div class="panel-card">
             <div class="panel-header">Progreso por quiz</div>
             <div id="modulosContainer"></div>
           </div>
@@ -356,6 +371,14 @@
                 <span class="heatmap-cell" style="background:rgba(16,185,129,1);"></span>
                 <span>Más</span>
               </div>
+            </div>
+          </div>
+
+          <!-- LOGROS -->
+          <div class="panel-card">
+            <div class="panel-header">Logros</div>
+            <div class="achievements-card">
+              <div class="achievements-grid" id="logrosContainer"></div>
             </div>
           </div>
         </div>
@@ -492,6 +515,41 @@
     { id: 'simulador-metar', nombre: 'Simulador METAR', url: 'simulador-metar.html', badge: 'Modo examen · 20 reportes' }
   ];
 
+  // ---------- MÓDULOS DE APRENDIZAJE (contenido teórico, no quiz) ----------
+  const MODULOS_APRENDIZAJE = [
+    { id: 'ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', url: 'ats.html', paginas: ['ats'] },
+    { id: 'plan-de-vuelo', nombre: 'Plan de Vuelo', url: 'plan-de-vuelo.html', paginas: ['plan-de-vuelo'] },
+    { id: 'meteorologia', nombre: 'Meteorología Aeronáutica', url: 'meteorologia.html', paginas: ['meteorologia-generalidades', 'meteorologia-nubosidad', 'meteorologia-variables'] },
+    { id: 'fraseologia', nombre: 'Fraseología Aeronáutica', url: 'fraseologia.html', paginas: ['fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases', 'fraseologia-tierra', 'fraseologia-emergencias'] }
+  ];
+
+  async function renderModulosAprendizaje(){
+    const completados = await obtenerModulosCompletados();
+    const paginasCompletadas = new Set(completados.map(m => m.pagina));
+
+    const contenedor = document.getElementById('modulosAprendizajeContainer');
+    contenedor.innerHTML = '';
+    MODULOS_APRENDIZAJE.forEach(m => {
+      const total = m.paginas.length;
+      const hechas = m.paginas.filter(p => paginasCompletadas.has(p)).length;
+      const pct = Math.round((hechas / total) * 100);
+      const item = document.createElement('div');
+      item.className = 'module-item';
+      item.innerHTML = `
+        <div class="module-info">
+          <div class="module-badge">${total} página${total === 1 ? '' : 's'}</div>
+          <h4>${m.nombre}</h4>
+          <p>${hechas} de ${total} página${total === 1 ? '' : 's'} completada${hechas === 1 ? '' : 's'}</p>
+          <div class="module-progress"><div class="module-progress-fill ${hechas === total ? 'ok' : ''}" style="width:${pct}%"></div></div>
+        </div>
+        <a href="${m.url}"><button class="btn-launch">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'}</button></a>
+      `;
+      contenedor.appendChild(item);
+    });
+
+    return paginasCompletadas;
+  }
+
   const SIMULADORES = [
     { nombre: 'Simulador Plan de Vuelo', desc: 'Llenado de FPL campo por campo con validación.', url: 'simulador-plan-vuelo.html' },
     { nombre: 'Fraseología — Simulador ATC', desc: 'Practica por voz con mapa de ruta en vivo.', url: 'simulador-fraseologia.html' },
@@ -593,6 +651,54 @@
       celda.title = `${dia.toLocaleDateString('es-CO', { day:'2-digit', month:'short' })} · ${conteo} intento${conteo === 1 ? '' : 's'}`;
       grid.appendChild(celda);
     }
+
+    return { actual, mejor };
+  }
+
+  // ---------- LOGROS / INSIGNIAS ----------
+  const SIMULADORES_CON_PROGRESO = ['simulador-metar', 'simulador-plan-vuelo', 'simulador-fraseologia'];
+
+  const LOGROS = [
+    { icono: '🎯', nombre: 'Primer despegue', check: ({ stats }) => stats.totalIntentos >= 1 },
+    { icono: '🔥', nombre: 'Racha de 3 días', check: ({ racha }) => racha.mejor >= 3 },
+    { icono: '🔥🔥', nombre: 'Racha de 7 días', check: ({ racha }) => racha.mejor >= 7 },
+    { icono: '🏆', nombre: 'Racha de 30 días', check: ({ racha }) => racha.mejor >= 30 },
+    { icono: '💯', nombre: 'Vuelo perfecto', check: ({ intentos }) => intentos.some(i => i.porcentaje >= 100) },
+    { icono: '📚', nombre: 'Políglota AIS', check: ({ intentos }) => {
+        const cubiertos = new Set(intentos.map(i => i.modulo));
+        return MODULOS.every(m => cubiertos.has(m.id));
+      } },
+    { icono: '🛫', nombre: 'Explorador', check: ({ intentos }) => intentos.some(i => SIMULADORES_CON_PROGRESO.includes(i.modulo)) },
+    { icono: '⭐', nombre: 'Piloto experto', check: ({ stats }) => stats.totalIntentos >= 10 && stats.promedioGeneral !== null && stats.promedioGeneral >= 90 },
+    { icono: '🗼', nombre: 'Experto en ATS', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'ats').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '🧭', nombre: 'Navegante', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'plan-de-vuelo').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '🌦️', nombre: 'Meteorólogo', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'meteorologia').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '📻', nombre: 'Fraseólogo', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'fraseologia').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '🎓', nombre: 'AIS Graduado', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.every(m => m.paginas.every(p => paginasCompletadas.has(p))) }
+  ];
+
+  async function renderLogros(racha, paginasCompletadas){
+    const [intentos, stats] = await Promise.all([obtenerIntentos(), obtenerEstadisticas()]);
+    const contexto = { intentos, stats, racha, paginasCompletadas };
+
+    const contenedor = document.getElementById('logrosContainer');
+    contenedor.innerHTML = '';
+    LOGROS.forEach(logro => {
+      const desbloqueado = logro.check(contexto);
+      const tile = document.createElement('div');
+      tile.className = `achievement ${desbloqueado ? 'unlocked' : 'locked'}`;
+      tile.title = desbloqueado ? logro.nombre : `${logro.nombre} (bloqueado)`;
+      tile.innerHTML = `
+        <span class="achievement-icon">${logro.icono}</span>
+        <span class="achievement-label">${logro.nombre}</span>
+      `;
+      contenedor.appendChild(tile);
+    });
   }
 
   function formatFecha(iso){
@@ -692,7 +798,9 @@
     if (sesion) await migrarProgresoLocalSiHaceFalta();
     await renderNombre();
     await renderPanel();
-    await renderRacha();
+    const paginasCompletadas = await renderModulosAprendizaje();
+    const racha = await renderRacha();
+    await renderLogros(racha, paginasCompletadas);
   })();
   </script>
 </body>

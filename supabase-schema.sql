@@ -126,3 +126,50 @@ alter table public.intentos add constraint intentos_valores_coherentes
 alter table public.intentos drop constraint if exists intentos_modulo_valido;
 alter table public.intentos add constraint intentos_modulo_valido
   check (modulo in ('quiz-ats', 'quiz-fpl', 'quiz-designadores', 'quiz-fraseologia', 'simulador-metar'));
+
+-- ============================================================
+-- MIGRACIÓN — Progreso de módulos de aprendizaje (contenido teórico)
+-- e insignias por temática. Ejecutar una sola vez adicional sobre el
+-- esquema anterior.
+-- ============================================================
+
+-- Corrección de un bug: simulador-plan-vuelo y simulador-fraseologia ya
+-- llaman a guardarIntento() desde el 2026-08-24, pero nunca se sumaron a
+-- este check, así que sus inserts venían fallando en silencio para
+-- cualquier usuario con sesión iniciada (en modo invitado no pasan por
+-- esta tabla, por eso no se notaba).
+alter table public.intentos drop constraint if exists intentos_modulo_valido;
+alter table public.intentos add constraint intentos_modulo_valido
+  check (modulo in ('quiz-ats', 'quiz-fpl', 'quiz-designadores', 'quiz-fraseologia',
+                     'simulador-metar', 'simulador-plan-vuelo', 'simulador-fraseologia'));
+
+-- Una fila por cada página de contenido (módulo de aprendizaje) que el
+-- estudiante terminó, es decir, respondió todos los "chequeos rápidos"
+-- de esa página. "pagina" está restringido a las páginas reales que hoy
+-- llaman a marcarModuloCompletado() (ver progreso.js) — igual que con
+-- "intentos", si se agrega una página nueva con chequeos hay que sumar
+-- su id aquí también.
+create table if not exists public.modulos_completados (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references auth.users(id) on delete cascade,
+  pagina text not null check (pagina in (
+    'ats', 'plan-de-vuelo',
+    'meteorologia-generalidades', 'meteorologia-nubosidad', 'meteorologia-variables',
+    'fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases',
+    'fraseologia-tierra', 'fraseologia-emergencias'
+  )),
+  fecha timestamptz not null default now(),
+  unique (usuario_id, pagina)
+);
+
+alter table public.modulos_completados enable row level security;
+
+create policy "Los usuarios ven sus propios módulos completados"
+  on public.modulos_completados for select
+  using (auth.uid() = usuario_id);
+
+create policy "Los usuarios insertan sus propios módulos completados"
+  on public.modulos_completados for insert
+  with check (auth.uid() = usuario_id);
+
+create index if not exists modulos_completados_usuario_id_idx on public.modulos_completados (usuario_id);

@@ -130,6 +130,56 @@ async function obtenerEstadisticas() {
   return { totalIntentos: intentos.length, promedioGeneral, ultimaActividad, porModulo };
 }
 
+// ---------- MÓDULOS DE APRENDIZAJE COMPLETADOS ----------
+// A diferencia de "intentos" (quizzes/simuladores con puntaje), esto
+// registra que el estudiante respondió todos los chequeos rápidos de una
+// página de contenido teórico (ats.html, plan-de-vuelo.html, o una
+// subpágina de meteorología/fraseología). Se usa para el progreso por
+// módulo y las insignias por temática en Panel_estudiante.html.
+const AIS_MODULOS_KEY = 'aisModulosCompletados';
+
+function obtenerModulosCompletadosLocal() {
+  try {
+    const data = JSON.parse(localStorage.getItem(AIS_MODULOS_KEY));
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function marcarModuloCompletado(pagina) {
+  const sesion = await obtenerSesionActual();
+
+  if (sesion) {
+    const cliente = obtenerClienteAuth();
+    const { error } = await cliente
+      .from('modulos_completados')
+      .upsert({ usuario_id: sesion.user.id, pagina }, { onConflict: 'usuario_id,pagina', ignoreDuplicates: true });
+    if (error) console.error('No se pudo guardar el módulo completado en Supabase:', error.message);
+    return;
+  }
+
+  const modulos = obtenerModulosCompletadosLocal();
+  if (!modulos.some(m => m.pagina === pagina)) {
+    modulos.push({ pagina, fecha: new Date().toISOString() });
+    localStorage.setItem(AIS_MODULOS_KEY, JSON.stringify(modulos));
+  }
+}
+
+async function obtenerModulosCompletados() {
+  const sesion = await obtenerSesionActual();
+  if (sesion) {
+    const cliente = obtenerClienteAuth();
+    const { data, error } = await cliente
+      .from('modulos_completados')
+      .select('pagina, fecha')
+      .eq('usuario_id', sesion.user.id);
+    if (error) { console.error('No se pudieron leer los módulos completados:', error.message); return []; }
+    return data;
+  }
+  return obtenerModulosCompletadosLocal();
+}
+
 // ---------- PERFIL DEL ESTUDIANTE (nombre y apellido) ----------
 // Devuelve { nombre, apellido, nombreCompleto, esEmail }. esEmail=true
 // significa que todavía no hay nombre guardado y se está usando el
@@ -205,6 +255,20 @@ async function migrarProgresoLocalSiHaceFalta() {
     if (!data || (!data.nombre && !data.apellido)) {
       await cliente.from('perfiles').upsert({ id: sesion.user.id, nombre: nombreLocal, apellido: apellidoLocal });
     }
+  }
+
+  const modulosLocales = obtenerModulosCompletadosLocal();
+  if (modulosLocales.length > 0) {
+    const filas = modulosLocales.map(m => ({
+      usuario_id: sesion.user.id,
+      pagina: m.pagina,
+      fecha: m.fecha
+    }));
+    const { error } = await cliente
+      .from('modulos_completados')
+      .upsert(filas, { onConflict: 'usuario_id,pagina', ignoreDuplicates: true });
+    if (!error) localStorage.removeItem(AIS_MODULOS_KEY);
+    else console.error('No se pudieron migrar los módulos completados:', error.message);
   }
 
   localStorage.setItem(AIS_MIGRADO_KEY, 'true');
