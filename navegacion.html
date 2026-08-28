@@ -111,6 +111,12 @@
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
   .hero-note b{ color:var(--text); }
 
+  /* ---- BOTONES PARA LOS QUIZZES AVANZADOS ---- */
+  .quiz-cta-row{ display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
+  .btn-quiz-nav{ display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; padding:12px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.9rem; }
+  .btn-quiz-nav:hover{ filter:brightness(1.08); transform:translateY(-2px); }
+  .btn-quiz-nav.alt{ background:none; color:var(--accent); border:1px solid var(--accent); }
+
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
 
   /* ---- grid de módulos/ejes ---- */
@@ -274,6 +280,10 @@
   <div class="hero-note">
     <span>🧭</span>
     <span><b>Estructura:</b> cada bloque combina explicación, ejemplos y un <b>simulador o herramienta interactiva</b> donde puedes mover los valores y ver el efecto al instante, cerrando con chequeos rápidos. Empieza por Fundamentos si es tu primera vez en el tema.</span>
+  </div>
+  <div class="quiz-cta-row">
+    <a href="navegacion-quiz-tiempo-altimetria.html" class="btn-quiz-nav"><span>📝</span> Quiz I: Tiempo y Altimetría (avanzado)</a>
+    <a href="navegacion-quiz-radioayudas-viento.html" class="btn-quiz-nav alt"><span>📝</span> Quiz II: Radioayudas y Viento (avanzado)</a>
   </div>
 </section>
 

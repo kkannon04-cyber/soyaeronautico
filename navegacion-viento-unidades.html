@@ -110,6 +110,8 @@
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
   .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.subtab-quiz .n{ background:rgba(var(--accent-rgb),0.14); color:var(--accent); }
+  .subtab.subtab-quiz.active .n{ background:var(--accent); color:#fff; }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -330,6 +332,8 @@
       <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
       <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
       <a href="navegacion-viento-unidades.html" class="subtab active"><span class="n">5</span> Viento y Unidades</a>
+      <a href="navegacion-quiz-tiempo-altimetria.html" class="subtab subtab-quiz"><span class="n">📝</span> Quiz I</a>
+      <a href="navegacion-quiz-radioayudas-viento.html" class="subtab subtab-quiz"><span class="n">📝</span> Quiz II</a>
     </div>
   </div>
 
@@ -651,6 +655,7 @@
     <div class="big">🎓</div>
     <h3>¡Completaste todo el módulo de Navegación Aérea!</h3>
     <p style="color:var(--text-muted); margin-top:8px;">Respondiste correctamente las 7 preguntas de este bloque. Revisa tu progreso completo y tus insignias en el <a href="Panel_estudiante.html" style="color:var(--vfr); font-weight:600;">Panel del Estudiante</a>.</p>
+    <p style="color:var(--text-muted); margin-top:10px;">¿Quieres ponerte a prueba de verdad? El módulo tiene dos exámenes de nivel avanzado con ejercicios de cálculo: <a href="navegacion-quiz-tiempo-altimetria.html" style="color:var(--accent); font-weight:600;">Quiz I — Tiempo y Altimetría</a> y <a href="navegacion-quiz-radioayudas-viento.html" style="color:var(--accent); font-weight:600;">Quiz II — Radioayudas y Viento</a>.</p>
   </div>
 
 </main>

@@ -111,6 +111,8 @@
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
   .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.subtab-quiz .n{ background:rgba(var(--accent-rgb),0.14); color:var(--accent); }
+  .subtab.subtab-quiz.active .n{ background:var(--accent); color:#fff; }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -382,6 +384,8 @@
       <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
       <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
       <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+      <a href="navegacion-quiz-tiempo-altimetria.html" class="subtab subtab-quiz"><span class="n">📝</span> Quiz I</a>
+      <a href="navegacion-quiz-radioayudas-viento.html" class="subtab subtab-quiz"><span class="n">📝</span> Quiz II</a>
     </div>
   </div>
 
