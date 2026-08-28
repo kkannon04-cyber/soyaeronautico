@@ -134,7 +134,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
 <script>
   const savedTheme = localStorage.getItem('aisTheme');
@@ -252,29 +252,45 @@
     msgBox.textContent = '';
   }
 
+  // Una sola navegación: si dos caminos distintos (el evento de Supabase y la
+  // comprobación inicial) intentan redirigir a la vez, el navegador cancela
+  // peticiones a medias y la página siguiente puede quedarse a medio cargar.
+  let yaRedirigiendo = false;
+  function irADestino() {
+    if (yaRedirigiendo) return;
+    yaRedirigiendo = true;
+    try { sessionStorage.removeItem('aisAuthGateRebotes'); } catch (e) {}
+    window.location.href = destinoTrasLogin();
+  }
+
   if (!sbClient) {
     setupWarning.style.display = 'block';
+    setupWarning.textContent = 'No se pudo cargar el servicio de cuentas (puede ser un problema momentáneo de conexión). Recarga la página para volver a intentarlo.';
     submitBtn.disabled = true;
   } else {
     if (modoRecuperacion) mostrarFormularioRecuperacion();
 
-    // Si ya hay sesión activa (por ejemplo, se acaba de confirmar el correo
-    // y Supabase volvió aquí con el token en la URL), pasa directo al destino
-    // — salvo que sea una sesión temporal de recuperación de contraseña.
     sbClient.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         mostrarFormularioRecuperacion();
         return;
       }
-      if (event === 'SIGNED_IN' && session && !modoRecuperacion) {
-        window.location.href = destinoTrasLogin();
-      }
+      if (event === 'SIGNED_IN' && session && !modoRecuperacion) irADestino();
     });
-    sbClient.auth.getSession().then(({ data }) => {
-      if (data && data.session && !modoRecuperacion) {
-        window.location.href = destinoTrasLogin();
-      }
-    });
+
+    // Si ya hay sesión activa (por ejemplo, se acaba de confirmar el correo
+    // y Supabase volvió aquí con el token en la URL), pasa directo al destino
+    // — salvo que sea una sesión temporal de recuperación de contraseña.
+    //
+    // getSession() puede quedarse esperando el lock interno de supabase-js, así
+    // que se le pone un límite: si no responde, simplemente se deja el
+    // formulario visible en vez de dejar la página bloqueada.
+    Promise.race([
+      sbClient.auth.getSession().then(({ data }) => (data && data.session) ? data.session : null),
+      new Promise(resolve => setTimeout(() => resolve(null), 4000))
+    ]).then(session => {
+      if (session && !modoRecuperacion) irADestino();
+    }).catch(() => { /* se queda el formulario a la vista */ });
   }
 
   forgotPasswordLink.addEventListener('click', async (e) => {
@@ -314,7 +330,7 @@
       msgBox.className = 'msg ok';
       msgBox.textContent = 'Contraseña actualizada. Entrando a tu panel...';
       modoRecuperacion = false;
-      setTimeout(() => { window.location.href = destinoTrasLogin(); }, 1200);
+      setTimeout(() => { irADestino(); }, 1200);
     } catch (err) {
       msgBox.className = 'msg error';
       msgBox.textContent = traducirErrorAuth(err.message);
@@ -335,7 +351,7 @@
       if (modo === 'login') {
         const { error } = await sbClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        window.location.href = destinoTrasLogin();
+        irADestino();
       } else {
         const nombre = nombreInput.value.trim();
         const apellido = apellidoInput.value.trim();
@@ -349,7 +365,7 @@
         });
         if (error) throw error;
         if (data.session) {
-          window.location.href = destinoTrasLogin();
+          irADestino();
         } else {
           msgBox.className = 'msg ok';
           msgBox.textContent = 'Cuenta creada. Revisa tu correo y confirma tu cuenta; al hacer clic en el enlace volverás aquí y entrarás automáticamente a tu panel.';

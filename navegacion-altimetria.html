@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navegación · Altimetría y Atmósfera Estándar | SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
+
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+
+  /* ---------- PROGRESO DE CHEQUEOS ---------- */
+  .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .quiz-progress-inner{ max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .quiz-progress-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+  .quiz-progress-track{ flex:1; min-width:140px; height:6px; border-radius:3px; background:var(--panel-alt); border:1px solid var(--hairline); overflow:hidden; }
+  .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
+  .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:130px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  table.ats-table td.mono{ font-family:'IBM Plex Mono'; color:var(--accent); font-weight:600; }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  /* ---- ilustración SVG (altímetro) ---- */
+  .illus{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px; margin:18px 0; text-align:center; }
+  .illus svg{ max-width:100%; height:auto; display:block; margin:0 auto; }
+  .illus-cap{ font-size:0.78rem; color:var(--text-muted); margin-top:10px; font-family:'IBM Plex Mono'; }
+
+  /* ---- reglajes: 3 columnas QNH/QFE/QNE ---- */
+  .qcodes-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:18px 0; }
+  .qcode-card{ border-radius:12px; padding:18px; color:#fff; }
+  .qcode-card .qc-tag{ font-family:'IBM Plex Mono'; font-weight:800; font-size:1.1rem; margin-bottom:8px; }
+  .qcode-card .qc-indica{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase; opacity:0.85; margin-bottom:4px; }
+  .qcode-card .qc-val{ font-weight:700; font-size:0.95rem; margin-bottom:10px; }
+  .qcode-card p{ font-size:0.82rem; line-height:1.5; margin:0; opacity:0.95; }
+  .qc-qnh{ background:linear-gradient(160deg,#1657C6,#3E7BFA); }
+  .qc-qfe{ background:linear-gradient(160deg,#2E9E6D,#3EBE85); }
+  .qc-qne{ background:linear-gradient(160deg,#8B5CF6,#A78BFA); }
+
+  /* ---- SIMULADOR DE ALTÍMETRO ---- */
+  .alt-sim{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .alt-sim-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .alt-sim-head h4{ font-size:0.95rem; color:var(--accent); margin:0; }
+  .alt-sim-hint{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); }
+  .alt-stage{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; align-items:start; }
+  @media (max-width:720px){ .alt-stage{ grid-template-columns:1fr; } }
+  .alt-pane{ background:var(--bg); border:1px solid var(--hairline); border-radius:12px; padding:12px; }
+  .alt-pane-title{ font-family:'IBM Plex Mono'; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; text-align:center; }
+  .alt-pane svg{ display:block; width:100%; height:auto; }
+
+  .alt-setting-btns{ display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 4px; }
+  .alt-setting-btn{ font-family:'IBM Plex Mono'; font-size:0.78rem; font-weight:700; padding:9px 16px; border-radius:8px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; }
+  .alt-setting-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .alt-setting-btn.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .alt-controls{ margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 20px; }
+  .alt-ctl label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .alt-ctl label b{ color:var(--accent); font-weight:600; }
+  .alt-ctl input[type=range]{ width:100%; margin:0; accent-color:var(--accent); }
+
+  .alt-readout{ margin-top:16px; background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; }
+  .alt-readout-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+  .alt-rd{ text-align:center; }
+  .alt-rd span{ display:block; font-family:'IBM Plex Mono'; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+  .alt-rd b{ font-family:'IBM Plex Mono'; font-size:1rem; font-weight:700; color:var(--text); }
+  .alt-rd b.hl{ color:var(--accent); }
+  .alt-explain{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--hairline); font-size:0.85rem; line-height:1.6; color:var(--text-muted); }
+  .alt-explain b{ color:var(--text); }
+  .alt-explain.danger{ color:var(--danger); }
+
+  /* ---- herramienta convertidora / calculadora ISA ---- */
+  .tool-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .tool-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .tool-row label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px; }
+  .tool-field{ flex:1; min-width:180px; }
+  .tool-row input[type=number]{ width:100%; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 12px; font-family:'IBM Plex Mono'; font-size:0.95rem; color:var(--text); outline:none; }
+  .tool-row input:focus{ border-color:var(--accent); }
+  .tool-output{ background:var(--bg); border:1px dashed var(--hairline); border-radius:8px; padding:14px; font-family:'IBM Plex Mono'; font-size:1rem; color:var(--vfr); letter-spacing:0.3px; min-height:24px; word-break:break-word; line-height:1.6; }
+  .tool-note{ font-size:0.76rem; color:var(--text-muted); margin-top:8px; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="progreso.js"></script>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown active" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html" class="active">Navegación</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="Panel_estudiante.html" class="nav-login-btn">Mi panel</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="navegacion-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
+      <a href="navegacion-tiempo.html" class="subtab"><span class="n">1</span> Tiempo</a>
+      <a href="navegacion-velocidad.html" class="subtab"><span class="n">2</span> Velocidad</a>
+      <a href="navegacion-altimetria.html" class="subtab active"><span class="n">3</span> Altimetría</a>
+      <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
+      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+    </div>
+  </div>
+
+  <div class="quiz-progress">
+    <div class="quiz-progress-inner">
+      <span class="quiz-progress-label">Chequeos rápidos</span>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 10 correctos</span>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Navegación — Bloque 3</div>
+  <h1>Altimetría: el altímetro, QNH/QFE/QNE y la atmósfera estándar (ISA).</h1>
+  <p class="lead">Este es el bloque más denso del módulo — y uno de los más preguntados en examen. Cubre cómo funciona el altímetro, los tres reglajes de presión (QNH, QFE, QNE), los conceptos de MSL/AGL/altura/altitud/nivel de vuelo, los errores por presión y temperatura, y la Atmósfera Estándar (ISA) que hace posible calibrar el instrumento en primer lugar.</p>
+  <div class="hero-note">🌡️ <div><b>Cómo estudiar esta página:</b> tómate tu tiempo — son 10 chequeos. En el tema 2 tienes un <b>altímetro interactivo</b>: cambia el reglaje entre QNH, QFE y QNE y observa cómo cambia la lectura sin que la aeronave se mueva ni un pie. Es la forma más directa de entender los tres reglajes de una vez, y de ver por qué un reglaje equivocado es peligroso.</div></div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. El altímetro: qué es y cómo funciona</a>
+  <a href="#t2">2. Lectura del altímetro y ventanilla Kollsman</a>
+  <a href="#t3">3. QNH</a>
+  <a href="#t4">4. QFE</a>
+  <a href="#t5">5. QNE</a>
+  <a href="#t6">6. MSL, AGL, Elevación y Altura</a>
+  <a href="#t7">7. Altitud, Nivel de Vuelo y Nivel de Crucero</a>
+  <a href="#t8">8. Errores del altímetro por presión y temperatura</a>
+  <a href="#t9">9. Atmósfera Estándar (ISA)</a>
+  <a href="#t10">10. Gradientes ISA y calculadora</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>El altímetro: qué es y cómo funciona</h2></div>
+    <div class="topic-body">
+      <p>El <b>altímetro</b> es, en esencia, un <b>barómetro aneroide</b> calibrado según la atmósfera estándar, que muestra al piloto la altitud sobre el nivel del mar <b>midiendo la presión atmosférica</b>. Se basa en un principio simple: <b>a mayor altitud, menor presión</b>.</p>
+      <div class="card-box">
+        <h4>⚙️ Construcción</h4>
+        <p style="margin:0;">Contiene <b>cápsulas aneroides herméticas</b> ajustadas a la presión estándar (1013,25 mb / 29,92 in Hg a 15°C), normalmente calibradas hasta 20.000 pies. La presión estática entra a la caja del instrumento; la diferencia con el interior de las cápsulas hace que estas se expandan o contraigan, y ese movimiento se transmite mecánicamente a las agujas indicadoras.</p>
+      </div>
+
+      <div class="illus">
+        <svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Corte de un altímetro: entrada de presión estática, cápsulas aneroides, tren de engranajes, agujas y botón de reglaje altimétrico">
+          <!-- caja del instrumento -->
+          <rect x="30" y="46" width="290" height="208" rx="14" fill="var(--bg)" stroke="var(--text-muted)" stroke-width="2"/>
+          <text x="175" y="38" font-family="IBM Plex Mono, monospace" font-size="9"
+                fill="var(--text-muted)" text-anchor="middle">CAJA DEL INSTRUMENTO (sellada, recibe presión estática)</text>
+
+          <!-- entrada de presion estatica -->
+          <rect x="4" y="138" width="30" height="24" rx="3" fill="var(--mvfr)"/>
+          <path d="M40 150 L74 150" stroke="var(--mvfr)" stroke-width="2.4"/>
+          <polygon points="82,150 70,144 70,156" fill="var(--mvfr)"/>
+          <text x="8" y="180" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--mvfr)">Entrada de</text>
+          <text x="8" y="192" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--mvfr)">presión estática</text>
+
+          <!-- capsulas aneroides (fuelle) -->
+          <g stroke="var(--warn)" stroke-width="2.6" fill="none" stroke-linecap="round">
+            <path d="M96 112 L150 112"/><path d="M96 126 L150 126"/><path d="M96 140 L150 140"/>
+            <path d="M96 154 L150 154"/><path d="M96 168 L150 168"/><path d="M96 182 L150 182"/>
+            <path d="M96 112 L96 182"/><path d="M150 112 L150 182"/>
+          </g>
+          <rect x="88" y="104" width="10" height="86" rx="2" fill="var(--text-muted)"/>
+          <text x="123" y="212" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--warn)" text-anchor="middle">Cápsulas aneroides</text>
+          <text x="123" y="224" font-family="IBM Plex Mono, monospace" font-size="8"
+                fill="var(--text-muted)" text-anchor="middle">selladas: se dilatan al bajar la presión</text>
+
+          <!-- varillaje y engranajes -->
+          <path d="M150 147 L196 147" stroke="var(--text)" stroke-width="2.4"/>
+          <circle cx="212" cy="147" r="17" fill="none" stroke="var(--text)" stroke-width="2.2"/>
+          <circle cx="212" cy="147" r="4" fill="var(--text)"/>
+          <circle cx="248" cy="147" r="11" fill="none" stroke="var(--text)" stroke-width="2.2"/>
+          <circle cx="248" cy="147" r="3" fill="var(--text)"/>
+          <path d="M259 147 L296 147" stroke="var(--text)" stroke-width="2.4"/>
+          <text x="222" y="196" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--text)" text-anchor="middle">Tren de engranajes</text>
+          <text x="222" y="208" font-family="IBM Plex Mono, monospace" font-size="8"
+                fill="var(--text-muted)" text-anchor="middle">amplifica el movimiento</text>
+
+          <!-- esfera -->
+          <circle cx="410" cy="150" r="98" fill="var(--panel-alt)" stroke="var(--text-muted)" stroke-width="2"/>
+          <circle cx="410" cy="150" r="86" fill="var(--bg)" stroke="var(--hairline)" stroke-width="1.5"/>
+          <g font-family="Archivo, sans-serif" font-size="14" font-weight="700" fill="var(--text)" text-anchor="middle">
+            <text x="410" y="82">0</text><text x="459" y="97">1</text><text x="483" y="139">2</text>
+            <text x="483" y="177">3</text><text x="459" y="212">4</text><text x="410" y="226">5</text>
+            <text x="361" y="212">6</text><text x="337" y="177">7</text><text x="337" y="139">8</text><text x="361" y="97">9</text>
+          </g>
+          <polygon points="410,78 414,150 406,150" fill="var(--accent)" transform="rotate(115 410 150)"/>
+          <polygon points="410,104 416,150 404,150" fill="var(--text)" transform="rotate(38 410 150)"/>
+          <circle cx="410" cy="150" r="6" fill="var(--text)"/>
+
+          <!-- ventanilla kollsman -->
+          <rect x="440" y="138" width="42" height="20" rx="3" fill="var(--navy)"/>
+          <text x="461" y="152" font-family="IBM Plex Mono, monospace" font-size="10"
+                fill="#fff" text-anchor="middle">1013</text>
+          <path d="M508 128 L490 141" stroke="var(--danger)" stroke-width="1.6"/>
+          <text x="512" y="126" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--danger)">Ventanilla</text>
+          <text x="512" y="137" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--danger)">Kollsman</text>
+
+          <!-- boton de reglaje -->
+          <circle cx="352" cy="234" r="17" fill="var(--panel-alt)" stroke="var(--text-muted)" stroke-width="2"/>
+          <path d="M352 224 L352 244 M342 234 L362 234" stroke="var(--text-muted)" stroke-width="2"/>
+          <path d="M352 217 L352 200 L410 200" stroke="var(--danger)" stroke-width="1.6" stroke-dasharray="4 3" fill="none"/>
+          <text x="330" y="270" font-family="IBM Plex Mono, monospace" font-size="9"
+                font-weight="700" fill="var(--text-muted)">Botón de reglaje altimétrico</text>
+        </svg>
+        <div class="illus-cap">
+          La presión estática exterior entra en la caja y aprieta (o deja expandirse) las cápsulas aneroides selladas.
+          Ese movimiento diminuto se amplifica en el tren de engranajes y llega a las agujas. El botón de reglaje
+          desplaza mecánicamente la referencia y muestra el valor elegido en la ventanilla Kollsman.
+        </div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/10</div>
+      <div class="quiz-q">¿En qué principio físico se basa el funcionamiento del altímetro?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">A mayor altitud, menor presión atmosférica</button>
+        <button class="quiz-opt" data-correct="false">A mayor altitud, mayor temperatura</button>
+        <button class="quiz-opt" data-correct="false">A mayor velocidad, mayor presión estática</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>Lectura del altímetro y ventanilla Kollsman</h2></div>
+    <div class="topic-body">
+      <p>En el modelo <b>analógico de dos agujas</b>, la aguja menor indica miles de pies y la mayor, centenas de pies — puede además tener un indicador visual de cuña, visible por debajo de 10.000 pies. En los altímetros de <b>tres agujas</b>, una tercera aguja (usualmente fina, con un triángulo) marca decenas de miles de pies. También existen modelos mixtos, digitales, y codificadores para radares (que transmiten la altitud automáticamente al ATC).</p>
+      <div class="alt-sim">
+        <div class="alt-sim-head">
+          <h4>🎚️ Altímetro interactivo — reglajes QNH · QFE · QNE</h4>
+          <span class="alt-sim-hint">Cambia el reglaje y mira qué pasa con la lectura</span>
+        </div>
+
+        <div class="alt-stage">
+          <!-- INSTRUMENTO -->
+          <div class="alt-pane">
+            <div class="alt-pane-title">El instrumento</div>
+            <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img"
+                 aria-label="Altímetro de tres agujas con ventanilla Kollsman; las agujas se mueven según el reglaje y la altitud seleccionados">
+              <circle cx="160" cy="160" r="152" fill="var(--panel-alt)" stroke="var(--hairline)" stroke-width="2"/>
+              <circle cx="160" cy="160" r="140" fill="var(--bg)" stroke="var(--hairline)" stroke-width="1.5"/>
+              <!-- marcas y numeros: los genera el script -->
+              <g id="altDialMarks"></g>
+              <text x="160" y="88" font-family="Archivo, sans-serif" font-size="15" font-weight="800"
+                    fill="var(--text-muted)" text-anchor="middle">ALT</text>
+              <text x="160" y="104" font-family="IBM Plex Mono, monospace" font-size="7"
+                    fill="var(--text-muted)" text-anchor="middle">CALIBRATED TO 20000 FEET</text>
+              <text x="160" y="243" font-family="IBM Plex Mono, monospace" font-size="8"
+                    fill="var(--text-muted)" text-anchor="middle">FEET</text>
+              <!-- ventanilla hPa (izquierda) -->
+              <rect x="46" y="148" width="58" height="24" rx="3" fill="var(--navy)"/>
+              <text id="altKollHpa" x="75" y="165" font-family="IBM Plex Mono, monospace" font-size="13"
+                    font-weight="700" fill="#fff" text-anchor="middle">1013</text>
+              <text x="75" y="141" font-family="IBM Plex Mono, monospace" font-size="7.5"
+                    fill="var(--text-muted)" text-anchor="middle">hPa</text>
+              <!-- ventanilla inHg (derecha) -->
+              <rect x="216" y="148" width="58" height="24" rx="3" fill="var(--navy)"/>
+              <text id="altKollInhg" x="245" y="165" font-family="IBM Plex Mono, monospace" font-size="13"
+                    font-weight="700" fill="#fff" text-anchor="middle">29.92</text>
+              <text x="245" y="141" font-family="IBM Plex Mono, monospace" font-size="7.5"
+                    fill="var(--text-muted)" text-anchor="middle">IN.Hg</text>
+              <!-- bandera de aviso bajo cero -->
+              <g id="altNegFlag" opacity="0">
+                <rect x="122" y="188" width="76" height="18" rx="3" fill="var(--danger)"/>
+                <text x="160" y="201" font-family="IBM Plex Mono, monospace" font-size="9"
+                      font-weight="700" fill="#fff" text-anchor="middle">BAJO CERO</text>
+              </g>
+              <!-- agujas -->
+              <g id="altNeedle10k">
+                <line x1="160" y1="160" x2="160" y2="52" stroke="var(--text-muted)" stroke-width="2"/>
+                <polygon points="160,44 154,60 166,60" fill="var(--text-muted)"/>
+              </g>
+              <g id="altNeedle1k">
+                <polygon points="160,86 168,150 152,150" fill="var(--text)"/>
+              </g>
+              <g id="altNeedle100">
+                <polygon points="160,40 165,150 155,150" fill="var(--accent)"/>
+              </g>
+              <circle cx="160" cy="160" r="9" fill="var(--text)"/>
+            </svg>
+            <div class="illus-cap" style="font-size:0.72rem; margin-top:8px;">
+              Aguja larga = centenas de pies · aguja gruesa corta = miles · aguja fina con triángulo = decenas de miles.
+            </div>
+          </div>
+
+          <!-- ESCENA VERTICAL -->
+          <div class="alt-pane">
+            <div class="alt-pane-title">Qué significa esa lectura</div>
+            <svg id="altScene" viewBox="0 0 340 360" xmlns="http://www.w3.org/2000/svg" role="img"
+                 aria-label="Corte vertical con el nivel medio del mar, el aeródromo a su elevación y la aeronave a su altitud verdadera">
+              <!-- nivel de referencia donde el altimetro marca cero -->
+              <line id="scDatumLine" x1="8" y1="300" x2="332" y2="300"
+                    stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 4"/>
+              <text id="scDatumLabel" x="330" y="294" font-family="IBM Plex Mono, monospace" font-size="8"
+                    font-weight="700" fill="var(--accent)" text-anchor="end">aquí el altímetro marca 0</text>
+              <!-- nivel medio del mar -->
+              <line id="scMslLine" x1="8" y1="320" x2="332" y2="320" stroke="var(--mvfr)" stroke-width="1.6"/>
+              <text id="scMslLabel" x="10" y="333" font-family="IBM Plex Mono, monospace" font-size="8"
+                    fill="var(--mvfr)">NMM · nivel medio del mar (0 ft)</text>
+              <!-- terreno / aerodromo -->
+              <path id="scTerrain" d="" fill="var(--panel-alt)" stroke="var(--hairline)" stroke-width="1"/>
+              <line id="scElevLine" x1="20" y1="320" x2="140" y2="320" stroke="var(--vfr)" stroke-width="2"/>
+              <text id="scElevLabel" x="20" y="316" font-family="IBM Plex Mono, monospace" font-size="8"
+                    font-weight="700" fill="var(--vfr)">aeródromo</text>
+              <!-- aeronave -->
+              <g id="scAircraft">
+                <path d="M0,-9 L1.8,-2.5 L9,2.5 L9,4.5 L1.8,2.6 L1.8,6.5 L4,9 L4,10 L0,9 L-4,10 L-4,9 L-1.8,6.5 L-1.8,2.6 L-9,4.5 L-9,2.5 L-1.8,-2.5 Z"
+                      fill="var(--accent)" stroke="var(--bg)" stroke-width="0.8"/>
+              </g>
+              <!-- cota de lo que marca el altimetro -->
+              <line id="scIndLine" x1="213" y1="100" x2="213" y2="300" stroke="var(--accent)" stroke-width="1.6"/>
+              <text id="scIndLabel" x="208" y="200" font-family="IBM Plex Mono, monospace" font-size="8.5"
+                    font-weight="700" fill="var(--accent)" text-anchor="end">marca 0 ft</text>
+              <!-- cota de altitud verdadera -->
+              <line id="scTrueLine" x1="272" y1="100" x2="272" y2="320" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3 3"/>
+              <text id="scTrueLabel" x="278" y="200" font-family="IBM Plex Mono, monospace" font-size="7.5"
+                    fill="var(--text-muted)">real</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="alt-setting-btns" role="group" aria-label="Reglaje altimétrico">
+          <button class="alt-setting-btn on" type="button" data-mode="qnh">Poner QNH</button>
+          <button class="alt-setting-btn" type="button" data-mode="qfe">Poner QFE</button>
+          <button class="alt-setting-btn" type="button" data-mode="qne">Poner QNE (1013)</button>
+        </div>
+
+        <div class="alt-controls">
+          <div class="alt-ctl">
+            <label for="altSet">Reglaje en la ventanilla <b id="altSetVal">1013 hPa</b></label>
+            <input type="range" id="altSet" min="950" max="1050" step="1" value="1013">
+          </div>
+          <div class="alt-ctl">
+            <label for="altQnh">QNH real del lugar <b id="altQnhVal">1013 hPa</b></label>
+            <input type="range" id="altQnh" min="950" max="1050" step="1" value="1013">
+          </div>
+          <div class="alt-ctl">
+            <label for="altElev">Elevación del aeródromo <b id="altElevVal">500 ft</b></label>
+            <input type="range" id="altElev" min="0" max="8000" step="50" value="500">
+          </div>
+          <div class="alt-ctl">
+            <label for="altTrue">Altitud real de la aeronave <b id="altTrueVal">6.000 ft</b></label>
+            <input type="range" id="altTrue" min="0" max="20000" step="50" value="6000">
+          </div>
+        </div>
+
+        <div class="alt-readout">
+          <div class="alt-readout-grid">
+            <div class="alt-rd"><span>Marca el altímetro</span><b id="rdInd" class="hl">6.000 ft</b></div>
+            <div class="alt-rd"><span>Altitud real (AMSL)</span><b id="rdTrue">6.000 ft</b></div>
+            <div class="alt-rd"><span>Altura sobre aeródromo</span><b id="rdAgl">5.500 ft</b></div>
+            <div class="alt-rd"><span>Altitud de presión</span><b id="rdPa">6.000 ft</b></div>
+            <div class="alt-rd"><span>Nivel de vuelo</span><b id="rdFl">FL060</b></div>
+          </div>
+          <div class="alt-explain" id="altExplain">…</div>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>🔧 Ajuste y la Ley de Boyle-Mariotte</h4>
+        <p style="margin:0;">Como la presión y la temperatura reales rara vez son estándar, el altímetro debe poder ajustarse. El botón de reglaje altimétrico muestra la presión referencial en la <b>ventanilla de Kollsman</b>. Al girar el botón, se contraen o dilatan mecánicamente las cápsulas (aplicando la <b>Ley de Boyle-Mariotte</b>) para calibrar el instrumento a la nueva referencia de presión.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/10</div>
+      <div class="quiz-q">¿Qué muestra la ventanilla de Kollsman en un altímetro?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">La presión referencial (el reglaje) que el piloto ha ajustado</button>
+        <button class="quiz-opt" data-correct="false">La temperatura exterior en tiempo real</button>
+        <button class="quiz-opt" data-correct="false">La velocidad vertical de la aeronave</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>QNH</h2></div>
+    <div class="topic-body">
+      <p>El <b>QNH</b> es la presión de la estación reducida al <b>nivel medio del mar (MSL)</b>. Es el reglaje <b>más usado</b>: con él, el altímetro marca la <b>elevación real del aeródromo</b> en tierra, y permite alinearse correctamente con las cartas de navegación (que siempre usan el nivel del mar como referencia).</p>
+    </div>
+    <div class="qcodes-grid">
+      <div class="qcode-card qc-qnh">
+        <div class="qc-tag">QNH</div>
+        <div class="qc-indica">Al ajustar, el altímetro indica</div>
+        <div class="qc-val">ALTITUD</div>
+        <p>Presión de la estación reducida al nivel medio del mar. El más usado en la práctica diaria.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/10</div>
+      <div class="quiz-q">Al ajustar el altímetro con el reglaje QNH, ¿qué indica el instrumento?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">ALTITUD (distancia vertical respecto al nivel del mar)</button>
+        <button class="quiz-opt" data-correct="false">ALTURA (distancia vertical respecto a la pista)</button>
+        <button class="quiz-opt" data-correct="false">NIVEL DE VUELO</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>QFE</h2></div>
+    <div class="topic-body">
+      <p>El <b>QFE</b> es la <b>presión atmosférica real en el aeródromo</b> (sin reducir al nivel del mar). Con este reglaje, el altímetro marca <b>cero (0)</b> exactamente en la pista. No es tan utilizado en la práctica diaria, aunque tiene la ventaja de precisar directamente la altura sobre la pista.</p>
+    </div>
+    <div class="qcodes-grid">
+      <div class="qcode-card qc-qfe">
+        <div class="qc-tag">QFE</div>
+        <div class="qc-indica">Al ajustar, el altímetro indica</div>
+        <div class="qc-val">ALTURA</div>
+        <p>Presión atmosférica real de la estación (sobre la pista / AGL). El altímetro marca cero en pista.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/10</div>
+      <div class="quiz-q">Con el reglaje QFE ajustado, ¿qué marca el altímetro exactamente en la pista?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Cero (0)</button>
+        <button class="quiz-opt" data-correct="false">La elevación real del aeródromo en pies</button>
+        <button class="quiz-opt" data-correct="false">1013,25 hPa</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>QNE</h2></div>
+    <div class="topic-body">
+      <p>El <b>QNE</b> es la presión estándar al nivel del mar: <b>1013,25 hPa / 29,92 in Hg</b>. Por encima de la <b>altitud de transición</b> se usa <b>obligatoriamente</b> este reglaje, para que todas las aeronaves de una zona queden separadas verticalmente usando la <b>misma referencia</b>, sin importar la presión real de cada lugar por el que vuelan. Con este calaje se habla de <b>"niveles de vuelo"</b> en lugar de altitudes.</p>
+    </div>
+    <div class="qcodes-grid">
+      <div class="qcode-card qc-qne">
+        <div class="qc-tag">QNE</div>
+        <div class="qc-indica">Al ajustar, el altímetro indica</div>
+        <div class="qc-val">NIVEL DE VUELO</div>
+        <p>Presión estándar al nivel del mar (1013,25 hPa / 29,92" Hg). Referencia común obligatoria por encima de la altitud de transición.</p>
+      </div>
+    </div>
+    <div class="mnemo"><b>🧠 Los tres reglajes, en una frase:</b> QNH → ALTITUD (elevación real del aeródromo). QFE → ALTURA (cero en pista). QNE → NIVEL DE VUELO (presión estándar, separación entre aeronaves).</div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/10</div>
+      <div class="quiz-q">¿Por qué se usa obligatoriamente el QNE por encima de la altitud de transición?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Para que todas las aeronaves usen la misma referencia y queden separadas verticalmente</button>
+        <button class="quiz-opt" data-correct="false">Porque a esa altura ya no hay presión atmosférica real que medir</button>
+        <button class="quiz-opt" data-correct="false">Porque el QNH deja de transmitirse por radio a esa altura</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>MSL, AGL, Elevación y Altura</h2></div>
+    <div class="topic-body">
+      <p>La <b>altimetría</b> se ocupa de determinar la altitud de vuelo de una aeronave, o su distancia vertical a una referencia especificada. Estos son los conceptos base:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Concepto</th><th>Definición</th></tr>
+        <tr><td class="mono">MSL</td><td>Nivel Medio del Mar. Superficie de referencia intermedia entre las mareas alta y baja. Presión estándar: 1013,2 hPa (29,92 Hg) a 0 pies.</td></tr>
+        <tr><td class="mono">AGL</td><td>Nivel del terreno (Above Ground Level). La superficie del terreno que sobrevuela la aeronave en cada momento.</td></tr>
+        <tr><td>Elevación</td><td>Posición vertical entre un punto de la superficie de la Tierra (o unido a ella) y el nivel medio del mar (MSL).</td></tr>
+        <tr><td>Altura</td><td>Distancia vertical entre un nivel/punto/objeto y una referencia especificada — generalmente el AGL.</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> "Elevación" se usa para puntos fijos en tierra (un aeródromo, un obstáculo). "Altura" se usa para la aeronave en vuelo, medida desde el terreno.</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/10</div>
+      <div class="quiz-q">¿Cuál es la diferencia central entre "Elevación" y "Altura"?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Elevación es de un punto fijo en tierra respecto al MSL; Altura es de la aeronave respecto al AGL</button>
+        <button class="quiz-opt" data-correct="false">Son sinónimos exactos, intercambiables en cualquier contexto</button>
+        <button class="quiz-opt" data-correct="false">Elevación se mide en metros; Altura siempre en pies</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Altitud, Nivel de Vuelo y Nivel de Crucero</h2></div>
+    <div class="topic-body">
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Concepto</th><th>Definición</th></tr>
+        <tr><td>Altitud</td><td>Distancia vertical entre un punto/objeto y el MSL. Se expresa en miles y cientos de pies (ej. 13.000 ft = "uno tres mil pies").</td></tr>
+        <tr><td class="mono">Nivel de Vuelo (FL)</td><td>Superficie de presión atmosférica constante relacionada con 1013,25 hPa (29,92" Hg). En la práctica, la distancia de la aeronave a esa presión. Se abrevia FL + primeros 2-3 dígitos (14.000 ft = <b>FL140</b>).</td></tr>
+        <tr><td>Nivel</td><td>Término genérico: significa indistintamente altura, altitud o nivel de vuelo.</td></tr>
+        <tr><td>Nivel de Crucero</td><td>El nivel que se mantiene durante una parte apreciable del vuelo.</td></tr>
+      </table>
+      </div>
+      <p>Al atravesar la <b>capa de transición</b> en <b>ascenso</b>, se pasa a usar niveles de vuelo; en el <b>descenso</b>, se vuelve a usar altitudes (referenciadas a QNH).</p>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/10</div>
+      <div class="quiz-q">Una aeronave vuela a 14.000 pies con reglaje QNE. ¿Cómo se expresa correctamente ese nivel?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">FL140</button>
+        <button class="quiz-opt" data-correct="false">14.000 pies AGL</button>
+        <button class="quiz-opt" data-correct="false">QFE 140</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 8 -->
+  <article class="topic" id="t8">
+    <div class="topic-head"><div class="topic-num">8</div><h2>Errores del altímetro por presión y temperatura</h2></div>
+    <div class="topic-body">
+      <p>Si se vuela entre zonas de diferente presión atmosférica o temperatura <b>sin reajustar</b> el altímetro, aparecen errores predecibles:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Alta → Baja presión, o cálido → frío</b>El altímetro marca <b>MAYOR</b> altitud de la real — el avión vuela <b>por debajo</b> de lo indicado.</div>
+        <div class="objective-item"><b>Baja → Alta presión, o frío → cálido</b>El altímetro marca <b>MENOR</b> altitud de la real — el avión vuela <b>por encima</b> de lo indicado.</div>
+      </div>
+      <div class="mnemo"><b>🧠 Regla nemotécnica:</b> en una zona de <b>menor</b> temperatura o presión, volamos <b>más bajo</b> de lo indicado; en una de <b>mayor</b> temperatura o presión, volamos <b>más alto</b> de lo indicado. En inglés se resume como "<i>from high to low, look out below</i>".</div>
+      <div class="card-box">
+        <h4>📐 Magnitud aproximada del error</h4>
+        <p style="margin:0;">Aproximadamente <b>30 pies por cada milibar (hPa)</b> de desviación, o <b>100 pies por cada décima (0,1) de pulgada de mercurio</b>.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="8">
+      <div class="quiz-tag">🎯 Chequeo rápido 8/10</div>
+      <div class="quiz-q">Un avión vuela de una zona de alta presión hacia una de baja presión sin reajustar el altímetro. ¿Qué ocurre?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">El altímetro marca más altitud de la real; el avión vuela más bajo de lo indicado</button>
+        <button class="quiz-opt" data-correct="false">El altímetro marca menos altitud de la real; el avión vuela más alto de lo indicado</button>
+        <button class="quiz-opt" data-correct="false">No hay ningún efecto sobre la lectura del altímetro</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 9 -->
+  <article class="topic" id="t9">
+    <div class="topic-head"><div class="topic-num">9</div><h2>Atmósfera Estándar (ISA)</h2></div>
+    <div class="topic-body">
+      <p>La <b>ISA</b> (ICAO Standard Atmosphere / Atmósfera Estándar de OACI) fue creada el <b>7 de noviembre de 1952</b> para dar una referencia fija y resolver las variaciones reales de presión y temperatura, que de otro modo harían inconsistente el comportamiento de los instrumentos pitot-estáticos entre un vuelo y otro. Se calcula a partir de valores medios en la atmósfera a los <b>40° de latitud Norte</b>, asumiendo variaciones definidas de temperatura y presión con la altitud.</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Presión MSL</b>1013,25 hPa (29,92 in Hg)</div>
+        <div class="objective-item"><b>Temperatura MSL</b>+15°C (59°F)</div>
+        <div class="objective-item"><b>Comportamiento del aire</b>Gas perfecto y absolutamente seco</div>
+      </div>
+      <div class="mnemo"><b>🧠 Idea clave:</b> la ISA no describe "el clima real" en ningún lugar — es un modelo matemático de referencia, igual para todo el mundo, que permite que todos los altímetros del planeta hablen el mismo idioma cuando usan QNE.</div>
+    </div>
+    <div class="quiz-card" data-quiz="9">
+      <div class="quiz-tag">🎯 Chequeo rápido 9/10</div>
+      <div class="quiz-q">¿Cuáles son los valores estándar de presión y temperatura al nivel medio del mar según la ISA?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">1013,25 hPa y +15°C</button>
+        <button class="quiz-opt" data-correct="false">1000 hPa y 0°C</button>
+        <button class="quiz-opt" data-correct="false">960 hPa y +20°C</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 10 -->
+  <article class="topic" id="t10">
+    <div class="topic-head"><div class="topic-num">10</div><h2>Gradientes ISA y calculadora</h2></div>
+    <div class="topic-body">
+      <p>Un <b>gradiente</b> es la razón a la que un elemento (presión o temperatura) aumenta o disminuye con la altura.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Gradiente Vertical de Presión</th><th>Valor</th></tr>
+        <tr><td>De 0 a 10.000 pies</td><td class="mono">Disminuye ≈1 in Hg (33,52 hPa) por cada 1.000 ft</td></tr>
+        <tr><td>De 10.000 a 50.000 pies</td><td class="mono">Disminuye ≈3/4 in Hg (25 hPa) por cada 1.000 ft</td></tr>
+      </table>
+      </div>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Gradiente Vertical de Temperatura</th><th>Valor</th></tr>
+        <tr><td>Cálculo rápido</td><td class="mono">Aumenta o disminuye 2°C por cada 1.000 ft</td></tr>
+        <tr><td>De 0 a 33.000 pies</td><td class="mono">Disminuye 2°C por cada 1.000 ft</td></tr>
+        <tr><td>De 33.000 a 53.000 pies</td><td class="mono">Permanece constante</td></tr>
+        <tr><td>Por encima de 53.000 pies</td><td class="mono">Aumenta progresivamente</td></tr>
+      </table>
+      </div>
+      <div class="card-box">
+        <h4>📊 Ejemplo de aplicación (según la regla rápida)</h4>
+        <p style="margin:0;">A <b>27.000 pies</b>: Temperatura ISA = <b>-39°C</b> (15°C − 2°C×27) y Presión ≈ <b>7,17" Hg</b>. A <b>18.000 pies</b>: Presión ≈ <b>13,92" Hg</b> (19,92 − 0,75×8, aplicando el segundo tramo del gradiente de presión desde los 10.000 ft).</p>
+      </div>
+      <div class="mnemo"><b>🧠 Isobara:</b> es la línea que une puntos de igual presión atmosférica — el mismo concepto que verás en las cartas de superficie de Meteorología, aplicado aquí en el eje vertical.</div>
+
+      <div class="tool-box">
+        <h4 style="margin:0 0 10px; font-size:0.92rem; color:var(--accent);">🧮 Calculadora ISA (regla rápida de estudio)</h4>
+        <div class="tool-row">
+          <div class="tool-field"><label>Altitud (pies, 0–50.000)</label><input type="number" id="isaInput" placeholder="Ej: 18000" min="0" max="60000"></div>
+        </div>
+        <div class="tool-output" id="isaOutput">— escribe una altitud arriba —</div>
+        <div class="tool-note">Usa las reglas rápidas de este bloque (temperatura: 2°C/1.000ft hasta 33.000ft, luego constante; presión: 1"Hg/1.000ft hasta 10.000ft, luego 0,75"Hg/1.000ft). Es una aproximación de estudio, no un valor certificado para vuelo real.</div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="10">
+      <div class="quiz-tag">🎯 Chequeo rápido 10/10 — ¡última pregunta!</div>
+      <div class="quiz-q">Según el gradiente térmico ISA, ¿qué ocurre con la temperatura entre los 33.000 y los 53.000 pies?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">Sigue disminuyendo 2°C por cada 1.000 ft</button>
+        <button class="quiz-opt" data-correct="true">Permanece constante</button>
+        <button class="quiz-opt" data-correct="false">Aumenta 2°C por cada 1.000 ft</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🏆</div>
+    <h3>Bloque completado</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 10 preguntas correctamente. Dominaste el bloque más denso del módulo — sigue con el Bloque 4: Radioayudas.</p>
+  </div>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo NAV · Bloque 3 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- PROGRESO DE CHEQUEOS ----------
+  const TOTAL_QUIZ = 10;
+  let correctCount = 0;
+
+  const quizProgressFill  = document.getElementById('quizProgressFill');
+  const quizProgressScore = document.getElementById('quizProgressScore');
+  const finishCard        = document.getElementById('finishCard');
+
+  function renderProgress(){
+    const pct = (correctCount / TOTAL_QUIZ) * 100;
+    if(quizProgressFill)  quizProgressFill.style.width = pct + '%';
+    if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
+    if(correctCount >= TOTAL_QUIZ){
+      if(finishCard) finishCard.style.display = 'block';
+      marcarModuloCompletado('navegacion-altimetria');
+    }
+  }
+  renderProgress();
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    if(isCorrect){
+      correctCount++;
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = '✅ Correcto.';
+    }else{
+      btn.classList.add('incorrect');
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '✗ No es esa. La opción correcta queda marcada en verde — vuelve a leer el punto de arriba.';
+    }
+    renderProgress();
+  }
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+
+  // ---------- SIMULADOR DE ALTÍMETRO (QNH / QFE / QNE) ----------
+  (function(){
+    const dial = document.getElementById('altDialMarks');
+    if(!dial) return;
+    const el = id => document.getElementById(id);
+
+    // --- Atmósfera Estándar Internacional (OACI), capa troposférica ---
+    // Altitud de presión en pies para una presión dada en hPa.
+    const P0 = 1013.25, EXP = 0.190284, K = 145366.45;
+    const isaAlt = hPa => K * (1 - Math.pow(hPa / P0, EXP));            // hPa -> ft
+    const HPA_TO_INHG = 1 / 33.8639;
+
+    // --- estado ---
+    let setting = 1013, qnh = 1013, elev = 500, trueAlt = 6000, mode = 'qnh';
+
+    const fmt = n => Math.round(n).toLocaleString('es-CO');
+
+    // --- esfera del altímetro: 10 números, una vuelta = 1.000 ft ---
+    (function buildDial(){
+      const NS = 'http://www.w3.org/2000/svg';
+      const CX = 160, CY = 160, R = 140;
+      for(let i = 0; i < 50; i++){
+        const a = i * 7.2, major = i % 5 === 0;
+        const rad = a * Math.PI / 180;
+        const ln = document.createElementNS(NS, 'line');
+        ln.setAttribute('x1', CX + R * Math.sin(rad));
+        ln.setAttribute('y1', CY - R * Math.cos(rad));
+        ln.setAttribute('x2', CX + (R - (major ? 16 : 8)) * Math.sin(rad));
+        ln.setAttribute('y2', CY - (R - (major ? 16 : 8)) * Math.cos(rad));
+        ln.setAttribute('stroke', 'var(--text)');
+        ln.setAttribute('stroke-width', major ? '2.4' : '1');
+        ln.setAttribute('opacity', major ? '0.9' : '0.5');
+        dial.appendChild(ln);
+        if(major){
+          const rr = R - 34;
+          const tx = document.createElementNS(NS, 'text');
+          tx.setAttribute('x', CX + rr * Math.sin(rad));
+          tx.setAttribute('y', CY - rr * Math.cos(rad) + 8);
+          tx.setAttribute('font-family', 'Archivo, sans-serif');
+          tx.setAttribute('font-size', '23');
+          tx.setAttribute('font-weight', '700');
+          tx.setAttribute('fill', 'var(--text)');
+          tx.setAttribute('text-anchor', 'middle');
+          tx.textContent = i / 5;
+          dial.appendChild(tx);
+        }
+      }
+    })();
+
+    // --- física del instrumento ---
+    // El altímetro compara la presión estática con el dato puesto en la ventanilla.
+    // Indicada = altitud real + (altitud ISA del QNH real - altitud ISA del reglaje)
+    function solve(){
+      const offset    = isaAlt(qnh) - isaAlt(setting);
+      const indicated = trueAlt + offset;
+      const pressAlt  = trueAlt + isaAlt(qnh);           // lo que marcaría con 1013 puesto
+      const qfe       = pressureAtAlt(isaAlt(qnh) + elev);
+      // nivel donde el altímetro marcaría cero, medido sobre el nivel del mar
+      const datumAmsl = isaAlt(setting) - isaAlt(qnh);
+      return { indicated, pressAlt, qfe, datumAmsl, agl: trueAlt - elev };
+    }
+    // inversa: presión en hPa a una altitud de presión dada
+    function pressureAtAlt(ft){ return P0 * Math.pow(1 - ft / K, 1 / EXP); }
+
+    function render(){
+      const { indicated, pressAlt, qfe, datumAmsl, agl } = solve();
+
+      // --- agujas: una vuelta = 1.000 / 10.000 / 100.000 ft ---
+      const ang = (v, per) => (v / per) * 360;
+      el('altNeedle100').setAttribute('transform', `rotate(${ang(indicated, 1000)} 160 160)`);
+      el('altNeedle1k').setAttribute('transform',  `rotate(${ang(indicated, 10000)} 160 160)`);
+      el('altNeedle10k').setAttribute('transform', `rotate(${ang(indicated, 100000)} 160 160)`);
+      el('altNegFlag').setAttribute('opacity', indicated < -20 ? '1' : '0');
+
+      // --- ventanillas Kollsman ---
+      el('altKollHpa').textContent  = Math.round(setting);
+      el('altKollInhg').textContent = (setting * HPA_TO_INHG).toFixed(2);
+
+      // --- escena vertical: la escala se ajusta para que todo quepa siempre ---
+      const hi = Math.max(trueAlt, elev, datumAmsl, 1000) * 1.15;
+      const lo = Math.min(0, datumAmsl) - Math.max(250, hi * 0.05);
+      const yOf = ft => 330 - ((ft - lo) / (hi - lo)) * 300;
+      const yMsl = yOf(0), yElev = yOf(elev), yAc = yOf(trueAlt), yDatum = yOf(datumAmsl);
+
+      el('scMslLine').setAttribute('y1', yMsl); el('scMslLine').setAttribute('y2', yMsl);
+      el('scMslLabel').setAttribute('y', yMsl + 11);
+      el('scDatumLine').setAttribute('y1', yDatum); el('scDatumLine').setAttribute('y2', yDatum);
+      el('scDatumLabel').setAttribute('y', yDatum - 5);
+
+      el('scTerrain').setAttribute('d', elev > 0 ? `M20 ${yMsl} L20 ${yElev} L140 ${yElev} L140 ${yMsl} Z` : '');
+      el('scElevLine').setAttribute('y1', yElev); el('scElevLine').setAttribute('y2', yElev);
+      el('scElevLabel').setAttribute('y', yElev - 5);
+      el('scElevLabel').textContent = `aeródromo · ${fmt(elev)} ft`;
+
+      el('scAircraft').setAttribute('transform', `translate(240 ${yAc})`);
+
+      el('scTrueLine').setAttribute('y1', yAc);  el('scTrueLine').setAttribute('y2', yMsl);
+      el('scTrueLabel').setAttribute('y', (yAc + yMsl) / 2);
+      el('scTrueLabel').textContent = `real ${fmt(trueAlt)}`;
+
+      el('scIndLine').setAttribute('y1', yAc);   el('scIndLine').setAttribute('y2', yDatum);
+      el('scIndLabel').setAttribute('y', (yAc + yDatum) / 2);
+      el('scIndLabel').textContent = `marca ${fmt(indicated)} ft`;
+
+      // --- lecturas ---
+      el('rdInd').textContent  = fmt(indicated) + ' ft';
+      el('rdTrue').textContent = fmt(trueAlt) + ' ft';
+      el('rdAgl').textContent  = fmt(agl) + ' ft';
+      el('rdPa').textContent   = fmt(pressAlt) + ' ft';
+      el('rdFl').textContent   = 'FL' + String(Math.max(0, Math.round(pressAlt / 100))).padStart(3, '0');
+
+      el('altSetVal').textContent  = Math.round(setting) + ' hPa';
+      el('altQnhVal').textContent  = Math.round(qnh) + ' hPa';
+      el('altElevVal').textContent = fmt(elev) + ' ft';
+      el('altTrueVal').textContent = fmt(trueAlt) + ' ft';
+
+      // --- qué reglaje está puesto realmente ---
+      const isQnh = Math.abs(setting - qnh) < 0.5;
+      const isQne = Math.abs(setting - P0) < 0.75;
+      const isQfe = Math.abs(setting - qfe) < 0.75;
+      document.querySelectorAll('.alt-setting-btn').forEach(b => {
+        const m = b.dataset.mode;
+        b.classList.toggle('on', (m === 'qnh' && isQnh) || (m === 'qfe' && isQfe) || (m === 'qne' && isQne));
+      });
+
+      // --- explicación ---
+      const err = indicated - trueAlt;
+      const box = el('altExplain');
+      box.classList.remove('danger');
+      let txt;
+      if(isQnh){
+        txt = `Con el <b>QNH</b> puesto (${Math.round(qnh)} hPa), el altímetro marca la <b>ALTITUD</b>: ` +
+              `${fmt(indicated)} ft <b>sobre el nivel medio del mar</b>. En tierra, en este aeródromo, marcaría su ` +
+              `elevación real: ${fmt(elev)} ft. Es el reglaje que se usa por debajo de la altitud de transición.`;
+      } else if(isQfe){
+        txt = `Con el <b>QFE</b> puesto (${qfe.toFixed(0)} hPa), el altímetro marca la <b>ALTURA</b> sobre el aeródromo: ` +
+              `${fmt(indicated)} ft. Al tocar la pista marcaría <b>cero</b>. Fíjate en el corte: la línea de referencia ` +
+              `se ha subido hasta el aeródromo.`;
+      } else if(isQne){
+        txt = `Con el <b>QNE</b> puesto (1013 hPa, presión estándar), el altímetro marca la <b>ALTITUD DE PRESIÓN</b>, ` +
+              `que expresada en centenas de pies es el <b>nivel de vuelo</b>: ${fmt(indicated)} ft → ` +
+              `<b>FL${String(Math.max(0, Math.round(pressAlt / 100))).padStart(3, '0')}</b>. Todas las aeronaves por encima del nivel de transición ` +
+              `usan este mismo reglaje, así que aunque ninguna sepa su altitud real, todas se comparan contra la misma referencia ` +
+              `y la separación vertical queda garantizada.`;
+      } else {
+        txt = `Tienes <b>${Math.round(setting)} hPa</b> en la ventanilla, pero el QNH real es <b>${Math.round(qnh)} hPa</b>. ` +
+              `El altímetro marca ${fmt(indicated)} ft cuando en realidad estás a ${fmt(trueAlt)} ft: ` +
+              `un error de <b>${err > 0 ? '+' : ''}${fmt(err)} ft</b>.`;
+      }
+      if(!isQnh && Math.abs(err) > 100){
+        const sobra = err > 0 ? 'MÁS ALTO' : 'MÁS BAJO';
+        txt += ` <b>Ojo:</b> el instrumento te hace creer que estás ${sobra} de lo que estás realmente` +
+               (err > 0 ? ' — la trampa clásica de volar de alta a baja presión sin recalar el altímetro.' : '.');
+        if(err > 300) box.classList.add('danger');
+      }
+      box.innerHTML = txt;
+    }
+
+    // --- controles ---
+    const bind = (id, fn) => el(id).addEventListener('input', e => { fn(Number(e.target.value)); render(); });
+    bind('altSet',  v => { setting = v; });
+    bind('altQnh',  v => { qnh = v; if(mode === 'qnh'){ setting = v; el('altSet').value = v; }
+                                    else if(mode === 'qfe'){ applyMode('qfe'); } });
+    bind('altElev', v => { elev = v; if(mode === 'qfe'){ applyMode('qfe'); } });
+    bind('altTrue', v => { trueAlt = v; });
+
+    function applyMode(m){
+      mode = m;
+      if(m === 'qnh') setting = qnh;
+      else if(m === 'qne') setting = 1013;
+      else if(m === 'qfe') setting = Math.round(pressureAtAlt(isaAlt(qnh) + elev));
+      setting = Math.max(950, Math.min(1050, setting));
+      el('altSet').value = Math.round(setting);
+    }
+
+    document.querySelectorAll('.alt-setting-btn').forEach(btn => {
+      btn.addEventListener('click', () => { applyMode(btn.dataset.mode); render(); });
+    });
+    el('altSet').addEventListener('input', () => { mode = 'manual'; });
+
+    applyMode('qnh');
+    render();
+  })();
+
+  // ---------- CALCULADORA ISA (regla rápida) ----------
+  const isaInput = document.getElementById('isaInput');
+  const isaOutput = document.getElementById('isaOutput');
+
+  function computeIsaTemp(alt){
+    if(alt <= 33000) return 15 - 2 * (alt / 1000);
+    const at33 = 15 - 2 * 33;
+    if(alt <= 53000) return at33;
+    return null; // "aumenta progresivamente", sin tasa fija en la regla rápida
+  }
+
+  function computeIsaPressureInHg(alt){
+    if(alt <= 10000) return 29.92 - 1.0 * (alt / 1000);
+    const at10 = 29.92 - 1.0 * 10;
+    if(alt <= 50000) return at10 - 0.75 * ((alt - 10000) / 1000);
+    return null;
+  }
+
+  function updateIsa(){
+    const raw = isaInput.value.trim();
+    if(raw === '' || isNaN(Number(raw))){
+      isaOutput.textContent = '— escribe una altitud arriba —';
+      return;
+    }
+    const alt = Math.max(0, Number(raw));
+    const temp = computeIsaTemp(alt);
+    const pres = computeIsaPressureInHg(alt);
+    const tempTxt = temp === null ? 'por encima de 53.000 ft la temperatura aumenta progresivamente (sin tasa fija en la regla rápida)' : `${temp.toFixed(1)}°C`;
+    const presTxt = pres === null ? 'fuera del rango de la regla rápida (por encima de 50.000 ft)' : `${pres.toFixed(2)}" Hg`;
+    isaOutput.textContent = `A ${alt.toLocaleString('es-CO')} ft → Temperatura ISA ≈ ${tempTxt} · Presión ISA ≈ ${presTxt}`;
+  }
+  isaInput.addEventListener('input', updateIsa);
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

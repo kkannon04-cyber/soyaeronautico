@@ -200,7 +200,7 @@
   .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 90; backdrop-filter: blur(2px); }
   .sidebar-backdrop.open { display: block; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
 <script src="progreso.js"></script>
 </head>
@@ -520,7 +520,8 @@
     { id: 'ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', url: 'ats.html', paginas: ['ats'] },
     { id: 'plan-de-vuelo', nombre: 'Plan de Vuelo', url: 'plan-de-vuelo.html', paginas: ['plan-de-vuelo'] },
     { id: 'meteorologia', nombre: 'Meteorología Aeronáutica', url: 'meteorologia.html', paginas: ['meteorologia-generalidades', 'meteorologia-nubosidad', 'meteorologia-variables'] },
-    { id: 'fraseologia', nombre: 'Fraseología Aeronáutica', url: 'fraseologia.html', paginas: ['fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases', 'fraseologia-tierra', 'fraseologia-emergencias'] }
+    { id: 'fraseologia', nombre: 'Fraseología Aeronáutica', url: 'fraseologia.html', paginas: ['fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases', 'fraseologia-tierra', 'fraseologia-emergencias'] },
+    { id: 'navegacion', nombre: 'Navegación Aérea', url: 'navegacion.html', paginas: ['navegacion-fundamentos', 'navegacion-tiempo', 'navegacion-velocidad', 'navegacion-altimetria', 'navegacion-radioayudas', 'navegacion-viento-unidades'] }
   ];
 
   async function renderModulosAprendizaje(){
@@ -678,6 +679,8 @@
         MODULOS_APRENDIZAJE.find(m => m.id === 'meteorologia').paginas.every(p => paginasCompletadas.has(p)) },
     { icono: '📻', nombre: 'Fraseólogo', check: ({ paginasCompletadas }) =>
         MODULOS_APRENDIZAJE.find(m => m.id === 'fraseologia').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '🛰️', nombre: 'Piloto Instrumental', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'navegacion').paginas.every(p => paginasCompletadas.has(p)) },
     { icono: '🎓', nombre: 'AIS Graduado', check: ({ paginasCompletadas }) =>
         MODULOS_APRENDIZAJE.every(m => m.paginas.every(p => paginasCompletadas.has(p))) }
   ];

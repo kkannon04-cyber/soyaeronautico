@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navegación · Radioayudas: VOR y DME | SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
+
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+
+  /* ---------- PROGRESO DE CHEQUEOS ---------- */
+  .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .quiz-progress-inner{ max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .quiz-progress-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+  .quiz-progress-track{ flex:1; min-width:140px; height:6px; border-radius:3px; background:var(--panel-alt); border:1px solid var(--hairline); overflow:hidden; }
+  .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
+  .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:130px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  table.ats-table td.mono{ font-family:'IBM Plex Mono'; color:var(--accent); font-weight:600; }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+
+  /* ---- SIMULADOR VOR / CDI / DME ---- */
+  .vor-sim{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .vor-sim-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .vor-sim-head h4{ font-size:0.95rem; color:var(--accent); margin:0; }
+  .vor-sim-hint{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); }
+  .vor-stage{ display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:18px; align-items:start; margin-top:14px; }
+  @media (max-width:720px){ .vor-stage{ grid-template-columns:1fr; } }
+  .vor-pane{ background:var(--bg); border:1px solid var(--hairline); border-radius:12px; padding:12px; }
+  .vor-pane-title{ font-family:'IBM Plex Mono'; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; text-align:center; }
+  .vor-pane svg{ display:block; width:100%; height:auto; touch-action:none; }
+  #vorPlanSvg{ cursor:grab; }
+  #vorPlanSvg.dragging{ cursor:grabbing; }
+
+  .vor-controls{ margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 20px; }
+  .vor-ctl label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .vor-ctl label b{ color:var(--accent); font-weight:600; }
+  .vor-ctl input[type=range]{ width:100%; margin:0; accent-color:var(--accent); }
+
+  .vor-readout{ margin-top:16px; background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; }
+  .vor-readout-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+  .vor-rd{ text-align:center; }
+  .vor-rd span{ display:block; font-family:'IBM Plex Mono'; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+  .vor-rd b{ font-family:'IBM Plex Mono'; font-size:1.02rem; font-weight:700; color:var(--text); }
+  .vor-rd b.to{ color:var(--vfr); } .vor-rd b.from{ color:var(--warn); } .vor-rd b.amb{ color:var(--danger); font-size:0.8rem; }
+  .vor-explain{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--hairline); font-size:0.85rem; line-height:1.6; color:var(--text-muted); }
+  .vor-explain b{ color:var(--text); }
+
+  /* ---- diagrama conceptual TO / FROM ---- */
+  .tofrom{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .tofrom h4{ font-size:0.95rem; color:var(--accent); margin:0 0 4px; }
+  .tofrom > p{ font-size:0.87rem; color:var(--text-muted); line-height:1.6; margin:0 0 14px; }
+  .tofrom-svg-wrap{ overflow-x:auto; }
+  .tofrom-svg-wrap svg{ display:block; width:100%; min-width:520px; height:auto; }
+  .tofrom-cases{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:16px; }
+  .tofrom-case{ border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; font-size:0.85rem; line-height:1.6; background:var(--bg); }
+  .tofrom-case.to{ border-left:4px solid var(--vfr); }
+  .tofrom-case.from{ border-left:4px solid var(--warn); }
+  .tofrom-case b.tag{ display:block; font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.06em; margin-bottom:6px; }
+  .tofrom-case.to b.tag{ color:var(--vfr); } .tofrom-case.from b.tag{ color:var(--warn); }
+  .tofrom-key{ margin-top:14px; background:var(--panel-alt); border-left:4px solid var(--accent); border-radius:8px; padding:13px 16px; font-size:0.87rem; line-height:1.6; }
+
+  .vor-presets{ margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+  .vor-preset{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:7px 13px; border-radius:20px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; }
+  .vor-preset:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="progreso.js"></script>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown active" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html" class="active">Navegación</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="Panel_estudiante.html" class="nav-login-btn">Mi panel</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="navegacion-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
+      <a href="navegacion-tiempo.html" class="subtab"><span class="n">1</span> Tiempo</a>
+      <a href="navegacion-velocidad.html" class="subtab"><span class="n">2</span> Velocidad</a>
+      <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
+      <a href="navegacion-radioayudas.html" class="subtab active"><span class="n">4</span> Radioayudas</a>
+      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+    </div>
+  </div>
+
+  <div class="quiz-progress">
+    <div class="quiz-progress-inner">
+      <span class="quiz-progress-label">Chequeos rápidos</span>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 7 correctos</span>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Navegación — Bloque 4</div>
+  <h1>Radioayudas: VOR, DME, QDM, QDR y radiales.</h1>
+  <p class="lead">Aquí profundizamos en la radionavegación que se presentó en el bloque de Fundamentos: cómo funciona el VOR, sus clases, el DME que lo acompaña, y los conceptos de QDM/QDR/radial que todo piloto usa para orientarse respecto a una radioayuda.</p>
+  <div class="hero-note">📻 <div><b>Cómo estudiar esta página:</b> lee cada tema y responde su chequeo rápido. En el tema 5 encontrarás un <b>simulador VOR</b>: mueve la aeronave por el mapa y observa cómo reacciona el instrumento de cabina — es la forma más rápida de entender el radial, la aguja de desviación y la bandera TO/FROM.</div></div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. Radionavegación: introducción</a>
+  <a href="#t2">2. El VOR: qué es y cómo se identifica</a>
+  <a href="#t3">3. Frecuencias y alcance del VOR</a>
+  <a href="#t4">4. Clases de VOR: Ruta y Terminal</a>
+  <a href="#t5">5. Equipos a bordo y simulador VOR</a>
+  <a href="#t6">6. El DME</a>
+  <a href="#t7">7. QDM, QDR y Radial</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>Radionavegación: introducción</h2></div>
+    <div class="topic-body">
+      <p>La <b>radionavegación</b> agrupa los sistemas de posicionamiento que estiman la posición de una aeronave usando <b>señales de radio</b> emitidas por ayudas en tierra, como el <b>VOR</b> y el <b>ILS</b> (Instrument Landing System — con sus componentes Glide Path y Localizer).</p>
+      <div class="card-box">
+        <h4>📡 Por qué la altitud aumenta el alcance</h4>
+        <p style="margin:0;">Las ondas de radio de estas ayudas siguen <b>trayectorias rectas</b> (línea de vista) y no la curvatura de la Tierra. Por eso, a <b>mayor altitud de vuelo</b>, mayor es el alcance de recepción: las montañas y otras obstrucciones dejan de bloquear la línea recta entre la estación y la aeronave.</p>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/7</div>
+      <div class="quiz-q">¿Por qué volar más alto aumenta el alcance de recepción de una radioayuda como el VOR?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Porque las ondas viajan en línea recta y a mayor altura hay menos obstrucciones en esa línea</button>
+        <button class="quiz-opt" data-correct="false">Porque el VOR aumenta su potencia automáticamente con la altitud</button>
+        <button class="quiz-opt" data-correct="false">Porque a mayor altitud las ondas siguen la curvatura de la Tierra</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>El VOR: qué es y cómo se identifica</h2></div>
+    <div class="topic-body">
+      <p>El <b>VOR</b> (VHF Omnidirectional Range) es una ayuda en tierra a la navegación que emite señales llamadas <b>radiales</b>, separadas por 1° entre sí — formando un círculo completo de <b>360 radiales</b>. Cada radial se identifica por su <b>marcación desde la estación</b> respecto al norte magnético, medida en el sentido de las agujas del reloj.</p>
+      <p>La <b>identificación</b> de cada estación VOR se transmite como un grupo de <b>tres letras</b>, en código Morse o por radiotelefonía.</p>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/7</div>
+      <div class="quiz-q">¿Cuántos radiales forman el círculo completo de un VOR, y cómo se miden?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">360, separados por 1° cada uno, medidos desde la estación respecto al norte magnético en sentido horario</button>
+        <button class="quiz-opt" data-correct="false">100, separados por 3,6° cada uno</button>
+        <button class="quiz-opt" data-correct="false">24, uno por cada huso horario</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>Frecuencias y alcance del VOR</h2></div>
+    <div class="topic-body">
+      <div class="objective-grid">
+        <div class="objective-item"><b>Banda</b>VHF, entre 108,00 y 117,95 MHz</div>
+        <div class="objective-item"><b>Alcance máximo confiable</b>≈150 millas náuticas</div>
+        <div class="objective-item"><b>Separación entre estaciones</b>Mínimo 500 NM si comparten frecuencia, para evitar interferencias</div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/7</div>
+      <div class="quiz-q">¿Por qué dos estaciones VOR en la misma frecuencia deben estar separadas al menos 500 NM?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Para evitar interferencias peligrosas entre ambas señales</button>
+        <button class="quiz-opt" data-correct="false">Por una norma exclusivamente administrativa sin efecto técnico</button>
+        <button class="quiz-opt" data-correct="false">Porque el alcance máximo de un VOR siempre es de 500 NM</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Clases de VOR: Ruta y Terminal</h2></div>
+    <div class="topic-body">
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Clase</th><th>Finalidad</th><th>Alcance</th><th>Frecuencias</th><th>Potencia</th></tr>
+        <tr><td><b>VOR de Ruta</b></td><td>Radiobalizar aerovías desde la altitud mínima libre de obstrucciones</td><td class="mono">Instalación cada 90–100 NM</td><td class="mono">112,0–117,95 MHz (décima par o impar)</td><td class="mono">200 W</td></tr>
+        <tr><td><b>T-VOR</b> (Terminal)</td><td>Áreas terminales / aproximación</td><td class="mono">25 NM, hasta 12.000 ft MSL</td><td class="mono">108,0–111,95 MHz (décima par)</td><td class="mono">50 W</td></tr>
+        <tr><td><b>L-VOR</b> (Low altitude)</td><td>Áreas terminales / aproximación, baja altitud</td><td class="mono">40 NM, hasta 18.000 ft MSL</td><td class="mono">108,0–111,95 MHz (décima par)</td><td class="mono">50 W</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> el VOR de Ruta cubre las aerovías (mayor alcance, mayor potencia); el T-VOR y el L-VOR son de "cercanías" del aeropuerto (menor alcance, menor potencia), y comparten el mismo rango de frecuencias entre sí.</div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/7</div>
+      <div class="quiz-q">¿Cuál es la finalidad principal de un VOR de Ruta?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Radiobalizar aerovías desde la altitud mínima libre de obstrucciones</button>
+        <button class="quiz-opt" data-correct="false">Guiar únicamente la aproximación final a la pista</button>
+        <button class="quiz-opt" data-correct="false">Medir la distancia exacta a la estación</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Equipos a bordo y simulador VOR</h2></div>
+    <div class="topic-body">
+      <p>En cabina, la información del VOR se presenta al piloto mediante alguno de estos equipos: <b>CDI</b> (Course Deviation Indicator), <b>HSI</b> (Horizontal Situation Indicator) o <b>RMI</b> (Radio Magnetic Indicator). Todos ellos indican si la aeronave está en zona <b>TO</b> (yendo hacia la estación) o <b>FROM</b> (alejándose de ella).</p>
+      <p>El CDI tiene tres elementos que conviene separar bien:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>OBS</b>El mando con el que <i>tú</i> seleccionas un rumbo. El instrumento no adivina nada: compara tu posición contra ese rumbo elegido.</div>
+        <div class="objective-item"><b>Aguja de desviación</b>Indica hacia qué lado te queda el curso seleccionado. Escala angular: <b>2° por punto</b>, fondo de escala a 10°.</div>
+        <div class="objective-item"><b>Bandera TO/FROM</b>Dice si, volando el rumbo del OBS, te acercas o te alejas de la estación. <b>No depende del rumbo real de la aeronave.</b></div>
+      </div>
+      <div class="tofrom">
+        <h4>🔑 Cómo funcionan «TO» y «FROM»</h4>
+        <p>Este es el punto donde más gente se pierde, así que vamos con un solo ejemplo. Una estación VOR llamada <b>XYZ</b>. Dos aeronaves. Ambas vuelan <b>rumbo 090°</b> y ambas tienen el <b>OBS puesto en 090°</b>. Una ve <b>TO</b> y la otra ve <b>FROM</b>. ¿Por qué?</p>
+
+        <div class="tofrom-svg-wrap">
+          <svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Diagrama: dos aeronaves con el mismo rumbo 090 y el mismo OBS 090, una al oeste de la estación indica TO y otra al este indica FROM">
+            <!-- semiplanos -->
+            <rect x="0"   y="8" width="360" height="222" fill="var(--vfr)"  opacity="0.10"/>
+            <rect x="360" y="8" width="360" height="222" fill="var(--warn)" opacity="0.10"/>
+            <line x1="360" y1="8" x2="360" y2="230" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="6 5"/>
+            <g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700" text-anchor="middle">
+              <text x="180" y="32" fill="var(--vfr)">ZONA «TO» — HACIA</text>
+              <text x="540" y="32" fill="var(--warn)">ZONA «FROM» — DESDE</text>
+            </g>
+            <text x="360" y="222" font-family="IBM Plex Mono, monospace" font-size="9"
+                  fill="var(--text-muted)" text-anchor="middle">línea de 90°: aquí cambia la bandera</text>
+
+            <!-- curso seleccionado -->
+            <line x1="40" y1="140" x2="682" y2="140" stroke="var(--accent)" stroke-width="2.5"/>
+            <polygon points="694,140 678,133 678,147" fill="var(--accent)"/>
+            <text x="600" y="128" font-family="IBM Plex Mono, monospace" font-size="10"
+                  fill="var(--accent)" font-weight="700">curso OBS 090°</text>
+
+            <!-- etiquetas de radial -->
+            <text x="255" y="163" font-family="IBM Plex Mono, monospace" font-size="11"
+                  fill="var(--text)" font-weight="700" text-anchor="middle">RADIAL 270</text>
+            <text x="470" y="163" font-family="IBM Plex Mono, monospace" font-size="11"
+                  fill="var(--text)" font-weight="700" text-anchor="middle">RADIAL 090</text>
+
+            <!-- estacion VOR -->
+            <g>
+              <circle cx="360" cy="140" r="15" fill="var(--bg)" stroke="var(--text)" stroke-width="1.8"/>
+              <polygon points="360,128 370,134 370,146 360,152 350,146 350,134" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+              <circle cx="360" cy="140" r="3" fill="var(--text)"/>
+              <text x="360" y="182" font-family="IBM Plex Mono, monospace" font-size="12"
+                    font-weight="700" fill="var(--text)" text-anchor="middle">VOR «XYZ»</text>
+            </g>
+
+            <!-- aeronaves: las dos apuntan al este (rumbo 090) -->
+            <g transform="translate(170 140) rotate(90) scale(1.5)">
+              <path d="M0,-11 L2.2,-3 L11,3 L11,5.5 L2.2,3.2 L2.2,8 L5,11 L5,12.5 L0,11 L-5,12.5 L-5,11 L-2.2,8 L-2.2,3.2 L-11,5.5 L-11,3 L-2.2,-3 Z"
+                    fill="var(--vfr)" stroke="var(--bg)" stroke-width="1"/>
+            </g>
+            <g transform="translate(560 140) rotate(90) scale(1.5)">
+              <path d="M0,-11 L2.2,-3 L11,3 L11,5.5 L2.2,3.2 L2.2,8 L5,11 L5,12.5 L0,11 L-5,12.5 L-5,11 L-2.2,8 L-2.2,3.2 L-11,5.5 L-11,3 L-2.2,-3 Z"
+                    fill="var(--warn)" stroke="var(--bg)" stroke-width="1"/>
+            </g>
+            <text x="170" y="108" font-family="IBM Plex Mono, monospace" font-size="10"
+                  fill="var(--text-muted)" text-anchor="middle">rumbo 090°</text>
+            <text x="560" y="108" font-family="IBM Plex Mono, monospace" font-size="10"
+                  fill="var(--text-muted)" text-anchor="middle">rumbo 090°</text>
+
+            <!-- instrumento del avion de la izquierda: TO -->
+            <g transform="translate(170 300)">
+              <circle cx="0" cy="0" r="50" fill="var(--bg)" stroke="var(--hairline)" stroke-width="2"/>
+              <text x="0" y="-33" font-family="IBM Plex Mono, monospace" font-size="11"
+                    font-weight="700" fill="var(--text)" text-anchor="middle">090</text>
+              <g fill="none" stroke="var(--text-muted)" stroke-width="1.2">
+                <circle cx="-24" cy="0" r="3"/><circle cx="-12" cy="0" r="3"/>
+                <circle cx="12"  cy="0" r="3"/><circle cx="24"  cy="0" r="3"/>
+              </g>
+              <line x1="0" y1="-18" x2="0" y2="18" stroke="var(--vfr)" stroke-width="3.5" stroke-linecap="round"/>
+              <polygon points="0,-26 -6,-18 6,-18" fill="var(--vfr)"/>
+              <text x="0" y="40" font-family="IBM Plex Mono, monospace" font-size="12"
+                    font-weight="700" fill="var(--vfr)" text-anchor="middle">TO</text>
+            </g>
+            <!-- instrumento del avion de la derecha: FROM -->
+            <g transform="translate(560 300)">
+              <circle cx="0" cy="0" r="50" fill="var(--bg)" stroke="var(--hairline)" stroke-width="2"/>
+              <text x="0" y="-33" font-family="IBM Plex Mono, monospace" font-size="11"
+                    font-weight="700" fill="var(--text)" text-anchor="middle">090</text>
+              <g fill="none" stroke="var(--text-muted)" stroke-width="1.2">
+                <circle cx="-24" cy="0" r="3"/><circle cx="-12" cy="0" r="3"/>
+                <circle cx="12"  cy="0" r="3"/><circle cx="24"  cy="0" r="3"/>
+              </g>
+              <line x1="0" y1="-18" x2="0" y2="18" stroke="var(--warn)" stroke-width="3.5" stroke-linecap="round"/>
+              <polygon points="0,26 -6,18 6,18" fill="var(--warn)"/>
+              <text x="0" y="-40" font-family="IBM Plex Mono, monospace" font-size="12"
+                    font-weight="700" fill="var(--warn)" text-anchor="middle">FROM</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="tofrom-cases">
+          <div class="tofrom-case to">
+            <b class="tag">AERONAVE DE LA IZQUIERDA — INDICA «TO»</b>
+            Está al <b>oeste</b> de la estación, sobre el <b>radial 270</b>. Con el OBS en 090°, volar ese rumbo la lleva <b>directamente a la estación</b>: aún no la ha sobrepasado. Aguja centrada y bandera <b>TO</b>.
+          </div>
+          <div class="tofrom-case from">
+            <b class="tag">AERONAVE DE LA DERECHA — INDICA «FROM»</b>
+            Está al <b>este</b> de la estación, sobre el <b>radial 090</b>. Ya la <b>sobrepasó</b> y sigue el mismo curso 090°, así que se <b>aleja</b>. Aguja igualmente centrada, pero bandera <b>FROM</b>.
+          </div>
+        </div>
+
+        <div class="tofrom-key">
+          <b>La idea en una frase:</b> la bandera no mira tu rumbo, mira <b>de qué lado de la estación estás</b>. Mismo rumbo, mismo OBS, misma aguja centrada — y sin embargo banderas opuestas, porque una aeronave todavía no ha llegado al VOR y la otra ya lo dejó atrás. El instante en que se cruza la estación es justo cuando la bandera bascula de TO a FROM.
+        </div>
+      </div>
+
+      <p>Compruébalo tú mismo: arrastra la aeronave por el mapa de la izquierda y mira cómo responde el instrumento de la derecha. Los dos primeros botones de situaciones reproducen exactamente los dos casos del diagrama de arriba.</p>
+      <div class="vor-sim">
+        <div class="vor-sim-head">
+          <h4>🛩️ Simulador VOR · CDI · DME</h4>
+          <span class="vor-sim-hint">Arrastra la aeronave sobre el mapa, o usa los controles</span>
+        </div>
+
+        <div class="vor-stage">
+          <!-- VISTA EN PLANTA -->
+          <div class="vor-pane">
+            <div class="vor-pane-title">Vista en planta — dónde estás realmente</div>
+            <svg id="vorPlanSvg" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg"
+                 role="img" aria-label="Mapa en planta con la estación VOR al centro y la aeronave que puedes arrastrar">
+              <!-- semiplanos TO / FROM, rotan con el OBS -->
+              <g id="vorZones" opacity="0.16">
+                <path id="vorZoneFrom" d="" fill="var(--warn)"/>
+                <path id="vorZoneTo"   d="" fill="var(--vfr)"/>
+              </g>
+              <circle cx="180" cy="180" r="150" fill="none" stroke="var(--hairline)" stroke-width="1.5"/>
+              <circle cx="180" cy="180" r="100" fill="none" stroke="var(--hairline)" stroke-width="1" stroke-dasharray="3 5"/>
+              <circle cx="180" cy="180" r="50"  fill="none" stroke="var(--hairline)" stroke-width="1" stroke-dasharray="3 5"/>
+              <!-- rosa de grados: la genera el script -->
+              <g id="vorRose"></g>
+              <!-- etiquetas de anillos DME -->
+              <g font-family="IBM Plex Mono, monospace" font-size="8" fill="var(--text-muted)" text-anchor="middle">
+                <text x="180" y="134">20 NM</text><text x="180" y="84">40 NM</text>
+              </g>
+              <!-- linea de rumbo seleccionado (OBS) -->
+              <g id="vorCourse">
+                <line id="vorCourseLine" x1="180" y1="30" x2="180" y2="330" stroke="var(--accent)" stroke-width="2.5"/>
+                <polygon id="vorCourseArrow" points="180,24 174,40 186,40" fill="var(--accent)"/>
+              </g>
+              <!-- radial real de la aeronave -->
+              <line id="vorRadialLine" x1="180" y1="180" x2="180" y2="80" stroke="var(--vfr)" stroke-width="1.8" stroke-dasharray="5 4"/>
+              <!-- estacion VOR -->
+              <g>
+                <circle cx="180" cy="180" r="13" fill="var(--bg)" stroke="var(--text)" stroke-width="1.6"/>
+                <polygon points="180,170 188.6,175 188.6,185 180,190 171.4,185 171.4,175" fill="none" stroke="var(--text)" stroke-width="1.4"/>
+                <circle cx="180" cy="180" r="2.6" fill="var(--text)"/>
+              </g>
+              <!-- aeronave -->
+              <g id="vorAircraft">
+                <path d="M0,-11 L2.2,-3 L11,3 L11,5.5 L2.2,3.2 L2.2,8 L5,11 L5,12.5 L0,11 L-5,12.5 L-5,11 L-2.2,8 L-2.2,3.2 L-11,5.5 L-11,3 L-2.2,-3 Z"
+                      fill="var(--accent)" stroke="var(--bg)" stroke-width="1"/>
+              </g>
+              <text id="vorDmeLabel" x="0" y="0" font-family="IBM Plex Mono, monospace" font-size="10"
+                    font-weight="700" fill="var(--accent)" text-anchor="middle">0.0 NM</text>
+            </svg>
+          </div>
+
+          <!-- INSTRUMENTO CDI -->
+          <div class="vor-pane">
+            <div class="vor-pane-title">El instrumento — lo que ves en cabina</div>
+            <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg"
+                 role="img" aria-label="Indicador de desviación de curso CDI con bandera TO o FROM">
+              <circle cx="120" cy="120" r="116" fill="var(--panel-alt)" stroke="var(--hairline)" stroke-width="2"/>
+              <circle cx="120" cy="120" r="100" fill="var(--bg)" stroke="var(--hairline)" stroke-width="1.5"/>
+              <!-- indice fijo superior (lubber line) -->
+              <polygon points="120,10 112,26 128,26" fill="var(--accent)"/>
+              <!-- corona movil OBS: la genera el script -->
+              <g id="cdiCard"></g>
+              <!-- puntos de desviacion: 2 grados por punto -->
+              <g id="cdiDots" fill="none" stroke="var(--text-muted)" stroke-width="1.4">
+                <circle cx="72"  cy="120" r="4.5"/><circle cx="96"  cy="120" r="4.5"/>
+                <circle cx="144" cy="120" r="4.5"/><circle cx="168" cy="120" r="4.5"/>
+              </g>
+              <!-- aguja de desviacion -->
+              <line id="cdiNeedle" x1="120" y1="72" x2="120" y2="168" stroke="var(--vfr)" stroke-width="4.5" stroke-linecap="round"/>
+              <!-- banderas TO / FROM -->
+              <polygon id="cdiFlagTo"   points="120,38 111,54 129,54"    fill="var(--vfr)"  opacity="0"/>
+              <polygon id="cdiFlagFrom" points="120,202 111,186 129,186" fill="var(--warn)" opacity="0"/>
+              <text id="cdiFlagText" x="120" y="66" font-family="IBM Plex Mono, monospace" font-size="13"
+                    font-weight="700" text-anchor="middle" fill="var(--text-muted)">TO</text>
+              <!-- bandera NAV de ambiguedad -->
+              <g id="cdiOffFlag" opacity="0">
+                <rect x="150" y="104" width="34" height="18" rx="3" fill="var(--danger)"/>
+                <text x="167" y="117" font-family="IBM Plex Mono, monospace" font-size="10"
+                      font-weight="700" text-anchor="middle" fill="#fff">NAV</text>
+              </g>
+              <circle cx="120" cy="120" r="6" fill="var(--text)"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="vor-controls">
+          <div class="vor-ctl">
+            <label for="vorObs">OBS — rumbo seleccionado <b id="vorObsVal">360°</b></label>
+            <input type="range" id="vorObs" min="0" max="359" step="1" value="0">
+          </div>
+          <div class="vor-ctl">
+            <label for="vorBrg">Posición: radial en el que estás <b id="vorBrgVal">045°</b></label>
+            <input type="range" id="vorBrg" min="0" max="359" step="1" value="45">
+          </div>
+          <div class="vor-ctl">
+            <label for="vorDist">Distancia a la estación (DME) <b id="vorDistVal">25 NM</b></label>
+            <input type="range" id="vorDist" min="2" max="60" step="1" value="25">
+          </div>
+        </div>
+
+        <div class="vor-readout">
+          <div class="vor-readout-grid">
+            <div class="vor-rd"><span>Radial (QDR)</span><b id="rdRadial">045°</b></div>
+            <div class="vor-rd"><span>A la estación (QDM)</span><b id="rdQdm">225°</b></div>
+            <div class="vor-rd"><span>OBS</span><b id="rdObs">360°</b></div>
+            <div class="vor-rd"><span>Desviación</span><b id="rdDev">0,0° · 0 pts</b></div>
+            <div class="vor-rd"><span>Bandera</span><b id="rdFlag" class="from">FROM</b></div>
+            <div class="vor-rd"><span>DME</span><b id="rdDme">25,0 NM</b></div>
+          </div>
+          <div class="vor-explain" id="vorExplain">…</div>
+        </div>
+
+        <div class="vor-presets">
+          <button class="vor-preset" type="button" data-obs="90"  data-brg="270" data-dist="20">Caso 1 del diagrama · radial 270 → TO</button>
+          <button class="vor-preset" type="button" data-obs="90"  data-brg="90"  data-dist="20">Caso 2 del diagrama · radial 090 → FROM</button>
+          <button class="vor-preset" type="button" data-obs="360" data-brg="6"   data-dist="30">Desviado a la derecha del curso</button>
+          <button class="vor-preset" type="button" data-obs="90"  data-brg="180" data-dist="25">Zona de ambigüedad (90°)</button>
+          <button class="vor-preset" type="button" data-obs="45"  data-brg="225" data-dist="8">Cerca de la estación (cono de silencio)</button>
+        </div>
+      </div>
+
+      <div class="card-box">
+        <h4>🧠 Tres cosas que este simulador deja ver</h4>
+        <ul style="margin:0; padding-left:20px;">
+          <li>La bandera <b>TO/FROM</b> <b>no depende del rumbo que vuela la aeronave</b>: depende solo de dónde estás respecto a la estación y de qué rumbo pusiste en el OBS.</li>
+          <li>La aguja indica <b>hacia qué lado está el curso</b>: si se va a la derecha, el curso está a tu derecha. Se dice que hay que <b>"volar hacia la aguja"</b>.</li>
+          <li>La desviación es <b>angular</b>: a 60 NM un punto son muchas millas de error; a 5 NM de la estación, ese mismo punto es una distancia mínima. Por eso la aguja se vuelve muy sensible al acercarse.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/7</div>
+      <div class="quiz-q">¿Qué indican en cabina instrumentos como el CDI, el HSI o el RMI respecto a un VOR?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Si la aeronave va TO (hacia la estación) o FROM (alejándose de ella)</button>
+        <button class="quiz-opt" data-correct="false">La distancia exacta en millas náuticas a la estación</button>
+        <button class="quiz-opt" data-correct="false">La frecuencia UHF que debe sintonizarse</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>El DME</h2></div>
+    <div class="topic-body">
+      <p>El <b>DME</b> (Distance Measuring Equipment) proporciona una medición de <b>distancia</b> hacia o desde la estación, calculada según la velocidad al suelo, operando bajo el <b>principio del radar</b>.</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Frecuencias</b>Banda UHF, entre 962 y 1213 MHz, separadas de 1 en 1 MHz (200 canales)</div>
+        <div class="objective-item"><b>Ubicación</b>Normalmente comparte la misma posición geográfica que el VOR</div>
+        <div class="objective-item"><b>Alcance nominal</b>200 millas náuticas</div>
+      </div>
+      <p>Al sintonizar la frecuencia VHF del VOR, el DME asociado se sintoniza <b>automáticamente</b> (en equipos independientes, debe sintonizarse de forma manual). Es fundamental para que los Controladores de Tránsito Aéreo apliquen <b>separaciones longitudinales DME</b> precisas, dando mayor rapidez a la afluencia de tránsito — y por su gran precisión, muchos sistemas <b>ILS lo incorporan</b>.</p>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/7</div>
+      <div class="quiz-q">¿Bajo qué principio opera el DME, y en qué banda de frecuencia trabaja?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Principio de radar, en banda UHF (962–1213 MHz)</button>
+        <button class="quiz-opt" data-correct="false">Principio óptico, en banda de luz visible</button>
+        <button class="quiz-opt" data-correct="false">Principio de radar, en banda VHF (108–117,95 MHz)</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>QDM, QDR y Radial</h2></div>
+    <div class="topic-body">
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Término</th><th>Significado</th></tr>
+        <tr><td class="mono">QDM</td><td>Rumbo magnético (sin viento) que debe volar la aeronave para <b>acercarse</b> a una radioayuda o punto específico. Es independiente del rumbo magnético que esté volando el piloto en ese momento.</td></tr>
+        <tr><td class="mono">QDR</td><td>Rumbo magnético (sin viento) que debe volar la aeronave para <b>alejarse</b> de una radioayuda. Es siempre el <b>recíproco exacto</b> del QDM.</td></tr>
+        <tr><td>Radial</td><td>Concepto muy similar al QDR en orientación y actuación. Se usa el término "radial" específicamente cuando el piloto se orienta con las indicaciones instrumentales de un <b>VOR</b> (determinando inbound TO / outbound FROM).</td></tr>
+      </table>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> QDM y QDR son siempre recíprocos (se diferencian por 180°) — si conoces uno, sumas o restas 180° y tienes el otro. Vuelve al simulador del tema 5: las lecturas <b>«Radial (QDR)»</b> y <b>«A la estación (QDM)»</b> se mueven juntas, siempre separadas 180°, muevas la aeronave donde la muevas.</div>
+    </div>
+    <div class="quiz-card" data-quiz="7">
+      <div class="quiz-tag">🎯 Chequeo rápido 7/7 — ¡última pregunta!</div>
+      <div class="quiz-q">¿Cuál es la relación exacta entre el QDM y el QDR de una misma radioayuda?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Son recíprocos exactos: se diferencian por 180°</button>
+        <button class="quiz-opt" data-correct="false">Son siempre el mismo valor</button>
+        <button class="quiz-opt" data-correct="false">Se diferencian por 90°</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🏆</div>
+    <h3>Bloque completado</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 7 preguntas correctamente. Ya dominas VOR, DME y la relación QDM/QDR/radial — sigue con el Bloque 5: Viento y Unidades.</p>
+  </div>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo NAV · Bloque 4 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- PROGRESO DE CHEQUEOS ----------
+  const TOTAL_QUIZ = 7;
+  let correctCount = 0;
+
+  const quizProgressFill  = document.getElementById('quizProgressFill');
+  const quizProgressScore = document.getElementById('quizProgressScore');
+  const finishCard        = document.getElementById('finishCard');
+
+  function renderProgress(){
+    const pct = (correctCount / TOTAL_QUIZ) * 100;
+    if(quizProgressFill)  quizProgressFill.style.width = pct + '%';
+    if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
+    if(correctCount >= TOTAL_QUIZ){
+      if(finishCard) finishCard.style.display = 'block';
+      marcarModuloCompletado('navegacion-radioayudas');
+    }
+  }
+  renderProgress();
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    if(isCorrect){
+      correctCount++;
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = '✅ Correcto.';
+    }else{
+      btn.classList.add('incorrect');
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '✗ No es esa. La opción correcta queda marcada en verde — vuelve a leer el punto de arriba.';
+    }
+    renderProgress();
+  }
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+
+  // ---------- SIMULADOR VOR / CDI / DME ----------
+  (function(){
+    const planSvg = document.getElementById('vorPlanSvg');
+    if(!planSvg) return;
+
+    // --- geometria de la vista en planta ---
+    const CX = 180, CY = 180, ROSE_R = 150;   // 150 px = 60 NM
+    const PX_PER_NM = ROSE_R / 60;
+    const FULL_SCALE_DEG = 10;                // desviacion maxima de la aguja
+    const DEG_PER_DOT    = 2;                 // 2 grados por punto (norma VOR)
+    const NEEDLE_PX      = 60;                // px de la aguja a fondo de escala
+
+    const norm360 = a => ((a % 360) + 360) % 360;
+    const norm180 = a => norm360(a + 180) - 180;
+    const pad3    = n => Math.round(norm360(n)).toString().padStart(3, '0');
+    // en pantalla: y hacia abajo, marcacion medida desde el norte en sentido horario
+    const ptX = (brg, r) => CX + r * Math.sin(brg * Math.PI / 180);
+    const ptY = (brg, r) => CY - r * Math.cos(brg * Math.PI / 180);
+
+    // --- estado ---
+    let obs = 0, acBrg = 45, acDist = 25;
+
+    const el = id => document.getElementById(id);
+    const obsSlider = el('vorObs'), brgSlider = el('vorBrg'), distSlider = el('vorDist');
+
+    // --- rosa de grados de la vista en planta (marcas cada 10 grados) ---
+    (function buildRose(){
+      const NS = 'http://www.w3.org/2000/svg';
+      const rose = el('vorRose');
+      for(let d = 0; d < 360; d += 10){
+        const major = d % 30 === 0;
+        const ln = document.createElementNS(NS, 'line');
+        ln.setAttribute('x1', ptX(d, ROSE_R));       ln.setAttribute('y1', ptY(d, ROSE_R));
+        ln.setAttribute('x2', ptX(d, ROSE_R - (major ? 12 : 6)));
+        ln.setAttribute('y2', ptY(d, ROSE_R - (major ? 12 : 6)));
+        ln.setAttribute('stroke', 'var(--text-muted)');
+        ln.setAttribute('stroke-width', major ? '1.6' : '0.9');
+        rose.appendChild(ln);
+        if(major){
+          const tx = document.createElementNS(NS, 'text');
+          tx.setAttribute('x', ptX(d, ROSE_R - 24));
+          tx.setAttribute('y', ptY(d, ROSE_R - 24) + 3.5);
+          tx.setAttribute('font-family', 'IBM Plex Mono, monospace');
+          tx.setAttribute('font-size', d % 90 === 0 ? '13' : '9');
+          tx.setAttribute('font-weight', d % 90 === 0 ? '700' : '400');
+          tx.setAttribute('fill', d % 90 === 0 ? 'var(--text)' : 'var(--text-muted)');
+          tx.setAttribute('text-anchor', 'middle');
+          tx.textContent = d === 0 ? 'N' : d === 90 ? 'E' : d === 180 ? 'S' : d === 270 ? 'W' : (d / 10);
+          rose.appendChild(tx);
+        }
+      }
+    })();
+
+    // --- corona movil del CDI (tarjeta de rumbos del instrumento) ---
+    (function buildCdiCard(){
+      const NS = 'http://www.w3.org/2000/svg';
+      const card = el('cdiCard');
+      const R = 100;
+      for(let d = 0; d < 360; d += 10){
+        const major = d % 30 === 0;
+        const ln = document.createElementNS(NS, 'line');
+        ln.setAttribute('x1', 120 + R * Math.sin(d * Math.PI / 180));
+        ln.setAttribute('y1', 120 - R * Math.cos(d * Math.PI / 180));
+        ln.setAttribute('x2', 120 + (R - (major ? 13 : 7)) * Math.sin(d * Math.PI / 180));
+        ln.setAttribute('y2', 120 - (R - (major ? 13 : 7)) * Math.cos(d * Math.PI / 180));
+        ln.setAttribute('stroke', 'var(--text-muted)');
+        ln.setAttribute('stroke-width', major ? '1.8' : '1');
+        card.appendChild(ln);
+        if(major){
+          const rr = R - 26;
+          const tx = document.createElementNS(NS, 'text');
+          tx.setAttribute('x', 120 + rr * Math.sin(d * Math.PI / 180));
+          tx.setAttribute('y', 120 - rr * Math.cos(d * Math.PI / 180) + 4);
+          tx.setAttribute('font-family', 'IBM Plex Mono, monospace');
+          tx.setAttribute('font-size', d % 90 === 0 ? '14' : '11');
+          tx.setAttribute('font-weight', '700');
+          tx.setAttribute('fill', d % 90 === 0 ? 'var(--text)' : 'var(--text-muted)');
+          tx.setAttribute('text-anchor', 'middle');
+          tx.setAttribute('transform', `rotate(${d} ${120 + rr * Math.sin(d * Math.PI / 180)} ${120 - rr * Math.cos(d * Math.PI / 180)})`);
+          tx.textContent = d === 0 ? 'N' : d === 90 ? 'E' : d === 180 ? 'S' : d === 270 ? 'W' : (d / 10);
+          card.appendChild(tx);
+        }
+      }
+    })();
+
+    // --- semiplanos TO / FROM de la vista en planta ---
+    function zonePaths(){
+      const r = ROSE_R;
+      // mitad FROM: semicirculo centrado en la marcacion 0 (antes de rotar con el OBS)
+      el('vorZoneFrom').setAttribute('d', `M ${CX - r} ${CY} A ${r} ${r} 0 0 1 ${CX + r} ${CY} Z`);
+      el('vorZoneTo').setAttribute('d',   `M ${CX + r} ${CY} A ${r} ${r} 0 0 1 ${CX - r} ${CY} Z`);
+    }
+    zonePaths();
+
+    // --- calculo aeronautico ---
+    function solve(){
+      const dFrom = norm180(acBrg - obs);
+      let flag, dev;
+      if(Math.abs(dFrom) <= 90){ flag = 'FROM'; dev = dFrom; }          // dev > 0 = estás a la derecha del curso
+      else                     { flag = 'TO';   dev = norm180(obs + 180 - acBrg); }
+      const ambiguous = Math.abs(Math.abs(dFrom) - 90) <= 2;
+      return { flag, dev, ambiguous, qdm: norm360(acBrg + 180) };
+    }
+
+    // --- pintado ---
+    function render(){
+      const { flag, dev, ambiguous, qdm } = solve();
+
+      // vista en planta
+      el('vorZones').setAttribute('transform', `rotate(${obs} ${CX} ${CY})`);
+      el('vorCourse').setAttribute('transform', `rotate(${obs} ${CX} ${CY})`);
+
+      const acR = Math.min(acDist * PX_PER_NM, ROSE_R - 8);
+      const ax = ptX(acBrg, acR), ay = ptY(acBrg, acR);
+      el('vorAircraft').setAttribute('transform', `translate(${ax} ${ay}) rotate(${obs})`);
+      el('vorRadialLine').setAttribute('x2', ax);
+      el('vorRadialLine').setAttribute('y2', ay);
+
+      const lbl = el('vorDmeLabel');
+      lbl.setAttribute('x', ax); lbl.setAttribute('y', ay - 17);
+      lbl.textContent = acDist.toFixed(1).replace('.', ',') + ' NM';
+
+      // instrumento: la corona gira para dejar el OBS arriba
+      el('cdiCard').setAttribute('transform', `rotate(${-obs} 120 120)`);
+
+      const shown = Math.max(-FULL_SCALE_DEG, Math.min(FULL_SCALE_DEG, dev));
+      const px = -shown / FULL_SCALE_DEG * NEEDLE_PX;   // se vuela HACIA la aguja
+      const needle = el('cdiNeedle');
+      needle.setAttribute('transform', `translate(${px} 0)`);
+      needle.setAttribute('stroke', Math.abs(dev) <= DEG_PER_DOT ? 'var(--vfr)' : 'var(--accent)');
+
+      el('cdiFlagTo').setAttribute('opacity',   (!ambiguous && flag === 'TO')   ? '1' : '0');
+      el('cdiFlagFrom').setAttribute('opacity', (!ambiguous && flag === 'FROM') ? '1' : '0');
+      el('cdiOffFlag').setAttribute('opacity',  ambiguous ? '1' : '0');
+      const flagText = el('cdiFlagText');
+      flagText.textContent = ambiguous ? '' : flag;
+      flagText.setAttribute('fill', flag === 'TO' ? 'var(--vfr)' : 'var(--warn)');
+      flagText.setAttribute('y', flag === 'TO' ? '66' : '182');
+
+      // lecturas
+      el('rdRadial').textContent = pad3(acBrg) + '°';
+      el('rdQdm').textContent    = pad3(qdm) + '°';
+      el('rdObs').textContent    = pad3(obs) + '°';
+      const dots = Math.min(Math.abs(dev) / DEG_PER_DOT, 5);
+      el('rdDev').textContent = Math.abs(dev).toFixed(1).replace('.', ',') + '° · ' +
+                                dots.toFixed(1).replace('.', ',') + ' pts';
+      el('rdDme').textContent = acDist.toFixed(1).replace('.', ',') + ' NM';
+
+      const rdFlag = el('rdFlag');
+      rdFlag.textContent = ambiguous ? 'AMBIGUA' : flag;
+      rdFlag.className   = ambiguous ? 'amb' : (flag === 'TO' ? 'to' : 'from');
+
+      el('vorObsVal').textContent  = pad3(obs) + '°';
+      el('vorBrgVal').textContent  = pad3(acBrg) + '°';
+      el('vorDistVal').textContent = acDist + ' NM';
+
+      // explicacion en lenguaje llano
+      const side    = dev > 0 ? 'derecha' : 'izquierda';
+      const flySide = dev > 0 ? 'izquierda' : 'derecha';
+      let txt;
+      if(ambiguous){
+        txt = `Estás a <b>90° del curso seleccionado</b>: es la <b>zona de ambigüedad</b>. Aquí el equipo no puede decidir entre TO y FROM, la aguja queda a fondo de escala y aparece la <b>bandera NAV</b>. Gira el OBS hasta centrar la aguja y sabrás en qué radial estás de verdad.`;
+      } else if(Math.abs(dev) < 0.5){
+        txt = `Aguja <b>centrada</b> con bandera <b>${flag}</b>: estás justo sobre el curso <b>${pad3(obs)}°</b>. ` +
+              (flag === 'TO'
+                ? `Volando ese rumbo llegarías a la estación, que está a <b>${acDist} NM</b>.`
+                : `Volando ese rumbo te alejas de la estación por el radial <b>${pad3(acBrg)}</b>.`);
+      } else if(Math.abs(dev) >= FULL_SCALE_DEG){
+        txt = `Aguja a <b>fondo de escala</b> (más de ${FULL_SCALE_DEG}° fuera del curso). Sabes que el curso <b>${pad3(obs)}°</b> queda a tu <b>${flySide}</b>, pero no cuánto: primero hay que <b>interceptar</b> y luego afinar.`;
+      } else {
+        const nm = (acDist * Math.tan(Math.abs(dev) * Math.PI / 180));
+        txt = `Estás <b>${Math.abs(dev).toFixed(1).replace('.', ',')}° a la ${side}</b> del curso — a esta distancia son unas ` +
+              `<b>${nm.toFixed(1).replace('.', ',')} NM</b> fuera de la derrota. La aguja se va a tu <b>${flySide}</b>: ` +
+              `<b>vuela hacia la aguja</b>, corrige a la ${flySide} y se irá centrando. Bandera <b>${flag}</b>.`;
+      }
+      el('vorExplain').innerHTML = txt;
+    }
+
+    // --- controles ---
+    obsSlider.addEventListener('input',  () => { obs    = Number(obsSlider.value);  render(); });
+    brgSlider.addEventListener('input',  () => { acBrg  = Number(brgSlider.value);  render(); });
+    distSlider.addEventListener('input', () => { acDist = Number(distSlider.value); render(); });
+
+    function syncSliders(){
+      obsSlider.value  = obs;
+      brgSlider.value  = Math.round(acBrg);
+      distSlider.value = Math.round(acDist);
+    }
+
+    // --- arrastrar la aeronave sobre el mapa ---
+    let dragging = false;
+    function moveTo(evt){
+      const rect = planSvg.getBoundingClientRect();
+      const x = (evt.clientX - rect.left) / rect.width  * 360;
+      const y = (evt.clientY - rect.top)  / rect.height * 360;
+      const dx = x - CX, dy = CY - y;
+      const r  = Math.hypot(dx, dy);
+      if(r < 4) return;                                   // demasiado cerca del centro: sin radial definido
+      acBrg  = norm360(Math.atan2(dx, dy) * 180 / Math.PI);
+      acDist = Math.max(2, Math.min(60, Math.round(r / PX_PER_NM)));
+      syncSliders();
+      render();
+    }
+    planSvg.addEventListener('pointerdown', e => {
+      dragging = true; planSvg.classList.add('dragging');
+      planSvg.setPointerCapture(e.pointerId); moveTo(e); e.preventDefault();
+    });
+    planSvg.addEventListener('pointermove', e => { if(dragging){ moveTo(e); e.preventDefault(); } });
+    const endDrag = () => { dragging = false; planSvg.classList.remove('dragging'); };
+    planSvg.addEventListener('pointerup', endDrag);
+    planSvg.addEventListener('pointercancel', endDrag);
+
+    // --- situaciones preparadas ---
+    document.querySelectorAll('.vor-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        obs    = Number(btn.dataset.obs)  % 360;
+        acBrg  = Number(btn.dataset.brg)  % 360;
+        acDist = Number(btn.dataset.dist);
+        syncSliders();
+        render();
+      });
+    });
+
+    syncSliders();
+    render();
+  })();
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

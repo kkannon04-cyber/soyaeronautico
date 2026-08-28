@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navegación · La Hora en la Navegación Aérea | SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:820px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
+
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+
+  /* ---------- PROGRESO DE CHEQUEOS ---------- */
+  .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .quiz-progress-inner{ max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .quiz-progress-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+  .quiz-progress-track{ flex:1; min-width:140px; height:6px; border-radius:3px; background:var(--panel-alt); border:1px solid var(--hairline); overflow:hidden; }
+  .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
+  .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+
+  .toc{ max-width:900px; margin:22px auto 0; padding:0 32px; display:flex; flex-wrap:wrap; gap:8px; }
+  .toc a{ font-size:0.76rem; font-family:'IBM Plex Mono'; padding:6px 13px; border:1px solid var(--hairline); border-radius:20px; text-decoration:none; color:var(--text-muted); transition:.2s; white-space:nowrap; }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:130px; }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
+  .topic-head h2{ font-size:1.3rem; }
+  .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
+  .topic-body p{ margin:0 0 14px; }
+  .topic-body ul{ margin:0 0 14px; padding-left:20px; }
+  .topic-body li{ margin-bottom:6px; }
+
+  .objective-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:16px 0 20px; }
+  .objective-item{ background:var(--panel); border:1px solid var(--hairline); border-left:4px solid var(--accent); border-radius:8px; padding:14px 16px; font-size:0.86rem; line-height:1.5; }
+  .objective-item b{ display:block; font-family:'IBM Plex Mono'; color:var(--accent); font-size:0.72rem; margin-bottom:6px; letter-spacing:0.06em; }
+
+  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
+  .mnemo b{ color:var(--vfr); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  table.ats-table td.mono{ font-family:'IBM Plex Mono'; color:var(--accent); font-weight:600; }
+  .ats-table-wrap{ overflow-x:auto; }
+
+  /* ---- ilustración SVG (globo/meridianos) ---- */
+  .illus{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px; margin:18px 0; text-align:center; }
+  .illus svg{ max-width:100%; height:auto; display:block; margin:0 auto; }
+  .illus-cap{ font-size:0.78rem; color:var(--text-muted); margin-top:10px; font-family:'IBM Plex Mono'; }
+
+  /* ---- MAPA INTERACTIVO DE HUSOS HORARIOS ---- */
+  .tz-sim{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .tz-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .tz-head h4{ font-size:0.95rem; color:var(--accent); margin:0; }
+  .tz-hint{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); }
+  .tz-map{ background:var(--bg); border:1px solid var(--hairline); border-radius:12px; padding:12px; overflow-x:auto; }
+  .tz-map svg{ display:block; width:100%; min-width:560px; height:auto; touch-action:none; cursor:grab; }
+  .tz-map svg.dragging{ cursor:grabbing; }
+  .tz-ctl{ margin-top:14px; }
+  .tz-ctl label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .tz-ctl label b{ color:var(--accent); font-weight:600; }
+  .tz-ctl input[type=range]{ width:100%; margin:0; accent-color:var(--accent); }
+  .tz-readout{ margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px;
+               background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:14px 16px; }
+  .tz-rd{ text-align:center; }
+  .tz-rd span{ display:block; font-family:'IBM Plex Mono'; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+  .tz-rd b{ font-family:'IBM Plex Mono'; font-size:1.02rem; font-weight:700; color:var(--text); }
+  .tz-rd b.hl{ color:var(--accent); }
+  .tz-explain{ margin-top:12px; font-size:0.85rem; line-height:1.6; color:var(--text-muted); }
+  .tz-explain b{ color:var(--text); }
+  .tz-presets{ margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+  .tz-preset{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:7px 13px; border-radius:20px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; }
+  .tz-preset:hover{ border-color:var(--accent); color:var(--accent); }
+  .tz-warn{ margin-top:14px; background:var(--panel-alt); border-left:4px solid var(--warn); border-radius:8px; padding:13px 16px; font-size:0.85rem; line-height:1.6; }
+  .tz-warn b{ color:var(--warn); }
+
+  /* ---- herramienta convertidora ---- */
+  .tool-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
+  .tool-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .tool-row input[type=text], .tool-row input[type=number]{ flex:1; min-width:160px; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 12px; font-family:'IBM Plex Mono'; font-size:0.95rem; color:var(--text); outline:none; }
+  .tool-row input:focus{ border-color:var(--accent); }
+  .seg{ display:flex; border:1px solid var(--hairline); border-radius:8px; overflow:hidden; }
+  .seg button{ background:var(--bg); color:var(--text-muted); border:none; padding:10px 14px; font-family:'IBM Plex Mono'; font-size:0.74rem; cursor:pointer; }
+  .seg button.active{ background:var(--accent); color:#fff; }
+  .tool-output{ background:var(--bg); border:1px dashed var(--hairline); border-radius:8px; padding:14px; font-family:'IBM Plex Mono'; font-size:1.05rem; color:var(--vfr); letter-spacing:0.5px; min-height:24px; word-break:break-word; }
+  .tool-note{ font-size:0.76rem; color:var(--text-muted); margin-top:8px; }
+
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="progreso.js"></script>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown active" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html" class="active">Navegación</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="Panel_estudiante.html" class="nav-login-btn">Mi panel</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div class="subtabs">
+    <div class="subtabs-inner">
+      <a href="navegacion-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
+      <a href="navegacion-tiempo.html" class="subtab active"><span class="n">1</span> Tiempo</a>
+      <a href="navegacion-velocidad.html" class="subtab"><span class="n">2</span> Velocidad</a>
+      <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
+      <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
+      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+    </div>
+  </div>
+
+  <div class="quiz-progress">
+    <div class="quiz-progress-inner">
+      <span class="quiz-progress-label">Chequeos rápidos</span>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 6 correctos</span>
+    </div>
+  </div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Navegación — Bloque 1</div>
+  <h1>La hora en la navegación aérea: sol medio, husos horarios y hora local.</h1>
+  <p class="lead">La aviación es una actividad global: dos aeronaves pueden estar en el mismo instante físico y marcar horas de reloj completamente distintas. Este bloque explica cómo se define la hora en función de la posición sobre la Tierra, y cómo pasar de grados de longitud a horas de reloj y viceversa.</p>
+  <div class="hero-note">🕐 <div><b>Cómo estudiar esta página:</b> lee cada bloque y responde su chequeo rápido. En el tema 4 tienes un <b>mapa de los 24 husos horarios</b>: arrastra el meridiano y verás en vivo el huso, su meridiano central y la hora local frente a la UTC. Después practica con las dos calculadoras (tiempo↔arco y huso horario).</div></div>
+</section>
+
+<nav class="toc">
+  <a href="#t1">1. La hora solar y el sol medio</a>
+  <a href="#t2">2. Línea Internacional de Cambio de Fecha</a>
+  <a href="#t3">3. Relación Tiempo ↔ Arco</a>
+  <a href="#t4">4. Husos horarios y hora local</a>
+  <a href="#t5">5. Cómo calcular el huso de un punto</a>
+  <a href="#t6">6. Husos múltiples y diferencia horaria</a>
+</nav>
+
+<main class="content">
+
+  <!-- 1 -->
+  <article class="topic" id="t1">
+    <div class="topic-head"><div class="topic-num">1</div><h2>La hora solar y el sol medio</h2></div>
+    <div class="topic-body">
+      <p>Para fines como la aviación se supone la existencia de un <b>"sol medio"</b> que se mueve de forma uniforme en el espacio. El <b>día</b> se define como el tiempo que tarda la Tierra en dar una revolución completa respecto a ese sol medio, y el <b>tiempo solar medio</b> es justamente el que marcan nuestros relojes.</p>
+      <div class="card-box">
+        <h4>☀️ Hora Solar — definición</h4>
+        <p style="margin:0;">Es la hora del meridiano de lugar que pasa por un punto determinado de la superficie terrestre, y es la que rige oficialmente ese punto.</p>
+      </div>
+      <ul>
+        <li>Dos puntos con <b>diferente longitud</b> tienen <b>diferente hora solar</b>, por el movimiento de rotación de la Tierra.</li>
+        <li>Puntos con diferente longitud pero <b>igual latitud</b>: tendrán diferente hora solar.</li>
+        <li>Puntos con diferente latitud pero <b>igual longitud</b>: tendrán la <b>misma</b> hora solar (están sobre el mismo meridiano).</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Idea clave:</b> la hora solar depende únicamente de la <b>longitud</b> (qué tan al Este u Oeste estás), nunca de la latitud.</div>
+    </div>
+    <div class="quiz-card" data-quiz="1">
+      <div class="quiz-tag">🎯 Chequeo rápido 1/6</div>
+      <div class="quiz-q">Dos puntos tienen la misma longitud pero distinta latitud. ¿Qué ocurre con su hora solar?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Es la misma para ambos puntos</button>
+        <button class="quiz-opt" data-correct="false">Es siempre diferente</button>
+        <button class="quiz-opt" data-correct="false">Depende de la estación del año</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="topic" id="t2">
+    <div class="topic-head"><div class="topic-num">2</div><h2>Línea Internacional de Cambio de Fecha</h2></div>
+    <div class="topic-body">
+      <p>Es el <b>meridiano 180°</b>, establecido convencionalmente en medio del océano Pacífico, lejos de tierras pobladas, precisamente para evitar que una misma ciudad quede dividida en dos fechas distintas. Siempre que se cruza este meridiano, hay un <b>cambio de día</b> (anterior o posterior), dependiendo de si se viaja hacia el Este o hacia el Oeste.</p>
+      <div class="illus">
+        <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama de la Tierra vista desde el polo mostrando el meridiano de Greenwich y el meridiano 180 grados, con la rotación de oeste a este">
+          <circle cx="320" cy="110" r="95" fill="none" stroke="var(--hairline)" stroke-width="1.5"/>
+          <line x1="320" y1="15" x2="320" y2="205" stroke="var(--mvfr)" stroke-width="2"/>
+          <line x1="225" y1="110" x2="415" y2="110" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4"/>
+          <text x="326" y="28" fill="var(--mvfr)" font-size="12" font-family="IBM Plex Mono, monospace">0° Greenwich</text>
+          <text x="330" y="118" fill="var(--warn)" font-size="12" font-family="IBM Plex Mono, monospace">Eje Este-Oeste</text>
+          <path d="M 320 15 A 95 95 0 0 1 415 110" fill="none" stroke="var(--vfr)" stroke-width="2.5"/>
+          <polygon points="415,110 405,102 405,118" fill="var(--vfr)"/>
+          <text x="360" y="70" fill="var(--vfr)" font-size="11" font-family="IBM Plex Mono, monospace">rotación</text>
+          <circle cx="320" cy="110" r="4" fill="var(--ifr)"/>
+          <text x="230" y="205" fill="var(--ifr)" font-size="12" font-family="IBM Plex Mono, monospace">180° — Línea de Cambio de Fecha</text>
+        </svg>
+        <div class="illus-cap">La Tierra rota de Oeste a Este: los puntos al Este de una referencia siempre "ven" la hora más tarde.</div>
+      </div>
+      <div class="mnemo"><b>🧠 Por qué importa:</b> como la rotación terrestre es de Oeste a Este, los puntos situados hacia el <b>Este</b> de una referencia conocida tendrán una hora <b>más tarde</b>, y los situados hacia el <b>Oeste</b>, una hora <b>más temprana</b>. Es el mismo principio, llevado al extremo, el que obliga a "saltar" o "repetir" un día completo al cruzar el meridiano 180°.</div>
+    </div>
+    <div class="quiz-card" data-quiz="2">
+      <div class="quiz-tag">🎯 Chequeo rápido 2/6</div>
+      <div class="quiz-q">¿Dónde se ubica la Línea Internacional de Cambio de Fecha y por qué se eligió ese lugar?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">En el meridiano 180°, en el océano Pacífico, lejos de tierras pobladas</button>
+        <button class="quiz-opt" data-correct="false">En el meridiano de Greenwich, para coincidir con la hora UTC</button>
+        <button class="quiz-opt" data-correct="false">En el Ecuador, para dividir los hemisferios norte y sur</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="topic" id="t3">
+    <div class="topic-head"><div class="topic-num">3</div><h2>Relación Tiempo ↔ Arco</h2></div>
+    <div class="topic-body">
+      <p>La Tierra da una rotación completa de <b>360°</b> en <b>24 horas</b>. De ahí se desprende una tabla de conversión exacta entre grados de longitud y unidades de tiempo, en ambos sentidos:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>De Tiempo a Arco</th><th></th><th>De Arco a Tiempo</th></tr>
+        <tr><td class="mono">1 hora</td><td>=</td><td class="mono">15°</td></tr>
+        <tr><td class="mono">1 minuto</td><td>=</td><td class="mono">15'</td></tr>
+        <tr><td class="mono">1 segundo</td><td>=</td><td class="mono">15''</td></tr>
+      </table>
+      </div>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>De Arco a Tiempo</th><th></th><th></th></tr>
+        <tr><td class="mono">1°</td><td>=</td><td class="mono">4 minutos</td></tr>
+        <tr><td class="mono">1'</td><td>=</td><td class="mono">4 segundos</td></tr>
+        <tr><td class="mono">1''</td><td>=</td><td class="mono">1/15 de segundo</td></tr>
+      </table>
+      </div>
+      <div class="tool-box">
+        <h4 style="margin:0 0 10px; font-size:0.92rem; color:var(--accent);">🧮 Conversor Tiempo ↔ Arco</h4>
+        <div class="tool-row">
+          <input type="number" id="arcInput" placeholder="Escribe un número" step="any">
+          <div class="seg" id="arcMode">
+            <button class="active" data-mode="arco-tiempo">Grados → Tiempo</button>
+            <button data-mode="tiempo-arco">Minutos → Grados</button>
+          </div>
+        </div>
+        <div class="tool-output" id="arcOutput">— escribe un número arriba —</div>
+        <div class="tool-note">Modo "Grados → Tiempo": ingresa grados de longitud (puede tener decimales). Modo "Minutos → Grados": ingresa minutos de tiempo totales.</div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="3">
+      <div class="quiz-tag">🎯 Chequeo rápido 3/6</div>
+      <div class="quiz-q">¿A cuántos minutos de tiempo equivale 1 grado (1°) de arco?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="false">1 minuto</button>
+        <button class="quiz-opt" data-correct="false">15 minutos</button>
+        <button class="quiz-opt" data-correct="true">4 minutos</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="topic" id="t4">
+    <div class="topic-head"><div class="topic-num">4</div><h2>Husos horarios y hora local</h2></div>
+    <div class="topic-body">
+      <p>Para un manejo racional de la hora local en todo el planeta, se diseñó el sistema de <b>Husos Horarios</b>. Un huso horario es una franja de <b>15° de longitud</b> (equivalente a una hora de tiempo), y la Tierra queda dividida en <b>24 husos</b> en total. El eje de todo el sistema es el <b>Meridiano de Greenwich</b> (0°).</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>1 huso</b>15° de longitud = 1 hora de diferencia</div>
+        <div class="objective-item"><b>Total</b>24 husos cubren los 360° de la Tierra</div>
+        <div class="objective-item"><b>Referencia</b>Meridiano de Greenwich (0°)</div>
+      </div>
+      <p>La <b>Hora Local</b> es la hora del <b>meridiano central</b> de cada huso horario, y es igual para <b>todos los puntos</b> dentro de esa misma franja — así estén a cientos de kilómetros de distancia Este-Oeste.</p>
+
+      <div class="tz-sim">
+        <div class="tz-head">
+          <h4>🌍 Los 24 husos, en vivo</h4>
+          <span class="tz-hint">Arrastra el meridiano por el mapa</span>
+        </div>
+
+        <div class="tz-map">
+          <svg id="tzSvg" viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Franja de longitudes de 180 grados oeste a 180 grados este dividida en los 24 husos horarios, con un meridiano móvil">
+            <g id="tzBands"></g>
+            <!-- meridiano de Greenwich -->
+            <line id="tzGreenwich" x1="360" y1="30" x2="360" y2="150" stroke="var(--vfr)" stroke-width="2.5"/>
+            <text x="360" y="24" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="700"
+                  fill="var(--vfr)" text-anchor="middle">GREENWICH 0°</text>
+            <!-- linea internacional de cambio de fecha -->
+            <line x1="20"  y1="30" x2="20"  y2="150" stroke="var(--danger)" stroke-width="2.5" stroke-dasharray="5 4"/>
+            <line x1="700" y1="30" x2="700" y2="150" stroke="var(--danger)" stroke-width="2.5" stroke-dasharray="5 4"/>
+            <text x="20"  y="24" font-family="IBM Plex Mono, monospace" font-size="8" font-weight="700"
+                  fill="var(--danger)" text-anchor="start">LICF 180°</text>
+            <text x="700" y="24" font-family="IBM Plex Mono, monospace" font-size="8" font-weight="700"
+                  fill="var(--danger)" text-anchor="end">LICF 180°</text>
+            <!-- etiquetas W / E -->
+            <text x="190" y="176" font-family="IBM Plex Mono, monospace" font-size="10"
+                  fill="var(--text-muted)" text-anchor="middle">← OESTE (UTC −)</text>
+            <text x="530" y="176" font-family="IBM Plex Mono, monospace" font-size="10"
+                  fill="var(--text-muted)" text-anchor="middle">(UTC +) ESTE →</text>
+            <!-- meridiano movil -->
+            <g id="tzMarker">
+              <line x1="360" y1="20" x2="360" y2="158" stroke="var(--accent)" stroke-width="3"/>
+              <circle cx="360" cy="20" r="9" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>
+              <text id="tzMarkerLbl" x="360" y="198" font-family="IBM Plex Mono, monospace" font-size="11"
+                    font-weight="700" fill="var(--accent)" text-anchor="middle">000° · UTC+0</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="tz-ctl">
+          <label for="tzLon">Longitud del punto <b id="tzLonVal">000°</b></label>
+          <input type="range" id="tzLon" min="-180" max="180" step="1" value="0">
+        </div>
+
+        <div class="tz-readout">
+          <div class="tz-rd"><span>Huso horario</span><b id="tzZone" class="hl">UTC+0</b></div>
+          <div class="tz-rd"><span>Meridiano central</span><b id="tzCentral">000°</b></div>
+          <div class="tz-rd"><span>Hora UTC (Zulu)</span><b id="tzUtc">--:--</b></div>
+          <div class="tz-rd"><span>Hora local del huso</span><b id="tzLocal" class="hl">--:--</b></div>
+        </div>
+
+        <div class="tz-explain" id="tzExplain">…</div>
+
+        <div class="tz-presets">
+          <button class="tz-preset" type="button" data-lon="-75">Bogotá ≈ 75°W</button>
+          <button class="tz-preset" type="button" data-lon="0">Greenwich 0°</button>
+          <button class="tz-preset" type="button" data-lon="-90">90°W — huso −6 exacto</button>
+          <button class="tz-preset" type="button" data-lon="139">Tokio ≈ 139°E</button>
+          <button class="tz-preset" type="button" data-lon="-98">98°W — pasado el borde de 7°30'</button>
+          <button class="tz-preset" type="button" data-lon="180">Sobre la LICF (180°)</button>
+        </div>
+
+        <div class="tz-warn">
+          <b>⚠ Importante:</b> este mapa muestra los husos <b>geográficos</b>, calculados solo con la longitud
+          (longitud ÷ 15). La <b>hora legal</b> que usa cada país la fija su propia legislación y muchas veces
+          <b>no coincide</b> con el huso geográfico: hay países enteros con una sola hora pese a abarcar varios husos,
+          husos desplazados media hora, y horario de verano estacional. Para planificación real de vuelo se usa
+          siempre la hora publicada en el <b>AIP</b> de cada Estado, no este cálculo.
+        </div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="4">
+      <div class="quiz-tag">🎯 Chequeo rápido 4/6</div>
+      <div class="quiz-q">¿Cuántos grados de longitud abarca un huso horario, y cuántos husos hay en total?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">15° cada uno, 24 husos en total</button>
+        <button class="quiz-opt" data-correct="false">10° cada uno, 36 husos en total</button>
+        <button class="quiz-opt" data-correct="false">30° cada uno, 12 husos en total</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="topic" id="t5">
+    <div class="topic-head"><div class="topic-num">5</div><h2>Cómo calcular el huso horario de un punto</h2></div>
+    <div class="topic-body">
+      <p>Para determinar a qué huso horario pertenece un punto, se dividen sus <b>grados de longitud entre 15</b>. Luego se aplica esta regla sobre el residuo:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Residuo mayor de 7°30'</b>El huso es el resultado de la división, <b>más uno</b>.</div>
+        <div class="objective-item"><b>Residuo menor de 7°30'</b>El huso es directamente el número resultante de la división.</div>
+      </div>
+      <div class="tool-box">
+        <h4 style="margin:0 0 10px; font-size:0.92rem; color:var(--accent);">🧭 Calculadora de huso horario</h4>
+        <div class="tool-row">
+          <input type="number" id="husoInput" placeholder="Longitud en grados (0–180)" min="0" max="180" step="any">
+          <div class="seg" id="husoMode">
+            <button class="active" data-mode="E">Este</button>
+            <button data-mode="W">Oeste</button>
+          </div>
+        </div>
+        <div class="tool-output" id="husoOutput">— escribe una longitud arriba —</div>
+        <div class="tool-note">El número de huso solo depende de la magnitud de la longitud; Este/Oeste indica de qué lado de Greenwich está.</div>
+      </div>
+    </div>
+    <div class="quiz-card" data-quiz="5">
+      <div class="quiz-tag">🎯 Chequeo rápido 5/6</div>
+      <div class="quiz-q">Un punto está a 82° de longitud. 82 ÷ 15 = 5 con residuo de 7°. ¿Cuál es su huso horario?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Huso 5 (el residuo de 7° es menor a 7°30')</button>
+        <button class="quiz-opt" data-correct="false">Huso 6 (el residuo de 7° es mayor a 7°30')</button>
+        <button class="quiz-opt" data-correct="false">Huso 82 directamente</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="topic" id="t6">
+    <div class="topic-head"><div class="topic-num">6</div><h2>Husos múltiples y diferencia horaria entre dos puntos</h2></div>
+    <div class="topic-body">
+      <p>Algunos países con gran extensión Este-Oeste, como <b>Estados Unidos</b> y <b>México</b>, ocupan más de dos husos horarios y por eso conviven con varias horas locales oficiales al mismo tiempo. En Estados Unidos rigen cuatro husos:</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Huso</th><th>Nombre</th><th>Diferencia con Greenwich</th></tr>
+        <tr><td class="mono">1</td><td>Pacífico</td><td class="mono">+8</td></tr>
+        <tr><td class="mono">2</td><td>Montañas</td><td class="mono">+7</td></tr>
+        <tr><td class="mono">3</td><td>Central</td><td class="mono">+6</td></tr>
+        <tr><td class="mono">4</td><td>Este</td><td class="mono">+5</td></tr>
+      </table>
+      </div>
+      <p>Para calcular la <b>diferencia de horas</b> entre dos puntos cualesquiera:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Mismo hemisferio</b>Se <b>restan</b> sus valores numéricos de huso.</div>
+        <div class="objective-item"><b>Diferente hemisferio</b>Se <b>suman</b> sus valores numéricos de huso.</div>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> "mismo lado, se resta; lados distintos, se suma" — igual que en la recta numérica al medir la distancia entre dos puntos respecto a un cero central (Greenwich).</div>
+    </div>
+    <div class="quiz-card" data-quiz="6">
+      <div class="quiz-tag">🎯 Chequeo rápido 6/6 — ¡última pregunta!</div>
+      <div class="quiz-q">Dos puntos están en el mismo hemisferio horario respecto a Greenwich. ¿Cómo se calcula su diferencia de horas?</div>
+      <div class="quiz-options">
+        <button class="quiz-opt" data-correct="true">Restando sus valores numéricos de huso</button>
+        <button class="quiz-opt" data-correct="false">Sumando sus valores numéricos de huso</button>
+        <button class="quiz-opt" data-correct="false">Multiplicando el número de husos por 15</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </article>
+
+  <div class="finish-card" id="finishCard" style="display:none;">
+    <div class="big">🏆</div>
+    <h3>Bloque completado</h3>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 6 preguntas correctamente. Ya sabes cómo se define la hora en navegación aérea — sigue con el Bloque 2: Velocidad.</p>
+  </div>
+
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Módulo NAV · Bloque 1 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- PROGRESO DE CHEQUEOS ----------
+  const TOTAL_QUIZ = 6;
+  let correctCount = 0;
+
+  const quizProgressFill  = document.getElementById('quizProgressFill');
+  const quizProgressScore = document.getElementById('quizProgressScore');
+  const finishCard        = document.getElementById('finishCard');
+
+  function renderProgress(){
+    const pct = (correctCount / TOTAL_QUIZ) * 100;
+    if(quizProgressFill)  quizProgressFill.style.width = pct + '%';
+    if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
+    if(correctCount >= TOTAL_QUIZ){
+      if(finishCard) finishCard.style.display = 'block';
+      marcarModuloCompletado('navegacion-tiempo');
+    }
+  }
+  renderProgress();
+
+  function answerQuiz(card, btn, isCorrect){
+    if(card.classList.contains('answered')) return;
+    card.classList.add('answered');
+    card.querySelectorAll('.quiz-opt').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === 'true') b.classList.add('correct');
+    });
+    const feedback = card.querySelector('.quiz-feedback');
+    if(isCorrect){
+      correctCount++;
+      feedback.style.color = 'var(--vfr)';
+      feedback.textContent = '✅ Correcto.';
+    }else{
+      btn.classList.add('incorrect');
+      feedback.style.color = 'var(--danger)';
+      feedback.textContent = '✗ No es esa. La opción correcta queda marcada en verde — vuelve a leer el punto de arriba.';
+    }
+    renderProgress();
+  }
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    card.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
+    });
+  });
+
+  // ---------- CONVERSOR TIEMPO <-> ARCO ----------
+  const arcInput = document.getElementById('arcInput');
+  const arcOutput = document.getElementById('arcOutput');
+  const arcModeBox = document.getElementById('arcMode');
+  let arcMode = 'arco-tiempo';
+
+  function formatHMS(totalSeconds){
+    const sign = totalSeconds < 0 ? '-' : '';
+    totalSeconds = Math.abs(totalSeconds);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = Math.round(totalSeconds % 60);
+    return `${sign}${h}h ${m}m ${s}s`;
+  }
+
+  function updateArcOutput(){
+    const raw = arcInput.value.trim();
+    if(raw === '' || isNaN(Number(raw))){
+      arcOutput.textContent = '— escribe un número arriba —';
+      return;
+    }
+    const val = Number(raw);
+    if(arcMode === 'arco-tiempo'){
+      const totalSeconds = val * 4 * 60; // 1° = 4 min
+      arcOutput.textContent = `${val}° × 4 min/° = ${formatHMS(totalSeconds)}`;
+    }else{
+      const grados = val / 4; // 1° = 4 min -> grados = minutos/4
+      arcOutput.textContent = `${val} min ÷ 4 = ${grados.toFixed(3)}°`;
+    }
+  }
+
+  arcModeBox.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      arcModeBox.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      arcMode = b.dataset.mode;
+      arcInput.placeholder = arcMode === 'arco-tiempo' ? 'Escribe grados' : 'Escribe minutos totales';
+      updateArcOutput();
+    });
+  });
+  arcInput.addEventListener('input', updateArcOutput);
+
+  // ---------- CALCULADORA DE HUSO HORARIO ----------
+  const husoInput = document.getElementById('husoInput');
+  const husoOutput = document.getElementById('husoOutput');
+  const husoModeBox = document.getElementById('husoMode');
+  let husoHemisferio = 'E';
+
+  function updateHusoOutput(){
+    const raw = husoInput.value.trim();
+    if(raw === '' || isNaN(Number(raw))){
+      husoOutput.textContent = '— escribe una longitud arriba —';
+      return;
+    }
+    const lon = Math.min(Math.abs(Number(raw)), 180);
+    const base = Math.floor(lon / 15);
+    const residuo = lon - base * 15;
+    const huso = residuo > 7.5 ? base + 1 : base;
+    const ladoTexto = husoHemisferio === 'E' ? 'Este de Greenwich' : 'Oeste de Greenwich';
+    husoOutput.textContent = `${lon}° ÷ 15 = ${base} con residuo ${residuo.toFixed(1)}° → Huso ${huso} (${ladoTexto})`;
+  }
+
+  husoModeBox.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      husoModeBox.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      husoHemisferio = b.dataset.mode;
+      updateHusoOutput();
+    });
+  });
+  husoInput.addEventListener('input', updateHusoOutput);
+
+  // ---------- MAPA INTERACTIVO DE HUSOS HORARIOS ----------
+  (function(){
+    const svg = document.getElementById('tzSvg');
+    if(!svg) return;
+    const el = id => document.getElementById(id);
+
+    const X0 = 20, X1 = 700, TOP = 30, BOT = 150;
+    const xOf = lon => X0 + (lon + 180) / 360 * (X1 - X0);
+    const lonOf = x => (x - X0) / (X1 - X0) * 360 - 180;
+    const p2 = n => String(n).padStart(2, '0');
+
+    let lon = 0;
+
+    // bandas de los 24 husos: cada uno de 15°, centrado en un múltiplo de 15
+    (function buildBands(){
+      const NS = 'http://www.w3.org/2000/svg';
+      const g = el('tzBands');
+      for(let k = -12; k <= 12; k++){
+        const a = Math.max(-180, k * 15 - 7.5), b = Math.min(180, k * 15 + 7.5);
+        if(b <= a) continue;
+        const r = document.createElementNS(NS, 'rect');
+        r.setAttribute('x', xOf(a)); r.setAttribute('y', TOP);
+        r.setAttribute('width', xOf(b) - xOf(a)); r.setAttribute('height', BOT - TOP);
+        r.setAttribute('fill', k % 2 === 0 ? 'var(--panel-alt)' : 'var(--panel)');
+        r.setAttribute('stroke', 'var(--hairline)'); r.setAttribute('stroke-width', '0.6');
+        g.appendChild(r);
+        if(k % 3 === 0){
+          const t = document.createElementNS(NS, 'text');
+          t.setAttribute('x', (xOf(a) + xOf(b)) / 2); t.setAttribute('y', BOT - 8);
+          t.setAttribute('font-family', 'IBM Plex Mono, monospace');
+          t.setAttribute('font-size', '9'); t.setAttribute('fill', 'var(--text-muted)');
+          t.setAttribute('text-anchor', 'middle');
+          t.textContent = (k >= 0 ? '+' : '') + k;
+          g.appendChild(t);
+        }
+      }
+    })();
+
+    function render(){
+      const zone    = Math.round(lon / 15);          // huso geográfico
+      const central = zone * 15;                     // meridiano central del huso
+      const x = xOf(lon);
+
+      el('tzMarker').querySelector('line').setAttribute('x1', x);
+      el('tzMarker').querySelector('line').setAttribute('x2', x);
+      el('tzMarker').querySelector('circle').setAttribute('cx', x);
+      const lbl = el('tzMarkerLbl');
+      lbl.setAttribute('x', Math.max(46, Math.min(674, x)));
+      lbl.textContent = `${Math.abs(Math.round(lon))}°${lon < 0 ? 'W' : lon > 0 ? 'E' : ''} · UTC${zone >= 0 ? '+' : ''}${zone}`;
+
+      el('tzLonVal').textContent = `${Math.abs(Math.round(lon))}°${lon < 0 ? 'W' : lon > 0 ? 'E' : ''}`;
+      el('tzZone').textContent   = `UTC${zone >= 0 ? '+' : ''}${zone}`;
+      el('tzCentral').textContent = `${Math.abs(central)}°${central < 0 ? 'W' : central > 0 ? 'E' : ''}`;
+
+      const now = new Date();
+      const utcMin = now.getUTCHours() * 60 + now.getUTCMinutes();
+      const locMin = ((utcMin + zone * 60) % 1440 + 1440) % 1440;
+      const dayShift = Math.floor((utcMin + zone * 60) / 1440);
+      el('tzUtc').textContent   = `${p2(now.getUTCHours())}:${p2(now.getUTCMinutes())} Z`;
+      el('tzLocal').textContent = `${p2(Math.floor(locMin / 60))}:${p2(locMin % 60)}` +
+                                  (dayShift > 0 ? ' (+1 día)' : dayShift < 0 ? ' (−1 día)' : '');
+
+      const horas = Math.abs(zone);
+      let txt;
+      if(zone === 0){
+        txt = `Estás en el huso de referencia: el meridiano de <b>Greenwich</b>. Aquí la hora local coincide con la <b>UTC (Zulu)</b>, que es la que se usa en todo el mundo aeronáutico.`;
+      } else {
+        txt = `Longitud ${Math.abs(Math.round(lon))}° ÷ 15 = huso <b>${zone >= 0 ? '+' : ''}${zone}</b>, cuyo meridiano central es <b>${Math.abs(central)}°${central < 0 ? 'W' : 'E'}</b>. ` +
+              `Como cada huso vale <b>1 hora</b>, aquí la hora local va <b>${horas} hora${horas === 1 ? '' : 's'} ` +
+              `${zone > 0 ? 'por delante' : 'por detrás'}</b> de la UTC.`;
+      }
+      if(Math.abs(lon) > 172.5){
+        txt += ` Estás sobre la <b>Línea Internacional de Cambio de Fecha</b>: cruzarla hacia el oeste suma un día al calendario, y hacia el este lo resta.`;
+      }
+      el('tzExplain').innerHTML = txt;
+    }
+
+    el('tzLon').addEventListener('input', e => { lon = Number(e.target.value); render(); });
+
+    let dragging = false;
+    function moveTo(evt){
+      const rect = svg.getBoundingClientRect();
+      const x = (evt.clientX - rect.left) / rect.width * 720;
+      lon = Math.max(-180, Math.min(180, Math.round(lonOf(x))));
+      el('tzLon').value = lon;
+      render();
+    }
+    svg.addEventListener('pointerdown', e => {
+      dragging = true; svg.classList.add('dragging');
+      svg.setPointerCapture(e.pointerId); moveTo(e); e.preventDefault();
+    });
+    svg.addEventListener('pointermove', e => { if(dragging){ moveTo(e); e.preventDefault(); } });
+    const end = () => { dragging = false; svg.classList.remove('dragging'); };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+
+    document.querySelectorAll('.tz-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        lon = Number(btn.dataset.lon);
+        el('tzLon').value = lon;
+        render();
+      });
+    });
+
+    render();
+    setInterval(render, 30000);   // mantiene la hora local al día
+  })();
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

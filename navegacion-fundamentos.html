@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meteorología · Generalidades y Atmósfera | SoyAeronáutico</title>
+<title>Navegación · Fundamentos y Clases | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,6 @@
     --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
-    --sky1:#0A2647; --sky2:#1657C6; --sky3:#3E7BFA; --sky4:#8FC1E8; --sky5:#E6F2FB;
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
@@ -105,14 +104,13 @@
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
   @media (max-width:820px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
 
-  /* ---- sub-tabs for MET ejes tematicos ---- */
+  /* ---- sub-tabs de Navegación ---- */
   .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
   .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
   .subtab.active .n{ background:var(--accent); color:#fff; }
-  .subtab.locked{ opacity:0.45; cursor:default; }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -158,27 +156,59 @@
   table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
   .ats-table-wrap{ overflow-x:auto; }
 
-  /* ---- composición atmosférica (barra apilada) ---- */
-  .gas-bar{ display:flex; height:38px; border-radius:8px; overflow:hidden; border:1px solid var(--hairline); margin:14px 0; }
-  .gas-seg{ display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-family:'IBM Plex Mono'; font-weight:600; }
-  .gas-legend{ display:flex; flex-wrap:wrap; gap:14px; font-size:0.82rem; color:var(--text-muted); margin-bottom:6px;}
-  .gas-legend span{ display:flex; align-items:center; gap:6px; }
-  .gas-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
+  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
+  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
 
-  /* ---- diagrama de la atmósfera (capas) ---- */
-  .atmos-wrap{ display:grid; grid-template-columns: 1fr; gap:0; margin:20px 0; border-radius:14px; overflow:hidden; border:1px solid var(--hairline); }
-  .atmos-layer{ position:relative; padding:16px 18px; color:#fff; display:flex; flex-direction:column; gap:4px; }
-  .atmos-layer .lname{ font-family:'Archivo'; font-weight:800; font-size:1rem; }
-  .atmos-layer .lrange{ font-family:'IBM Plex Mono'; font-size:0.72rem; opacity:0.88; }
-  .atmos-layer .ldesc{ font-size:0.82rem; opacity:0.95; max-width:640px; line-height:1.5; }
-  .l-exosfera{ background:linear-gradient(180deg,#050912,#0A1B33); padding-top:26px; }
-  .l-termosfera{ background:linear-gradient(180deg,#0A1B33,#123B6B); }
-  .l-mesosfera{ background:linear-gradient(180deg,#123B6B,#1657C6); }
-  .l-estratosfera{ background:linear-gradient(180deg,#1657C6,#3E7BFA); }
-  .l-troposfera{ background:linear-gradient(180deg,#3E7BFA,#8FC1E8); color:#0A2647; padding-bottom:26px; }
-  .l-troposfera .lrange, .l-troposfera .ldesc{ opacity:0.85; }
+  /* ---- diagrama de clases de navegación ---- */
+  .nav-methods-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:18px 0; }
+  .nav-method-chip{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:14px 10px; font-size:0.78rem; font-weight:600; color:var(--text-muted); }
+  .nav-method-chip .ic{ font-size:1.6rem; display:block; margin-bottom:6px; }
+  .nav-method-chip.this{ border-color:var(--vfr); color:var(--vfr); background:rgba(46,158,109,0.08); }
 
-  /* ---- actividad drag & drop ---- */
+  /* ---- comparador de las 5 clases de navegación ---- */
+  .cmp-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .cmp-box h4{ font-size:0.95rem; color:var(--accent); margin:0 0 4px; }
+  .cmp-box > p{ font-size:0.86rem; color:var(--text-muted); line-height:1.6; margin:0 0 14px; }
+  .cmp-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .cmp-tab{ display:flex; align-items:center; gap:7px; font-family:'IBM Plex Sans'; font-size:0.8rem; font-weight:600;
+            padding:9px 14px; border-radius:9px; border:1px solid var(--hairline); background:var(--bg);
+            color:var(--text-muted); cursor:pointer; transition:.15s; }
+  .cmp-tab:hover{ border-color:var(--accent); color:var(--accent); }
+  .cmp-tab.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .cmp-panel{ background:var(--bg); border:1px solid var(--hairline); border-radius:12px; padding:18px; }
+  .cmp-title{ font-family:'Archivo', sans-serif; font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .cmp-sub{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); margin-bottom:14px; }
+  .cmp-bars{ display:grid; gap:10px; margin-bottom:16px; }
+  .cmp-bar{ display:flex; align-items:center; gap:12px; }
+  .cmp-bar span{ flex-shrink:0; width:104px; font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); }
+  .cmp-bar .track{ flex:1; height:9px; border-radius:5px; background:var(--panel-alt); overflow:hidden; }
+  .cmp-bar .track i{ display:block; height:100%; border-radius:5px; transition:width .3s ease; }
+  .cmp-bar b{ flex-shrink:0; width:74px; text-align:right; font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text); }
+  .cmp-cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+  .cmp-col{ border-radius:9px; padding:12px 14px; font-size:0.83rem; line-height:1.55; border-left:4px solid; background:var(--panel); }
+  .cmp-col.pro{ border-left-color:var(--vfr); } .cmp-col.con{ border-left-color:var(--danger); }
+  .cmp-col b{ display:block; font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.06em; margin-bottom:5px; }
+  .cmp-col.pro b{ color:var(--vfr); } .cmp-col.con b{ color:var(--danger); }
+  .cmp-use{ margin-top:12px; font-size:0.84rem; line-height:1.6; color:var(--text-muted); border-top:1px dashed var(--hairline); padding-top:12px; }
+  .cmp-use b{ color:var(--text); }
+
+  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
+  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
+  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
+  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .quiz-opt:hover{ border-color:var(--accent); }
+  .quiz-card.answered .quiz-opt{ cursor:default; }
+  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
+  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
+  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
+
+  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
+  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+
+  /* ---- actividad drag & drop: relaciona cada método ---- */
   .dnd-box{ border:1px solid var(--hairline); border-radius:14px; padding:18px; background:var(--panel); margin:18px 0; }
   .dnd-instructions{ font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; }
   .dnd-layers{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
@@ -200,25 +230,11 @@
   .dnd-progress{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); margin-top:6px; }
   .dnd-reset{ margin-top:12px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:7px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; }
   .dnd-reset:hover{ border-color:var(--accent); color:var(--accent); }
-
-  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
-  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
-
-  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
-  .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-  .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
-  .quiz-options{ display:flex; flex-direction:column; gap:9px; }
-  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
-  .quiz-opt:hover{ border-color:var(--accent); }
-  .quiz-card.answered .quiz-opt{ cursor:default; }
-  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
-  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
-  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
-  .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
-
-  .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
-  .finish-card .big{ font-size:2.2rem; margin-bottom:8px; }
+  .l-visual{ background:linear-gradient(180deg,#2E9E6D,#3EBE85); }
+  .l-estima{ background:linear-gradient(180deg,#1657C6,#3E7BFA); }
+  .l-autonoma{ background:linear-gradient(180deg,#8B5CF6,#A78BFA); }
+  .l-radio{ background:linear-gradient(180deg,#E08E3E,#F0AC66); }
+  .l-satelital{ background:linear-gradient(180deg,#0A2647,#1E3A5F); }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
@@ -302,11 +318,11 @@
         </button>
         <div class="nav-dropdown-menu" id="modulosMenu">
           <div class="nav-dropdown-menu-inner">
-            <a href="meteorologia.html" class="active">Meteorología</a>
+            <a href="meteorologia.html">Meteorología</a>
             <a href="ats.html">ATS</a>
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
-            <a href="navegacion.html">Navegación</a>
+            <a href="navegacion.html" class="active">Navegación</a>
           </div>
         </div>
       </div>
@@ -339,10 +355,10 @@
     <nav class="mobile-nav-links">
       <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
       <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
-      <a href="meteorologia.html" class="active">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
-      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -360,9 +376,12 @@
 
   <div class="subtabs">
     <div class="subtabs-inner">
-      <a href="meteorologia-generalidades.html" class="subtab active"><span class="n">1</span> Generalidades y Atmósfera</a>
-      <a href="meteorologia-variables.html" class="subtab"><span class="n">2</span> Variables Meteorológicas</a>
-      <a href="meteorologia-nubosidad.html" class="subtab"><span class="n">3</span> Nubosidad · Meteoros</a>
+      <a href="navegacion-fundamentos.html" class="subtab active"><span class="n">★</span> Fundamentos</a>
+      <a href="navegacion-tiempo.html" class="subtab"><span class="n">1</span> Tiempo</a>
+      <a href="navegacion-velocidad.html" class="subtab"><span class="n">2</span> Velocidad</a>
+      <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
+      <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
+      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
     </div>
   </div>
 
@@ -370,51 +389,92 @@
     <div class="quiz-progress-inner">
       <span class="quiz-progress-label">Chequeos rápidos</span>
       <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
-      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 8 correctos</span>
+      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 6 correctos</span>
     </div>
   </div>
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Meteorología — Eje temático 1</div>
-  <h1>Generalidades: qué es la meteorología y cómo está armada la atmósfera.</h1>
-  <p class="lead">Antes de hablar de viento, presión o nubes, hay que tener clarísimo dónde ocurre todo eso: la atmósfera. Aquí vemos las definiciones base y recorremos capa por capa, de la superficie hacia el espacio.</p>
-  <div class="hero-note">🎈 <div><b>Cómo estudiar esta página:</b> lee cada bloque, responde el chequeo rápido que sigue y al final arma tú mismo la atmósfera arrastrando las características a su capa correcta.</div></div>
+  <div class="eyebrow">Navegación — Bloque ★ Fundamentos</div>
+  <h1>Fundamentos: qué es la navegación aérea y cuáles son sus clases.</h1>
+  <p class="lead">Antes de hablar de rumbos, velocidades o radioayudas, hay que tener claro qué es "navegar" en aviación y qué caminos existen para hacerlo. Este bloque es el punto de partida del módulo: recorre las clases de navegación aérea, de la más antigua a la más moderna.</p>
+  <div class="hero-note">🧭 <div><b>Cómo estudiar esta página:</b> empieza por el <b>comparador de las 5 clases</b> del tema 1 para hacerte una idea general, y luego lee cada método con su chequeo rápido. Al final, relaciona cada característica con su método en la actividad interactiva.</div></div>
 </section>
 
 <nav class="toc">
-  <a href="#t1">1. ¿Qué es la Meteorología?</a>
-  <a href="#t2">2. Tiempo vs. Clima</a>
-  <a href="#t3">3. La atmósfera: definición y composición</a>
-  <a href="#t4">4. Tropósfera</a>
-  <a href="#t5">5. Estratosfera</a>
-  <a href="#t6">6. Mesosfera</a>
-  <a href="#t7">7. Termosfera e Ionosfera</a>
-  <a href="#t8">8. Exosfera</a>
-  <a href="#t9">9. Actividad: arma la atmósfera</a>
+  <a href="#t1">1. ¿Qué es la navegación aérea?</a>
+  <a href="#t2">2. Navegación Visual u Observada</a>
+  <a href="#t3">3. Navegación a Estima</a>
+  <a href="#t4">4. Navegación Autónoma</a>
+  <a href="#t5">5. Radionavegación</a>
+  <a href="#t6">6. Navegación por Satélite (GNSS)</a>
+  <a href="#t7">7. Actividad: relaciona cada método</a>
 </nav>
 
 <main class="content">
 
   <!-- 1 -->
   <article class="topic" id="t1">
-    <div class="topic-head"><div class="topic-num">1</div><h2>¿Qué es la Meteorología?</h2></div>
+    <div class="topic-head"><div class="topic-num">1</div><h2>¿Qué es la navegación aérea?</h2></div>
     <div class="topic-body">
-      <p>La <b>Meteorología</b> es la ciencia que estudia la atmósfera y los fenómenos que ocurren en ella: viento, temperatura, humedad, presión, nubes y precipitación. Su objetivo es describir, entender y predecir el <b>estado de la atmósfera</b> en un lugar y momento determinados.</p>
+      <p>La <b>navegación aérea</b> es el conjunto de técnicas y procedimientos que permiten conducir eficientemente una aeronave a su lugar de destino, asegurando la integridad de los tripulantes, los pasajeros y de las personas que están en tierra.</p>
       <div class="objective-grid">
-        <div class="objective-item"><b>¿Por qué?</b>Porque casi todos los fenómenos que afectan un vuelo (turbulencia, visibilidad, viento cruzado, hielo, tormentas) nacen en la atmósfera.</div>
-        <div class="objective-item"><b>¿Para qué?</b>Para que el piloto y el controlador tomen decisiones seguras: despegar, desviar, esperar o cancelar.</div>
-        <div class="objective-item"><b>¿Con qué?</b>Con datos de estaciones, radiosondas, satélites y radares que alimentan reportes como el METAR y el TAF.</div>
+        <div class="objective-item"><b>¿Por qué?</b>Porque una aeronave se mueve en tres dimensiones, sin líneas pintadas en el aire — hay que saber siempre dónde se está y hacia dónde se va.</div>
+        <div class="objective-item"><b>¿Para qué?</b>Para llegar al destino de forma eficiente, segura y dentro de los tiempos y rutas planeados.</div>
+        <div class="objective-item"><b>¿Con qué?</b>Con distintos métodos, cada uno con su propio nivel de precisión: visual, a estima, autónomo, por radioayudas y por satélite.</div>
       </div>
-      <div class="mnemo"><b>🧠 Idea clave:</b> la meteorología aeronáutica no es "adivinar el clima", es traducir el estado físico de la atmósfera en información operacional para la aviación.</div>
+      <div class="mnemo"><b>🧠 Idea clave:</b> no existe un único "método correcto" de navegar. El piloto combina varios según el equipo disponible, el tipo de vuelo (VFR/IFR) y las condiciones del momento.</div>
+
+      <div class="cmp-box">
+        <h4>🧭 Las 5 clases, comparadas de un vistazo</h4>
+        <p>Antes de estudiarlas una por una, mira en qué se diferencian. Toca cada método para ver
+          qué precisión ofrece, de qué depende y cuándo se usa en la práctica.</p>
+
+        <div class="cmp-tabs" id="cmpTabs" role="tablist">
+          <button class="cmp-tab on" type="button" data-m="visual">👁️ Visual</button>
+          <button class="cmp-tab" type="button" data-m="estima">📐 A estima</button>
+          <button class="cmp-tab" type="button" data-m="autonoma">🎯 Autónoma</button>
+          <button class="cmp-tab" type="button" data-m="radio">📡 Radionavegación</button>
+          <button class="cmp-tab" type="button" data-m="gnss">🛰️ Satelital</button>
+        </div>
+
+        <div class="cmp-panel">
+          <div class="cmp-title" id="cmpTitle">Navegación Visual u Observada</div>
+          <div class="cmp-sub" id="cmpSub">La más antigua</div>
+
+          <div class="cmp-bars">
+            <div class="cmp-bar">
+              <span>Precisión</span>
+              <div class="track"><i id="cmpBarPrec" style="background:var(--accent)"></i></div>
+              <b id="cmpValPrec">Baja</b>
+            </div>
+            <div class="cmp-bar">
+              <span>Autonomía</span>
+              <div class="track"><i id="cmpBarAut" style="background:var(--vfr)"></i></div>
+              <b id="cmpValAut">Total</b>
+            </div>
+            <div class="cmp-bar">
+              <span>Equipo a bordo</span>
+              <div class="track"><i id="cmpBarEq" style="background:var(--warn)"></i></div>
+              <b id="cmpValEq">Ninguno</b>
+            </div>
+          </div>
+
+          <div class="cmp-cols">
+            <div class="cmp-col pro"><b>A FAVOR</b><span id="cmpPro">—</span></div>
+            <div class="cmp-col con"><b>LIMITACIÓN</b><span id="cmpCon">—</span></div>
+          </div>
+          <div class="cmp-use" id="cmpUse">—</div>
+        </div>
+      </div>
     </div>
     <div class="quiz-card" data-quiz="1">
-      <div class="quiz-tag">🎯 Chequeo rápido 1/8</div>
-      <div class="quiz-q">La Meteorología estudia principalmente...</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 1/6</div>
+      <div class="quiz-q">La navegación aérea busca, ante todo, conducir la aeronave a su destino asegurando...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Las rutas y procedimientos de navegación aérea</button>
-        <button class="quiz-opt" data-correct="true">La atmósfera y los fenómenos que ocurren en ella</button>
-        <button class="quiz-opt" data-correct="false">La estructura del espacio aéreo controlado</button>
+        <button class="quiz-opt" data-correct="false">La máxima velocidad posible en cada tramo</button>
+        <button class="quiz-opt" data-correct="true">La integridad de tripulantes, pasajeros y personas en tierra</button>
+        <button class="quiz-opt" data-correct="false">El menor consumo de combustible sin importar la ruta</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -422,26 +482,22 @@
 
   <!-- 2 -->
   <article class="topic" id="t2">
-    <div class="topic-head"><div class="topic-num">2</div><h2>Tiempo vs. Clima</h2></div>
+    <div class="topic-head"><div class="topic-num">2</div><h2>Navegación Visual u Observada</h2></div>
     <div class="topic-body">
-      <p>Son dos palabras que se confunden mucho, pero en meteorología significan cosas distintas:</p>
-      <div class="ats-table-wrap">
-      <table class="ats-table">
-        <tr><th></th><th>Tiempo (Weather)</th><th>Clima (Climate)</th></tr>
-        <tr><td><b>Escala temporal</b></td><td>Corto plazo: horas o días</td><td>Largo plazo: promedios de 30 años o más</td></tr>
-        <tr><td><b>Qué describe</b></td><td>El estado real de la atmósfera hoy, ahora mismo</td><td>El comportamiento típico/esperado de un lugar</td></tr>
-        <tr><td><b>Ejemplo</b></td><td>"Hoy hay lluvia y viento de 15 nudos en el aeropuerto"</td><td>"Esta región es tropical húmeda todo el año"</td></tr>
-        <tr><td><b>Uso en aviación</b></td><td>METAR, SPECI, TAF, reportes en vivo</td><td>Estudios de planeación de rutas, pistas y aeropuertos</td></tr>
-      </table>
+      <p>Es el método <b>más básico</b> de navegación, y el que se enseña en las etapas iniciales de la formación de pilotos. Consiste en utilizar <b>referencias terrestres</b> — ríos, montañas, carreteras, poblaciones, líneas de costa — para orientarse y mantener una trayectoria de vuelo segura, comparando lo que se ve por la ventanilla con lo que muestra la carta de navegación.</p>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar en examen</h4>
+        <p style="margin:0;">Aunque es sencilla de aplicar, la navegación visual tiene una limitación importante: depende por completo de la <b>visibilidad</b>. En condiciones meteorológicas adversas (nubes bajas, niebla, lluvia intensa) deja de ser confiable.</p>
       </div>
-      <div class="mnemo"><b>🧠 Truco:</b> el <b>tiempo</b> es lo que te pones hoy antes de salir; el <b>clima</b> es lo que ya sabes que te vas a encontrar en esa ciudad todo el año.</div>
+      <div class="mnemo"><b>🧠 Truco:</b> si puedes "leer el terreno" como un mapa en vivo, estás navegando visualmente — por eso también se le llama navegación observada.</div>
     </div>
     <div class="quiz-card" data-quiz="2">
-      <div class="quiz-tag">🎯 Chequeo rápido 2/8</div>
-      <div class="quiz-q">Un METAR reporta el estado de la atmósfera en un momento puntual. Esto corresponde a...</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 2/6</div>
+      <div class="quiz-q">¿Cuál es la principal limitación de la navegación visual u observada?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Tiempo (weather)</button>
-        <button class="quiz-opt" data-correct="false">Clima (climate)</button>
+        <button class="quiz-opt" data-correct="false">Requiere equipos de radio muy costosos</button>
+        <button class="quiz-opt" data-correct="true">Depende de la visibilidad; falla en condiciones meteorológicas adversas</button>
+        <button class="quiz-opt" data-correct="false">Solo puede usarse de noche</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -449,82 +505,51 @@
 
   <!-- 3 -->
   <article class="topic" id="t3">
-    <div class="topic-head"><div class="topic-num">3</div><h2>La atmósfera: definición y composición</h2></div>
+    <div class="topic-head"><div class="topic-num">3</div><h2>Navegación a Estima (Dead Reckoning)</h2></div>
     <div class="topic-body">
-      <p>La <b>atmósfera</b> es la capa de gases que envuelve la Tierra, retenida por la fuerza de gravedad. No tiene un límite superior definido: simplemente se va haciendo cada vez menos densa hasta mezclarse con el vacío del espacio.</p>
-      <p>Su composición es casi constante hasta unos 80 km de altura (capa homogénea llamada <b>homósfera</b>):</p>
-      <div class="gas-legend">
-        <span><i style="background:#1657C6"></i>Nitrógeno (N₂) 78%</span>
-        <span><i style="background:#3E7BFA"></i>Oxígeno (O₂) 21%</span>
-        <span><i style="background:#E08E3E"></i>Otros gases ~1% (Argón, CO₂, Neón, vapor de agua, ozono...)</span>
+      <p>Se basa en <b>cálculos matemáticos</b> y se utiliza principalmente cuando las referencias visuales son limitadas. El piloto estima su posición a partir del <b>tiempo transcurrido, la velocidad y el rumbo</b> volado, partiendo de una posición inicial conocida.</p>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Para navegar a estima necesitas...</th><th>Instrumentos que se usan</th></tr>
+        <tr><td>Punto inicial y punto final (destino)</td><td class="mono">Carta de navegación</td></tr>
+        <tr><td>Distancia y rumbo a volar</td><td class="mono">Brújula</td></tr>
+        <tr><td>Velocidad de la aeronave</td><td class="mono">Velocímetro</td></tr>
+        <tr><td>Altura/altitud de vuelo</td><td class="mono">Altímetro</td></tr>
+        <tr><td>Tiempo transcurrido</td><td class="mono">Reloj</td></tr>
+      </table>
       </div>
-      <div class="gas-bar">
-        <div class="gas-seg" style="background:#1657C6; width:78%;">N₂ 78%</div>
-        <div class="gas-seg" style="background:#3E7BFA; width:21%;">O₂ 21%</div>
-        <div class="gas-seg" style="background:#E08E3E; width:1%;"></div>
-      </div>
-      <p>La atmósfera se divide en <b>capas o niveles</b> según cómo se comporta la temperatura con la altura. Ese criterio (sube o baja la temperatura) es la clave para identificar cada capa, y es justo lo que vamos a recorrer a continuación.</p>
-      <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">Las capas NO se distinguen por su composición química (que es casi igual hasta los 80 km), sino por el <b>comportamiento de la temperatura</b>: si aumenta o disminuye con la altura.</p>
-      </div>
+      <p>Es un método <b>más preciso</b> que la navegación visual porque no depende de ver el terreno, pero sigue estando sujeto a <b>errores humanos y mecánicos</b> (un rumbo mal sostenido, un cronómetro impreciso, viento no considerado) que se van acumulando con el tiempo de vuelo.</p>
     </div>
     <div class="quiz-card" data-quiz="3">
-      <div class="quiz-tag">🎯 Chequeo rápido 3/8</div>
-      <div class="quiz-q">¿Cuál es el gas más abundante de la atmósfera?</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 3/6</div>
+      <div class="quiz-q">¿En qué se basa principalmente la navegación a estima?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Oxígeno</button>
-        <button class="quiz-opt" data-correct="true">Nitrógeno</button>
-        <button class="quiz-opt" data-correct="false">Dióxido de carbono</button>
+        <button class="quiz-opt" data-correct="true">En cálculos con velocidad, tiempo y rumbo desde una posición conocida</button>
+        <button class="quiz-opt" data-correct="false">En señales de radio emitidas por satélites</button>
+        <button class="quiz-opt" data-correct="false">En la comparación visual continua con el terreno</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
   </article>
 
-  <!-- diagrama general de capas -->
-  <div class="atmos-wrap">
-    <div class="atmos-layer l-exosfera">
-      <div class="lname">🛰️ Exosfera</div>
-      <div class="lrange">≈ 600 km — hasta fundirse con el espacio</div>
-    </div>
-    <div class="atmos-layer l-termosfera">
-      <div class="lname">🌌 Termosfera (incluye la Ionosfera)</div>
-      <div class="lrange">≈ 85 km – 600 km</div>
-    </div>
-    <div class="atmos-layer l-mesosfera">
-      <div class="lname">☄️ Mesosfera</div>
-      <div class="lrange">≈ 50 km – 85 km</div>
-    </div>
-    <div class="atmos-layer l-estratosfera">
-      <div class="lname">🌀 Estratosfera</div>
-      <div class="lrange">≈ 11 km – 50 km</div>
-    </div>
-    <div class="atmos-layer l-troposfera">
-      <div class="lname">✈️ Tropósfera</div>
-      <div class="lrange">Superficie – ≈ 11 km (variable con la latitud)</div>
-    </div>
-  </div>
-
   <!-- 4 -->
   <article class="topic" id="t4">
-    <div class="topic-head"><div class="topic-num">4</div><h2>Tropósfera</h2></div>
+    <div class="topic-head"><div class="topic-num">4</div><h2>Navegación Autónoma</h2></div>
     <div class="topic-body">
-      <p>Es la capa <b>más baja y más importante para la aviación</b>. Va desde la superficie hasta unos <b>11 km (≈36.000 ft)</b> en promedio, aunque su altura varía: es más alta en el ecuador (~18 km) y más baja en los polos (~8 km).</p>
-      <ul>
-        <li>Contiene cerca del <b>75-80% de toda la masa de la atmósfera</b> y casi todo el vapor de agua.</li>
-        <li>Aquí ocurre <b>prácticamente todo el "tiempo"</b>: nubes, lluvia, tormentas, viento, turbulencia.</li>
-        <li>La temperatura <b>disminuye con la altura</b>: aproximadamente <b>2°C por cada 1.000 ft</b> (gradiente térmico estándar OACI ≈ 6.5°C/km).</li>
-        <li>Termina en la <b>Tropopausa</b>: una capa de transición delgada donde la temperatura deja de bajar y se estabiliza. Es un límite clave para el vuelo (cerca de ella se ubica el nivel de crucero de muchos aviones comerciales).</li>
-      </ul>
-      <div class="mnemo"><b>🧠 Truco:</b> "Tropósfera" viene del griego <i>tropos</i> (cambio, giro): es la capa donde todo cambia y se revuelve — por eso ahí vive el clima.</div>
+      <p>Es un método que <b>no necesita ninguna infraestructura ni información exterior</b> a la aeronave para funcionar. Se apoya en <b>sistemas de Navegación Inercial</b>, compuestos por <b>acelerómetros y giróscopos</b> montados sobre una plataforma estabilizada dentro del propio avión.</p>
+      <div class="card-box">
+        <h4>🧭 Cómo funciona, en simple</h4>
+        <p style="margin:0;">Los acelerómetros miden constantemente los cambios de velocidad y dirección de la aeronave; el sistema integra esos datos matemáticamente para saber, en todo momento, cuánto se ha desplazado desde el punto de partida — sin necesitar ver el suelo ni recibir ninguna señal externa.</p>
+      </div>
+      <div class="mnemo"><b>🧠 Idea clave:</b> "autónoma" es la palabra clave — nada de estaciones en tierra, nada de satélites. Todo se calcula a bordo.</div>
     </div>
     <div class="quiz-card" data-quiz="4">
-      <div class="quiz-tag">🎯 Chequeo rápido 4/8</div>
-      <div class="quiz-q">En la tropósfera, a medida que se asciende, la temperatura...</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 4/6</div>
+      <div class="quiz-q">¿Qué caracteriza a la navegación autónoma (inercial)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Disminuye (aprox. 2°C cada 1.000 ft)</button>
-        <button class="quiz-opt" data-correct="false">Aumenta constantemente</button>
-        <button class="quiz-opt" data-correct="false">Se mantiene siempre igual</button>
+        <button class="quiz-opt" data-correct="false">Depende de estaciones VOR en tierra</button>
+        <button class="quiz-opt" data-correct="true">No requiere información exterior; usa acelerómetros y giróscopos a bordo</button>
+        <button class="quiz-opt" data-correct="false">Solo funciona con un mínimo de 12 satélites visibles</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -532,101 +557,50 @@
 
   <!-- 5 -->
   <article class="topic" id="t5">
-    <div class="topic-head"><div class="topic-num">5</div><h2>Estratosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">5</div><h2>Radionavegación</h2></div>
     <div class="topic-body">
-      <p>Va desde la tropopausa (≈11 km) hasta unos <b>50 km</b> de altura. Aquí la situación se invierte respecto a la tropósfera:</p>
-      <ul>
-        <li>La temperatura <b>aumenta con la altura</b>, gracias a la <b>capa de ozono (O₃)</b>, que absorbe radiación ultravioleta del sol y calienta el aire de esta capa.</li>
-        <li>El aire es muy estable (por eso se llama "estrato": capas horizontales que casi no se mezclan verticalmente).</li>
-        <li>Hay muy poco vapor de agua, casi no hay nubes ni turbulencia — por eso los <b>vuelos supersónicos y algunos globos de gran altura</b> vuelan aquí.</li>
-      </ul>
+      <p>Es un sistema de posicionamiento que estima la posición de una aeronave utilizando <b>señales de radio emitidas por ayudas en tierra</b>, como el <b>VOR</b> (VHF Omnidirectional Range) y el <b>ILS</b> (Instrument Landing System). Es el método más preciso y confiable entre los "clásicos", y resulta <b>imprescindible para vuelos IFR</b> (Instrument Flight Rules) y para los vuelos internacionales.</p>
       <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">La <b>capa de ozono</b> está dentro de la <b>estratosfera</b>, no en la tropósfera ni en la mesosfera. Es la responsable de que la temperatura suba en esta capa.</p>
+        <h4>📻 Profundizamos en el Bloque 4</h4>
+        <p style="margin:0;">Aquí solo la presentamos como una de las clases de navegación. El funcionamiento completo del VOR, el DME y los conceptos de QDM/QDR/Radial se ven en detalle en <b>Navegación → Radioayudas</b>.</p>
       </div>
+      <div class="mnemo"><b>🧠 Dato adicional:</b> existe también la <b>Navegación Astronómica</b> (basada en la posición de astros), pero es una técnica que hoy está <b>en desuso</b> en la aviación comercial.</div>
     </div>
     <div class="quiz-card" data-quiz="5">
-      <div class="quiz-tag">🎯 Chequeo rápido 5/8</div>
-      <div class="quiz-q">¿Por qué la temperatura aumenta con la altura en la estratosfera?</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 5/6</div>
+      <div class="quiz-q">La radionavegación es imprescindible especialmente para...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Por la cercanía al suelo caliente</button>
-        <button class="quiz-opt" data-correct="true">Por la absorción de radiación UV en la capa de ozono</button>
-        <button class="quiz-opt" data-correct="false">Por la fricción de los meteoritos</button>
+        <button class="quiz-opt" data-correct="true">Vuelos IFR y vuelos internacionales</button>
+        <button class="quiz-opt" data-correct="false">Vuelos visuales de instrucción básica únicamente</button>
+        <button class="quiz-opt" data-correct="false">Vuelos sin ningún equipo de radio a bordo</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
   </article>
+
+  <!-- diagrama de las 5 clases -->
+  <div class="nav-methods-grid">
+    <div class="nav-method-chip"><span class="ic">🏔️</span>Visual</div>
+    <div class="nav-method-chip"><span class="ic">🧮</span>Estima</div>
+    <div class="nav-method-chip"><span class="ic">🎛️</span>Autónoma</div>
+    <div class="nav-method-chip"><span class="ic">📻</span>Radio</div>
+    <div class="nav-method-chip"><span class="ic">🛰️</span>Satelital</div>
+  </div>
 
   <!-- 6 -->
   <article class="topic" id="t6">
-    <div class="topic-head"><div class="topic-num">6</div><h2>Mesosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">6</div><h2>Navegación por Satélite (GNSS)</h2></div>
     <div class="topic-body">
-      <p>Se extiende aproximadamente entre <b>50 km y 85 km</b>. Es la capa <b>más fría de toda la atmósfera</b>, con temperaturas que pueden bajar de <b>-90°C</b>.</p>
-      <ul>
-        <li>La temperatura vuelve a <b>disminuir con la altura</b> (ya no hay ozono que caliente el aire).</li>
-        <li>Aquí es donde la mayoría de los <b>meteoritos se desintegran</b> por fricción con el aire, generando las "estrellas fugaces".</li>
-        <li>Es difícil de estudiar directamente: demasiado alta para globos y demasiado baja para satélites.</li>
-      </ul>
-      <div class="mnemo"><b>🧠 Truco:</b> Mesosfera = "capa de en medio" y también la capa más helada — donde se queman los meteoritos antes de llegar a nosotros.</div>
+      <p>El <b>GNSS</b> (Global Navigation Satellite System) es una constelación de satélites — con un <b>mínimo de 12 satélites visibles</b> para un posicionamiento confiable — que transmite señales para el posicionamiento y localización en cualquier parte del globo terrestre. Permite determinar tanto <b>coordenadas geográficas</b> como <b>altitud</b> con alta precisión.</p>
+      <div class="mnemo"><b>🧠 Idea clave:</b> es el método más moderno y hoy el más usado en cabina (por ejemplo GPS), pero en operaciones certificadas nunca reemplaza del todo a la radionavegación clásica: se usan como respaldo mutuo.</div>
     </div>
     <div class="quiz-card" data-quiz="6">
-      <div class="quiz-tag">🎯 Chequeo rápido 6/8</div>
-      <div class="quiz-q">¿En qué capa se desintegran la mayoría de los meteoritos al entrar a la atmósfera?</div>
+      <div class="quiz-tag">🎯 Chequeo rápido 6/6 — ¡última pregunta!</div>
+      <div class="quiz-q">¿Cuántos satélites, como mínimo, deben estar visibles para un posicionamiento GNSS confiable?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Estratosfera</button>
-        <button class="quiz-opt" data-correct="true">Mesosfera</button>
-        <button class="quiz-opt" data-correct="false">Termosfera</button>
-      </div>
-      <div class="quiz-feedback"></div>
-    </div>
-  </article>
-
-  <!-- 7 -->
-  <article class="topic" id="t7">
-    <div class="topic-head"><div class="topic-num">7</div><h2>Termosfera e Ionosfera</h2></div>
-    <div class="topic-body">
-      <p>La <b>Termosfera</b> va desde ≈85 km hasta ≈600 km. Su nombre lo dice todo: aquí la temperatura <b>vuelve a aumentar</b>, y de forma extrema — puede superar los <b>1.500°C</b> — porque las moléculas de gas (muy escasas) absorben directamente radiación solar de alta energía.</p>
-      <ul>
-        <li>Dentro de la termosfera está la <b>Ionosfera</b>: una región donde la radiación solar ioniza los gases (les quita electrones), formando partículas cargadas eléctricamente.</li>
-        <li>La ionosfera <b>refleja ondas de radio</b>, lo que permite las comunicaciones de larga distancia (HF).</li>
-        <li>Aquí ocurren las <b>auroras boreales y australes</b>, y orbitan satélites de <b>órbita baja (LEO)</b> y la <b>Estación Espacial Internacional</b>.</li>
-      </ul>
-      <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">Aunque la termosfera tiene temperaturas altísimas, un astronauta no "sentiría calor" ahí: el aire es tan escaso que casi no hay moléculas para transmitir esa energía como calor (no hay suficiente densidad para la conducción).</p>
-      </div>
-    </div>
-    <div class="quiz-card" data-quiz="7">
-      <div class="quiz-tag">🎯 Chequeo rápido 7/8</div>
-      <div class="quiz-q">La capa que permite las comunicaciones de radio de larga distancia al reflejar las ondas es...</div>
-      <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La Ionosfera (dentro de la Termosfera)</button>
-        <button class="quiz-opt" data-correct="false">La Tropopausa</button>
-        <button class="quiz-opt" data-correct="false">La capa de ozono</button>
-      </div>
-      <div class="quiz-feedback"></div>
-    </div>
-  </article>
-
-  <!-- 8 -->
-  <article class="topic" id="t8">
-    <div class="topic-head"><div class="topic-num">8</div><h2>Exosfera</h2></div>
-    <div class="topic-body">
-      <p>Es la <b>última capa</b>, desde unos 600 km hacia afuera. Es la zona de transición entre la atmósfera y el espacio exterior: no tiene un límite superior claro.</p>
-      <ul>
-        <li>El aire es <b>extremadamente escaso</b>: las moléculas están tan separadas que casi no chocan entre sí.</li>
-        <li>Aquí orbitan los <b>satélites geoestacionarios</b> y de comunicaciones.</li>
-        <li>Se considera el punto donde la atmósfera terrestre se "disuelve" en el vacío del espacio.</li>
-      </ul>
-      <div class="mnemo"><b>🧠 Truco para recordar el orden completo (de superficie hacia arriba):</b> <b>"Toda Estudiante Meteoróloga Toma Examen"</b> → Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
-    </div>
-    <div class="quiz-card" data-quiz="8">
-      <div class="quiz-tag">🎯 Chequeo rápido 8/8 — ¡última pregunta!</div>
-      <div class="quiz-q">Ordena mentalmente las capas de la atmósfera de la superficie hacia el espacio. ¿Cuál va justo antes de la Exosfera?</div>
-      <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Estratosfera</button>
-        <button class="quiz-opt" data-correct="false">Mesosfera</button>
-        <button class="quiz-opt" data-correct="true">Termosfera</button>
+        <button class="quiz-opt" data-correct="false">4</button>
+        <button class="quiz-opt" data-correct="false">8</button>
+        <button class="quiz-opt" data-correct="true">12</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -635,56 +609,56 @@
   <div class="finish-card" id="finishCard" style="display:none;">
     <div class="big">🏆</div>
     <h3>Bloque completado</h3>
-    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 8 preguntas correctamente. Ya conoces las capas de la atmósfera — ahora ponlas a prueba armándolas tú mismo en la actividad de abajo.</p>
+    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 6 preguntas correctamente. Ya conoces las clases de navegación aérea — ahora ponlas a prueba en la actividad de abajo.</p>
   </div>
 
-  <!-- 9: actividad interactiva -->
-  <article class="topic" id="t9">
-    <div class="topic-head"><div class="topic-num">9</div><h2>Actividad: arma la atmósfera</h2></div>
+  <!-- 7: actividad interactiva -->
+  <article class="topic" id="t7">
+    <div class="topic-head"><div class="topic-num">7</div><h2>Actividad: relaciona cada método</h2></div>
     <div class="topic-body">
-      <p>Abajo tienes las 5 capas de la atmósfera vacías, y una bolsa de <b>características</b> desordenadas. Tu misión: arrastra (o toca) cada característica y colócala en la capa correcta.</p>
+      <p>Abajo tienes los 5 métodos de navegación vacíos, y una bolsa de <b>características</b> desordenadas. Tu misión: arrastra (o toca) cada característica y colócala en el método correcto.</p>
     </div>
 
     <div class="dnd-box">
-      <div class="dnd-instructions">📌 En computador: arrastra la tarjeta hasta la capa. En celular: toca la tarjeta para seleccionarla y luego toca la capa donde va.</div>
+      <div class="dnd-instructions">📌 En computador: arrastra la tarjeta hasta el método. En celular: toca la tarjeta para seleccionarla y luego toca el método donde va.</div>
 
       <div class="dnd-layers" id="dndLayers">
-        <div class="dnd-layer l-exosfera" data-layer="exosfera">
-          <div class="lname">🛰️ Exosfera <span class="rng">≈600 km +</span></div>
+        <div class="dnd-layer l-visual" data-layer="visual">
+          <div class="lname">🏔️ Navegación Visual <span class="rng">Referencias terrestres</span></div>
           <div class="dnd-dropped"></div>
         </div>
-        <div class="dnd-layer l-termosfera" data-layer="termosfera">
-          <div class="lname">🌌 Termosfera / Ionosfera <span class="rng">≈85–600 km</span></div>
+        <div class="dnd-layer l-estima" data-layer="estima">
+          <div class="lname">🧮 Navegación a Estima <span class="rng">Cálculo matemático</span></div>
           <div class="dnd-dropped"></div>
         </div>
-        <div class="dnd-layer l-mesosfera" data-layer="mesosfera">
-          <div class="lname">☄️ Mesosfera <span class="rng">≈50–85 km</span></div>
+        <div class="dnd-layer l-autonoma" data-layer="autonoma">
+          <div class="lname">🎛️ Navegación Autónoma <span class="rng">Inercial, a bordo</span></div>
           <div class="dnd-dropped"></div>
         </div>
-        <div class="dnd-layer l-estratosfera" data-layer="estratosfera">
-          <div class="lname">🌀 Estratosfera <span class="rng">≈11–50 km</span></div>
+        <div class="dnd-layer l-radio" data-layer="radio">
+          <div class="lname">📻 Radionavegación <span class="rng">Ayudas en tierra</span></div>
           <div class="dnd-dropped"></div>
         </div>
-        <div class="dnd-layer l-troposfera" data-layer="troposfera">
-          <div class="lname">✈️ Tropósfera <span class="rng">Superficie–≈11 km</span></div>
+        <div class="dnd-layer l-satelital" data-layer="satelital">
+          <div class="lname">🛰️ Navegación por Satélite <span class="rng">GNSS</span></div>
           <div class="dnd-dropped"></div>
         </div>
       </div>
 
       <div class="dnd-pool" id="dndPool"></div>
       <div class="dnd-status" id="dndStatus"></div>
-      <div class="dnd-progress" id="dndProgress">0 / 12 colocadas correctamente</div>
+      <div class="dnd-progress" id="dndProgress">0 / 10 colocadas correctamente</div>
       <button class="dnd-reset" id="dndReset" type="button">↺ Reiniciar actividad</button>
     </div>
 
-    <div class="mnemo"><b>🧠 Recuerda:</b> "Toda Estudiante Meteoróloga Toma Examen" — Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
+    <div class="mnemo"><b>🧠 Recuerda:</b> visual = ver el terreno; estima = calcular con reloj y brújula; autónoma = acelerómetros y giróscopos a bordo; radio = señales de estaciones en tierra; satelital = constelación GNSS.</div>
   </article>
 
 </main>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Módulo MET · Eje 1 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Módulo NAV · Bloque ★ — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
 </footer>
 
 <script>
@@ -719,7 +693,7 @@
   setInterval(updateZuluMini, 1000);
 
   // ---------- PROGRESO DE CHEQUEOS ----------
-  const TOTAL_QUIZ = 8;
+  const TOTAL_QUIZ = 6;
   let correctCount = 0;
 
   const quizProgressFill  = document.getElementById('quizProgressFill');
@@ -732,7 +706,7 @@
     if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
     if(correctCount >= TOTAL_QUIZ){
       if(finishCard) finishCard.style.display = 'block';
-      marcarModuloCompletado('meteorologia-generalidades');
+      marcarModuloCompletado('navegacion-fundamentos');
     }
   }
   renderProgress();
@@ -762,20 +736,87 @@
     });
   });
 
-  // ---------- ACTIVIDAD DRAG & DROP: ARMA LA ATMÓSFERA ----------
+  // ---------- COMPARADOR DE LAS 5 CLASES DE NAVEGACIÓN ----------
+  (function(){
+    const tabs = document.getElementById('cmpTabs');
+    if(!tabs) return;
+    const el = id => document.getElementById(id);
+
+    // prec/aut/eq: 0-100 solo como escala relativa entre métodos, para comparar de un vistazo
+    const M = {
+      visual: {
+        titulo:'Navegación Visual u Observada', sub:'La más antigua',
+        prec:25, precTxt:'Baja', aut:100, autTxt:'Total', eq:5, eqTxt:'Ninguno',
+        pro:'No depende de ninguna instalación en tierra ni de ningún equipo: basta con ver el suelo y saber leer una carta.',
+        con:'Sólo sirve de día y con buena visibilidad. Sobre mar, desierto, selva o de noche, deja de funcionar.',
+        uso:'Es la base del <b>vuelo VFR</b>: se compara el terreno real con la carta, siguiendo referencias como ríos, carreteras, poblaciones o líneas de costa.'
+      },
+      estima: {
+        titulo:'Navegación a Estima', sub:'Cálculo sin referencias externas',
+        prec:40, precTxt:'Media-baja', aut:100, autTxt:'Total', eq:20, eqTxt:'Mínimo',
+        pro:'Funciona en cualquier condición y sin equipo especial: sólo hacen falta rumbo, velocidad y tiempo transcurrido.',
+        con:'El error se <b>acumula</b> con el tiempo. Un viento mal estimado desvía la posición calculada cada vez más.',
+        uso:'Se usa como <b>respaldo permanente</b>: aunque el piloto tenga GPS, siempre lleva la cuenta de dónde debería estar según lo planeado.'
+      },
+      autonoma: {
+        titulo:'Navegación Autónoma (Inercial)', sub:'Sistemas INS / IRS a bordo',
+        prec:75, precTxt:'Alta', aut:100, autTxt:'Total', eq:90, eqTxt:'Alto',
+        pro:'No emite ni recibe nada del exterior: no se puede interferir ni bloquear, y funciona en cualquier lugar del planeta.',
+        con:'Sufre una <b>deriva</b> que crece con las horas de vuelo, por lo que necesita actualizarse contra otra referencia.',
+        uso:'Típica de aviación comercial de largo alcance, normalmente <b>combinada con GNSS</b> para corregir la deriva.'
+      },
+      radio: {
+        titulo:'Radionavegación', sub:'Ayudas en tierra: VOR, DME, ILS, NDB',
+        prec:70, precTxt:'Alta', aut:35, autTxt:'Depende de tierra', eq:60, eqTxt:'Medio',
+        pro:'Muy fiable y con décadas de servicio. Define las <b>aerovías</b> y guía las aproximaciones instrumentales.',
+        con:'Sólo funciona dentro del <b>alcance</b> de la estación y en línea de vista: fuera de cobertura, no hay señal.',
+        uso:'Es el esqueleto del <b>vuelo IFR</b> clásico. Se estudia a fondo en el bloque 4 de este módulo.'
+      },
+      gnss: {
+        titulo:'Navegación por Satélite (GNSS)', sub:'GPS, GLONASS, Galileo, BeiDou',
+        prec:95, precTxt:'Muy alta', aut:35, autTxt:'Depende de satélites', eq:45, eqTxt:'Medio',
+        pro:'Cobertura <b>global</b> y precisión de pocos metros, sin necesidad de instalaciones en cada país.',
+        con:'La señal llega muy débil desde el espacio: es sensible a <b>interferencias</b> y requiere sistemas de integridad que avisen si falla.',
+        uso:'Base de la navegación moderna <b>PBN/RNAV</b>, en la que la ruta se define por coordenadas y no por estaciones en tierra.'
+      }
+    };
+
+    function show(k){
+      const m = M[k];
+      el('cmpTitle').textContent = m.titulo;
+      el('cmpSub').textContent   = m.sub;
+      el('cmpBarPrec').style.width = m.prec + '%'; el('cmpValPrec').textContent = m.precTxt;
+      el('cmpBarAut').style.width  = m.aut  + '%'; el('cmpValAut').textContent  = m.autTxt;
+      el('cmpBarEq').style.width   = m.eq   + '%'; el('cmpValEq').textContent   = m.eqTxt;
+      el('cmpPro').innerHTML = m.pro;
+      el('cmpCon').innerHTML = m.con;
+      el('cmpUse').innerHTML = '<b>En la práctica:</b> ' + m.uso;
+    }
+
+    tabs.querySelectorAll('.cmp-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.querySelectorAll('.cmp-tab').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        show(btn.dataset.m);
+      });
+    });
+    show('visual');
+  })();
+
+  // ---------- ACTIVIDAD DRAG & DROP: RELACIONA CADA MÉTODO ----------
   const CHIPS = [
-    { id:1,  text:"Aquí ocurren la lluvia, el viento y las tormentas", layer:"troposfera" },
-    { id:2,  text:"Contiene entre el 75% y 80% de la masa de la atmósfera", layer:"troposfera" },
-    { id:3,  text:"Termina en la Tropopausa", layer:"troposfera" },
-    { id:4,  text:"La temperatura disminuye con la altura (~2°C/1000ft)", layer:"troposfera" },
-    { id:5,  text:"Contiene la capa de ozono", layer:"estratosfera" },
-    { id:6,  text:"La temperatura aumenta por absorción de radiación UV", layer:"estratosfera" },
-    { id:7,  text:"Aire muy estable, casi sin nubes ni turbulencia", layer:"estratosfera" },
-    { id:8,  text:"Es la capa más fría de toda la atmósfera (hasta -90°C)", layer:"mesosfera" },
-    { id:9,  text:"Aquí se desintegran la mayoría de los meteoritos", layer:"mesosfera" },
-    { id:10, text:"Contiene la Ionosfera, que refleja ondas de radio", layer:"termosfera" },
-    { id:11, text:"Aquí ocurren las auroras boreales y orbita la ISS", layer:"termosfera" },
-    { id:12, text:"Última capa; se mezcla poco a poco con el espacio", layer:"exosfera" },
+    { id:1,  text:"Usa referencias terrestres como ríos, montañas y carreteras", layer:"visual" },
+    { id:2,  text:"Es el método más básico, enseñado en etapas iniciales", layer:"visual" },
+    { id:3,  text:"Tiene limitaciones en condiciones meteorológicas adversas", layer:"visual" },
+    { id:4,  text:"Requiere conocer punto inicial, punto final, distancia y rumbo", layer:"estima" },
+    { id:5,  text:"Usa reloj, brújula, velocímetro y altímetro", layer:"estima" },
+    { id:6,  text:"Sujeta a errores humanos y mecánicos que se acumulan", layer:"estima" },
+    { id:7,  text:"Usa acelerómetros y giróscopos montados a bordo", layer:"autonoma" },
+    { id:8,  text:"No necesita ninguna infraestructura ni señal exterior", layer:"autonoma" },
+    { id:9,  text:"Se apoya en estaciones en tierra como el VOR y el ILS", layer:"radio" },
+    { id:10, text:"Es imprescindible para vuelos IFR e internacionales", layer:"radio" },
+    { id:11, text:"Necesita un mínimo de 12 satélites visibles", layer:"satelital" },
+    { id:12, text:"Determina coordenadas geográficas y altitud en todo el globo", layer:"satelital" },
   ];
 
   const dndPool = document.getElementById('dndPool');
@@ -848,15 +889,15 @@
       placedCorrect++;
       updateProgress();
       dndStatus.className = 'dnd-status ok';
-      dndStatus.textContent = '✅ ¡Correcto! Esa característica es de esta capa.';
+      dndStatus.textContent = '✅ ¡Correcto! Esa característica es de ese método.';
       if(placedCorrect === CHIPS.length){
-        dndStatus.textContent = '🏆 ¡Perfecto! Armaste toda la atmósfera correctamente.';
+        dndStatus.textContent = '🏆 ¡Perfecto! Relacionaste todos los métodos correctamente.';
       }
     }else{
       chipEl.classList.add('wrong-shake');
       layerEl.classList.add('dragover');
       dndStatus.className = 'dnd-status bad';
-      dndStatus.textContent = '❌ Esa característica no pertenece a esta capa. Vuelve a intentarlo.';
+      dndStatus.textContent = '❌ Esa característica no pertenece a ese método. Vuelve a intentarlo.';
       setTimeout(() => {
         chipEl.classList.remove('wrong-shake');
         layerEl.classList.remove('dragover');

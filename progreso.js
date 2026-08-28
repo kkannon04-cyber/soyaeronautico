@@ -15,11 +15,75 @@ function obtenerClienteAuth() {
   return (typeof sbClient !== 'undefined' && sbClient) ? sbClient : null;
 }
 
+// ------------------------------------------------------------------
+// COMPROBACIÓN DE SESIÓN — robusta a bloqueos de supabase-js
+//
+// supabase-js v2 serializa el acceso al token con un lock del navegador
+// (navigator.locks). Cuando varias llamadas a getSession() coinciden —y en
+// estas páginas coinciden: auth-gate.js más cada render del panel— la promesa
+// puede quedarse esperando el lock indefinidamente. El síntoma era exacto:
+// el login respondía 200, pero la página siguiente se quedaba colgada en
+// "Verificando acceso…" sin llegar a pedir ni un solo dato.
+//
+// Dos defensas:
+//  1) Una sola llamada real a getSession() compartida por todos (single-flight),
+//     en vez de una estampida de llamadas peleando por el mismo lock.
+//  2) Un tiempo límite: si getSession() no responde, se lee la sesión que
+//     supabase-js ya dejó guardada en localStorage, que no necesita el lock.
+// ------------------------------------------------------------------
+const AIS_TIMEOUT_SESION_MS = 4000;
+let _sesionEnCurso = null;
+
+function leerSesionGuardada() {
+  // Formato de supabase-js v2: clave sb-<ref>-auth-token con el JSON de la sesión.
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const clave = localStorage.key(i);
+      if (!clave || !/^sb-.*-auth-token$/.test(clave)) continue;
+      const guardado = JSON.parse(localStorage.getItem(clave));
+      const sesion = (guardado && guardado.access_token) ? guardado
+                   : (guardado && guardado.currentSession) ? guardado.currentSession
+                   : null;
+      if (!sesion || !sesion.access_token) continue;
+      // expires_at viene en segundos desde epoch
+      if (sesion.expires_at && sesion.expires_at * 1000 < Date.now()) continue;
+      return sesion;
+    }
+  } catch (e) { /* localStorage bloqueado o JSON corrupto: se trata como "sin sesión" */ }
+  return null;
+}
+
 async function obtenerSesionActual() {
   const cliente = obtenerClienteAuth();
   if (!cliente) return null;
-  const { data } = await cliente.auth.getSession();
-  return (data && data.session) ? data.session : null;
+  if (_sesionEnCurso) return _sesionEnCurso;
+
+  _sesionEnCurso = (async function () {
+    const conTiempoLimite = Promise.race([
+      cliente.auth.getSession().then(({ data }) => (data && data.session) ? data.session : null),
+      new Promise(resolve => setTimeout(() => resolve('TIMEOUT'), AIS_TIMEOUT_SESION_MS))
+    ]);
+
+    let sesion;
+    try {
+      sesion = await conTiempoLimite;
+    } catch (e) {
+      sesion = 'TIMEOUT';
+    }
+
+    if (sesion === 'TIMEOUT') {
+      console.warn('getSession() no respondió a tiempo; se usa la sesión guardada en el navegador.');
+      sesion = leerSesionGuardada();
+    }
+    return sesion;
+  })();
+
+  // La respuesta se cachea sólo un instante: lo justo para que las llamadas
+  // simultáneas del arranque compartan una sola consulta, sin dejar una sesión
+  // obsoleta viva durante toda la visita.
+  const resultado = await _sesionEnCurso;
+  setTimeout(() => { _sesionEnCurso = null; }, 1500);
+  return resultado;
 }
 
 function obtenerIntentosLocal() {

@@ -70,7 +70,7 @@
   .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
 
   /* Sin backdrop-filter aquí: crea un contexto de apilamiento que deja el menú "Módulos"
-     detrás de .tracker-bar (el simulador de ascenso, justo debajo), sin importar su z-index. */
+     detrás de la barra de progreso de chequeos (justo debajo), sin importar su z-index. */
   .topbar{
     display:flex; align-items:center; justify-content:space-between;
     padding:16px 32px;
@@ -145,27 +145,14 @@
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
   @media (max-width:820px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
 
-  /* ---------- TRACKER BAR ---------- */
-  .tracker-bar{ padding:12px 32px 14px; border-bottom:1px solid var(--hairline); background:var(--bg); }
-  .tracker-inner{ max-width:1000px; margin:0 auto; }
-  .tracker-toprow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
-  .tracker-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; }
-  .tracker-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); }
-  .tracker-track{ position:relative; height:46px; background:linear-gradient(180deg, var(--panel-alt), var(--panel)); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
-  .tracker-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, rgba(var(--live-rgb),0.18), rgba(var(--live-rgb),0.42)); transition:width .6s cubic-bezier(.4,0,.2,1); }
-  .tracker-plane{ position:absolute; top:50%; left:0%; font-size:1.5rem; transform:translate(-50%,-50%) rotate(-20deg); transition:left .6s cubic-bezier(.4,0,.2,1); z-index:2; }
-  .tracker-plane.crash{ animation:crashFall .9s ease; }
-  @keyframes crashFall{
-    0%{ transform:translate(-50%,-50%) rotate(-20deg); }
-    35%{ transform:translate(-50%,16px) rotate(85deg); }
-    60%{ transform:translate(-50%,16px) rotate(95deg); }
-    100%{ transform:translate(-50%,-50%) rotate(-20deg); }
-  }
-  .tracker-boom{ position:absolute; top:6px; font-size:1.1rem; opacity:0; z-index:3; pointer-events:none; }
-  .tracker-boom.show{ animation:boomPop .9s ease; }
-  @keyframes boomPop{ 0%{opacity:0; transform:translateY(6px) scale(.6);} 30%{opacity:1; transform:translateY(0) scale(1.1);} 70%{opacity:1;} 100%{opacity:0; transform:translateY(-6px) scale(.9);} }
-  .tracker-marks{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:0.6rem; color:var(--text-muted); margin-top:5px; padding:0 2px; }
-  @media (max-width:760px){ .tracker-marks span{display:none;} .tracker-marks span:first-child, .tracker-marks span:last-child{display:inline;} }
+  
+  /* ---------- PROGRESO DE CHEQUEOS ---------- */
+  .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .quiz-progress-inner{ max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .quiz-progress-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+  .quiz-progress-track{ flex:1; min-width:140px; height:6px; border-radius:3px; background:var(--panel-alt); border:1px solid var(--hairline); overflow:hidden; }
+  .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
+  .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
 
   /* ---------- HERO SIMPLE ---------- */
   .hero-simple{ max-width:900px; margin:0 auto; padding:48px 32px 8px; }
@@ -201,7 +188,7 @@
 
   /* ---------- CONTENT ---------- */
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
-  .topic{ margin-bottom:60px; scroll-margin-top:150px; }
+  .topic{ margin-bottom:60px; scroll-margin-top:120px; }
   .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
   .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
   .topic-head h2{ font-size:1.3rem; }
@@ -311,7 +298,7 @@
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
 <script src="progreso.js"></script>
 </head>
@@ -345,6 +332,7 @@
             <a href="ats.html" class="active">ATS</a>
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html">Navegación</a>
           </div>
         </div>
       </div>
@@ -380,6 +368,7 @@
       <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -395,20 +384,11 @@
   </div>
 </div>
 
-  <div class="tracker-bar">
-    <div class="tracker-inner">
-      <div class="tracker-toprow">
-        <span class="tracker-label">🎮 Simulador de ascenso — responde bien y sube de nivel</span>
-        <span class="tracker-score mono" id="trackerScore">0 aciertos · 0 errores · nivel 0/10</span>
-      </div>
-      <div class="tracker-track" id="trackerTrack">
-        <div class="tracker-fill" id="trackerFill"></div>
-        <div class="tracker-boom" id="trackerBoom">💥</div>
-        <div class="tracker-plane" id="trackerPlane">✈️</div>
-      </div>
-      <div class="tracker-marks">
-        <span>GND</span><span>5.000ft</span><span>10.000ft</span><span>FL100</span><span>FL180</span><span>FL240</span><span>FL300</span><span>FL330</span><span>FL350</span><span>CRUCERO</span>
-      </div>
+  <div class="quiz-progress">
+    <div class="quiz-progress-inner">
+      <span class="quiz-progress-label">Chequeos rápidos</span>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+      <span class="quiz-progress-score mono" id="quizProgressScore">0 / 10 correctos</span>
     </div>
   </div>
 </div>
@@ -759,8 +739,8 @@
   </article>
 
   <div class="finish-card" id="finishCard" style="display:none;">
-    <div class="big">🏆✈️</div>
-    <h3>¡Altitud de crucero alcanzada!</h3>
+    <div class="big">🏆</div>
+    <h3>Bloque completado</h3>
     <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 10 preguntas correctamente. Ya tienes el mapa completo de los Servicios de Tránsito Aéreo — ahora ponlo a prueba en la Zona de Quizzes.</p>
   </div>
 
@@ -802,66 +782,44 @@
   updateZuluMini();
   setInterval(updateZuluMini, 1000);
 
-  // ---------- SIMULADOR DE ASCENSO ----------
+  // ---------- PROGRESO DE CHEQUEOS ----------
   const TOTAL_QUIZ = 10;
-  let level = 0, correctCount = 0, wrongCount = 0;
+  let correctCount = 0;
 
-  const trackerFill = document.getElementById('trackerFill');
-  const trackerPlane = document.getElementById('trackerPlane');
-  const trackerBoom = document.getElementById('trackerBoom');
-  const trackerScore = document.getElementById('trackerScore');
-  const finishCard = document.getElementById('finishCard');
+  const quizProgressFill  = document.getElementById('quizProgressFill');
+  const quizProgressScore = document.getElementById('quizProgressScore');
+  const finishCard        = document.getElementById('finishCard');
 
-  function renderTracker(){
-    const pct = (level / TOTAL_QUIZ) * 100;
-    trackerFill.style.width = pct + '%';
-    trackerPlane.style.left = pct + '%';
-    trackerBoom.style.left = pct + '%';
-    trackerScore.textContent = `${correctCount} aciertos · ${wrongCount} errores · nivel ${level}/${TOTAL_QUIZ}`;
-    if(level >= TOTAL_QUIZ && correctCount >= TOTAL_QUIZ){
-      finishCard.style.display = 'block';
+  function renderProgress(){
+    const pct = (correctCount / TOTAL_QUIZ) * 100;
+    if(quizProgressFill)  quizProgressFill.style.width = pct + '%';
+    if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
+    if(correctCount >= TOTAL_QUIZ){
+      if(finishCard) finishCard.style.display = 'block';
       marcarModuloCompletado('ats');
     }
   }
-  renderTracker();
-
-  function playCrash(){
-    trackerPlane.classList.remove('crash');
-    trackerBoom.classList.remove('show');
-    void trackerPlane.offsetWidth;
-    trackerPlane.classList.add('crash');
-    trackerBoom.classList.add('show');
-  }
+  renderProgress();
 
   function answerQuiz(card, btn, isCorrect){
     if(card.classList.contains('answered')) return;
     card.classList.add('answered');
-
     card.querySelectorAll('.quiz-opt').forEach(b => {
       b.disabled = true;
       if(b.dataset.correct === 'true') b.classList.add('correct');
     });
-
     const feedback = card.querySelector('.quiz-feedback');
-
     if(isCorrect){
       correctCount++;
-      level = Math.min(level + 1, TOTAL_QUIZ);
       feedback.style.color = 'var(--vfr)';
-      feedback.textContent = level >= TOTAL_QUIZ
-        ? '✅ ¡Correcto! Avión en CRUCERO. 🏆'
-        : '✅ ¡Correcto! El avión sigue subiendo.';
+      feedback.textContent = '✅ Correcto.';
     }else{
-      wrongCount++;
       btn.classList.add('incorrect');
-      level = Math.max(level - 1, 0);
       feedback.style.color = 'var(--danger)';
-      feedback.textContent = '💥 Se estrelló un poco... revisa el tema y sigue subiendo en la próxima.';
-      playCrash();
+      feedback.textContent = '✗ No es esa. La opción correcta queda marcada en verde — vuelve a leer el punto de arriba.';
     }
-    renderTracker();
+    renderProgress();
   }
-
   document.querySelectorAll('.quiz-card').forEach(card => {
     card.querySelectorAll('.quiz-opt').forEach(btn => {
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));

@@ -247,7 +247,7 @@
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
 <script src="progreso.js"></script>
 </head>
@@ -278,6 +278,7 @@
           <a href="ats.html">ATS</a>
           <a href="fraseologia.html">Fraseología</a>
           <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+          <a href="navegacion.html">Navegación</a>
         </div>
       </div>
     </div>
@@ -313,6 +314,7 @@
       <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -369,7 +371,11 @@
     <div style="position:relative; z-index:1;">
       <div class="help-section">
         <h4>Orden del reporte</h4>
-        <ul><li><code>TIPO</code> [<code>COR</code>] <code>ICAO</code> <code>DDHHMMZ</code> [<code>AUTO</code>] · <code>VIENTO</code> · <code>VISIBILIDAD</code> · <code>FENÓMENOS</code> · <code>NUBES</code> · <code>TEMP/PUNTO ROCÍO</code> · <code>QNH</code> · [<code>RE...</code>] [<code>WS...</code>] [<code>TENDENCIA</code>] [<code>RMK</code>]</li></ul>
+        <ul>
+          <li><code>TIPO</code> [<code>COR</code>] <code>ICAO</code> <code>DDHHMMZ</code> [<code>AUTO</code>] · <code>VIENTO</code> · <code>VISIBILIDAD</code> · <code>FENÓMENOS</code> · <code>NUBES</code> · <code>TEMP/PUNTO ROCÍO</code> · <code>QNH</code> · [<code>RE...</code>] [<code>WS...</code>] [<code>TENDENCIA</code>] [<code>RMK</code>]</li>
+          <li><b>El orden es obligatorio.</b> Un grupo correcto pero colocado en otra posición se califica como error: en el código METAR la posición es la que da el significado. Por ejemplo <code>AUTO</code> va <b>inmediatamente después</b> del grupo fecha-hora, nunca en otro punto de la línea.</li>
+          <li>Escribir un grupo que no corresponde (un fenómeno que no se observa, una capa de nubes inventada o un <code>RMK</code> sin motivo) también es un error.</li>
+        </ul>
       </div>
       <div class="help-section">
         <h4>Viento</h4>
@@ -384,7 +390,7 @@
       <div class="help-section">
         <h4>Visibilidad</h4>
         <ul>
-          <li>4 cifras en metros; 10 km o más se codifica como <code>9999</code>.</li>
+          <li><b>Siempre 4 cifras</b> en metros, rellenando con ceros a la izquierda: 700 m se cifra <code>0700</code>. 10 km o más se codifica como <code>9999</code>.</li>
           <li>Si la visibilidad mínima es distinta y menor al 50% de la reinante, se agrega una segunda visibilidad + dirección cardinal (8 rumbos), ej. <code>6000 2000SE</code>.</li>
           <li><code>CAVOK</code> reemplaza visibilidad + fenómenos + nubes cuando: vis ≥10km, sin nubes bajo 5000ft/altitud mínima de sector, sin fenómenos significativos.</li>
         </ul>
@@ -395,7 +401,11 @@
           <li>Orden del grupo: <b>intensidad</b> (– leve / sin signo = moderado / + fuerte) → <b>descriptor</b> (MI, BC, PR, DR, BL, SH, TS, FZ, VC) → <b>fenómeno</b> (DZ, RA, SN, GR, GS, BR, FG, HZ, FU, DU, SA, VA...).</li>
           <li><code>VC</code> (vecindad) se usa para TS, FG, SH, VA observados entre 8 y 16 km del punto de referencia.</li>
           <li>Neblina <code>BR</code>: visibilidad 1000–5000 m. Niebla <code>FG</code>: visibilidad &lt;1000 m.</li>
-          <li>Calima <code>HZ</code> o humo <code>FU</code> que reducen la visibilidad a 6000–7000 m se anotan solo en <code>RMK</code>, no en tiempo presente.</li>
+          <li>Familia de la niebla: <code>PRFG</code> parcial, tocando pista (obliga a dos visibilidades) · <code>BCFG</code> bancos que no tocan pista (vis &gt;2000 m) · <code>MIFG</code> niebla baja que no reduce la visibilidad de forma significativa.</li>
+          <li>Oscurecimientos (<code>FU</code>, <code>HZ</code>, <code>DU</code>, <code>SA</code>, <code>BR</code>): con visibilidad de <b>6000–7000 m</b> van solo en <code>RMK</code>; si reducen la visibilidad a <b>5000 m o menos</b>, van en tiempo presente. Las precipitaciones quedan excluidas de esta regla.</li>
+          <li>Precipitación dentro de los 8 km: se cifra con su tipo e intensidad. Entre 8 y 16 km: se cifra <code>VCSH</code>.</li>
+          <li>Tormenta: <code>TS</code> si el <code>CB</code> está dentro de 8 km, <code>VCTS</code> si está entre 8 y 16 km. <b>Todo reporte con TS/TSRA/VCTS debe llevar una capa baja con <code>CB</code></b>, y se prioriza codificar CB sobre TCU.</li>
+          <li>Granizo: <code>GR</code> si los granos superan 5 mm, <code>GS</code> si son menores.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -404,7 +414,7 @@
           <li>Cantidad: <code>FEW</code> (1-2/8), <code>SCT</code> (3-4/8), <code>BKN</code> (5-7/8), <code>OVC</code> (8/8) + altura en centenas de pies (3 cifras).</li>
           <li><code>CB</code> y <code>TCU</code> se anotan siempre que existan, con dirección en <code>RMK</code> (máx. 2 rumbos).</li>
           <li><code>NSC</code>: sin nubes significativas, pero no se cumplen todas las condiciones de CAVOK. <code>SKC</code>: cielo despejado (sin capas).</li>
-          <li><code>VV</code> + 3 cifras: visibilidad vertical cuando el cielo está oscurecido.</li>
+          <li><code>VV</code> + 3 cifras: visibilidad vertical cuando el cielo está oscurecido (en unidades de 100 ft, ej. <code>VV003</code> = 300 ft). Si el cielo está oscurecido y <b>no</b> se puede evaluar, se cifra <code>VV///</code>.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -702,6 +712,129 @@ setInterval(updateZuluMini, 1000);
     return { visMain:vis, wx:[{code:'FG', natural:'Niebla densa (FG)'}], clouds:[], cavok:false, nsc:false, vv:vvFt };
   }});
 
+  // ==== Casos añadidos según la GUÍA METAR/SPECI (RAC 203 / CEA) ====
+
+  // --- Tier 2: oscurecimiento EN TIEMPO PRESENTE (visibilidad <= 5000 m) ---
+  // La guía distingue: 6000-7000 m -> RMK; 5000 m o menos -> tiempo presente.
+  CASOS.push({ tier:2, id:'oscurecimiento_presente', gen(){
+    const vis = choice([3000,4000,5000]);
+    const o = choice([
+      {code:'HZ', natural:'Calima (HZ)'},
+      {code:'FU', natural:'Humo (FU)'},
+      {code:'DU', natural:'Polvo en suspensión (DU)'}
+    ]);
+    const clouds = [{amount:'SCT', heightFt: randInt(15,30)*100, type:null}];
+    return { visMain:vis, wx:[o], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 2: llovizna con neblina (dos grupos de tiempo presente) ---
+  CASOS.push({ tier:2, id:'llovizna_neblina', gen(){
+    const vis = randInt(15,40)*100;
+    const clouds = [
+      {amount:'BKN', heightFt: randInt(6,12)*100, type:null},
+      {amount:'OVC', heightFt: randInt(30,60)*100, type:null}
+    ];
+    return { visMain:vis, wx:[
+      {code:'-DZ', natural:'Llovizna leve'},
+      {code:'BR',  natural:'Neblina (BR)'}
+    ], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 3: niebla parcial tocando pista (PRFG) — exige dos visibilidades ---
+  CASOS.push({ tier:3, id:'niebla_parcial', gen(){
+    const vis = choice([8000,9000]);
+    const visSecundaria = {valor: randInt(6,12)*100, dir: choice(DIRS)};
+    const clouds = [{amount:'SCT', heightFt: randInt(8,14)*100, type:null}];
+    return { visMain:vis, wx:[{code:'PRFG', natural:'Niebla parcial cubriendo un sector del aeródromo, tocando pista (PRFG)'}],
+      clouds, cavok:false, nsc:false, vv:null, visSecundaria };
+  }});
+
+  // --- Tier 3: bancos de niebla lejanos, sólo en RMK (entre 5000 y 8000 m) ---
+  CASOS.push({ tier:3, id:'bcfg_rmk', gen(){
+    const distancia = choice([6000,7000]);
+    const dir = choice(DIRS);
+    const clouds = [{amount:'BKN', heightFt: randInt(6,10)*100, type:null}];
+    return { visMain:9999, wx:[{code:'BCFG', natural:'Bancos de niebla (BCFG) alejados del área de pista'}],
+      clouds, cavok:false, nsc:false, vv:null,
+      rmkOnly:[{code: distancia+dir, soloTexto:true,
+        natural:`Los bancos de niebla se observan a unos ${distancia} m hacia el ${DIR_TXT[dir]}, es decir entre 5000 y 8000 m del aeródromo: esa distancia y su dirección se anotan en el RMK.`}] };
+  }});
+
+  // --- Tier 3: niebla en vecindad (VCFG, entre 8 y 16 km) ---
+  CASOS.push({ tier:3, id:'niebla_vecindad', gen(){
+    const dirs = chance(0.5) ? [choice(DIRS)] : [choice(DIRS), choice(DIRS)];
+    const dirsU = [...new Set(dirs)];
+    const clouds = [{amount:'SCT', heightFt: randInt(12,20)*100, type:null}];
+    return { visMain: choice([8000,9000,9999]), wx:[{code:'VCFG', natural:'Niebla observada en las proximidades del aeródromo'}],
+      clouds, cavok:false, nsc:false, vv:null, vc:{code:'VCFG', dirs:dirsU} };
+  }});
+
+  // --- Tier 3: tormenta fuerte con granizo ---
+  CASOS.push({ tier:3, id:'tormenta_granizo', gen(){
+    const vis = choice([2000,3000,4000]);
+    const dirs = [choice(DIRS)];
+    const granizo = choice(['GR','GS']);
+    const clouds = [
+      {amount:'BKN', heightFt: randInt(10,16)*100, type:'CB', dirs},
+      {amount:'OVC', heightFt: randInt(35,60)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'+TS'+granizo,
+      natural: granizo==='GR' ? 'Tormenta fuerte con granizo (granos mayores de 5 mm)'
+                              : 'Tormenta fuerte con granizo pequeño (granos menores de 5 mm)'}],
+      clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'CB' };
+  }});
+
+  // --- Tier 3: torre cúmulus (TCU) señalada en el RMK ---
+  CASOS.push({ tier:3, id:'tcu_rmk', gen(){
+    const dirs = [choice(DIRS)];
+    const clouds = [
+      {amount:'FEW', heightFt: randInt(18,25)*100, type:'TCU', dirs},
+      {amount:'SCT', heightFt: randInt(50,80)*100, type:null}
+    ];
+    return { visMain:9999, wx:[], clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'TCU' };
+  }});
+
+  // --- Tier 3: TCU y chubascos en vecindad hacia la MISMA dirección ---
+  // La guía pide separarlos con espacio y agrupar las direcciones: "RMK TCU VCSH/E".
+  CASOS.push({ tier:3, id:'tcu_vcsh_misma_dir', gen(){
+    const dirs = [choice(DIRS)];
+    const clouds = [
+      {amount:'SCT', heightFt: randInt(18,26)*100, type:'TCU', dirs},
+      {amount:'BKN', heightFt: randInt(60,90)*100, type:null}
+    ];
+    return { visMain:8000, wx:[{code:'VCSH', natural:'Chubascos observados en las proximidades del aeródromo'}],
+      clouds, cavok:false, nsc:false, vv:null,
+      cbTcuDirs:dirs, cbTcuType:'TCU', vc:{code:'VCSH', dirs} };
+  }});
+
+  // --- Tier 3: chubascos de llovizna ---
+  CASOS.push({ tier:3, id:'chubascos_llovizna', gen(){
+    const vis = choice([5000,6000,7000]);
+    const clouds = [
+      {amount:'BKN', heightFt: randInt(9,15)*100, type:null},
+      {amount:'BKN', heightFt: randInt(40,70)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'SHDZ', natural:'Chubascos de llovizna'}], clouds, cavok:false, nsc:false, vv:null };
+  }});
+
+  // --- Tier 3: cielo oscurecido sin poder evaluar la visibilidad vertical (VV///) ---
+  CASOS.push({ tier:3, id:'vv_indeterminada', gen(){
+    const vis = randInt(1,4)*100;
+    return { visMain:vis, wx:[{code:'FG', natural:'Niebla densa (FG)'}],
+      clouds:[], cavok:false, nsc:false, vv:null, vvIndeterminada:true };
+  }});
+
+  // --- Tier 3: visibilidad sectorizada por lluvia fuerte ---
+  CASOS.push({ tier:3, id:'vis_sectorizada', gen(){
+    const vis = choice([6000,7000]);
+    const visSecundaria = {valor: randInt(15,28)*100, dir: choice(DIRS)};
+    const clouds = [
+      {amount:'BKN', heightFt: randInt(10,18)*100, type:null},
+      {amount:'OVC', heightFt: randInt(40,70)*100, type:null}
+    ];
+    return { visMain:vis, wx:[{code:'+RA', natural:'Lluvia fuerte'}], clouds, cavok:false, nsc:false, vv:null, visSecundaria };
+  }});
+
   // ======================================================================
   // GENERADOR PRINCIPAL DE ESCENARIO
   // ======================================================================
@@ -756,9 +889,15 @@ setInterval(updateZuluMini, 1000);
     // Viento
     const viento = generarViento(cfg);
 
-    // Visibilidad secundaria (si el caso no trae ya una y el nivel lo permite)
+    // Visibilidad secundaria (si el caso no trae ya una y el nivel lo permite).
+    // No se añade cuando hay fenómenos en vecindad (VC) ni niebla baja (MIFG):
+    // ambos presuponen buena visibilidad —el VC exige observar entre 8 y 16 km—
+    // y un sector reducido contradiría el propio fenómeno.
     let visSecundaria = draft.visSecundaria || null;
-    if(!draft.cavok && !visSecundaria && typeof draft.visMain === 'number' && draft.visMain >= 3000 && chance(cfg.visSec)){
+    const codigosWx = draft.wx.map(w => w.code).join(' ');
+    const visBuenaObligatoria = /VC|MIFG/.test(codigosWx);
+    if(!draft.cavok && !visSecundaria && !visBuenaObligatoria &&
+       typeof draft.visMain === 'number' && draft.visMain >= 3000 && chance(cfg.visSec)){
       const minVal = Math.round(draft.visMain * choice([0.3,0.4])/100)*100;
       visSecundaria = { valor: Math.max(minVal,100), dir: choice(DIRS) };
     }
@@ -768,7 +907,7 @@ setInterval(updateZuluMini, 1000);
     let dewSpread = randInt(1,8);
     // Si hay niebla/neblina/bancos, el punto de rocío debe estar muy cerca de la temperatura
     const wxCodes = draft.wx.map(w=>w.code);
-    const hayHumedadAlta = wxCodes.some(c => /FG|BR|BCFG|MIFG|VV/.test(c)) || draft.vv;
+    const hayHumedadAlta = wxCodes.some(c => /FG|BR|VV/.test(c)) || draft.vv || draft.vvIndeterminada;
     if(hayHumedadAlta) dewSpread = randInt(0,1);
     let dew = temp - dewSpread;
     if(nivel>=3 && estacion.code==='SKBO' && chance(0.12)){ temp = randInt(-2,4); dew = temp - randInt(0,2); }
@@ -802,6 +941,7 @@ setInterval(updateZuluMini, 1000);
       estacion, dia, hora, minuto, reportType, auto, cor,
       viento, visMain: draft.visMain, visSecundaria,
       wx: draft.wx, cavok: draft.cavok, nsc: draft.nsc, vv: draft.vv,
+      vvIndeterminada: draft.vvIndeterminada || false,
       skc: draft.skc || false,
       clouds: draft.clouds || [],
       cbTcuDirs: draft.cbTcuDirs || null, cbTcuType: draft.cbTcuType || null,
@@ -835,59 +975,67 @@ setInterval(updateZuluMini, 1000);
   }
 
   function construirTokens(s){
-    const tokens = [];
-    tokens.push(s.reportType);
-    if(s.cor) tokens.push('COR');
-    tokens.push(s.estacion.code);
+    // Cada grupo se guarda junto con la sección a la que pertenece: así la
+    // corrección puede exigir que aparezca en su POSICIÓN correcta dentro del
+    // reporte y no sólo que esté escrito en algún sitio de la línea.
+    const tokens = [], secs = [];
+    const push = (t, sec) => { tokens.push(t); secs.push(sec); };
+
+    push(s.reportType, 'tipo');
+    if(s.cor) push('COR', 'tipo');
+    push(s.estacion.code, 'aerodromo');
     const ddhhmm = pad2(s.dia)+pad2(s.hora)+pad2(s.minuto)+'Z';
-    tokens.push(ddhhmm);
-    if(s.auto) tokens.push('AUTO');
-    tokens.push(s.viento.token);
-    if(s.viento.variacion) tokens.push(pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to));
+    push(ddhhmm, 'fecha');
+    if(s.auto) push('AUTO', 'fecha');
+    push(s.viento.token, 'viento');
+    if(s.viento.variacion) push(pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to), 'viento');
 
     let cloudTokens = [];
     let visToken, visSecToken = null, wxTokens = [];
     if(s.cavok){
-      tokens.push('CAVOK');
+      push('CAVOK', 'visibilidad');
     } else {
       visToken = (typeof s.visMain==='number') ? pad3v(s.visMain) : s.visMain;
-      tokens.push(visToken);
-      if(s.visSecundaria){ visSecToken = pad3v(s.visSecundaria.valor)+s.visSecundaria.dir; tokens.push(visSecToken); }
+      push(visToken, 'visibilidad');
+      if(s.visSecundaria){ visSecToken = pad3v(s.visSecundaria.valor)+s.visSecundaria.dir; push(visSecToken, 'visibilidad'); }
       wxTokens = s.wx.map(w=>w.code);
-      wxTokens.forEach(t=>tokens.push(t));
-      if(s.vv){ tokens.push('VV'+pad3(Math.round(s.vv/100))); }
-      else if(s.nsc){ tokens.push('NSC'); }
-      else if(s.skc){ tokens.push('SKC'); }
+      wxTokens.forEach(t=>push(t, 'fenomenos'));
+      if(s.vv){ push('VV'+pad3(Math.round(s.vv/100)), 'nubosidad'); }
+      else if(s.vvIndeterminada){ push('VV///', 'nubosidad'); }
+      else if(s.nsc){ push('NSC', 'nubosidad'); }
+      else if(s.skc){ push('SKC', 'nubosidad'); }
       else {
         cloudTokens = s.clouds.map(c => c.amount+pad3(Math.round(c.heightFt/100))+(c.type?c.type:''));
-        cloudTokens.forEach(t=>tokens.push(t));
+        cloudTokens.forEach(t=>push(t, 'nubosidad'));
       }
     }
     const tempTok = s.fmtTemp(s.temp)+'/'+s.fmtTemp(s.dew);
-    tokens.push(tempTok);
+    push(tempTok, 'temp');
     const qnhTok = 'Q'+s.qnh;
-    tokens.push(qnhTok);
-    if(s.re) tokens.push(s.re.code);
+    push(qnhTok, 'qnh');
+    if(s.re) push(s.re.code, 'suplemento');
     let wsTokens = [];
     if(s.ws){
       if(s.ws.tipo==='rwy'){ wsTokens = ['WS','R'+s.ws.rwy]; }
       else { wsTokens = ['WS','ALL','RWY']; }
-      wsTokens.forEach(t=>tokens.push(t));
+      wsTokens.forEach(t=>push(t, 'suplemento'));
     }
-    if(s.trend) tokens.push(s.trend);
+    if(s.trend) push(s.trend, 'suplemento');
     const rmkPartes = construirRmk(s);
     let rmkTokens = [];
     if(rmkPartes.length){
       rmkTokens = ['RMK', ...rmkPartes];
-      rmkTokens.forEach(t=>tokens.push(t));
+      rmkTokens.forEach(t=>push(t, 'suplemento'));
     }
 
     return {
-      full: tokens.join(' ')+'=',
+      full: tokens.join(' ')+'=', tokens, secs,
       ddhhmm, visToken, visSecToken, wxTokens, cloudTokens, tempTok, qnhTok, wsTokens, rmkTokens
     };
   }
-  function pad3v(n){ return n>=10000?'9999':pad3(n); } // vis siempre 4 cifras, tope 9999
+  // La visibilidad SIEMPRE se cifra con 4 dígitos: 700 m es 0700, no 700.
+  // (Antes se rellenaba a 3 dígitos y los reportes con niebla salían mal cifrados.)
+  function pad3v(n){ return n>=10000 ? '9999' : String(n).padStart(4,'0'); }
 
   // ======================================================================
   // DESCRIPCIÓN EN LENGUAJE NATURAL
@@ -921,10 +1069,14 @@ setInterval(updateZuluMini, 1000);
         const dirTxt = s.vc.dirs.map(d=>DIR_TXT[d]).join(' y ');
         tiles.push({label:'Ubicación del fenómeno', val:`El fenómeno en vecindad se observa hacia el ${dirTxt} (entre 8 y 16 km del aeródromo).`});
       }
-      (s.rmkOnly||[]).forEach(o => tiles.push({label:'Observación adicional', val:`${o.natural}, reduciendo la visibilidad general a ${s.visMain} m (se anota solo como observación adicional, no como fenómeno de tiempo presente).`}));
+      (s.rmkOnly||[]).forEach(o => tiles.push({label:'Observación adicional',
+        val: o.soloTexto ? o.natural
+                         : `${o.natural}, reduciendo la visibilidad general a ${s.visMain} m (se anota solo como observación adicional, no como fenómeno de tiempo presente).`}));
 
       if(s.vv){
         tiles.push({label:'Cielo', val:`Cielo oscurecido. Visibilidad vertical estimada en ${s.vv} ft.`});
+      } else if(s.vvIndeterminada){
+        tiles.push({label:'Cielo', val:'Cielo completamente oscurecido y no es posible evaluar la visibilidad vertical.'});
       } else if(s.nsc){
         tiles.push({label:'Nubes', val:'Sin nubes significativas por debajo de 5000 ft (NSC), aunque hay un fenómeno presente que impide usar CAVOK.'});
       } else if(s.skc){
@@ -955,63 +1107,134 @@ setInterval(updateZuluMini, 1000);
   // EVALUACIÓN DE LA RESPUESTA DEL ESTUDIANTE
   // ======================================================================
   function tokenize(text){
-    return text.toUpperCase().replace(/=+\s*$/,'').trim().split(/\s+/).filter(Boolean);
+    // El "=" sólo marca el final del informe: se descarta esté donde esté para
+    // que no convierta "Q1013=" en un grupo distinto de "Q1013".
+    return text.toUpperCase().replace(/=/g,' ').trim().split(/\s+/).filter(Boolean);
+  }
+
+  // Reconocedores de grupos, para poder señalar cuando el estudiante INVENTA
+  // una capa de nubes o un fenómeno que no se observaba.
+  const RE_NUBE = /^((FEW|SCT|BKN|OVC)\d{3}(CB|TCU)?|VV(\d{3}|\/\/\/))$/;
+  const RE_FORMA_FEN = /^[+-]?(VC)?(TS|SH|FZ|MI|BC|PR|DR|BL)*(RA|DZ|SN|SG|GR|GS|PL|IC|UP|BR|FG|FU|HZ|DU|SA|VA|PO|SQ|FC|SS|DS)*$/;
+  const RE_TIENE_CODIGO = /(TS|SH|FZ|MI|BC|PR|DR|BL|RA|DZ|SN|SG|GR|GS|PL|IC|UP|BR|FG|FU|HZ|DU|SA|VA|PO|SQ|FC|SS|DS)/;
+  function esNube(t){ return RE_NUBE.test(t); }
+  function esFenomeno(t){
+    if(t.length < 2 || /\//.test(t)) return false;
+    return RE_FORMA_FEN.test(t) && RE_TIENE_CODIGO.test(t);
+  }
+
+  // ----------------------------------------------------------------------
+  // ALINEACIÓN RESPUESTA <-> METAR CORRECTO
+  //
+  // La corrección anterior sólo miraba si cada grupo aparecía en algún lugar de
+  // la línea, así que daba por buenos reportes con los grupos en desorden (por
+  // ejemplo AUTO escrito en cualquier posición) y no penalizaba grupos
+  // inventados. Aquí se recorren los grupos esperados en orden: un grupo sólo
+  // se da por bueno si aparece DESPUÉS del anterior. Si está pero en otro
+  // sitio, se marca como "desordenado"; y lo que sobra se marca como inventado.
+  // ----------------------------------------------------------------------
+  function alinearTokens(esperados, usuario){
+    const usados = new Set();
+    const marcas = [];
+    let cursor = 0;
+    for(const e of esperados){
+      let idx = -1;
+      for(let i = cursor; i < usuario.length; i++){
+        if(usuario[i] === e && !usados.has(i)){ idx = i; break; }
+      }
+      if(idx >= 0){
+        usados.add(idx); cursor = idx + 1;
+        marcas.push({ tok:e, estado:'ok', idx });
+      } else {
+        let fuera = -1;
+        for(let i = 0; i < usuario.length; i++){
+          if(usuario[i] === e && !usados.has(i)){ fuera = i; break; }
+        }
+        if(fuera >= 0){ usados.add(fuera); marcas.push({ tok:e, estado:'desordenado', idx:fuera }); }
+        else { marcas.push({ tok:e, estado:'falta', idx:-1 }); }
+      }
+    }
+    const sobrantes = [];
+    usuario.forEach((t,i) => { if(!usados.has(i)) sobrantes.push(t); });
+    return { marcas, sobrantes };
   }
 
   function evaluar(userText, s, tk){
     const toks = tokenize(userText);
-    const has = (t) => toks.includes(t);
     const bloques = [];
+
+    const { marcas, sobrantes } = alinearTokens(tk.tokens, toks);
+
+    // Índice de resultados por sección
+    const porSeccion = {};
+    tk.secs.forEach((sec, i) => {
+      (porSeccion[sec] = porSeccion[sec] || []).push(marcas[i]);
+    });
+    // Un grupo cuenta como correcto sólo si está Y en su sitio.
+    const seccionOk = sec => (porSeccion[sec] || []).every(m => m.estado === 'ok');
+    const faltantesDe = sec => (porSeccion[sec] || []).filter(m => m.estado === 'falta').map(m => m.tok);
+    const desordenDe  = sec => (porSeccion[sec] || []).filter(m => m.estado === 'desordenado').map(m => m.tok);
+    const has = (t) => toks.includes(t);
+    const textoOrden = sec => {
+      const d = desordenDe(sec);
+      return d.length ? ` El grupo <span class="mono">${d.join(', ')}</span> sí lo escribiste, pero <b>fuera de su posición</b>: en un METAR el orden de los grupos es parte del código. ` : '';
+    };
 
     // 1. Tipo de informe
     {
-      const tipoOk = has(s.reportType);
-      const corOk = s.cor ? has('COR') : !has('COR');
-      const ok = tipoOk && corOk;
+      const corSobra = !s.cor && has('COR');
+      const ok = seccionOk('tipo') && !corSobra && toks[0] === s.reportType;
       let msg;
       if(ok){ msg = `El tipo de informe (<b>${s.reportType}${s.cor?' COR':''}</b>) está correcto.`; }
       else {
         msg = `Debía iniciar con <b>${s.reportType}</b>${s.cor?' seguido de <b>COR</b> (reporte corregido)':''}. `;
-        if(!tipoOk) msg += `No encontré el identificador <span class="mono">${s.reportType}</span>. `;
-        if(s.cor && !has('COR')) msg += `Falta <span class="mono">COR</span> justo después del tipo de mensaje. `;
-        if(!s.cor && has('COR')) msg += `Agregaste <span class="mono">COR</span> pero este no es un reporte corregido. `;
+        if(faltantesDe('tipo').includes(s.reportType)) msg += `No encontré el identificador <span class="mono">${s.reportType}</span>. `;
+        else if(toks[0] !== s.reportType) msg += `El identificador <span class="mono">${s.reportType}</span> debe ir <b>al principio de todo</b>, no en mitad del reporte. `;
+        if(s.cor && faltantesDe('tipo').includes('COR')) msg += `Falta <span class="mono">COR</span> justo después del tipo de mensaje. `;
+        if(corSobra) msg += `Agregaste <span class="mono">COR</span> pero este no es un reporte corregido. `;
+        msg += textoOrden('tipo');
       }
       bloques.push({label:'Tipo de informe', ok, msg});
     }
 
     // 2. Aeródromo
     {
-      const ok = has(s.estacion.code);
-      const msg = ok ? `El indicador de lugar <span class="mono">${s.estacion.code}</span> es correcto.`
-        : `No encontré el indicador OACI correcto. Debía ser <span class="mono">${s.estacion.code}</span> (${s.estacion.ciudad}), justo después del tipo de mensaje.`;
+      const ok = seccionOk('aerodromo');
+      let msg;
+      if(ok) msg = `El indicador de lugar <span class="mono">${s.estacion.code}</span> es correcto.`;
+      else if(desordenDe('aerodromo').length) msg = `El indicador <span class="mono">${s.estacion.code}</span> está escrito, pero <b>fuera de su posición</b>: va inmediatamente después del tipo de mensaje y antes de la fecha-hora.`;
+      else msg = `No encontré el indicador OACI correcto. Debía ser <span class="mono">${s.estacion.code}</span> (${s.estacion.ciudad}), justo después del tipo de mensaje.`;
       bloques.push({label:'Aeródromo', ok, msg});
     }
 
     // 3. Fecha, hora y AUTO
     {
-      const okFecha = has(tk.ddhhmm);
-      const okAuto = s.auto ? has('AUTO') : !has('AUTO');
-      const ok = okFecha && okAuto;
+      const autoSobra = !s.auto && has('AUTO');
+      // AUTO no sólo debe estar: debe ir pegado detrás del grupo fecha-hora.
+      const iFecha = toks.indexOf(tk.ddhhmm);
+      const autoBienColocado = !s.auto || (iFecha >= 0 && toks[iFecha + 1] === 'AUTO');
+      const ok = seccionOk('fecha') && !autoSobra && autoBienColocado;
       let msg;
       if(ok) msg = `Fecha/hora <span class="mono">${tk.ddhhmm}</span>${s.auto?' y AUTO':''} correctos.`;
       else {
         msg = '';
-        if(!okFecha) msg += `El grupo fecha-hora debía ser <span class="mono">${tk.ddhhmm}</span> (día ${s.dia}, ${pad2(s.hora)}:${pad2(s.minuto)} UTC, terminado en Z). `;
-        if(s.auto && !has('AUTO')) msg += `Falta <span class="mono">AUTO</span> después del grupo fecha-hora: este reporte proviene de una estación totalmente automática. `;
-        if(!s.auto && has('AUTO')) msg += `Agregaste <span class="mono">AUTO</span> pero este reporte sí tuvo intervención del observador. `;
+        if(faltantesDe('fecha').includes(tk.ddhhmm)) msg += `El grupo fecha-hora debía ser <span class="mono">${tk.ddhhmm}</span> (día ${s.dia}, ${pad2(s.hora)}:${pad2(s.minuto)} UTC, terminado en Z). `;
+        if(s.auto && faltantesDe('fecha').includes('AUTO')) msg += `Falta <span class="mono">AUTO</span>: este reporte proviene de una estación totalmente automática. `;
+        else if(s.auto && !autoBienColocado) msg += `Escribiste <span class="mono">AUTO</span>, pero <b>no basta con incluirlo</b>: su posición es obligatoria, <b>inmediatamente después del grupo fecha-hora</b> <span class="mono">${tk.ddhhmm}</span> y antes del viento. `;
+        if(autoSobra) msg += `Agregaste <span class="mono">AUTO</span> pero este reporte sí tuvo intervención del observador. `;
+        msg += textoOrden('fecha');
       }
       bloques.push({label:'Fecha y hora', ok, msg});
     }
 
     // 4. Viento
     {
-      const okViento = has(s.viento.token);
-      const okVariacion = s.viento.variacion ? has(pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to)) : true;
-      const ok = okViento && okVariacion;
+      const ok = seccionOk('viento');
       let msg;
       if(ok) msg = `Grupo de viento <span class="mono">${s.viento.token}${s.viento.variacion?(' '+pad3(s.viento.variacion.from)+'V'+pad3(s.viento.variacion.to)):''}</span> correcto.`;
       else {
         msg = `El grupo de viento correcto era <span class="mono">${s.viento.token}</span>` + (s.viento.variacion?` seguido de <span class="mono">${pad3(s.viento.variacion.from)}V${pad3(s.viento.variacion.to)}</span>`:'') + '. ';
+        msg += textoOrden('viento');
         msg += 'Recuerda: dirección en decenas de grado + velocidad en nudos + <b>KT</b>; ráfagas se anotan con <b>G</b> solo si superan en 10KT o más la velocidad media; velocidad &lt;3KT se codifica como <b>VRB</b>; variación de 60°-179° agrega el grupo <b>dddVddd</b>.';
       }
       bloques.push({label:'Viento', ok, msg});
@@ -1019,18 +1242,19 @@ setInterval(updateZuluMini, 1000);
 
     // 5. Visibilidad
     {
-      let ok, msg;
+      const ok = seccionOk('visibilidad');
+      let msg;
       if(s.cavok){
-        ok = has('CAVOK');
-        msg = ok ? 'Usaste correctamente <span class="mono">CAVOK</span>.' : 'Se cumplían las tres condiciones de <b>CAVOK</b> (visibilidad ≥10km, sin nubes bajo 5000ft, sin fenómenos). Debiste escribir <span class="mono">CAVOK</span> en lugar de visibilidad, fenómenos y nubes por separado.';
+        msg = ok ? 'Usaste correctamente <span class="mono">CAVOK</span>.'
+                 : 'Se cumplían las tres condiciones de <b>CAVOK</b> (visibilidad ≥10km, sin nubes bajo 5000ft, sin fenómenos). Debiste escribir <span class="mono">CAVOK</span> en lugar de visibilidad, fenómenos y nubes por separado.' + textoOrden('visibilidad');
       } else {
-        const okMain = has(tk.visToken);
-        const okSec = s.visSecundaria ? has(tk.visSecToken) : true;
-        ok = okMain && okSec;
         if(ok) msg = `Visibilidad <span class="mono">${tk.visToken}${s.visSecundaria?(' '+tk.visSecToken):''}</span> correcta.`;
         else {
           msg = `La visibilidad reinante debía codificarse como <span class="mono">${tk.visToken}</span> metros. `;
-          if(s.visSecundaria && !has(tk.visSecToken)) msg += `Además faltaba (o estaba mal) la visibilidad mínima <span class="mono">${tk.visSecToken}</span>, ya que era menor al 50% de la reinante y con dirección distinta.`;
+          if(s.visSecundaria && faltantesDe('visibilidad').includes(tk.visSecToken)){
+            msg += `Además faltaba (o estaba mal) la visibilidad mínima <span class="mono">${tk.visSecToken}</span>, ya que era menor al 50% de la reinante y con dirección distinta. `;
+          }
+          msg += textoOrden('visibilidad');
         }
       }
       bloques.push({label:'Visibilidad', ok, msg});
@@ -1039,78 +1263,112 @@ setInterval(updateZuluMini, 1000);
     // 6. Fenómenos presentes
     if(!s.cavok){
       const esperados = tk.wxTokens;
-      const faltantes = esperados.filter(t => !has(t));
-      const ok = faltantes.length===0;
+      // Grupos de tiempo presente que el estudiante inventó y no correspondían.
+      const inventados = sobrantes.filter(esFenomeno);
+      const ok = seccionOk('fenomenos') && inventados.length === 0;
       let msg;
-      if(esperados.length===0){
-        msg = has(/.*/) && false ? '' : 'No se esperaba ningún grupo de tiempo presente en este reporte.';
-        // Verificamos que el usuario no haya inventado fenómenos que no correspondían
-        bloques.push({label:'Fenómenos presentes', ok:true, msg});
+      if(esperados.length === 0){
+        msg = ok ? 'Correcto: este reporte no llevaba ningún grupo de tiempo presente.'
+                 : `Este reporte <b>no llevaba ningún fenómeno de tiempo presente</b>, pero escribiste <span class="mono">${inventados.join(', ')}</span>. Codificar un fenómeno que no se observa es un error tan grave como omitir uno que sí está.`;
+      } else if(ok){
+        msg = `Fenómeno(s) <span class="mono">${esperados.join(', ')}</span> correctamente codificado(s).`;
       } else {
-        if(ok){ msg = `Fenómeno(s) <span class="mono">${esperados.join(', ')}</span> correctamente codificado(s).`; }
-        else{
-          msg = `Faltó o estaba mal escrito: <span class="mono">${faltantes.join(', ')}</span>. Recuerda el orden intensidad→descriptor→fenómeno (ej. <span class="mono">+TSRA</span>), y que <b>VC</b> se usa para fenómenos observados entre 8 y 16 km.`;
-        }
-        bloques.push({label:'Fenómenos presentes', ok, msg});
+        const faltan = faltantesDe('fenomenos');
+        msg = '';
+        if(faltan.length) msg += `Faltó o estaba mal escrito: <span class="mono">${faltan.join(', ')}</span>. `;
+        if(inventados.length) msg += `Sobra el grupo <span class="mono">${inventados.join(', ')}</span>: ese fenómeno no se observaba. `;
+        msg += textoOrden('fenomenos');
+        msg += 'Recuerda el orden intensidad→descriptor→fenómeno (ej. <span class="mono">+TSRA</span>), y que <b>VC</b> se usa para fenómenos observados entre 8 y 16 km.';
       }
+      bloques.push({label:'Fenómenos presentes', ok, msg});
     }
 
     // 7. Nubosidad
     if(!s.cavok){
-      let ok, msg;
+      const inventadas = sobrantes.filter(esNube);
+      const ok = seccionOk('nubosidad') && inventadas.length === 0;
+      let msg;
       if(s.vv){
         const esperado = 'VV'+pad3(Math.round(s.vv/100));
-        ok = has(esperado);
-        msg = ok ? `Visibilidad vertical <span class="mono">${esperado}</span> correcta.` : `El cielo estaba oscurecido: debías reportar visibilidad vertical <span class="mono">${esperado}</span> en lugar de capas de nubes.`;
+        msg = ok ? `Visibilidad vertical <span class="mono">${esperado}</span> correcta.`
+                 : `El cielo estaba oscurecido: debías reportar visibilidad vertical <span class="mono">${esperado}</span> en lugar de capas de nubes. ` + textoOrden('nubosidad');
+      } else if(s.vvIndeterminada){
+        msg = ok ? 'Correcto: <span class="mono">VV///</span> para cielo oscurecido con visibilidad vertical no evaluable.'
+                 : 'El cielo estaba oscurecido y <b>no se pudo evaluar</b> la visibilidad vertical: en ese caso el grupo se cifra como <span class="mono">VV///</span>, con tres barras en lugar de las centenas de pies. ' + textoOrden('nubosidad');
       } else if(s.nsc){
-        ok = has('NSC');
-        msg = ok ? 'Usaste correctamente <span class="mono">NSC</span>.' : 'No había nubes significativas bajo 5000 ft, pero como había un fenómeno presente no aplicaba CAVOK: debías escribir <span class="mono">NSC</span>.';
+        msg = ok ? 'Usaste correctamente <span class="mono">NSC</span>.'
+                 : 'No había nubes significativas bajo 5000 ft, pero como había un fenómeno presente no aplicaba CAVOK: debías escribir <span class="mono">NSC</span>. ' + textoOrden('nubosidad');
       } else if(s.skc){
-        ok = has('SKC');
-        msg = ok ? 'Usaste correctamente <span class="mono">SKC</span>.' : 'El cielo estaba despejado sin ninguna capa: debías escribir <span class="mono">SKC</span>.';
+        msg = ok ? 'Usaste correctamente <span class="mono">SKC</span>.'
+                 : 'El cielo estaba despejado sin ninguna capa: debías escribir <span class="mono">SKC</span>. ' + textoOrden('nubosidad');
+      } else if(ok){
+        msg = `Nubosidad <span class="mono">${tk.cloudTokens.join(', ')}</span> correcta.`;
       } else {
-        const faltantes = tk.cloudTokens.filter(t => !has(t));
-        ok = faltantes.length===0;
-        msg = ok ? `Nubosidad <span class="mono">${tk.cloudTokens.join(', ')}</span> correcta.`
-          : `Faltó o estaba incompleto: <span class="mono">${faltantes.join(', ')}</span>. Recuerda el formato cantidad (FEW/SCT/BKN/OVC) + altura en centenas de pies (3 cifras), agregando CB o TCU cuando existan nubes de desarrollo vertical.`;
+        const faltan = faltantesDe('nubosidad');
+        msg = '';
+        if(faltan.length) msg += `Faltó o estaba incompleto: <span class="mono">${faltan.join(', ')}</span>. `;
+        if(inventadas.length) msg += `Sobra la capa <span class="mono">${inventadas.join(', ')}</span>, que no se observaba. `;
+        msg += textoOrden('nubosidad');
+        msg += 'Recuerda el formato cantidad (FEW/SCT/BKN/OVC) + altura en centenas de pies (3 cifras), agregando CB o TCU cuando existan nubes de desarrollo vertical, y en orden de menor a mayor altura.';
       }
       bloques.push({label:'Nubosidad', ok, msg});
     }
 
     // 8. Temperatura y punto de rocío
     {
-      const ok = has(tk.tempTok);
+      const ok = seccionOk('temp');
       const msg = ok ? `Temperatura/punto de rocío <span class="mono">${tk.tempTok}</span> correctos.`
-        : `Debía ser <span class="mono">${tk.tempTok}</span> (temperatura/punto de rocío en grados Celsius enteros; recuerda anteponer <b>M</b> a los valores bajo cero, ej. M02).`;
+        : `Debía ser <span class="mono">${tk.tempTok}</span> (temperatura/punto de rocío en grados Celsius enteros; recuerda anteponer <b>M</b> a los valores bajo cero, ej. M02). ` + textoOrden('temp');
       bloques.push({label:'Temperatura y punto de rocío', ok, msg});
     }
 
     // 9. QNH
     {
-      const ok = has(tk.qnhTok);
+      const ok = seccionOk('qnh');
       const msg = ok ? `QNH <span class="mono">${tk.qnhTok}</span> correcto.`
-        : `El QNH debía codificarse como <span class="mono">${tk.qnhTok}</span> (letra Q + 4 cifras del valor en hectopascales).`;
+        : `El QNH debía codificarse como <span class="mono">${tk.qnhTok}</span> (letra Q + 4 cifras del valor en hectopascales). ` + textoOrden('qnh');
       bloques.push({label:'QNH', ok, msg});
     }
 
     // 10. Información suplementaria (RE / WS / Tendencia / RMK)
     const necesitaSuplemento = s.re || s.ws || s.trend || tk.rmkTokens.length;
+    const rmkSobra = !tk.rmkTokens.length && has('RMK');
+    const trendSobra = !s.trend && (has('NOSIG') || has('BECMG') || has('TEMPO'));
     if(necesitaSuplemento){
-      const faltan = [];
-      if(s.re && !has(s.re.code)) faltan.push(`fenómeno reciente <span class="mono">${s.re.code}</span>`);
-      if(s.ws){
-        const wsOk = tk.wsTokens.every(t=>has(t));
-        if(!wsOk) faltan.push(`cizalladura <span class="mono">${tk.wsTokens.join(' ')}</span>`);
+      const faltan = faltantesDe('suplemento');
+      const ok = seccionOk('suplemento');
+      let msg;
+      if(ok) msg = 'Información suplementaria (RE/WS/tendencia/RMK) correcta.';
+      else {
+        msg = `Faltó o estaba incompleto: <span class="mono">${faltan.join(' ')}</span>. `;
+        if(tk.rmkTokens.length) msg += `El bloque de observaciones completo era <span class="mono">${tk.rmkTokens.join(' ')}</span> y va siempre <b>al final del reporte</b>. `;
+        msg += textoOrden('suplemento');
       }
-      if(s.trend && !has(s.trend)) faltan.push(`tendencia <span class="mono">${s.trend}</span>`);
-      if(tk.rmkTokens.length){
-        const rmkOk = tk.rmkTokens.every(t=>has(t));
-        if(!rmkOk) faltan.push(`observaciones <span class="mono">${tk.rmkTokens.join(' ')}</span>`);
-      }
-      const ok = faltan.length===0;
-      const msg = ok ? 'Información suplementaria (RE/WS/tendencia/RMK) correcta.'
-        : `Faltó o estaba incompleto: ${faltan.join('; ')}.`;
       bloques.push({label:'Información suplementaria', ok, msg});
+    } else if(rmkSobra || trendSobra){
+      let msg = 'Este reporte no llevaba información suplementaria. ';
+      if(trendSobra) msg += 'Agregaste un grupo de tendencia que no correspondía. ';
+      if(rmkSobra) msg += 'Agregaste un bloque <span class="mono">RMK</span> sin que hubiera nada que observar: el RMK sólo se usa para CB/TCU, fenómenos en vecindad, oscurecimientos entre 6000 y 7000 m, o bancos de niebla entre 5000 y 8000 m. ';
+      bloques.push({label:'Información suplementaria', ok:false, msg});
+    }
+
+    // 11. Estructura general: grupos inventados que no encajan en ninguna sección
+    {
+      const yaSenalados = new Set([
+        ...sobrantes.filter(t => esFenomeno(t) || esNube(t)),
+        'COR','AUTO','RMK','NOSIG','BECMG','TEMPO'
+      ]);
+      const otros = sobrantes.filter(t => !yaSenalados.has(t));
+      const desordenados = marcas.filter(m => m.estado === 'desordenado').map(m => m.tok);
+      const ok = otros.length === 0 && desordenados.length === 0;
+      if(!ok){
+        let msg = '';
+        if(desordenados.length) msg += `Estos grupos están escritos, pero <b>en la posición equivocada</b>: <span class="mono">${desordenados.join(', ')}</span>. El METAR tiene un orden fijo, y un grupo fuera de sitio cambia su significado o lo invalida. `;
+        if(otros.length) msg += `Estos grupos sobran o no existen en el código: <span class="mono">${otros.join(', ')}</span>. `;
+        bloques.push({label:'Estructura y orden', ok:false, msg});
+      } else {
+        bloques.push({label:'Estructura y orden', ok:true, msg:'Todos los grupos están en el orden correcto y no sobra ninguno.'});
+      }
     }
 
     return bloques;
