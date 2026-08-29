@@ -199,6 +199,15 @@
   }
   .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 90; backdrop-filter: blur(2px); }
   .sidebar-backdrop.open { display: block; }
+
+  /* Crédito de autoría — esta página no usa el <footer> común del sitio */
+  .credito-autor{
+    border-top:1px solid rgba(128,128,128,0.22);
+    margin-top:40px; padding:20px 24px;
+    text-align:center; font-size:0.78rem; color:var(--text-muted);
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .credito-autor strong{ color:inherit; font-weight:600; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
@@ -385,7 +394,8 @@
 
       </div>
     </div>
-  </main>
+  <div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
+</main>
 
   <script>
   // ---------- MENÚ LATERAL (drawer en móvil) ----------

@@ -76,6 +76,15 @@
     max-width:380px; margin:0 auto 18px; padding:12px 14px; border-radius:10px;
     background:rgba(220,38,38,0.08); color:#dc2626; font-size:0.78rem; line-height:1.5; display:none;
   }
+
+  /* Crédito de autoría — esta página no usa el <footer> común del sitio */
+  .credito-autor{
+    border-top:1px solid rgba(128,128,128,0.22);
+    margin-top:40px; padding:20px 24px;
+    text-align:center; font-size:0.78rem; color:var(--text-muted);
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .credito-autor strong{ color:inherit; font-weight:600; }
 </style>
 </head>
 <body>
@@ -167,8 +176,8 @@
     'quiz-fpl.html': 'el quiz de Plan de Vuelo',
     'quiz-designadores.html': 'el quiz de Designadores de Aeródromos',
     'quiz-fraseologia.html': 'el quiz de Fraseología Aeronáutica',
-    'navegacion-quiz-tiempo-altimetria.html': 'el Quiz I de Navegación (Tiempo y Altimetría)',
-    'navegacion-quiz-radioayudas-viento.html': 'el Quiz II de Navegación (Radioayudas y Viento)',
+    'quiz-navegacion-tiempo-altimetria.html': 'el Quiz I de Navegación (Tiempo y Altimetría)',
+    'quiz-navegacion-radioayudas-viento.html': 'el Quiz II de Navegación (Radioayudas y Viento)',
     'simulador-metar.html': 'el Simulador METAR',
     'simulador-plan-vuelo.html': 'el Simulador de Plan de Vuelo',
     'Simulador-NALA.html': 'el Simulador NALA',
@@ -203,7 +212,7 @@
   // redirecciones abiertas a otros sitios.
   const PAGINAS_VALIDAS = [
     'Panel_estudiante.html', 'quiz-ats.html', 'quiz-fpl.html', 'quiz-designadores.html',
-    'quiz-fraseologia.html', 'navegacion-quiz-tiempo-altimetria.html', 'navegacion-quiz-radioayudas-viento.html',
+    'quiz-fraseologia.html', 'quiz-navegacion-tiempo-altimetria.html', 'quiz-navegacion-radioayudas-viento.html',
     'simulador-metar.html', 'simulador-plan-vuelo.html',
     'Simulador-NALA.html', 'simulador-fraseologia.html'
   ];
@@ -382,5 +391,6 @@
     }
   });
 </script>
+<div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
 </body>
 </html>
