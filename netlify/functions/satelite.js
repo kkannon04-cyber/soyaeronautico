@@ -81,11 +81,15 @@ function limpiarCacheVencido(){
   }
 }
 
-// ---------- RATE LIMIT BÁSICO (en memoria, por IP) ----------
-// Mismo criterio que metar.js: una solicitud por segundo por IP. No es robusto
-// entre instancias frías, pero frena ráfagas de un mismo cliente.
-const ultimaLlamadaPorIp = new Map();
-const MIN_INTERVALO_MS = 1000;
+// ---------- RATE LIMIT (en memoria, por IP) ----------
+// El análisis por píxeles de una vista ampliada necesita varios mosaicos a la
+// vez (y de varios canales), así que un tope de "una solicitud por segundo"
+// lo haría inviable: el navegador los pide en paralelo. Se usa una ventana
+// deslizante que tolera la ráfaga de una consulta completa pero sigue frenando
+// el abuso sostenido. No es robusto entre instancias frías, igual que antes.
+const llamadasPorIp = new Map();
+const VENTANA_MS = 10 * 1000;
+const MAX_EN_VENTANA = 60;
 
 function obtenerIp(event){
   const headers = event.headers || {};
@@ -93,11 +97,20 @@ function obtenerIp(event){
     (headers['x-forwarded-for'] || '').split(',')[0].trim() || 'desconocida';
 }
 
-function limpiarLlamadasVencidas(){
-  const limite = Date.now() - (10 * MIN_INTERVALO_MS);
-  for(const [ip, ts] of ultimaLlamadaPorIp){
-    if(ts < limite) ultimaLlamadaPorIp.delete(ip);
+// Devuelve true si la solicitud entra dentro del cupo de esta IP.
+function admitir(ip){
+  const ahora = Date.now();
+  const desde = ahora - VENTANA_MS;
+  for(const [otraIp, marcas] of llamadasPorIp){
+    const vivas = marcas.filter(t => t > desde);
+    if(vivas.length) llamadasPorIp.set(otraIp, vivas);
+    else llamadasPorIp.delete(otraIp);
   }
+  const marcas = llamadasPorIp.get(ip) || [];
+  if(marcas.length >= MAX_EN_VENTANA) return false;
+  marcas.push(ahora);
+  llamadasPorIp.set(ip, marcas);
+  return true;
 }
 
 // fetch con timeout: si CIRA se cuelga, fallamos rápido
@@ -134,14 +147,9 @@ exports.handler = async (event) => {
   }
 
   // ---------- Rate limit ----------
-  limpiarLlamadasVencidas();
-  const ip = obtenerIp(event);
-  const ahora = Date.now();
-  const ultima = ultimaLlamadaPorIp.get(ip);
-  if(ultima && ahora - ultima < MIN_INTERVALO_MS){
+  if(!admitir(obtenerIp(event))){
     return error(429, 'Demasiadas solicitudes, espera unos segundos e intenta de nuevo.');
   }
-  ultimaLlamadaPorIp.set(ip, ahora);
 
   // ---------- Recurso: escala (barra de color oficial del canal) ----------
   if(recurso === 'escala'){
@@ -207,16 +215,42 @@ exports.handler = async (event) => {
     }
   }
 
-  // ---------- Recurso: imagen ----------
-  if(recurso === 'imagen'){
+  // ---------- Recurso: imagen / mosaico ----------
+  // 'imagen' devuelve la vista completa (nivel 0 de la pirámide) y 'tile' un
+  // mosaico concreto de un nivel superior. Los dos existen por el mismo motivo:
+  // un <canvas> no puede leer los píxeles de una imagen de otro dominio, así
+  // que el análisis necesita que pasen por aquí y salgan con cabecera CORS.
+  // El visor, en cambio, carga los mosaicos directo de CIRA: sólo los dibuja.
+  if(recurso === 'imagen' || recurso === 'tile'){
     const ts = (params.ts || '').trim();
     // El timestamp de SLIDER es exactamente YYYYMMDDhhmmss.
     if(!/^[0-9]{14}$/.test(ts)) return error(400, 'Marca de tiempo no válida.');
 
+    let nivel = 0, fila = 0, col = 0;
+    if(recurso === 'tile'){
+      nivel = Number(params.nivel);
+      fila  = Number(params.fila);
+      col   = Number(params.col);
+      // Tope 5: es el max_zoom_level más alto que publica CIRA (disco completo).
+      if(!Number.isInteger(nivel) || nivel < 0 || nivel > 5){
+        return error(400, 'Nivel de mosaico no válido.');
+      }
+      // En el nivel N la rejilla es de 2^N x 2^N, así que fuera de ese rango la
+      // ruta no existiría: se rechaza aquí en vez de reenviar un 404 de CIRA.
+      const lado = 1 << nivel;
+      if(!Number.isInteger(fila) || fila < 0 || fila >= lado ||
+         !Number.isInteger(col)  || col  < 0 || col  >= lado){
+        return error(400, 'Coordenadas de mosaico fuera de rango.');
+      }
+    }
+
+    const p2 = v => String(v).padStart(2, '0');
+    const p3 = v => String(v).padStart(3, '0');
     // Ojo: en la ruta de imágenes la fecha va separada por barras (2026/08/28),
     // aunque el timestamp del directorio siguiente va compacto.
     const fecha = `${ts.slice(0, 4)}/${ts.slice(4, 6)}/${ts.slice(6, 8)}`;
-    const url = `${HOST_IMG}/data/imagery/${fecha}/${sat}---${sector}/${producto}/${ts}/00/000_000.png`;
+    const url = `${HOST_IMG}/data/imagery/${fecha}/${sat}---${sector}/${producto}/${ts}`
+              + `/${p2(nivel)}/${p3(fila)}_${p3(col)}.png`;
 
     try{
       const res = await fetchConTimeout(url, 12000);
