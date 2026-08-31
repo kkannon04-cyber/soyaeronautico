@@ -7,8 +7,29 @@
 // desde el propio servidor (sin CORS ni límites de los proxies públicos), y
 // luego juntamos los boletines distintos que salieron entre esas fotos.
 
-const MAX_MUESTRAS = 120;      // tope defensivo de peticiones en paralelo
+const MAX_MUESTRAS = 40;       // tope defensivo de peticiones en paralelo hacia aviationweather.gov
 const PASO_MIN_MS = 2 * 3600000; // 2 horas: margen seguro bajo el intervalo típico de emisión de un TAF (3-6h)
+
+// ---------- RATE LIMIT BÁSICO (en memoria, por IP) ----------
+// No es robusto (la memoria se pierde si la función "se enfría" entre
+// invocaciones), pero frena ráfagas repetidas del mismo cliente mientras
+// el contenedor de Netlify siga caliente, limitando cuántas veces se puede
+// disparar el abanico de hasta MAX_MUESTRAS peticiones en paralelo.
+const ultimaLlamadaPorIp = new Map();
+const MIN_INTERVALO_MS = 3000; // máx. 1 solicitud cada 3 segundos por IP
+
+function obtenerIp(event){
+  const headers = event.headers || {};
+  return headers['x-nf-client-connection-ip'] || headers['client-ip'] ||
+    (headers['x-forwarded-for'] || '').split(',')[0].trim() || 'desconocida';
+}
+
+function limpiarLlamadasVencidas(){
+  const limite = Date.now() - (10 * MIN_INTERVALO_MS);
+  for(const [ip, ts] of ultimaLlamadaPorIp){
+    if(ts < limite) ultimaLlamadaPorIp.delete(ip);
+  }
+}
 
 function fechaAAAAMMDD_HHMM(ms){
   const d = new Date(ms);
@@ -39,6 +60,19 @@ exports.handler = async (event) => {
     "Content-Type":                 "application/json",
     "Cache-Control":                "no-store",
   };
+
+  limpiarLlamadasVencidas();
+  const ip = obtenerIp(event);
+  const ahora = Date.now();
+  const ultima = ultimaLlamadaPorIp.get(ip);
+  if(ultima && ahora - ultima < MIN_INTERVALO_MS){
+    return {
+      statusCode: 429,
+      headers: CORS,
+      body: JSON.stringify({ error: 'Demasiadas solicitudes, espera unos segundos e intenta de nuevo.' }),
+    };
+  }
+  ultimaLlamadaPorIp.set(ip, ahora);
 
   if(!/^[A-Z]{4}$/.test(icao)){
     return {

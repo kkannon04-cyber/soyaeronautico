@@ -128,12 +128,18 @@ function parseRss(xml, source, max) {
   const articles = [];
 
   for (const itemXml of items) {
-    const title = decodeEntities(extractTag(itemXml, "title"));
+    // Quita cualquier etiqueta HTML del título (igual que buildExcerpt ya
+    // hace con la descripción) — el feed es de un tercero (WordPress) y el
+    // frontend no debe confiar en que venga libre de marcado.
+    const title = decodeEntities(extractTag(itemXml, "title").replace(/<[^>]+>/g, ""));
     const link  = extractTag(itemXml, "link");
     const pubDateRaw = extractTag(itemXml, "pubDate");
     const description = extractTag(itemXml, "description");
 
-    if (!title || !link) continue;
+    // Solo aceptamos enlaces http(s): evita que un feed comprometido cuele
+    // un "javascript:" u otro esquema que se ejecute al hacer clic en el
+    // frontend (donde el link se asigna directo a la propiedad href).
+    if (!title || !link || !/^https?:\/\//i.test(link)) continue;
 
     const parsedDate = pubDateRaw ? new Date(pubDateRaw) : null;
     const pubDate = parsedDate && !isNaN(parsedDate) ? parsedDate.toISOString() : null;
@@ -173,10 +179,17 @@ exports.handler = async (event) => {
 
   const params = (event && event.queryStringParameters) || {};
 
-  // ── Modo diagnóstico: /.netlify/functions/noticias?debug=1 ──────────────
+  // ── Modo diagnóstico: /.netlify/functions/noticias?debug=<NOTICIAS_DEBUG_KEY> ──
   // Bypasea toda caché y devuelve datos crudos para ver qué está llegando
-  // realmente del feed RSS, sin tener que adivinar a ciegas.
+  // realmente del feed RSS, sin tener que adivinar a ciegas. Requiere que la
+  // variable de entorno NOTICIAS_DEBUG_KEY esté configurada en Netlify y que
+  // el valor coincida exactamente; si no está configurada, el modo debug
+  // queda desactivado por defecto (antes era accesible por cualquiera).
   if (params.debug) {
+    const claveEsperada = process.env.NOTICIAS_DEBUG_KEY;
+    if (!claveEsperada || params.debug !== claveEsperada) {
+      return { statusCode: 404, headers: { ...CORS, "Cache-Control": "no-store" }, body: JSON.stringify({ error: "Not found" }) };
+    }
     try {
       const xml = await fetchUrl(SOURCE.url);
       const itemCount = (xml.match(/<item>/gi) || []).length;

@@ -1,0 +1,10 @@
+# Cabeceras de seguridad básicas para todo el sitio.
+# No incluye Content-Security-Policy: el sitio carga recursos de muchos
+# dominios externos distintos según la página (fonts.google, jsdelivr,
+# unpkg/Leaflet, mapas de NASA GIBS/ArcGIS, satélite CIMSS/RAMMB, proxies
+# de noticias) y una CSP mal calibrada podría romper alguna herramienta sin
+# poder probarla aquí en un navegador real. Ver reportes-seguridad/.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin

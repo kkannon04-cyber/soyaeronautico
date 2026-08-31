@@ -143,7 +143,7 @@
   [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
   [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
-  @media (max-width:1100px){ nav.desktop-nav{display:none;} .menu-btn{display:block;} }
+  @media (max-width:1100px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
   
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
@@ -190,8 +190,13 @@
 
   /* ---------- CONTENT ---------- */
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
+  @media (max-width:600px){ .content{ padding:24px 18px 70px; } .hero-simple{ padding:32px 18px 8px; } .card-box{ padding:14px; } }
   .topic{ margin-bottom:60px; scroll-margin-top:120px; }
-  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); }
+  .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); cursor:pointer; user-select:none; }
+  .topic-head:focus{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .topic-head::after{ content:'▾'; margin-left:auto; color:var(--text-muted); font-size:0.9rem; transition:transform .2s; flex-shrink:0; }
+  .topic.collapsed .topic-body,
+  .topic.collapsed .quiz-card{ display:none; }
   .topic-num{ flex-shrink:0; width:42px; height:42px; border-radius:10px; background:var(--panel-alt); border:1px solid var(--hairline); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); font-size:0.95rem; }
   .topic-head h2{ font-size:1.3rem; }
   .topic-body{ color:var(--text); font-size:0.95rem; line-height:1.7; }
@@ -205,6 +210,11 @@
 
   .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
   .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+
+  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .ats-table-wrap{ overflow-x:auto; }
 
   .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
   .mnemo b{ color:var(--vfr); }
@@ -347,7 +357,7 @@
     </nav>
     <div class="nav-right">
       <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
-      <a href="Panel_estudiante.html" class="nav-login-btn">Mi panel</a>
+      <a href="login.html" class="nav-login-btn" id="navLoginBtn">Iniciar sesión</a>
       <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
         <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
@@ -377,6 +387,7 @@
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
       <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="login.html" id="navLoginBtnMobile">Iniciar sesión <span class="mnav-arrow">→</span></a>
     </nav>
     <div class="mobile-nav-footer">
       <button class="theme-toggle" id="themeToggleMobile" type="button">
@@ -409,7 +420,7 @@
 
   <div class="hero-note">
     <span>🛫</span>
-    <span><b>Cómo funciona el juego:</b> al final de cada bloque hay una pregunta. Si aciertas, el avión sube un nivel en la barra de arriba. Si fallas, se estrella y baja un nivel. La meta es llegar a <b>CRUCERO</b> con los 10 aciertos.</span>
+    <span><b>Cómo funciona:</b> al final de cada bloque hay una pregunta de chequeo rápido. Tus aciertos se reflejan en la barra de progreso de arriba — no hay penalización por fallar, solo repasa el punto y sigue.</span>
   </div>
 </section>
 
@@ -610,12 +621,15 @@
     <div class="topic-head"><div class="topic-num">7</div><h2>Vuelos dentro de Colombia</h2></div>
     <div class="topic-body">
       <p>Reglas específicas para vuelos nacionales:</p>
-      <ul>
-        <li><b>Vuelos Adicionales:</b> tipo "S". No requieren autorización. No usar números de vuelo regulares. RMK/ ADDN FLT.</li>
-        <li><b>Vuelos de Traslado:</b> tipo "X". No requieren autorización. Identificación por matrícula. RMK/ TRANSFER FLT.</li>
-        <li><b>Vuelos Ferry:</b> tipo "X". Requieren autorización de DONA. Identificación por matrícula. RMK/ FERRY FLT + fecha-hora-originador.</li>
-        <li><b>Escala Técnica por emergencia:</b> tipo "S". No requiere autorización. RMK/ TECHNICAL STOPOVER.</li>
-      </ul>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Tipo de vuelo</th><th>Código</th><th>Autorización requerida</th><th>Identificación</th><th>Marca RMK</th></tr>
+        <tr><td>Vuelos Adicionales</td><td>S</td><td>No requiere</td><td>No usar números de vuelo regulares</td><td>ADDN FLT</td></tr>
+        <tr><td>Vuelos de Traslado</td><td>X</td><td>No requiere</td><td>Por matrícula</td><td>TRANSFER FLT</td></tr>
+        <tr><td>Vuelos Ferry</td><td>X</td><td>Sí, de DONA</td><td>Por matrícula</td><td>FERRY FLT + fecha-hora-originador</td></tr>
+        <tr><td>Escala técnica por emergencia</td><td>S</td><td>No requiere</td><td>—</td><td>TECHNICAL STOPOVER</td></tr>
+      </table>
+      </div>
       <div class="card-box">
         <h4>📌 Escala técnica en aeródromos domésticos</h4>
         <p style="margin:0;">Para aeronaves de transporte no regular y aviación general, requiere permiso de DONA. El ATC debe ubicar la aeronave en un lugar visible donde la fuerza pública pueda mantener el control.</p>
@@ -639,14 +653,17 @@
     <div class="topic-head"><div class="topic-num">8</div><h2>Vuelos internacionales</h2></div>
     <div class="topic-body">
       <p>Reglas para vuelos desde Colombia hacia el exterior:</p>
-      <ul>
-        <li><b>Vuelos Adicionales:</b> tipo "S". Usar números de vuelo aprobados por OTA. RMK/ ADDN FLT.</li>
-        <li><b>Vuelos de Traslado:</b> tipo "X". Requieren autorización de DONA. Identificación por matrícula o número de vuelo según autorización. RMK/ TRANSFER FLT + fecha-hora-originador.</li>
-        <li><b>Vuelos Ferry:</b> tipo "X". Requieren autorización de DONA. Identificación por matrícula. RMK/ FERRY FLT + fecha-hora-originador.</li>
-        <li><b>Sobrevuelo:</b> toda aeronave que sobrevuele Colombia y se identifique con Call sign debe registrar la matrícula en la casilla 18 y contar con autorización de la FAC.</li>
-        <li><b>Escala Técnica por autonomía en aeropuertos domésticos:</b> tipo "N" o "G". Requiere permiso de DONA. RMK/ TECHNICAL STOPOVER + fecha-hora-originador.</li>
-        <li><b>Escala Técnica por emergencia:</b> tipo "S". No requiere autorización.</li>
-      </ul>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Tipo de vuelo</th><th>Código</th><th>Autorización requerida</th><th>Identificación</th><th>Marca RMK</th></tr>
+        <tr><td>Vuelos Adicionales</td><td>S</td><td>—</td><td>Números de vuelo aprobados por OTA</td><td>ADDN FLT</td></tr>
+        <tr><td>Vuelos de Traslado</td><td>X</td><td>Sí, de DONA</td><td>Por matrícula o número de vuelo según autorización</td><td>TRANSFER FLT + fecha-hora-originador</td></tr>
+        <tr><td>Vuelos Ferry</td><td>X</td><td>Sí, de DONA</td><td>Por matrícula</td><td>FERRY FLT + fecha-hora-originador</td></tr>
+        <tr><td>Sobrevuelo</td><td>—</td><td>Sí, de la FAC</td><td>Matrícula en casilla 18 (si se identifica con call sign)</td><td>—</td></tr>
+        <tr><td>Escala técnica por autonomía en aeropuertos domésticos</td><td>N o G</td><td>Sí, permiso de DONA</td><td>—</td><td>TECHNICAL STOPOVER + fecha-hora-originador</td></tr>
+        <tr><td>Escala técnica por emergencia</td><td>S</td><td>No requiere</td><td>—</td><td>—</td></tr>
+      </table>
+      </div>
       <div class="mnemo"><b>🧠 Truco:</b> "Internacional: Adicional = S con OTA, Traslado y Ferry = X con DONA, Sobrevuelo = matrícula en casilla 18 + FAC."</div>
     </div>
     <div class="quiz-card" data-quiz="8">
@@ -675,12 +692,15 @@
         <li>Cambios de velocidad, nivel o reglas de vuelo se indican con notación específica (ej. <code>BUTAL/N0140A055 VFR DCT</code>).</li>
       </ul>
       <p>La <b>casilla 18 (Otros Datos)</b> incluye indicadores como:</p>
-      <ul>
-        <li><b>STS/</b> Motivo de manejo especial (ALTRV, ATFMX, FFR, FLTCK, HAZMAT, HEAD, HOSP, HUM, MARSA, MEDEVAC, NONRVSM, SAR, STATE).</li>
-        <li><b>DEP/</b> y <b>DEST/</b> para aeródromos no listados (cuando se usa ZZZZ).</li>
-        <li><b>OPR/</b> Operador, obligatorio para empresas de servicio aéreo regular (S), no regular (N) y militar (M) en vuelos internacionales.</li>
-        <li><b>RMK/</b> Observaciones en lenguaje claro.</li>
-      </ul>
+      <div class="ats-table-wrap">
+      <table class="ats-table">
+        <tr><th>Indicador</th><th>Significado</th></tr>
+        <tr><td>STS/</td><td>Motivo de manejo especial (ALTRV, ATFMX, FFR, FLTCK, HAZMAT, HEAD, HOSP, HUM, MARSA, MEDEVAC, NONRVSM, SAR, STATE).</td></tr>
+        <tr><td>DEP/ y DEST/</td><td>Para aeródromos no listados (cuando se usa ZZZZ).</td></tr>
+        <tr><td>OPR/</td><td>Operador, obligatorio para empresas de servicio aéreo regular (S), no regular (N) y militar (M) en vuelos internacionales.</td></tr>
+        <tr><td>RMK/</td><td>Observaciones en lenguaje claro.</td></tr>
+      </table>
+      </div>
       <div class="mnemo"><b>🧠 Truco:</b> "Ruta: SID + puntos + STAR. Casilla 18: STS, DEP, DEST, OPR, RMK."</div>
     </div>
     <div class="quiz-card" data-quiz="9">
@@ -816,6 +836,38 @@
 </script>
 
 <script>
+  // ---------- ACORDEÓN DE TEMAS ----------
+  // Todos los temas colapsados excepto el primero, para que la página no se
+  // sienta como un solo bloque largo de texto. El TOC abre el tema de
+  // destino antes de saltar a él.
+  (function(){
+    const topics = document.querySelectorAll('.topic');
+    function setOpen(topic, open){
+      topic.classList.toggle('collapsed', !open);
+      const head = topic.querySelector('.topic-head');
+      if(head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    topics.forEach((topic, i) => {
+      const head = topic.querySelector('.topic-head');
+      if(!head) return;
+      head.setAttribute('tabindex', '0');
+      head.setAttribute('role', 'button');
+      setOpen(topic, i === 0);
+      head.addEventListener('click', () => setOpen(topic, topic.classList.contains('collapsed')));
+      head.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setOpen(topic, topic.classList.contains('collapsed')); }
+      });
+    });
+    document.querySelectorAll('nav.toc a[href^="#"]').forEach(link => {
+      link.addEventListener('click', () => {
+        const target = document.querySelector(link.getAttribute('href'));
+        if(target && target.classList.contains('topic')) setOpen(target, true);
+      });
+    });
+  })();
+</script>
+
+<script>
   // ---------- DROPDOWN "MÓDULOS" ----------
   (function(){
     const dropdown = document.getElementById('modulosDropdown');
@@ -878,6 +930,18 @@
       syncMobileThemeLabel();
     });
     if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+<script>
+  // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
+  (async function actualizarBotonSesion(){
+    if (typeof sbClient === 'undefined' || !sbClient) return;
+    const { data } = await sbClient.auth.getSession();
+    if (!data || !data.session) return;
+    const btnDesktop = document.getElementById('navLoginBtn');
+    const btnMobile = document.getElementById('navLoginBtnMobile');
+    if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
+    if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
   })();
 </script>
 </body>

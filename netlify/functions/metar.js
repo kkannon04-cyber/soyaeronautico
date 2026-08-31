@@ -22,6 +22,30 @@ function limpiarCacheVencido(){
   }
 }
 
+// ---------- RATE LIMIT BÁSICO (en memoria, por IP) ----------
+// Mismo patrón que taf-historial.js, pero con un intervalo más corto: esta
+// función solo dispara UNA petición saliente por llamada (no un abanico de
+// hasta 40 como taf-historial.js), y el Simulador NALA la llama cada vez que
+// se abre el popup de un aeródromo distinto — un intervalo de 3s ahí
+// bloquearía a un controlador revisando varios aeródromos seguidos. No es
+// robusto entre instancias frías de Netlify, pero frena ráfagas de un mismo
+// cliente variando "icao"/"hours" para saltarse sistemáticamente la caché.
+const ultimaLlamadaPorIp = new Map();
+const MIN_INTERVALO_MS = 1000; // máx. 1 solicitud por segundo por IP
+
+function obtenerIp(event){
+  const headers = event.headers || {};
+  return headers['x-nf-client-connection-ip'] || headers['client-ip'] ||
+    (headers['x-forwarded-for'] || '').split(',')[0].trim() || 'desconocida';
+}
+
+function limpiarLlamadasVencidas(){
+  const limite = Date.now() - (10 * MIN_INTERVALO_MS);
+  for(const [ip, ts] of ultimaLlamadaPorIp){
+    if(ts < limite) ultimaLlamadaPorIp.delete(ip);
+  }
+}
+
 // fetch con timeout: si NOAA se cuelga, fallamos rápido
 async function fetchConTimeout(url, ms){
   const controller = new AbortController();
@@ -46,6 +70,19 @@ exports.handler = async (event) => {
     "Content-Type":                 "application/json",
     "Cache-Control":                "no-store",
   };
+
+  limpiarLlamadasVencidas();
+  const ip = obtenerIp(event);
+  const ahora = Date.now();
+  const ultima = ultimaLlamadaPorIp.get(ip);
+  if(ultima && ahora - ultima < MIN_INTERVALO_MS){
+    return {
+      statusCode: 429,
+      headers: CORS,
+      body: JSON.stringify({ error: 'Demasiadas solicitudes, espera unos segundos e intenta de nuevo.' }),
+    };
+  }
+  ultimaLlamadaPorIp.set(ip, ahora);
 
   // Validación de forma del ICAO en el servidor: nunca reenviar a
   // aviationweather.gov un valor que no sean 4 letras (ver hallazgo 2.1

@@ -1,0 +1,638 @@
+[
+    {
+        "icaoId":  "SKAR",
+        "iataId":  "AXM",
+        "faaId":  null,
+        "name":  "ARMENIA/EL EDEN AIRPORT",
+        "state":  "QU",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  4.455,
+        "lon":  -75.7654,
+        "elev":  1214,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.27",
+        "priority":  "9",
+        "runways":  [
+                        {
+                            "id":  "02/20",
+                            "dimension":  "7612x118",
+                            "surface":  "H",
+                            "alignment":  19
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKBG",
+        "iataId":  "BGA",
+        "faaId":  null,
+        "name":  "BUCARAMANGO/PALONEGRO AIRPORT",
+        "state":  "SA",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  7.1259,
+        "lon":  -73.1843,
+        "elev":  1187,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "ATIS,127.75;TWR,118.05",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "17/35",
+                            "dimension":  "6893x148",
+                            "surface":  "H",
+                            "alignment":  168
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKBO",
+        "iataId":  "BOG",
+        "faaId":  null,
+        "name":  "BOGOTA/EL DORADO AIRPORT",
+        "state":  "CA",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  4.6994,
+        "lon":  -74.1439,
+        "elev":  2547,
+        "magdec":  "7W",
+        "owner":  "P",
+        "rwyNum":  "2",
+        "rwyLength":  "L",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  "B",
+        "passengers":  "35360",
+        "freqs":  "ATIS,113.9;TWR,118.1",
+        "priority":  "0",
+        "runways":  [
+                        {
+                            "id":  "14L/32R",
+                            "dimension":  "12467x148",
+                            "surface":  "H",
+                            "alignment":  134
+                        },
+                        {
+                            "id":  "14R/32L",
+                            "dimension":  "12467x148",
+                            "surface":  "H",
+                            "alignment":  134
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKBQ",
+        "iataId":  "BAQ",
+        "faaId":  null,
+        "name":  "BARRANQUILLA/CORTISSOZ AIRPORT",
+        "state":  "AT",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  10.8898,
+        "lon":  -74.7805,
+        "elev":  23,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "L",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "ATIS,113.7;TWR,118.1",
+        "priority":  "1",
+        "runways":  [
+                        {
+                            "id":  "05/23",
+                            "dimension":  "9846x148",
+                            "surface":  "H",
+                            "alignment":  48
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKCC",
+        "iataId":  "CUC",
+        "faaId":  null,
+        "name":  "CUCUTA/DAZA INTERNATIONAL AIRPORT",
+        "state":  "ND",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  7.9279,
+        "lon":  -72.5113,
+        "elev":  308,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "2",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.1;ATIS,113.3",
+        "priority":  "9",
+        "runways":  [
+                        {
+                            "id":  "16/34",
+                            "dimension":  "7362x148",
+                            "surface":  "H",
+                            "alignment":  157
+                        },
+                        {
+                            "id":  "03/21",
+                            "dimension":  "6316x148",
+                            "surface":  "H",
+                            "alignment":  26
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKCG",
+        "iataId":  "CTG",
+        "faaId":  null,
+        "name":  "CARTAGENA/NUNEZ INTERNATIONAL",
+        "state":  "BO",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  10.4458,
+        "lon":  -75.5128,
+        "elev":  6,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "passengers":  "7090",
+        "freqs":  "TWR,118.3",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "01/19",
+                            "dimension":  "7841x148",
+                            "surface":  "H",
+                            "alignment":  9
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKCL",
+        "iataId":  "CLO",
+        "faaId":  null,
+        "name":  "CALI/ARAGON AIRPORT",
+        "state":  "VD",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  3.54,
+        "lon":  -76.3823,
+        "elev":  967,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "L",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "passengers":  "7220",
+        "freqs":  "TWR,118.1",
+        "priority":  "2",
+        "runways":  [
+                        {
+                            "id":  "02/20",
+                            "dimension":  "9843x148",
+                            "surface":  "H",
+                            "alignment":  15
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKLC",
+        "iataId":  "APO",
+        "faaId":  null,
+        "name":  "APARTADO/BETENCOURT AIRPORT",
+        "state":  "AN",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  7.8146,
+        "lon":  -76.718,
+        "elev":  20,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.7",
+        "priority":  "2",
+        "runways":  [
+                        {
+                            "id":  "15/33",
+                            "dimension":  "6444x148",
+                            "surface":  "H",
+                            "alignment":  154
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKLT",
+        "iataId":  "LET",
+        "faaId":  null,
+        "name":  "LETICIA/COBO INTERNATIONAL",
+        "state":  "AM",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  -4.1949,
+        "lon":  -69.9431,
+        "elev":  78,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.1",
+        "priority":  "4",
+        "runways":  [
+                        {
+                            "id":  "03/21",
+                            "dimension":  "6594x131",
+                            "surface":  "H",
+                            "alignment":  29
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKMR",
+        "iataId":  "MTR",
+        "faaId":  null,
+        "name":  "MONTERIA/GARZONES AIRPORT",
+        "state":  "CO",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  8.8259,
+        "lon":  -75.8281,
+        "elev":  12,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.1",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "14/32",
+                            "dimension":  "7539x148",
+                            "surface":  "H",
+                            "alignment":  144
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKNV",
+        "iataId":  "NVA",
+        "faaId":  null,
+        "name":  "NEIVA/SALAS AIRPORT",
+        "state":  "HU",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  2.9474,
+        "lon":  -75.2947,
+        "elev":  449,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.5",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "02/20",
+                            "dimension":  "5538x131",
+                            "surface":  "H",
+                            "alignment":  20
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKPE",
+        "iataId":  "PEI",
+        "faaId":  null,
+        "name":  "PEREIRA/MATECANA AIRPORT",
+        "state":  "RI",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  4.8135,
+        "lon":  -75.7376,
+        "elev":  1341,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.7",
+        "priority":  "4",
+        "runways":  [
+                        {
+                            "id":  "08/26",
+                            "dimension":  "6296x148",
+                            "surface":  "H",
+                            "alignment":  78
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKPS",
+        "iataId":  "PSO",
+        "faaId":  null,
+        "name":  "PASTO/NARINO AIRPORT",
+        "state":  "NA",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  1.3959,
+        "lon":  -77.291,
+        "elev":  1798,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.0",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "02/20",
+                            "dimension":  "7136x128",
+                            "surface":  "H",
+                            "alignment":  20
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKRG",
+        "iataId":  "MDE",
+        "faaId":  null,
+        "name":  "RIONEGRO/CORDOVA INTERNATIONAL",
+        "state":  "AN",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  6.1699,
+        "lon":  -75.4236,
+        "elev":  2132,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "L",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  "B",
+        "passengers":  "13210",
+        "freqs":  "ATIS,115.1;TWR,118.6",
+        "priority":  "2",
+        "runways":  [
+                        {
+                            "id":  "01/19",
+                            "dimension":  "11286x148",
+                            "surface":  "H",
+                            "alignment":  6
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKRH",
+        "iataId":  "RCH",
+        "faaId":  null,
+        "name":  "RIOHACHA/PADILLA AIRPORT",
+        "state":  "GJ",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  11.5261,
+        "lon":  -72.9255,
+        "elev":  11,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.4",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "10/28",
+                            "dimension":  "6234x98",
+                            "surface":  "H",
+                            "alignment":  96
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKSM",
+        "iataId":  "SMR",
+        "faaId":  null,
+        "name":  "SANTA MARTA/BOLIVAR AIRPORT",
+        "state":  "MA",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  11.1175,
+        "lon":  -74.2306,
+        "elev":  5,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.7",
+        "priority":  "4",
+        "runways":  [
+                        {
+                            "id":  "01/19",
+                            "dimension":  "5577x131",
+                            "surface":  "H",
+                            "alignment":  6
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKSP",
+        "iataId":  "ADZ",
+        "faaId":  null,
+        "name":  "SAN ANDRES ISLAND AIRPORT",
+        "state":  "SA",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  12.5864,
+        "lon":  -81.7064,
+        "elev":  6,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "ATIS,113.3;TWR,118.1",
+        "priority":  "2",
+        "runways":  [
+                        {
+                            "id":  "06/24",
+                            "dimension":  "7792x148",
+                            "surface":  "H",
+                            "alignment":  62
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKUC",
+        "iataId":  "AUC",
+        "faaId":  null,
+        "name":  "ARAUCA/PEREZ AIRPORT",
+        "state":  "AR",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  7.0685,
+        "lon":  -70.7347,
+        "elev":  127,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.1",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "11/29",
+                            "dimension":  "6890x98",
+                            "surface":  "H",
+                            "alignment":  106
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKUI",
+        "iataId":  "UIB",
+        "faaId":  null,
+        "name":  "QUIBDO/EL CARANO AIRPORT",
+        "state":  "CH",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  5.6913,
+        "lon":  -76.6421,
+        "elev":  55,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.4",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "13/31",
+                            "dimension":  "5906x98",
+                            "surface":  "H",
+                            "alignment":  128
+                        }
+                    ]
+    },
+    {
+        "icaoId":  "SKVP",
+        "iataId":  "VUP",
+        "faaId":  null,
+        "name":  "VALLEDUPAR/PUMEREJO AIRPORT",
+        "state":  "CE",
+        "country":  "CO",
+        "source":  "Intl",
+        "type":  "ARP",
+        "lat":  10.4339,
+        "lon":  -73.2496,
+        "elev":  137,
+        "magdec":  "--",
+        "owner":  "P",
+        "rwyNum":  "1",
+        "rwyLength":  "M",
+        "rwyType":  "H",
+        "services":  "S",
+        "tower":  "T",
+        "beacon":  null,
+        "freqs":  "TWR,118.0",
+        "priority":  "3",
+        "runways":  [
+                        {
+                            "id":  "02/20",
+                            "dimension":  "6890x115",
+                            "surface":  "H",
+                            "alignment":  17
+                        }
+                    ]
+    }
+]

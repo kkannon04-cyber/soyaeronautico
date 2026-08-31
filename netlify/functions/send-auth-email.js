@@ -16,7 +16,7 @@ const crypto = require('crypto');
 // Mismo valor público que SUPABASE_URL en supabase-config.js — no es un
 // secreto, es la URL del proyecto (el acceso real lo protege RLS).
 const SUPABASE_URL = 'https://yszcglcnbpnyteytpfyc.supabase.co';
-const REMITENTE = 'SoyAeronautico <no-reply@soyaeronautico.com>';
+const REMITENTE = 'SoyAeronáutico <no-reply@soyaeronautico.com>';
 const MAX_DESFASE_RELOJ_SEG = 300; // 5 minutos — protección contra repetición del webhook
 
 function json(statusCode, obj) {
@@ -69,13 +69,13 @@ function verificarFirma(headers, rawBody, secretoCrudo) {
 // "reauthentication" no usa enlace: Supabase entrega un código OTP que el
 // usuario re-escribe en la app, no un link para hacer clic.
 const PLANTILLAS = {
-  signup:               { subject: 'Confirma tu cuenta — SoyAeronautico',        heading: 'Confirma tu cuenta',          cuerpo: 'Gracias por registrarte en SoyAeronautico. Confirma tu correo para activar tu cuenta y empezar a guardar tu progreso.', boton: 'Confirmar mi cuenta',   usaLink: true,  verifyType: 'signup' },
-  recovery:              { subject: 'Restablece tu contraseña — SoyAeronautico', heading: 'Restablece tu contraseña',    cuerpo: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este correo.', boton: 'Restablecer contraseña', usaLink: true,  verifyType: 'recovery' },
-  magiclink:             { subject: 'Tu enlace de acceso — SoyAeronautico',      heading: 'Inicia sesión',               cuerpo: 'Usa este enlace para iniciar sesión en SoyAeronautico.',                                                          boton: 'Iniciar sesión',        usaLink: true,  verifyType: 'magiclink' },
-  invite:                { subject: 'Te invitaron a SoyAeronautico',             heading: 'Tienes una invitación',       cuerpo: 'Te invitaron a crear una cuenta en SoyAeronautico.',                                                              boton: 'Aceptar invitación',    usaLink: true,  verifyType: 'invite' },
-  email_change_current:  { subject: 'Confirma el cambio de correo — SoyAeronautico', heading: 'Confirma el cambio de correo', cuerpo: 'Solicitaste cambiar el correo de tu cuenta. Confirma desde tu correo actual para autorizar el cambio.',       boton: 'Confirmar cambio',      usaLink: true,  verifyType: 'email_change' },
-  email_change_new:      { subject: 'Confirma tu nuevo correo — SoyAeronautico', heading: 'Confirma tu nuevo correo',    cuerpo: 'Confirma que este es tu nuevo correo para tu cuenta de SoyAeronautico.',                                          boton: 'Confirmar nuevo correo', usaLink: true, verifyType: 'email_change' },
-  reauthentication:      { subject: 'Código de verificación — SoyAeronautico',   heading: 'Verifica tu identidad',       cuerpo: 'Usa el siguiente código para confirmar esta acción en tu cuenta:',                                                boton: null,                    usaLink: false },
+  signup:               { subject: 'Confirma tu cuenta — SoyAeronáutico',        heading: 'Confirma tu cuenta',          cuerpo: 'Gracias por registrarte en SoyAeronáutico. Confirma tu correo para activar tu cuenta y empezar a guardar tu progreso.', boton: 'Confirmar mi cuenta',   usaLink: true,  verifyType: 'signup' },
+  recovery:              { subject: 'Restablece tu contraseña — SoyAeronáutico', heading: 'Restablece tu contraseña',    cuerpo: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este correo.', boton: 'Restablecer contraseña', usaLink: true,  verifyType: 'recovery' },
+  magiclink:             { subject: 'Tu enlace de acceso — SoyAeronáutico',      heading: 'Inicia sesión',               cuerpo: 'Usa este enlace para iniciar sesión en SoyAeronáutico.',                                                          boton: 'Iniciar sesión',        usaLink: true,  verifyType: 'magiclink' },
+  invite:                { subject: 'Te invitaron a SoyAeronáutico',             heading: 'Tienes una invitación',       cuerpo: 'Te invitaron a crear una cuenta en SoyAeronáutico.',                                                              boton: 'Aceptar invitación',    usaLink: true,  verifyType: 'invite' },
+  email_change_current:  { subject: 'Confirma el cambio de correo — SoyAeronáutico', heading: 'Confirma el cambio de correo', cuerpo: 'Solicitaste cambiar el correo de tu cuenta. Confirma desde tu correo actual para autorizar el cambio.',       boton: 'Confirmar cambio',      usaLink: true,  verifyType: 'email_change' },
+  email_change_new:      { subject: 'Confirma tu nuevo correo — SoyAeronáutico', heading: 'Confirma tu nuevo correo',    cuerpo: 'Confirma que este es tu nuevo correo para tu cuenta de SoyAeronáutico.',                                          boton: 'Confirmar nuevo correo', usaLink: true, verifyType: 'email_change' },
+  reauthentication:      { subject: 'Código de verificación — SoyAeronáutico',   heading: 'Verifica tu identidad',       cuerpo: 'Usa el siguiente código para confirmar esta acción en tu cuenta:',                                                boton: null,                    usaLink: false },
 };
 
 function construirLink(tokenHash, redirectTo, verifyType) {
@@ -102,7 +102,7 @@ function armarHtml({ heading, cuerpo, link, boton, codigo }) {
     : '';
   return `
     <div style="font-family:'IBM Plex Sans',Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#0F1B2D;">
-      <p style="font-family:Archivo,Arial,sans-serif;font-weight:800;font-size:18px;color:#1657C6;margin:0 0 24px;">SoyAeronautico</p>
+      <p style="font-family:Archivo,Arial,sans-serif;font-weight:800;font-size:18px;color:#1657C6;margin:0 0 24px;">SoyAeronáutico</p>
       <h1 style="font-size:20px;margin:0 0 12px;">${heading}</h1>
       <p style="font-size:14px;line-height:1.6;color:#0F1B2D;margin:0 0 4px;">${cuerpo}</p>
       ${codigoHtml}

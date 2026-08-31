@@ -1,0 +1,1291 @@
+[
+  {
+    "icao": "SKUC",
+    "ciudad": "Arauca",
+    "aeropuerto": "Santiago Pérez Quiroz",
+    "coordenadas_arp": "070408.08N 0704413.05W",
+    "lat": 7.06891,
+    "lon": -70.73696,
+    "elevacion_ft": 423,
+    "pistas": [
+      {
+        "designador": "11/29",
+        "longitud_m": 2100,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKAR",
+    "ciudad": "Armenia",
+    "aeropuerto": "El Edén",
+    "coordenadas_arp": "042705.91N 0754559.00W",
+    "lat": 4.45164,
+    "lon": -75.76639,
+    "elevacion_ft": 3976,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 2320,
+        "ancho_m": 36,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKBS",
+    "ciudad": "Bahía Solano",
+    "aeropuerto": "José Celestino Mutis",
+    "coordenadas_arp": "061211.20N 0772341.90W",
+    "lat": 6.20311,
+    "lon": -77.39497,
+    "elevacion_ft": 79,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1200,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKEJ",
+    "ciudad": "Barrancabermeja",
+    "aeropuerto": "Yariguíes",
+    "coordenadas_arp": "070125.69N 0734825.91W",
+    "lat": 7.0238,
+    "lon": -73.8072,
+    "elevacion_ft": 414,
+    "pistas": [
+      {
+        "designador": "04/22",
+        "longitud_m": 1607,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKBQ",
+    "ciudad": "Barranquilla",
+    "aeropuerto": "Ernesto Cortissoz",
+    "coordenadas_arp": "105322.06N 0744650.44W",
+    "lat": 10.88946,
+    "lon": -74.78068,
+    "elevacion_ft": 95,
+    "pistas": [
+      {
+        "designador": "05/23",
+        "longitud_m": 3001,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKBO",
+    "ciudad": "Bogotá",
+    "aeropuerto": "El Dorado",
+    "coordenadas_arp": "044205.76N 0740849.00W",
+    "lat": 4.7016,
+    "lon": -74.14694,
+    "elevacion_ft": 8358,
+    "pistas": [
+      {
+        "designador": "14L/32R",
+        "longitud_m": 3800,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      },
+      {
+        "designador": "14R/32L",
+        "longitud_m": 3800,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKBG",
+    "ciudad": "Bucaramanga",
+    "aeropuerto": "Palonegro",
+    "coordenadas_arp": "070734.97N 0731105.01W",
+    "lat": 7.12638,
+    "lon": -73.18472,
+    "elevacion_ft": 3901,
+    "pistas": [
+      {
+        "designador": "17/35",
+        "longitud_m": 2102,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKBU",
+    "ciudad": "Buenaventura",
+    "aeropuerto": "Gerardo Tobar López",
+    "coordenadas_arp": "034910.46N 0765923.66W",
+    "lat": 3.81957,
+    "lon": -76.98991,
+    "elevacion_ft": 44,
+    "pistas": [
+      {
+        "designador": "09/27",
+        "longitud_m": 1200,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKCL",
+    "ciudad": "Cali",
+    "aeropuerto": "Alfonso Bonilla Aragón",
+    "coordenadas_arp": "033235.20N 0762254.09W",
+    "lat": 3.54311,
+    "lon": -76.38169,
+    "elevacion_ft": 3162,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 3000,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKLC",
+    "ciudad": "Carepa",
+    "aeropuerto": "Antonio Roldán Betancourt",
+    "coordenadas_arp": "074842.30N 0764259.19W",
+    "lat": 7.81175,
+    "lon": -76.71644,
+    "elevacion_ft": 52,
+    "pistas": [
+      {
+        "designador": "15/33",
+        "longitud_m": 1964,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKCG",
+    "ciudad": "Cartagena",
+    "aeropuerto": "Rafael Núñez",
+    "coordenadas_arp": "102630.05N 0753046.52W",
+    "lat": 10.44168,
+    "lon": -75.51292,
+    "elevacion_ft": 7,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 2390,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKGO",
+    "ciudad": "Cartago",
+    "aeropuerto": "Santa Ana",
+    "coordenadas_arp": "044527.24N 0755721.65W",
+    "lat": 4.75757,
+    "lon": -75.95601,
+    "elevacion_ft": 2981,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 2025,
+        "ancho_m": 40,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKGY",
+    "ciudad": "Chía",
+    "aeropuerto": "Flaminio Suárez Camacho",
+    "coordenadas_arp": "044845.00N 0740354.30W",
+    "lat": 4.8125,
+    "lon": -74.06508,
+    "elevacion_ft": 8389,
+    "pistas": [
+      {
+        "designador": "11/29",
+        "longitud_m": 1720,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKCZ",
+    "ciudad": "Corozal",
+    "aeropuerto": "Las Brujas",
+    "coordenadas_arp": "091957.35N 0751706.80W",
+    "lat": 9.3326,
+    "lon": -75.28522,
+    "elevacion_ft": 525,
+    "pistas": [
+      {
+        "designador": "03/21",
+        "longitud_m": 1445,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKCC",
+    "ciudad": "Cúcuta",
+    "aeropuerto": "Camilo Daza",
+    "coordenadas_arp": "075538.60N 0723041.72W",
+    "lat": 7.92739,
+    "lon": -72.51159,
+    "elevacion_ft": 1089,
+    "pistas": [
+      {
+        "designador": "03/21",
+        "longitud_m": 1925,
+        "ancho_m": 45,
+        "superficie": "PAVIMENTADA"
+      },
+      {
+        "designador": "16/34",
+        "longitud_m": 2244,
+        "ancho_m": 45,
+        "superficie": "PAVIMENTADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKYP",
+    "ciudad": "Yopal",
+    "aeropuerto": "El Alcaraván",
+    "coordenadas_arp": "051908.92N 0722303.22W",
+    "lat": 5.31914,
+    "lon": -72.38423,
+    "elevacion_ft": 1025,
+    "pistas": [
+      {
+        "designador": "05/23",
+        "longitud_m": 2245,
+        "ancho_m": 36,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKFL",
+    "ciudad": "Florencia",
+    "aeropuerto": "Gustavo Artunduaga Paredes",
+    "coordenadas_arp": "013521.35N 0753351.95W",
+    "lat": 1.58926,
+    "lon": -75.56443,
+    "elevacion_ft": 792,
+    "pistas": [
+      {
+        "designador": "12/30",
+        "longitud_m": 1340,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKGI",
+    "ciudad": "Girardot",
+    "aeropuerto": "Santiago Vila",
+    "coordenadas_arp": "041631.25N 0744745.92W",
+    "lat": 4.27535,
+    "lon": -74.79609,
+    "elevacion_ft": 902,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1600,
+        "ancho_m": 28,
+        "superficie": "NO PUBLICADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKGP",
+    "ciudad": "Guapi",
+    "aeropuerto": "Juan Casiano",
+    "coordenadas_arp": "023412.11N 0775352.76W",
+    "lat": 2.57003,
+    "lon": -77.89799,
+    "elevacion_ft": 32,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1300,
+        "ancho_m": 16,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKIB",
+    "ciudad": "Ibagué",
+    "aeropuerto": "Perales",
+    "coordenadas_arp": "042517.95N 0750801.00W",
+    "lat": 4.42165,
+    "lon": -75.13361,
+    "elevacion_ft": 3041,
+    "pistas": [
+      {
+        "designador": "14/32",
+        "longitud_m": 1800,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPD",
+    "ciudad": "Inírida",
+    "aeropuerto": "César Gaviria",
+    "coordenadas_arp": "035115.33N 0675423.28W",
+    "lat": 3.85426,
+    "lon": -67.90647,
+    "elevacion_ft": 325,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1930,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKIP",
+    "ciudad": "Ipiales",
+    "aeropuerto": "San Luis",
+    "coordenadas_arp": "005141.36N 0774003.03W",
+    "lat": 0.86149,
+    "lon": -77.66751,
+    "elevacion_ft": 9760,
+    "pistas": [
+      {
+        "designador": "08/26",
+        "longitud_m": 2500,
+        "ancho_m": 36,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKLT",
+    "ciudad": "Leticia",
+    "aeropuerto": "Alfredo Vásquez Cobo",
+    "coordenadas_arp": "041130.87S 0695631.93W",
+    "lat": -4.19191,
+    "lon": -69.9422,
+    "elevacion_ft": 271,
+    "pistas": [
+      {
+        "designador": "03/21",
+        "longitud_m": 2010,
+        "ancho_m": 40,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMZ",
+    "ciudad": "Manizales",
+    "aeropuerto": "La Nubia",
+    "coordenadas_arp": "050148.17N 0752755.63W",
+    "lat": 5.03005,
+    "lon": -75.46545,
+    "elevacion_ft": 6860,
+    "pistas": [
+      {
+        "designador": "10/28",
+        "longitud_m": 1400,
+        "ancho_m": 15,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKQU",
+    "ciudad": "Mariquita",
+    "aeropuerto": "José Celestino Mutis",
+    "coordenadas_arp": "051245.41N 0745301.35W",
+    "lat": 5.21261,
+    "lon": -74.88371,
+    "elevacion_ft": 1531,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1790,
+        "ancho_m": 50,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMD",
+    "ciudad": "Medellín",
+    "aeropuerto": "Olaya Herrera",
+    "coordenadas_arp": "061313.72N 0753525.54W",
+    "lat": 6.22048,
+    "lon": -75.59043,
+    "elevacion_ft": 4922,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1800,
+        "ancho_m": 35,
+        "superficie": "NO PUBLICADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKMU",
+    "ciudad": "Mitú",
+    "aeropuerto": "Fabio A. León Bentley",
+    "coordenadas_arp": "011512.79N 0701402.61W",
+    "lat": 1.25355,
+    "lon": -70.23406,
+    "elevacion_ft": 557,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1754,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMR",
+    "ciudad": "Montería",
+    "aeropuerto": "Los Garzones",
+    "coordenadas_arp": "084922.28N 0754930.61W",
+    "lat": 8.82286,
+    "lon": -75.82517,
+    "elevacion_ft": 41,
+    "pistas": [
+      {
+        "designador": "14/32",
+        "longitud_m": 2298,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKNV",
+    "ciudad": "Neiva",
+    "aeropuerto": "Benito Salas",
+    "coordenadas_arp": "025701.03N 0751738.48W",
+    "lat": 2.95029,
+    "lon": -75.29402,
+    "elevacion_ft": 1482,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1688,
+        "ancho_m": 40,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPS",
+    "ciudad": "Pasto",
+    "aeropuerto": "Antonio Nariño",
+    "coordenadas_arp": "012347.28N 0771727.63W",
+    "lat": 1.39647,
+    "lon": -77.29101,
+    "elevacion_ft": 5958,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 2175,
+        "ancho_m": 39,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPE",
+    "ciudad": "Pereira",
+    "aeropuerto": "Matecaña",
+    "coordenadas_arp": "044845.24N 0754423.86W",
+    "lat": 4.81257,
+    "lon": -75.73996,
+    "elevacion_ft": 4413,
+    "pistas": [
+      {
+        "designador": "08/26",
+        "longitud_m": 1915,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPP",
+    "ciudad": "Popayán",
+    "aeropuerto": "Guillermo León Valencia",
+    "coordenadas_arp": "022715.67N 0763635.27W",
+    "lat": 2.45435,
+    "lon": -76.6098,
+    "elevacion_ft": 5687,
+    "pistas": [
+      {
+        "designador": "08/26",
+        "longitud_m": 1910,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPV",
+    "ciudad": "Providencia",
+    "aeropuerto": "El Embrujo",
+    "coordenadas_arp": "132125.79N 0812128.53W",
+    "lat": 13.35716,
+    "lon": -81.35792,
+    "elevacion_ft": 16,
+    "pistas": [
+      {
+        "designador": "17/35",
+        "longitud_m": 1290,
+        "ancho_m": 18,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKAS",
+    "ciudad": "Puerto Asís",
+    "aeropuerto": "Tres de Mayo",
+    "coordenadas_arp": "003020.54N 0763002.55W",
+    "lat": 0.50571,
+    "lon": -76.50071,
+    "elevacion_ft": 813,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1460,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPC",
+    "ciudad": "Puerto Carreño",
+    "aeropuerto": "Germán Olano",
+    "coordenadas_arp": "061106.40N 0672933.03W",
+    "lat": 6.18511,
+    "lon": -67.49251,
+    "elevacion_ft": 177,
+    "pistas": [
+      {
+        "designador": "07/25",
+        "longitud_m": 1800,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKUI",
+    "ciudad": "Quibdó",
+    "aeropuerto": "El Caraño",
+    "coordenadas_arp": "054126.87N 0763828.39W",
+    "lat": 5.6908,
+    "lon": -76.64122,
+    "elevacion_ft": 184,
+    "pistas": [
+      {
+        "designador": "13/31",
+        "longitud_m": 1800,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKRH",
+    "ciudad": "Riohacha",
+    "aeropuerto": "Almirante Padilla",
+    "coordenadas_arp": "113134.20N 0725536.06W",
+    "lat": 11.52617,
+    "lon": -72.92668,
+    "elevacion_ft": 50,
+    "pistas": [
+      {
+        "designador": "10/28",
+        "longitud_m": 1900,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKRG",
+    "ciudad": "Rionegro",
+    "aeropuerto": "José María Córdova",
+    "coordenadas_arp": "060952.06N 0752522.80W",
+    "lat": 6.16446,
+    "lon": -75.423,
+    "elevacion_ft": 7024,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 3440,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSP",
+    "ciudad": "San Andrés",
+    "aeropuerto": "Gustavo Rojas Pinilla",
+    "coordenadas_arp": "123501.18N 0814240.82W",
+    "lat": 12.58366,
+    "lon": -81.71134,
+    "elevacion_ft": 18,
+    "pistas": [
+      {
+        "designador": "06/24",
+        "longitud_m": 2375,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSJ",
+    "ciudad": "San José del Guaviare",
+    "aeropuerto": "Jorge E. González T.",
+    "coordenadas_arp": "023445.59N 0723821.79W",
+    "lat": 2.57933,
+    "lon": -72.63939,
+    "elevacion_ft": 613,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1419,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSM",
+    "ciudad": "Santa Marta",
+    "aeropuerto": "Simón Bolívar",
+    "coordenadas_arp": "110710.88N 0741350.30W",
+    "lat": 11.11969,
+    "lon": -74.23064,
+    "elevacion_ft": 22,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1700,
+        "ancho_m": 40,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSA",
+    "ciudad": "Saravena",
+    "aeropuerto": "Colonizadores",
+    "coordenadas_arp": "065701.32N 0715122.33W",
+    "lat": 6.95037,
+    "lon": -71.8562,
+    "elevacion_ft": 672,
+    "pistas": [
+      {
+        "designador": "16/34",
+        "longitud_m": 1200,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKTM",
+    "ciudad": "Tame",
+    "aeropuerto": "Gustavo Vargas",
+    "coordenadas_arp": "062703.62N 0714536.18W",
+    "lat": 6.45101,
+    "lon": -71.76005,
+    "elevacion_ft": 1241,
+    "pistas": [
+      {
+        "designador": "07/25",
+        "longitud_m": 2000,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKCO",
+    "ciudad": "Tumaco",
+    "aeropuerto": "La Florida",
+    "coordenadas_arp": "014851.88N 0784457.31W",
+    "lat": 1.81441,
+    "lon": -78.74925,
+    "elevacion_ft": 20,
+    "pistas": [
+      {
+        "designador": "06/24",
+        "longitud_m": 1600,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKVP",
+    "ciudad": "Valledupar",
+    "aeropuerto": "Alfonso López Pumarejo",
+    "coordenadas_arp": "102606.47N 0731457.83W",
+    "lat": 10.43513,
+    "lon": -73.2494,
+    "elevacion_ft": 485,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 2100,
+        "ancho_m": 35,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKVV",
+    "ciudad": "Villavicencio",
+    "aeropuerto": "Vanguardia",
+    "coordenadas_arp": "041008.60N 0733646.06W",
+    "lat": 4.16906,
+    "lon": -73.61279,
+    "elevacion_ft": 1381,
+    "pistas": [
+      {
+        "designador": "05/23",
+        "longitud_m": 1940,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKAG",
+    "ciudad": "Aguachica",
+    "aeropuerto": "Hacaritama",
+    "coordenadas_arp": "081446.80N 0733446.37W",
+    "lat": 8.24633,
+    "lon": -73.57955,
+    "elevacion_ft": 554,
+    "pistas": [
+      {
+        "designador": "12/30",
+        "longitud_m": 1200,
+        "ancho_m": 18,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SQHK",
+    "ciudad": "Casanare",
+    "aeropuerto": "Hatico",
+    "coordenadas_arp": "043353.67N 0720332.54W",
+    "lat": 4.56491,
+    "lon": -72.05904,
+    "elevacion_ft": 497,
+    "pistas": []
+  },
+  {
+    "icao": "SKHA",
+    "ciudad": "Chaparral",
+    "aeropuerto": "Navas Pardo",
+    "coordenadas_arp": "034327.70N 0752755.45W",
+    "lat": 3.72436,
+    "lon": -75.4654,
+    "elevacion_ft": 2729,
+    "pistas": [
+      {
+        "designador": "09/27",
+        "longitud_m": 1200,
+        "ancho_m": 15,
+        "superficie": "NO PUBLICADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKEB",
+    "ciudad": "El Bagre",
+    "aeropuerto": "El Tomín",
+    "coordenadas_arp": "073544.83N 0744832.41W",
+    "lat": 7.59579,
+    "lon": -74.809,
+    "elevacion_ft": 177,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1182,
+        "ancho_m": 15,
+        "superficie": "NO PUBLICADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKNA",
+    "ciudad": "La Macarena",
+    "aeropuerto": "El Refugio",
+    "coordenadas_arp": "021024.72N 0734710.24W",
+    "lat": 2.17353,
+    "lon": -73.78618,
+    "elevacion_ft": 790,
+    "pistas": [
+      {
+        "designador": "17/35",
+        "longitud_m": 1581,
+        "ancho_m": 16,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMG",
+    "ciudad": "Magangué",
+    "aeropuerto": "Baracoa",
+    "coordenadas_arp": "091705.57N 0745047.24W",
+    "lat": 9.28488,
+    "lon": -74.84646,
+    "elevacion_ft": 195,
+    "pistas": [
+      {
+        "designador": "11/29",
+        "longitud_m": 1410,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKLM",
+    "ciudad": "Maicao",
+    "aeropuerto": "Jorge Isaac",
+    "coordenadas_arp": "111357.30N 0722921.40W",
+    "lat": 11.23258,
+    "lon": -72.48928,
+    "elevacion_ft": 328,
+    "pistas": [
+      {
+        "designador": "10/28",
+        "longitud_m": 1700,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMP",
+    "ciudad": "Mompós",
+    "aeropuerto": "San Bernardo",
+    "coordenadas_arp": "091530.50N 0742618.00W",
+    "lat": 9.25847,
+    "lon": -74.43833,
+    "elevacion_ft": 72,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1201,
+        "ancho_m": 23,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKML",
+    "ciudad": "Montelíbano",
+    "aeropuerto": "El Pindo",
+    "coordenadas_arp": "075819.22N 0752557.58W",
+    "lat": 7.97201,
+    "lon": -75.43266,
+    "elevacion_ft": 157,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1060,
+        "ancho_m": 26,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKNQ",
+    "ciudad": "Nuquí",
+    "aeropuerto": "Reyes Murillo",
+    "coordenadas_arp": "054240.48N 0771539.58W",
+    "lat": 5.71124,
+    "lon": -77.26099,
+    "elevacion_ft": 16,
+    "pistas": [
+      {
+        "designador": "05/23",
+        "longitud_m": 1340,
+        "ancho_m": 23,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKOC",
+    "ciudad": "Ocaña",
+    "aeropuerto": "Aguas Claras",
+    "coordenadas_arp": "081854.39N 0732130.31W",
+    "lat": 8.31511,
+    "lon": -73.35842,
+    "elevacion_ft": 3839,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1200,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPA",
+    "ciudad": "Paipa",
+    "aeropuerto": "Juan José Rondón",
+    "coordenadas_arp": "054553.86N 0730619.12W",
+    "lat": 5.76496,
+    "lon": -73.10531,
+    "elevacion_ft": 8174,
+    "pistas": [
+      {
+        "designador": "05/23",
+        "longitud_m": 1540,
+        "ancho_m": 23,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPI",
+    "ciudad": "Pitalito",
+    "aeropuerto": "Contador",
+    "coordenadas_arp": "015127.75N 0760509.55W",
+    "lat": 1.85771,
+    "lon": -76.08599,
+    "elevacion_ft": 4221,
+    "pistas": [
+      {
+        "designador": "07/25",
+        "longitud_m": 1500,
+        "ancho_m": 19,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPB",
+    "ciudad": "Puerto Bolívar",
+    "aeropuerto": "Puerto Bolívar - Portete",
+    "coordenadas_arp": "121317.55N 0715903.30W",
+    "lat": 12.22154,
+    "lon": -71.98425,
+    "elevacion_ft": 93,
+    "pistas": [
+      {
+        "designador": "09/27",
+        "longitud_m": 1600,
+        "ancho_m": 45,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKMO",
+    "ciudad": "Puerto Gaitán",
+    "aeropuerto": "Morelia",
+    "coordenadas_arp": "034502.36N 0712721.37W",
+    "lat": 3.75066,
+    "lon": -71.45594,
+    "elevacion_ft": 648,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1280,
+        "ancho_m": 23,
+        "superficie": "NO PUBLICADA"
+      }
+    ]
+  },
+  {
+    "icao": "SKLG",
+    "ciudad": "Puerto Leguízamo",
+    "aeropuerto": "Puerto Leguízamo",
+    "coordenadas_arp": "001055.14S 0744615.56W",
+    "lat": -0.18198,
+    "lon": -74.77099,
+    "elevacion_ft": 626,
+    "pistas": [
+      {
+        "designador": "12/30",
+        "longitud_m": 1199,
+        "ancho_m": 15,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSG",
+    "ciudad": "San Gil",
+    "aeropuerto": "Los Pozos",
+    "coordenadas_arp": "063526.31N 0730744.52W",
+    "lat": 6.59064,
+    "lon": -73.12903,
+    "elevacion_ft": 5579,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1280,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKSV",
+    "ciudad": "San Vicente del Caguán",
+    "aeropuerto": "San Vicente del Caguán",
+    "coordenadas_arp": "020908.21N 0744559.32W",
+    "lat": 2.15228,
+    "lon": -74.76648,
+    "elevacion_ft": 879,
+    "pistas": [
+      {
+        "designador": "14/32",
+        "longitud_m": 1380,
+        "ancho_m": 23,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SQUJ",
+    "ciudad": "Tablón de Támara",
+    "aeropuerto": "Tablón de Támara",
+    "coordenadas_arp": "054333.09N 0720602.10W",
+    "lat": 5.72586,
+    "lon": -72.10058,
+    "elevacion_ft": 1621,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 1317,
+        "ancho_m": 30,
+        "superficie": "CESPED"
+      }
+    ]
+  },
+  {
+    "icao": "SKTL",
+    "ciudad": "Tolú",
+    "aeropuerto": "Golfo de Morrosquillo",
+    "coordenadas_arp": "093034.68N 0753509.70W",
+    "lat": 9.50963,
+    "lon": -75.58603,
+    "elevacion_ft": 7,
+    "pistas": [
+      {
+        "designador": "17/35",
+        "longitud_m": 1350,
+        "ancho_m": 16,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKUL",
+    "ciudad": "Tuluá",
+    "aeropuerto": "Farfán Heriberto Gil Martínez",
+    "coordenadas_arp": "040540.16N 0761326.10W",
+    "lat": 4.09449,
+    "lon": -76.22392,
+    "elevacion_ft": 3132,
+    "pistas": [
+      {
+        "designador": "02/20",
+        "longitud_m": 1198,
+        "ancho_m": 30,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKVG",
+    "ciudad": "Villa Garzón",
+    "aeropuerto": "Villa Garzón",
+    "coordenadas_arp": "005852.20N 0763613.70W",
+    "lat": 0.98117,
+    "lon": -76.60381,
+    "elevacion_ft": 1240,
+    "pistas": [
+      {
+        "designador": "17/35",
+        "longitud_m": 1485,
+        "ancho_m": 14,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKAP",
+    "ciudad": "Apiay",
+    "aeropuerto": "CT. Luis F. Gómez Niño",
+    "coordenadas_arp": "040433.84N 0733345.84W",
+    "lat": 4.07607,
+    "lon": -73.56273,
+    "elevacion_ft": 1213,
+    "pistas": [
+      {
+        "designador": "10/28",
+        "longitud_m": 2506,
+        "ancho_m": 50,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKGB",
+    "ciudad": "Guabito",
+    "aeropuerto": "Marco Fidel Suárez",
+    "coordenadas_arp": "032730.69N 0762950.11W",
+    "lat": 3.45853,
+    "lon": -76.49725,
+    "elevacion_ft": 3148,
+    "pistas": [
+      {
+        "designador": "07/25",
+        "longitud_m": 1890,
+        "ancho_m": 29.5,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKJC",
+    "ciudad": "Juanchaco",
+    "aeropuerto": "Juanchaco",
+    "coordenadas_arp": "035603.12N 0772141.13W",
+    "lat": 3.9342,
+    "lon": -77.36142,
+    "elevacion_ft": 55,
+    "pistas": [
+      {
+        "designador": "18/36",
+        "longitud_m": 1200,
+        "ancho_m": 20,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKUA",
+    "ciudad": "Marandúa",
+    "aeropuerto": "CR. Luis Arturo Rodríguez Meneses",
+    "coordenadas_arp": "053143.99N 0684036.77W",
+    "lat": 5.52889,
+    "lon": -68.67688,
+    "elevacion_ft": 340,
+    "pistas": [
+      {
+        "designador": "04/22",
+        "longitud_m": 1369,
+        "ancho_m": 28,
+        "superficie": "GRAVA"
+      },
+      {
+        "designador": "08/26",
+        "longitud_m": 1832,
+        "ancho_m": 42,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKPQ",
+    "ciudad": "Palanquero",
+    "aeropuerto": "CT. Germán Olano",
+    "coordenadas_arp": "052900.54N 0743926.57W",
+    "lat": 5.48348,
+    "lon": -74.65738,
+    "elevacion_ft": 566,
+    "pistas": [
+      {
+        "designador": "01/19",
+        "longitud_m": 3037,
+        "ancho_m": 50,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKTQ",
+    "ciudad": "Tres Esquinas",
+    "aeropuerto": "CT. Ernesto Esguerra Cubides",
+    "coordenadas_arp": "004445.26N 0751402.60W",
+    "lat": 0.74591,
+    "lon": -75.23406,
+    "elevacion_ft": 650,
+    "pistas": [
+      {
+        "designador": "07/25",
+        "longitud_m": 1900,
+        "ancho_m": 24,
+        "superficie": "ASFALTO"
+      }
+    ]
+  },
+  {
+    "icao": "SKUQ",
+    "ciudad": "Murindó",
+    "aeropuerto": "Murindó",
+    "coordenadas_arp": "065834.00N 0764845.00W",
+    "lat": 6.97611,
+    "lon": -76.8125,
+    "elevacion_ft": null,
+    "pistas": null
+  },
+  {
+    "icao": "SKRQ",
+    "ciudad": "Santa Rita de Ituango",
+    "aeropuerto": "Santa Rita de Ituango",
+    "coordenadas_arp": "072005.00N 0753649.00W",
+    "lat": 7.33472,
+    "lon": -75.61361,
+    "elevacion_ft": null,
+    "pistas": null
+  }
+]
