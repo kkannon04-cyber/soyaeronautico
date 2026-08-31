@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividad asignada · SoyAeronáutico</title>
+  <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Mismo sistema visual que los quizzes del portal (quiz-ats.html) */
+    :root {
+      --bg: #FFFFFF;
+      --panel: #F5F8FC;
+      --panel-alt: #EAF1FB;
+      --accent: #1657C6;
+      --accent-rgb: 22,87,198;
+      --text: #0F1B2D;
+      --text-muted: #5B6B7F;
+      --hairline: #E1E7EF;
+      --danger: #D64545;
+      --vfr: #2E9E6D;
+      --mvfr: #3E7BFA;
+      --topbar-bg: rgba(255,255,255,0.85);
+      --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
+    }
+    [data-theme="dark"] {
+      --bg: #0B1220;
+      --panel: #121C2E;
+      --panel-alt: #17223A;
+      --accent: #4F8EF7;
+      --accent-rgb: 79,142,247;
+      --text: #EDEFF3;
+      --text-muted: #8894A8;
+      --hairline: #2A3548;
+      --danger: #C9564F;
+      --vfr: #4FA88C;
+      --mvfr: #4A8FD1;
+      --topbar-bg: rgba(11,18,32,0.85);
+      --shadow-card: 0 12px 30px -18px rgba(0,0,0,0.55);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+    h1,h2,h3,h4 { font-family:'Archivo', sans-serif; margin:0; }
+    a { color:inherit; text-decoration:none; }
+    .mono { font-family:'IBM Plex Mono', monospace; }
+
+    .topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); gap:14px; }
+    .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; color:var(--text); }
+    .brand-mark { width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+    .brand-mark svg { display:block; }
+    .btn-volver-panel { display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 18px; border-radius:30px; font-weight:600; font-size:0.82rem; white-space:nowrap; }
+    .btn-volver-panel:hover { background:rgba(var(--accent-rgb),0.08); }
+
+    .contenedor { max-width:900px; margin:0 auto; padding:36px 32px 60px; }
+    .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:12px; }
+    h1.titulo { font-size:clamp(1.5rem, 3.4vw, 2.1rem); line-height:1.25; margin-bottom:10px; }
+    .meta-actividad { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+    .meta-chip { font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); background:var(--panel); border:1px solid var(--hairline); padding:5px 12px; border-radius:20px; }
+    .meta-chip.alerta { color:#b45309; border-color:#f59e0b; background:rgba(245,158,11,0.1); }
+    .instrucciones { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin-bottom:26px; font-size:0.9rem; color:var(--text-muted); line-height:1.6; }
+    .instrucciones b { color:var(--text); }
+
+    .lectura { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:26px; margin-bottom:22px; font-size:0.97rem; line-height:1.75; white-space:pre-wrap; }
+    .lectura-acciones { text-align:center; margin-bottom:30px; }
+
+    .question-card { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:22px; }
+    .question-card.correct { border-left:6px solid var(--vfr); }
+    .question-card.wrong { border-left:6px solid var(--danger); }
+    .q-header { display:flex; align-items:baseline; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .q-num { font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
+    .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
+    .options { display:flex; flex-direction:column; gap:8px; }
+    .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:border-color .15s, background .15s; }
+    .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
+    .opt-btn.elegida { border-color:var(--accent); background:rgba(var(--accent-rgb),0.10); font-weight:600; }
+    .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(46,158,109,0.14); font-weight:600; }
+    .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(214,69,69,0.12); font-weight:600; }
+    .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(46,158,109,0.08); }
+    .opt-btn:disabled { cursor:default; }
+
+    .barra-entrega { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .btn-entregar { background:var(--accent); color:#fff; border:none; padding:11px 26px; border-radius:30px; font-weight:700; font-size:0.9rem; cursor:pointer; font-family:'IBM Plex Sans'; }
+    .btn-entregar:hover:not(:disabled) { filter:brightness(1.08); }
+    .btn-entregar:disabled { opacity:0.55; cursor:not-allowed; }
+    .btn-secundario { background:none; border:1px solid var(--hairline); color:var(--text); padding:10px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; cursor:pointer; font-family:'IBM Plex Sans'; }
+
+    .resultado { max-width:900px; margin:0 auto; padding:0 32px; }
+    .resultado-card { border:1px solid var(--hairline); border-left:5px solid var(--vfr); border-radius:14px; padding:24px 26px; background:var(--panel); margin-bottom:26px; }
+    .resultado-card.tier-bien { border-left-color:var(--mvfr); }
+    .resultado-card.tier-reforzar { border-left-color:#d97706; }
+    .resultado-nota { font-family:'IBM Plex Mono'; font-size:2rem; font-weight:700; color:var(--vfr); }
+    .resultado-card.tier-bien .resultado-nota { color:var(--mvfr); }
+    .resultado-card.tier-reforzar .resultado-nota { color:#d97706; }
+    .resultado-card p { margin:10px 0 0; font-size:0.92rem; line-height:1.6; color:var(--text-muted); }
+    .resultado-acciones { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+
+    .aviso-bloqueo { max-width:640px; margin:60px auto; padding:30px; text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; }
+    .aviso-bloqueo h2 { font-size:1.2rem; margin-bottom:10px; }
+    .aviso-bloqueo p { color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:18px; }
+
+    .cargando { text-align:center; padding:70px 20px; color:var(--text-muted); font-size:0.92rem; }
+
+    @media (max-width:600px) {
+      .topbar { padding:12px 16px; }
+      .contenedor, .resultado { padding-left:16px; padding-right:16px; }
+      .question-card { padding:18px; }
+      .barra-entrega { padding:12px 16px; }
+    }
+
+    .credito-autor { border-top:1px solid rgba(128,128,128,0.22); margin-top:40px; padding:20px 24px; text-align:center; font-size:0.78rem; color:var(--text-muted); }
+    .credito-autor strong { color:inherit; font-weight:600; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+  <script src="supabase-config.js"></script>
+  <script src="progreso.js"></script>
+</head>
+<body>
+<script src="auth-gate.js"></script>
+
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div>SoyAeronáutico</div>
+  </a>
+  <a href="Panel_estudiante.html" class="btn-volver-panel">Volver a mi panel</a>
+</header>
+
+<div id="cargando" class="cargando">Cargando la actividad…</div>
+
+<div id="contenido" style="display:none;">
+  <div class="contenedor">
+    <div class="eyebrow" id="tipoActividad">Actividad asignada</div>
+    <h1 class="titulo" id="tituloActividad"></h1>
+    <div class="meta-actividad" id="metaActividad"></div>
+    <div class="instrucciones" id="instrucciones" style="display:none;">
+      <span>📋</span>
+      <span id="textoInstrucciones"></span>
+    </div>
+
+    <div id="zonaLectura" style="display:none;">
+      <div class="lectura" id="textoLectura"></div>
+      <div class="lectura-acciones">
+        <button class="btn-entregar" id="btnLeido" type="button">Ya leí el texto — ir a la pregunta</button>
+      </div>
+    </div>
+
+    <div id="zonaPreguntas" style="display:none;"></div>
+  </div>
+
+  <div class="barra-entrega" id="barraEntrega" style="display:none;">
+    <span class="mono"><span id="contadorRespondidas">0</span> / <span id="contadorTotal">0</span> respondidas</span>
+    <button class="btn-entregar" id="btnEntregar" type="button" disabled>Entregar respuestas</button>
+  </div>
+
+  <div class="resultado" id="zonaResultado" style="display:none;" aria-live="polite"></div>
+</div>
+
+<div id="bloqueo" class="aviso-bloqueo" style="display:none;">
+  <h2 id="bloqueoTitulo"></h2>
+  <p id="bloqueoTexto"></p>
+  <a href="Panel_estudiante.html" class="btn-volver-panel">Volver a mi panel</a>
+</div>
+
+<div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
+
+<script>
+  // Tema, coherente con el resto del sitio
+  if (localStorage.getItem('aisTheme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+  const params = new URLSearchParams(location.search);
+  const actividadId = params.get('id');
+
+  let actividad = null;
+  let preguntas = [];
+  const respuestas = {};   // { preguntaId: índiceElegido }
+  let entregado = false;
+
+  function esc(t) {
+    return String(t === null || t === undefined ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function fechaLegible(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' }) +
+           ' a las ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function mostrarBloqueo(titulo, texto) {
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = 'none';
+    document.getElementById('bloqueoTitulo').textContent = titulo;
+    document.getElementById('bloqueoTexto').textContent = texto;
+    document.getElementById('bloqueo').style.display = 'block';
+  }
+
+  // Barajado Fisher-Yates, solo si el profesor lo activó para esta actividad.
+  function barajar(lista) {
+    const copia = lista.slice();
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
+  function renderPreguntas() {
+    const cont = document.getElementById('zonaPreguntas');
+    cont.innerHTML = '';
+
+    preguntas.forEach((p, indice) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.dataset.pregunta = p.id;
+      card.innerHTML = `
+        <div class="q-header"><span class="q-num">${indice + 1} / ${preguntas.length}</span></div>
+        <div class="q-text">${esc(p.enunciado)}</div>
+        <div class="options"></div>`;
+
+      const opciones = card.querySelector('.options');
+      p.opciones.forEach((texto, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'opt-btn';
+        btn.textContent = texto;
+        btn.addEventListener('click', () => {
+          if (entregado) return;
+          respuestas[p.id] = i;
+          opciones.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('elegida'));
+          btn.classList.add('elegida');
+          actualizarContador();
+        });
+        opciones.appendChild(btn);
+      });
+
+      cont.appendChild(card);
+    });
+
+    document.getElementById('contadorTotal').textContent = preguntas.length;
+    cont.style.display = 'block';
+    document.getElementById('barraEntrega').style.display = 'flex';
+    actualizarContador();
+  }
+
+  function actualizarContador() {
+    const n = Object.keys(respuestas).length;
+    document.getElementById('contadorRespondidas').textContent = n;
+    document.getElementById('btnEntregar').disabled = (n !== preguntas.length);
+  }
+
+  function mostrarResultado(resultado) {
+    entregado = true;
+    document.getElementById('barraEntrega').style.display = 'none';
+
+    // Revela la respuesta correcta solo ahora, con el detalle que
+    // devolvió el servidor: antes de entregar no llega al navegador.
+    const porPregunta = {};
+    (resultado.detalle || []).forEach(d => { porPregunta[d.pregunta_id] = d; });
+
+    document.querySelectorAll('.question-card').forEach(card => {
+      const detalle = porPregunta[card.dataset.pregunta];
+      if (!detalle) return;
+      card.classList.add(detalle.ok ? 'correct' : 'wrong');
+      const botones = card.querySelectorAll('.opt-btn');
+      botones.forEach((btn, i) => {
+        btn.disabled = true;
+        btn.classList.remove('elegida');
+        if (i === detalle.correcta) btn.classList.add(detalle.ok ? 'selected-correct' : 'reveal-correct');
+        if (i === detalle.elegida && !detalle.ok) btn.classList.add('selected-wrong');
+      });
+    });
+
+    const pct = resultado.porcentaje;
+    const tier = pct >= 90 ? 'excelente' : pct >= 70 ? 'bien' : 'reforzar';
+    const mensajes = {
+      excelente: 'Excelente trabajo. Dominas el tema de esta actividad.',
+      bien: 'Buen resultado. Repasa las que fallaste para afinar los detalles.',
+      reforzar: 'Vale la pena repasar este tema con calma y volver a intentarlo si tu profesor lo permite.'
+    };
+
+    const intentosRestantes = actividad.intentos_max === null || actividad.intentos_max === undefined
+      ? null
+      : Math.max(0, actividad.intentos_max - (actividad.intentos_usados + 1));
+
+    const zona = document.getElementById('zonaResultado');
+    zona.innerHTML = `
+      <div class="resultado-card tier-${tier}">
+        <div class="resultado-nota">${resultado.correctas} / ${resultado.total} · ${pct}%</div>
+        <p>${mensajes[tier]}</p>
+        <p><strong>Tu resultado quedó registrado</strong> y tu profesor puede verlo en su panel.
+        ${intentosRestantes === null
+          ? 'Puedes repetir esta actividad cuantas veces quieras.'
+          : intentosRestantes > 0
+            ? `Te queda${intentosRestantes === 1 ? '' : 'n'} ${intentosRestantes} intento${intentosRestantes === 1 ? '' : 's'}.`
+            : 'Era tu último intento disponible.'}</p>
+        <div class="resultado-acciones">
+          <a href="Panel_estudiante.html" class="btn-volver-panel">Volver a mi panel</a>
+          ${intentosRestantes === null || intentosRestantes > 0
+            ? '<button class="btn-secundario" id="btnReintentar" type="button">Volver a intentarlo</button>'
+            : ''}
+        </div>
+      </div>`;
+    zona.style.display = 'block';
+
+    const btnReintentar = document.getElementById('btnReintentar');
+    if (btnReintentar) btnReintentar.addEventListener('click', () => window.location.reload());
+
+    zona.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('btnEntregar').addEventListener('click', async () => {
+    const btn = document.getElementById('btnEntregar');
+    btn.disabled = true;
+    btn.textContent = 'Entregando…';
+
+    const r = await calificarActividad(actividadId, respuestas);
+
+    if (!r.ok) {
+      btn.textContent = 'Entregar respuestas';
+      btn.disabled = false;
+      alert('No se pudo registrar tu entrega:\n\n' + r.error);
+      return;
+    }
+    mostrarResultado(r.resultado);
+  });
+
+  document.getElementById('btnLeido').addEventListener('click', () => {
+    document.getElementById('btnLeido').style.display = 'none';
+    renderPreguntas();
+    document.getElementById('zonaPreguntas').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  (async function inicio() {
+    if (!actividadId) {
+      mostrarBloqueo('No encontramos la actividad', 'El enlace no incluye ninguna actividad. Vuelve a tu panel y ábrela desde la lista de actividades asignadas.');
+      return;
+    }
+
+    const res = await obtenerActividadParaResolver(actividadId);
+    if (!res.ok) {
+      mostrarBloqueo('No pudimos abrir esta actividad', res.error);
+      return;
+    }
+
+    actividad = res.actividad;
+    preguntas = actividad.preguntas || [];
+
+    if (actividad.cerrada) {
+      mostrarBloqueo('Esta actividad ya cerró',
+        `La fecha límite era el ${fechaLegible(actividad.fecha_limite)}. Habla con tu profesor si necesitas presentarla.`);
+      return;
+    }
+    if (actividad.sin_intentos) {
+      mostrarBloqueo('Ya usaste todos tus intentos',
+        `Tu profesor permitió ${actividad.intentos_max} intento${actividad.intentos_max === 1 ? '' : 's'} para esta actividad y ya los presentaste. Tus resultados están en tu panel.`);
+      return;
+    }
+    if (preguntas.length === 0) {
+      mostrarBloqueo('Esta actividad todavía no tiene preguntas',
+        'Tu profesor aún la está preparando. Inténtalo más tarde.');
+      return;
+    }
+
+    if (actividad.barajar) preguntas = barajar(preguntas);
+
+    document.getElementById('tipoActividad').textContent =
+      actividad.tipo === 'texto' ? 'Lectura asignada' : 'Examen asignado';
+    document.getElementById('tituloActividad').textContent = actividad.titulo;
+
+    const meta = [];
+    meta.push(`${preguntas.length} pregunta${preguntas.length === 1 ? '' : 's'}`);
+    if (actividad.fecha_limite) meta.push(`Cierra el ${fechaLegible(actividad.fecha_limite)}`);
+    meta.push(actividad.intentos_max
+      ? `Intento ${actividad.intentos_usados + 1} de ${actividad.intentos_max}`
+      : 'Intentos ilimitados');
+    document.getElementById('metaActividad').innerHTML = meta
+      .map((m, i) => `<span class="meta-chip ${i === 1 && actividad.fecha_limite ? 'alerta' : ''}">${esc(m)}</span>`)
+      .join('');
+
+    if (actividad.descripcion) {
+      document.getElementById('textoInstrucciones').innerHTML =
+        `<b>Instrucciones de tu profesor:</b> ${esc(actividad.descripcion)}`;
+      document.getElementById('instrucciones').style.display = 'flex';
+    }
+
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = 'block';
+
+    if (actividad.tipo === 'texto') {
+      document.getElementById('textoLectura').textContent = actividad.texto_lectura || '';
+      document.getElementById('zonaLectura').style.display = 'block';
+    } else {
+      renderPreguntas();
+    }
+  })();
+</script>
+</body>
+</html>

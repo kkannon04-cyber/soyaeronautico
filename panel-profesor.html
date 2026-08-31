@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel del Profesor · SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Mismo sistema visual del Panel del Estudiante (sidebar oscuro,
+     tarjetas claras) para que profesor y estudiante se sientan la
+     misma plataforma. */
+  :root {
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --sidebar-active: #2563eb;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --font-main: 'IBM Plex Sans', sans-serif;
+    --font-heading: 'Archivo', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  [data-theme="dark"] {
+    --primary: #4F8EF7;
+    --primary-hover: #6aa3fa;
+    --bg-main: #0B1220;
+    --card-bg: #121C2E;
+    --text-main: #EDEFF3;
+    --text-muted: #8894A8;
+    --border-color: #2A3548;
+  }
+  [data-theme="dark"] .clock-widget { background-color: #17223A; }
+  [data-theme="dark"] .module-badge,
+  [data-theme="dark"] .chip.active { background: rgba(79,142,247,0.16); }
+  [data-theme="dark"] .codigo-grupo { background: #17223A; }
+  [data-theme="dark"] .tabla-datos thead th { background: #17223A; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3 { font-family: var(--font-heading); }
+  body { display: flex; min-height: 100vh; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+
+  /* === BARRA LATERAL === */
+  .sidebar { width: 260px; flex-shrink: 0; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; z-index: 100; transition: transform 0.25s ease; }
+  .sidebar-header { padding: 24px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .logo-icon { width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+  .logo-icon svg { display: block; }
+  .logo-text h1 { font-size: 1.1rem; margin: 0; font-weight: 700; }
+  .logo-text p { font-family: var(--font-mono); font-size: 0.7rem; color: #94a3b8; letter-spacing: 1px; }
+  .nav-menu { padding: 16px 12px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .nav-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: 8px; transition: all 0.2s; cursor: pointer; border: none; background: none; text-align: left; width: 100%; font-family: var(--font-main); }
+  .nav-item:hover, .nav-item.active { background-color: var(--sidebar-hover); color: white; }
+  .nav-item.active { background-color: var(--sidebar-active); font-weight: 600; }
+  .nav-sep { margin: 12px 16px 6px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; color: #64748b; text-transform: uppercase; }
+  #authNavSlot { padding: 16px 12px; }
+  .nav-item.exit { color: #94a3b8; }
+  .nav-item.exit:hover { background-color: rgba(239,68,68,0.1); color: #fca5a5; }
+
+  /* === ÁREA PRINCIPAL === */
+  .main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow-y: auto; }
+  .topbar { background-color: var(--card-bg); min-height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; gap: 16px; }
+  .menu-btn { display:none; align-items:center; justify-content:center; width:44px; height:44px; border-radius:8px; border:1px solid var(--border-color); background:none; color:var(--text-main); cursor:pointer; font-size:1.1rem; flex-shrink:0; }
+  .clock-widget { display: flex; align-items: center; gap: 8px; background-color: #f1f5f9; padding: 6px 14px; border-radius: 20px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; }
+  .clock-widget span:first-child { color: var(--text-muted); font-size: 0.75rem; }
+  .clock-widget #zulu-time { background-color: #0f172a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; letter-spacing: 0.5px; }
+  .user-profile { display: flex; align-items: center; gap: 16px; }
+  .theme-toggle-btn { display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:8px; background:none; border:1px solid var(--border-color); color:var(--text-muted); cursor:pointer; flex-shrink:0; }
+  .theme-toggle-btn:hover { color:var(--primary); border-color:var(--primary); }
+  .theme-toggle-btn svg { display:block; }
+  .theme-toggle-btn .icon-moon { display:none; }
+  [data-theme="dark"] .theme-toggle-btn .icon-sun { display:none; }
+  [data-theme="dark"] .theme-toggle-btn .icon-moon { display:block; }
+  .user-info { text-align: right; }
+  .avatar { width: 38px; height: 38px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+
+  .dashboard-container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+  .seccion { display: none; }
+  .seccion.activa { display: block; }
+  .seccion-head { margin-bottom: 24px; }
+  .seccion-head h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  .seccion-head p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.55; max-width: 720px; }
+
+  /* === TARJETAS === */
+  .panel-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 22px; margin-bottom: 22px; }
+  .panel-card > h3 { font-size: 1.05rem; margin-bottom: 4px; }
+  .panel-card > .card-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 26px; }
+  .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+  .stat-card span.label { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: var(--text-muted); display: block; }
+  .stat-card strong { font-size: 1.6rem; font-weight: 700; margin-top: 6px; display: block; font-family: var(--font-mono); }
+
+  /* === FORMULARIOS === */
+  .campo { margin-bottom: 14px; }
+  .campo label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+  .campo .ayuda { font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45; }
+  input[type="text"], input[type="number"], input[type="datetime-local"], select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color);
+    background: var(--card-bg); color: var(--text-main); font-size: 0.9rem; outline: none; font-family: var(--font-main);
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.22); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+  .fila-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .check-linea { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin-bottom: 10px; }
+  .check-linea input { width: auto; }
+
+  .btn { border: none; border-radius: 8px; padding: 11px 20px; font-size: 0.87rem; font-weight: 600; cursor: pointer; font-family: var(--font-main); transition: 0.15s; }
+  .btn-primario { background: var(--primary); color: #fff; }
+  .btn-primario:hover { background: var(--primary-hover); }
+  .btn-secundario { background: none; border: 1px solid var(--border-color); color: var(--text-main); }
+  .btn-secundario:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-peligro { background: none; border: 1px solid var(--danger); color: var(--danger); }
+  .btn-peligro:hover { background: rgba(239,68,68,0.08); }
+  .btn-mini { padding: 7px 13px; font-size: 0.78rem; }
+  .acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  /* === LISTAS === */
+  .item-lista { border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 14px; background: var(--card-bg); }
+  .item-lista .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .item-lista h4 { font-size: 1rem; margin-bottom: 4px; }
+  .item-lista p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+  .module-badge { display: inline-block; background-color: #eff6ff; color: var(--primary); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-right: 6px; }
+  .badge-estado { display:inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .badge-estado.publicada { background: rgba(16,185,129,0.14); color: var(--success); }
+  .badge-estado.borrador { background: rgba(245,158,11,0.16); color: #b45309; }
+
+  .codigo-grupo { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; letter-spacing: 3px; background: #f1f5f9; padding: 10px 18px; border-radius: 10px; display: inline-block; color: var(--primary); }
+
+  /* === TABLAS === */
+  .tabla-scroll { overflow-x: auto; }
+  .tabla-datos { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 620px; }
+  .tabla-datos th, .tabla-datos td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+  .tabla-datos thead th { background: #f1f5f9; font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); white-space: nowrap; }
+  .tabla-datos tbody tr:hover { background: rgba(37,99,235,0.04); }
+  .pct { font-family: var(--font-mono); font-weight: 700; }
+  .pct.ok { color: var(--success); }
+  .pct.medio { color: var(--warning); }
+  .pct.bajo { color: var(--danger); }
+  .pct.nulo { color: var(--text-muted); font-weight: 500; }
+
+  /* === UTILIDADES === */
+  .chip { display:inline-block; border:1px solid var(--border-color); background:none; color:var(--text-muted); border-radius:20px; padding:7px 14px; font-size:0.78rem; cursor:pointer; margin:0 6px 6px 0; font-family: var(--font-main); }
+  .chip.active { border-color: var(--primary); color: var(--primary); background:#eff6ff; font-weight:600; }
+  .vacio { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; padding: 18px; border: 1px dashed var(--border-color); border-radius: 12px; text-align: center; }
+  .aviso { position: fixed; right: 20px; bottom: 20px; z-index: 300; background: var(--text-main); color: var(--bg-main); padding: 13px 18px; border-radius: 10px; font-size: 0.87rem; font-weight: 500; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; line-height: 1.45; }
+  .aviso.show { display: block; }
+  .aviso.error { background: var(--danger); color: #fff; }
+  .aviso.ok { background: var(--success); color: #fff; }
+  .selector-preguntas { max-height: 320px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; }
+  .pregunta-check { display: flex; gap: 10px; align-items: flex-start; padding: 9px; border-radius: 8px; font-size: 0.85rem; line-height: 1.45; }
+  .pregunta-check:hover { background: rgba(37,99,235,0.05); }
+  .pregunta-check input { margin-top: 3px; width: auto; flex-shrink: 0; }
+  .sub-bloque { border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .sub-titulo { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
+  .resumen-preguntas { background: #eff6ff; border: 1px solid var(--primary); border-radius: 10px;
+    padding: 12px 14px; font-size: 0.88rem; font-weight: 600; color: var(--primary); }
+  .resumen-preguntas.vacia { background: rgba(245,158,11,0.10); border-color: var(--warning); color: #b45309; }
+  .resumen-preguntas span { display: block; font-weight: 400; font-size: 0.82rem; margin-top: 3px; color: var(--text-muted); }
+  .banco-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border-color);
+    background: none; border-radius: 20px; padding: 8px 14px; font-size: 0.82rem; cursor: pointer;
+    margin: 0 6px 6px 0; font-family: var(--font-main); color: var(--text-main); }
+  .banco-chip:hover { border-color: var(--primary); }
+  .banco-chip.on { border-color: var(--primary); background: #eff6ff; color: var(--primary); font-weight: 600; }
+  .banco-chip .n { font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-muted); }
+  .banco-chip.on .n { color: var(--primary); }
+  [data-theme="dark"] .resumen-preguntas,
+  [data-theme="dark"] .banco-chip.on { background: rgba(79,142,247,0.14); }
+
+  .opciones-preview { list-style: none; margin-top: 8px; font-size: 0.84rem; }
+  .opciones-preview li { padding: 5px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid var(--border-color); }
+  .opciones-preview li.correcta { border-color: var(--success); background: rgba(16,185,129,0.09); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .menu-btn { display: flex; }
+    .topbar { padding: 0 20px; }
+    .dashboard-container { padding: 20px; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); box-shadow: 8px 0 30px rgba(0,0,0,0.35); }
+  }
+  @media (max-width: 480px) {
+    .topbar { padding: 0 14px; gap: 10px; }
+    .clock-widget span:first-child { display: none; }
+    .user-info { display: none; }
+  }
+  .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 90; }
+  .sidebar-backdrop.open { display: block; }
+
+  .credito-autor { border-top:1px solid rgba(128,128,128,0.22); margin-top:40px; padding:20px 24px; text-align:center; font-size:0.78rem; color:var(--text-muted); }
+  .credito-autor strong { color:inherit; font-weight:600; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="progreso.js"></script>
+<script src="profesor.js"></script>
+</head>
+<body>
+<script src="auth-gate.js" data-rol-requerido="teacher"></script>
+
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-header" href="index.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--sidebar-bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <h1>SoyAeronáutico</h1>
+      <p>PANEL DEL PROFESOR</p>
+    </div>
+  </a>
+  <div class="nav-menu">
+    <button class="nav-item active" type="button" data-seccion="resumen">Resumen</button>
+    <button class="nav-item" type="button" data-seccion="grupos">Mis grupos</button>
+    <button class="nav-item" type="button" data-seccion="banco">Bancos de preguntas</button>
+    <button class="nav-item" type="button" data-seccion="actividades">Actividades</button>
+    <button class="nav-item" type="button" data-seccion="resultados">Resultados</button>
+    <div class="nav-sep">Vista de estudiante</div>
+    <a class="nav-item" href="Panel_estudiante.html">Mi panel de estudiante</a>
+    <a class="nav-item" href="quizzes.html">Zona de Quizzes</a>
+  </div>
+  <div id="authNavSlot"></div>
+</aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<main class="main-content">
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    <div class="clock-widget"><span>H. ZULU</span> <span id="zulu-time">--:--:-- Z</span></div>
+    <div class="user-profile">
+      <button class="theme-toggle-btn" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="user-info">
+        <div id="nombreProfesor" style="font-size:0.9rem;font-weight:600;">Profesor</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">Cuenta de profesor</div>
+      </div>
+      <div class="avatar" id="avatarInitials">PR</div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+
+    <!-- ============ RESUMEN ============ -->
+    <section class="seccion activa" id="seccion-resumen">
+      <div class="seccion-head">
+        <h2>Panel del Profesor</h2>
+        <p>Desde aquí creas tus grupos, armas tu banco de preguntas, publicas exámenes o lecturas para tus estudiantes y revisas sus resultados.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="label">Grupos</span><strong id="kpiGrupos">0</strong></div>
+        <div class="stat-card"><span class="label">Estudiantes</span><strong id="kpiEstudiantes">0</strong></div>
+        <div class="stat-card"><span class="label">Actividades publicadas</span><strong id="kpiActividades">0</strong></div>
+        <div class="stat-card"><span class="label">Bancos</span><strong id="kpiBancos">0</strong></div>
+        <div class="stat-card"><span class="label">Preguntas</span><strong id="kpiPreguntas">0</strong></div>
+      </div>
+      <div class="panel-card">
+        <h3>Cómo empezar</h3>
+        <p class="card-sub">Tres pasos, en este orden:</p>
+        <ol style="font-size:0.9rem;line-height:1.9;padding-left:20px;color:var(--text-muted);">
+          <li><strong style="color:var(--text-main);">Crea un grupo</strong> y comparte su código con tus estudiantes: con ese código se vinculan a tu clase desde su panel.</li>
+          <li><strong style="color:var(--text-main);">Crea uno o varios bancos de preguntas</strong> (por tema, por unidad o por parcial) y llénalos una por una o pegando varias de golpe.</li>
+          <li><strong style="color:var(--text-main);">Crea una actividad</strong> —examen o lectura con pregunta de comprensión— eligiendo de qué bancos salen las preguntas, y publícala cuando esté lista.</li>
+        </ol>
+        <div class="acciones" style="margin-top:18px;">
+          <button class="btn btn-primario" type="button" data-ir="grupos">Ir a mis grupos</button>
+          <button class="btn btn-secundario" type="button" data-ir="banco">Ir a mis bancos</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GRUPOS ============ -->
+    <section class="seccion" id="seccion-grupos">
+      <div class="seccion-head">
+        <h2>Mis grupos</h2>
+        <p>Cada grupo tiene un código único. Tus estudiantes lo escriben una sola vez en su panel y quedan vinculados a tu clase.</p>
+      </div>
+
+      <div class="panel-card">
+        <h3>Crear un grupo</h3>
+        <p class="card-sub">Por ejemplo: “Curso ATS — sábados” o “Grupo 2026-B”.</p>
+        <div class="fila-campos">
+          <div class="campo" style="margin-bottom:0;">
+            <label for="nuevoGrupoNombre">Nombre del grupo</label>
+            <input type="text" id="nuevoGrupoNombre" maxlength="80" placeholder="Curso ATS — sábados">
+          </div>
+          <div class="campo" style="margin-bottom:0;display:flex;align-items:flex-end;">
+            <button class="btn btn-primario" id="btnCrearGrupo" type="button">Crear grupo</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="listaGrupos"></div>
+    </section>
+
+    <!-- ============ BANCOS DE PREGUNTAS ============ -->
+    <section class="seccion" id="seccion-banco">
+      <div class="seccion-head">
+        <h2>Bancos de preguntas</h2>
+        <p>Organiza tus preguntas en los bancos que quieras —uno por tema, por curso o por parcial— y reutilízalos al armar cada examen. No hay límite de bancos ni de preguntas.</p>
+      </div>
+
+      <div class="panel-card">
+        <h3>Crear un banco</h3>
+        <p class="card-sub">Por ejemplo: “ATS — básico”, “Meteorología parcial 1”, “Simulacro final”.</p>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="nuevoBancoNombre">Nombre del banco</label>
+            <input type="text" id="nuevoBancoNombre" maxlength="80" placeholder="ATS — básico">
+          </div>
+          <div class="campo">
+            <label for="nuevoBancoDesc">Descripción (opcional)</label>
+            <input type="text" id="nuevoBancoDesc" maxlength="160" placeholder="Preguntas de la unidad 1">
+          </div>
+          <div class="campo" style="display:flex;align-items:flex-end;">
+            <button class="btn btn-primario" id="btnCrearBanco" type="button">Crear banco</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Mis bancos (<span id="conteoBancos">0</span>)</h3>
+        <p class="card-sub">Al eliminar un banco se borran también sus preguntas.</p>
+        <div id="listaBancos"></div>
+      </div>
+
+      <div class="panel-card">
+        <h3 id="tituloFormPregunta">Nueva pregunta</h3>
+        <p class="card-sub">Cuatro opciones, una correcta. El tema es opcional y sirve para filtrar dentro del banco.</p>
+        <div class="campo">
+          <label for="pBanco">Banco</label>
+          <select id="pBanco"></select>
+        </div>
+        <div class="campo">
+          <label for="pEnunciado">Enunciado</label>
+          <textarea id="pEnunciado" maxlength="600" placeholder="¿Cuál es el primer objetivo de los Servicios de Tránsito Aéreo?"></textarea>
+        </div>
+        <div class="fila-campos">
+          <div class="campo"><label for="pOpcion0">Opción 1</label><input type="text" id="pOpcion0" maxlength="300"></div>
+          <div class="campo"><label for="pOpcion1">Opción 2</label><input type="text" id="pOpcion1" maxlength="300"></div>
+          <div class="campo"><label for="pOpcion2">Opción 3</label><input type="text" id="pOpcion2" maxlength="300"></div>
+          <div class="campo"><label for="pOpcion3">Opción 4</label><input type="text" id="pOpcion3" maxlength="300"></div>
+        </div>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="pCorrecta">Respuesta correcta</label>
+            <select id="pCorrecta">
+              <option value="0">Opción 1</option>
+              <option value="1">Opción 2</option>
+              <option value="2">Opción 3</option>
+              <option value="3">Opción 4</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="pTema">Tema (opcional)</label>
+            <input type="text" id="pTema" maxlength="60" placeholder="ATS, Meteorología, Navegación…">
+          </div>
+        </div>
+        <div class="acciones">
+          <button class="btn btn-primario" id="btnGuardarPregunta" type="button">Guardar pregunta</button>
+          <button class="btn btn-secundario" id="btnCancelarPregunta" type="button" style="display:none;">Cancelar edición</button>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Importar varias de golpe</h3>
+        <p class="card-sub">
+          Una pregunta por línea, con los campos separados por <code>|</code>:<br>
+          <code style="font-family:var(--font-mono);font-size:0.8rem;">enunciado | opción 1 | opción 2 | opción 3 | opción 4 | número de la correcta (1-4) | tema (opcional)</code>
+        </p>
+        <div class="campo">
+          <label for="importarBanco">Banco de destino</label>
+          <select id="importarBanco"></select>
+        </div>
+        <div class="campo">
+          <textarea id="importarTexto" placeholder="¿Qué significa METAR? | Informe meteorológico ordinario | Pronóstico de área | Aviso de cizalladura | Plan de vuelo | 1 | Meteorología"></textarea>
+        </div>
+        <button class="btn btn-secundario" id="btnImportar" type="button">Importar preguntas</button>
+      </div>
+
+      <div class="panel-card">
+        <h3>Mis preguntas (<span id="conteoBanco">0</span>)</h3>
+        <div class="fila-campos" style="margin-top:12px;">
+          <div class="campo">
+            <label for="filtroBanco">Banco</label>
+            <select id="filtroBanco"></select>
+          </div>
+          <div class="campo">
+            <label for="buscarPregunta">Buscar</label>
+            <input type="text" id="buscarPregunta" placeholder="Buscar por enunciado o tema…">
+          </div>
+        </div>
+        <div id="filtrosTema" style="margin-bottom:12px;"></div>
+        <div id="listaBanco"></div>
+      </div>
+    </section>
+
+    <!-- ============ ACTIVIDADES ============ -->
+    <section class="seccion" id="seccion-actividades">
+      <div class="seccion-head">
+        <h2>Actividades</h2>
+        <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión.</p>
+      </div>
+
+      <div class="panel-card">
+        <h3 id="tituloFormActividad">Nueva actividad</h3>
+        <p class="card-sub">Puedes dejarla sin publicar mientras la preparas: tus estudiantes solo ven las publicadas.</p>
+
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="aGrupo">Grupo</label>
+            <select id="aGrupo"></select>
+          </div>
+          <div class="campo">
+            <label for="aTipo">Tipo</label>
+            <select id="aTipo">
+              <option value="examen">Examen / parcial</option>
+              <option value="texto">Lectura con pregunta de comprensión</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="aTitulo">Título</label>
+          <input type="text" id="aTitulo" maxlength="120" placeholder="Parcial 1 — Servicios de Tránsito Aéreo">
+        </div>
+
+        <div class="campo">
+          <label for="aDescripcion">Instrucciones (opcional)</label>
+          <textarea id="aDescripcion" maxlength="600" placeholder="Lee con calma. Tienes un solo intento."></textarea>
+        </div>
+
+        <div class="campo" id="campoTextoLectura" style="display:none;">
+          <label for="aTextoLectura">Texto de lectura</label>
+          <textarea id="aTextoLectura" style="min-height:200px;" placeholder="Pega aquí el material que el estudiante debe leer…"></textarea>
+          <div class="ayuda">El estudiante debe leerlo y responder la pregunta de comprensión para que la actividad cuente como completada.</div>
+        </div>
+
+        <div class="campo">
+          <label>Preguntas de la actividad</label>
+          <div class="ayuda" style="margin-bottom:10px;">Elige de qué bancos salen las preguntas y cómo se seleccionan.</div>
+
+          <div class="sub-bloque">
+            <div class="sub-titulo">1 · Bancos de origen</div>
+            <div id="selectorBancosActividad"></div>
+          </div>
+
+          <div class="sub-bloque">
+            <div class="sub-titulo">2 · Cómo se eligen las preguntas</div>
+            <label class="check-linea"><input type="radio" name="modoPreguntas" value="completo">
+              <span>Incluir <strong>todas</strong> las preguntas de los bancos elegidos</span></label>
+            <label class="check-linea"><input type="radio" name="modoPreguntas" value="seleccion" checked>
+              <span>Elegir las preguntas <strong>una por una</strong></span></label>
+            <label class="check-linea"><input type="radio" name="modoPreguntas" value="azar">
+              <span>Tomar
+                <input type="number" id="aCantidadAzar" min="1" max="200" value="10" style="width:70px;display:inline-block;margin:0 4px;">
+                preguntas <strong>al azar</strong> de esos bancos</span></label>
+            <div class="ayuda" id="ayudaModo"></div>
+          </div>
+
+          <div id="zonaSeleccionManual" class="sub-bloque">
+            <div class="sub-titulo">3 · Marca las preguntas</div>
+            <input type="text" id="buscarPreguntaActividad" placeholder="Filtrar preguntas…" style="margin-bottom:10px;">
+            <div class="selector-preguntas" id="selectorPreguntas"></div>
+          </div>
+
+          <div class="resumen-preguntas" id="resumenPreguntas"></div>
+        </div>
+
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="aFechaLimite">Fecha límite (opcional)</label>
+            <input type="datetime-local" id="aFechaLimite">
+            <div class="ayuda">Después de esa fecha ya no se aceptan entregas.</div>
+          </div>
+          <div class="campo">
+            <label for="aIntentosMax">Intentos máximos (opcional)</label>
+            <input type="number" id="aIntentosMax" min="1" max="50" placeholder="Sin límite">
+            <div class="ayuda">Déjalo vacío para permitir intentos ilimitados.</div>
+          </div>
+        </div>
+
+        <div class="check-linea"><input type="checkbox" id="aActiva" checked><label for="aActiva" style="margin:0;font-weight:500;">Publicada (visible para los estudiantes del grupo)</label></div>
+        <div class="check-linea"><input type="checkbox" id="aBarajar"><label for="aBarajar" style="margin:0;font-weight:500;">Mostrar las preguntas en orden aleatorio</label></div>
+
+        <div class="acciones" style="margin-top:16px;">
+          <button class="btn btn-primario" id="btnGuardarActividad" type="button">Guardar actividad</button>
+          <button class="btn btn-secundario" id="btnCancelarActividad" type="button" style="display:none;">Cancelar edición</button>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>Actividades creadas</h3>
+        <div id="filtrosGrupoActividades" style="margin:12px 0;"></div>
+        <div id="listaActividades"></div>
+      </div>
+    </section>
+
+    <!-- ============ RESULTADOS ============ -->
+    <section class="seccion" id="seccion-resultados">
+      <div class="seccion-head">
+        <h2>Resultados</h2>
+        <p>Quién ha presentado, cómo le fue y qué preguntas está fallando el grupo. Puedes descargar todo para abrirlo en Excel.</p>
+      </div>
+
+      <div class="panel-card">
+        <div class="campo" style="margin-bottom:0;">
+          <label for="rGrupo">Grupo</label>
+          <select id="rGrupo"></select>
+        </div>
+      </div>
+
+      <div id="contenidoResultados"></div>
+    </section>
+
+  </div>
+
+  <div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
+</main>
+
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<script>
+// ============================================================
+// ESTADO EN MEMORIA
+// ============================================================
+const estado = {
+  grupos: [],
+  bancos: [],
+  banco: [],              // todas las preguntas, de todos los bancos
+  actividades: [],
+  preguntaEditando: null,
+  actividadEditando: null,
+  temaFiltro: null,
+  bancoFiltro: null,      // filtro de la lista de preguntas
+  grupoFiltroActividades: null,
+  bancosActividad: [],    // bancos elegidos como origen al armar una actividad
+  modoPreguntas: 'seleccion',
+  seleccionPreguntas: []
+};
+
+// ============================================================
+// UTILIDADES DE INTERFAZ
+// ============================================================
+let avisoTimer = null;
+function aviso(mensaje, tipo) {
+  const el = document.getElementById('aviso');
+  el.textContent = mensaje;
+  el.className = 'aviso show' + (tipo ? ' ' + tipo : '');
+  clearTimeout(avisoTimer);
+  avisoTimer = setTimeout(() => { el.className = 'aviso'; }, 4200);
+}
+
+function esc(texto) {
+  return String(texto === null || texto === undefined ? '' : texto)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function fechaCorta(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) +
+         ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+function clasePct(p) {
+  if (p === null || p === undefined) return 'nulo';
+  if (p >= 85) return 'ok';
+  if (p >= 60) return 'medio';
+  return 'bajo';
+}
+
+function mostrarSeccion(nombre) {
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+  const destino = document.getElementById('seccion-' + nombre);
+  if (destino) destino.classList.add('activa');
+  document.querySelectorAll('.nav-item[data-seccion]').forEach(b => {
+    b.classList.toggle('active', b.dataset.seccion === nombre);
+  });
+  document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
+  cerrarSidebar();
+}
+
+// ============================================================
+// NAVEGACIÓN / CRONO / TEMA
+// ============================================================
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('sidebarBackdrop');
+const menuBtn = document.getElementById('menuBtn');
+function cerrarSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+menuBtn.addEventListener('click', () => {
+  const abierto = sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open', abierto);
+  menuBtn.setAttribute('aria-expanded', String(abierto));
+});
+backdrop.addEventListener('click', cerrarSidebar);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSidebar(); });
+
+document.querySelectorAll('.nav-item[data-seccion]').forEach(btn => {
+  btn.addEventListener('click', () => mostrarSeccion(btn.dataset.seccion));
+});
+document.querySelectorAll('[data-ir]').forEach(btn => {
+  btn.addEventListener('click', () => mostrarSeccion(btn.dataset.ir));
+});
+
+function updateZulu() {
+  const now = new Date();
+  const p = n => String(n).padStart(2, '0');
+  document.getElementById('zulu-time').textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+}
+updateZulu();
+setInterval(updateZulu, 1000);
+
+const themeToggle = document.getElementById('themeToggle');
+if (localStorage.getItem('aisTheme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+themeToggle.addEventListener('click', () => {
+  const oscuro = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (oscuro) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme', 'light'); }
+  else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('aisTheme', 'dark'); }
+});
+
+// ============================================================
+// GRUPOS
+// ============================================================
+async function cargarGrupos() {
+  const res = await obtenerMisGrupos();
+  if (!res.ok) { aviso(res.error, 'error'); return; }
+  estado.grupos = res.grupos;
+  renderGrupos();
+  renderSelectoresDeGrupo();
+  renderKPIs();
+}
+
+function renderGrupos() {
+  const cont = document.getElementById('listaGrupos');
+  if (estado.grupos.length === 0) {
+    cont.innerHTML = '<div class="vacio">Todavía no tienes ningún grupo. Crea el primero arriba y comparte su código con tus estudiantes.</div>';
+    return;
+  }
+
+  cont.innerHTML = '';
+  estado.grupos.forEach(g => {
+    const enlace = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}Panel_estudiante.html?codigo=${encodeURIComponent(g.codigo)}`;
+    const item = document.createElement('div');
+    item.className = 'item-lista';
+    item.innerHTML = `
+      <div class="item-top">
+        <div>
+          <h4>${esc(g.nombre)}</h4>
+          <p>${g.estudiantes} estudiante${g.estudiantes === 1 ? '' : 's'} · creado el ${fechaCorta(g.creadoEn)}</p>
+        </div>
+        <div style="text-align:right;">
+          <div class="codigo-grupo">${esc(g.codigo)}</div>
+        </div>
+      </div>
+      <div class="acciones" style="margin-top:16px;">
+        <button class="btn btn-secundario btn-mini" data-accion="copiar-codigo">Copiar código</button>
+        <button class="btn btn-secundario btn-mini" data-accion="copiar-enlace">Copiar enlace de invitación</button>
+        <button class="btn btn-secundario btn-mini" data-accion="ver-estudiantes">Ver estudiantes</button>
+        <button class="btn btn-secundario btn-mini" data-accion="renombrar">Renombrar</button>
+        <button class="btn btn-peligro btn-mini" data-accion="borrar">Eliminar grupo</button>
+      </div>
+      <div data-zona="estudiantes" style="margin-top:16px;display:none;"></div>
+    `;
+
+    item.querySelector('[data-accion="copiar-codigo"]').addEventListener('click', () => copiar(g.codigo, 'Código copiado.'));
+    item.querySelector('[data-accion="copiar-enlace"]').addEventListener('click', () => copiar(enlace, 'Enlace de invitación copiado.'));
+    item.querySelector('[data-accion="renombrar"]').addEventListener('click', async () => {
+      const nuevo = prompt('Nuevo nombre del grupo:', g.nombre);
+      if (nuevo === null) return;
+      const r = await renombrarGrupo(g.id, nuevo);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Grupo renombrado.', 'ok');
+      cargarGrupos();
+    });
+    item.querySelector('[data-accion="borrar"]').addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar el grupo "${g.nombre}"?\n\nSe borran también sus actividades y los resultados de sus estudiantes. Esto no se puede deshacer.`)) return;
+      const r = await borrarGrupo(g.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Grupo eliminado.', 'ok');
+      await cargarTodo();
+    });
+    item.querySelector('[data-accion="ver-estudiantes"]').addEventListener('click', async (e) => {
+      const zona = item.querySelector('[data-zona="estudiantes"]');
+      if (zona.style.display === 'block') { zona.style.display = 'none'; e.target.textContent = 'Ver estudiantes'; return; }
+      zona.style.display = 'block';
+      e.target.textContent = 'Ocultar estudiantes';
+      zona.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">Cargando…</p>';
+      const r = await obtenerEstudiantesDeGrupo(g.id);
+      if (!r.ok) { zona.innerHTML = `<p style="font-size:0.85rem;color:var(--danger);">${esc(r.error)}</p>`; return; }
+      if (r.estudiantes.length === 0) {
+        zona.innerHTML = '<div class="vacio">Nadie se ha unido todavía. Comparte el código de arriba con tus estudiantes.</div>';
+        return;
+      }
+      zona.innerHTML = `
+        <div class="tabla-scroll"><table class="tabla-datos">
+          <thead><tr><th>Estudiante</th><th>Se unió</th><th></th></tr></thead>
+          <tbody>${r.estudiantes.map(e2 => `
+            <tr>
+              <td>${esc(e2.nombre)}</td>
+              <td>${fechaCorta(e2.desde)}</td>
+              <td><button class="btn btn-peligro btn-mini" data-retirar="${esc(e2.id)}">Retirar</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>`;
+      zona.querySelectorAll('[data-retirar]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('¿Retirar a este estudiante del grupo? Sus resultados anteriores se conservan.')) return;
+          const rr = await retirarEstudiante(g.id, btn.dataset.retirar);
+          if (!rr.ok) { aviso(rr.error, 'error'); return; }
+          aviso('Estudiante retirado del grupo.', 'ok');
+          cargarGrupos();
+          zona.style.display = 'none';
+        });
+      });
+    });
+
+    cont.appendChild(item);
+  });
+}
+
+function copiar(texto, mensaje) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(() => aviso(mensaje, 'ok')).catch(() => aviso('No se pudo copiar: ' + texto));
+  } else {
+    aviso(texto);
+  }
+}
+
+document.getElementById('btnCrearGrupo').addEventListener('click', async () => {
+  const input = document.getElementById('nuevoGrupoNombre');
+  const r = await crearGrupo(input.value);
+  if (!r.ok) { aviso(r.error, 'error'); return; }
+  input.value = '';
+  aviso(`Grupo creado. Su código es ${r.grupo.codigo}`, 'ok');
+  cargarGrupos();
+});
+
+function renderSelectoresDeGrupo() {
+  const opciones = estado.grupos.map(g => `<option value="${esc(g.id)}">${esc(g.nombre)}</option>`).join('');
+  const selA = document.getElementById('aGrupo');
+  const selR = document.getElementById('rGrupo');
+  const valorA = selA.value, valorR = selR.value;
+  selA.innerHTML = opciones || '<option value="">Crea un grupo primero</option>';
+  selR.innerHTML = opciones || '<option value="">Crea un grupo primero</option>';
+  if (valorA) selA.value = valorA;
+  if (valorR) selR.value = valorR;
+}
+
+// ============================================================
+// BANCOS DE PREGUNTAS
+// ============================================================
+async function cargarBancos() {
+  const res = await obtenerMisBancos();
+  if (!res.ok) { aviso(res.error, 'error'); return; }
+  estado.bancos = res.bancos;
+
+  // Si todavía no hay ninguno elegido como origen, se toman todos:
+  // es lo que casi siempre quiere quien tiene un solo banco.
+  if (estado.bancosActividad.length === 0) {
+    estado.bancosActividad = estado.bancos.map(b => b.id);
+  }
+
+  renderBancos();
+  renderSelectoresDeBanco();
+  renderKPIs();
+}
+
+function nombreBanco(bancoId) {
+  const b = estado.bancos.find(x => x.id === bancoId);
+  return b ? b.nombre : 'Sin banco';
+}
+
+function renderBancos() {
+  document.getElementById('conteoBancos').textContent = estado.bancos.length;
+  const cont = document.getElementById('listaBancos');
+
+  if (estado.bancos.length === 0) {
+    cont.innerHTML = '<div class="vacio">Todavía no tienes bancos. Crea el primero arriba: puedes tener tantos como quieras, por ejemplo uno por unidad o por parcial.</div>';
+    return;
+  }
+
+  cont.innerHTML = '';
+  estado.bancos.forEach(b => {
+    const item = document.createElement('div');
+    item.className = 'item-lista';
+    item.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;min-width:200px;">
+          <h4>${esc(b.nombre)}</h4>
+          <p>${b.preguntas} pregunta${b.preguntas === 1 ? '' : 's'}${b.descripcion ? ' · ' + esc(b.descripcion) : ''}</p>
+        </div>
+        <div class="acciones" style="align-items:flex-start;">
+          <button class="btn btn-secundario btn-mini" data-ver>Ver preguntas</button>
+          <button class="btn btn-secundario btn-mini" data-editar>Renombrar</button>
+          <button class="btn btn-peligro btn-mini" data-borrar>Eliminar</button>
+        </div>
+      </div>`;
+
+    item.querySelector('[data-ver]').addEventListener('click', () => {
+      estado.bancoFiltro = b.id;
+      document.getElementById('filtroBanco').value = b.id;
+      renderBanco();
+      document.getElementById('listaBanco').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    item.querySelector('[data-editar]').addEventListener('click', async () => {
+      const nombre = prompt('Nombre del banco:', b.nombre);
+      if (nombre === null) return;
+      const desc = prompt('Descripción (opcional):', b.descripcion || '');
+      if (desc === null) return;
+      const r = await actualizarBanco(b.id, nombre, desc);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Banco actualizado.', 'ok');
+      await cargarBancos();
+    });
+
+    item.querySelector('[data-borrar]').addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar el banco "${b.nombre}"?\n\nSe borran también sus ${b.preguntas} pregunta${b.preguntas === 1 ? '' : 's'}. Las notas ya obtenidas por tus estudiantes se conservan, pero esas preguntas desaparecen de las actividades que las usaban.`)) return;
+      const r = await borrarBanco(b.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Banco eliminado.', 'ok');
+      estado.bancosActividad = estado.bancosActividad.filter(id => id !== b.id);
+      if (estado.bancoFiltro === b.id) estado.bancoFiltro = null;
+      await cargarBancos();
+      await cargarBanco();
+    });
+
+    cont.appendChild(item);
+  });
+}
+
+// Llena los cuatro selectores que dependen de la lista de bancos.
+function renderSelectoresDeBanco() {
+  const opciones = estado.bancos.map(b => `<option value="${esc(b.id)}">${esc(b.nombre)}</option>`).join('');
+  const sinBancos = '<option value="">Crea un banco primero</option>';
+
+  ['pBanco', 'importarBanco'].forEach(id => {
+    const sel = document.getElementById(id);
+    const previo = sel.value;
+    sel.innerHTML = opciones || sinBancos;
+    if (previo && estado.bancos.some(b => b.id === previo)) sel.value = previo;
+  });
+
+  const filtro = document.getElementById('filtroBanco');
+  const previoFiltro = filtro.value;
+  filtro.innerHTML = '<option value="">Todos los bancos</option>' + opciones;
+  if (previoFiltro) filtro.value = previoFiltro;
+
+  renderSelectorBancosActividad();
+}
+
+document.getElementById('btnCrearBanco').addEventListener('click', async () => {
+  const nombre = document.getElementById('nuevoBancoNombre');
+  const desc = document.getElementById('nuevoBancoDesc');
+  const r = await crearBanco(nombre.value, desc.value);
+  if (!r.ok) { aviso(r.error, 'error'); return; }
+  nombre.value = '';
+  desc.value = '';
+  aviso('Banco creado.', 'ok');
+  estado.bancosActividad.push(r.banco.id);
+  await cargarBancos();
+});
+
+document.getElementById('filtroBanco').addEventListener('change', e => {
+  estado.bancoFiltro = e.target.value || null;
+  renderBanco();
+});
+
+// ============================================================
+// PREGUNTAS
+// ============================================================
+async function cargarBanco() {
+  const res = await obtenerBancoPreguntas();
+  if (!res.ok) { aviso(res.error, 'error'); return; }
+  estado.banco = res.preguntas;
+  renderBanco();
+  renderSelectorPreguntas();
+  renderKPIs();
+}
+
+function preguntasFiltradas(termino, tema, bancoId) {
+  const t = (termino || '').trim().toLowerCase();
+  return estado.banco.filter(p => {
+    if (bancoId && p.banco_id !== bancoId) return false;
+    if (tema && (p.tema || '') !== tema) return false;
+    if (!t) return true;
+    return p.enunciado.toLowerCase().includes(t) || (p.tema || '').toLowerCase().includes(t);
+  });
+}
+
+function renderBanco() {
+  document.getElementById('conteoBanco').textContent = estado.banco.length;
+
+  const temas = Array.from(new Set(estado.banco.map(p => p.tema).filter(Boolean))).sort();
+  const filtros = document.getElementById('filtrosTema');
+  filtros.innerHTML = temas.length === 0 ? '' :
+    `<button class="chip ${estado.temaFiltro === null ? 'active' : ''}" data-tema="">Todos</button>` +
+    temas.map(t => `<button class="chip ${estado.temaFiltro === t ? 'active' : ''}" data-tema="${esc(t)}">${esc(t)}</button>`).join('');
+  filtros.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      estado.temaFiltro = chip.dataset.tema || null;
+      renderBanco();
+    });
+  });
+
+  const lista = document.getElementById('listaBanco');
+  const encontradas = preguntasFiltradas(
+    document.getElementById('buscarPregunta').value, estado.temaFiltro, estado.bancoFiltro);
+
+  if (estado.banco.length === 0) {
+    lista.innerHTML = '<div class="vacio">Todavía no hay preguntas. Crea la primera arriba, o pega varias de golpe con la importación.</div>';
+    return;
+  }
+  if (encontradas.length === 0) {
+    lista.innerHTML = '<div class="vacio">Ninguna pregunta coincide con ese filtro.</div>';
+    return;
+  }
+
+  lista.innerHTML = '';
+  encontradas.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'item-lista';
+    item.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;min-width:240px;">
+          <span class="module-badge">${esc(nombreBanco(p.banco_id))}</span>
+          ${p.tema ? `<span class="module-badge" style="background:#f1f5f9;color:var(--text-muted);">${esc(p.tema)}</span>` : ''}
+          <h4 style="margin-top:6px;">${esc(p.enunciado)}</h4>
+          <ul class="opciones-preview">
+            ${p.opciones.map((o, i) => `<li class="${i === p.correcta ? 'correcta' : ''}">${esc(o)}${i === p.correcta ? ' ✓' : ''}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="acciones" style="align-items:flex-start;">
+          <button class="btn btn-secundario btn-mini" data-editar>Editar</button>
+          <button class="btn btn-peligro btn-mini" data-borrar>Eliminar</button>
+        </div>
+      </div>`;
+
+    item.querySelector('[data-editar]').addEventListener('click', () => editarPregunta(p));
+    item.querySelector('[data-borrar]').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar esta pregunta del banco?\n\nSi ya se usó en una actividad, los puntajes de los estudiantes se conservan, pero la pregunta deja de aparecer en esa actividad.')) return;
+      const r = await borrarPregunta(p.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Pregunta eliminada.', 'ok');
+      await cargarBanco();
+      await cargarBancos();
+    });
+
+    lista.appendChild(item);
+  });
+}
+
+document.getElementById('buscarPregunta').addEventListener('input', renderBanco);
+
+function leerFormularioPregunta() {
+  return {
+    bancoId: document.getElementById('pBanco').value || null,
+    enunciado: document.getElementById('pEnunciado').value,
+    opciones: [0, 1, 2, 3].map(i => document.getElementById('pOpcion' + i).value),
+    correcta: Number(document.getElementById('pCorrecta').value),
+    tema: document.getElementById('pTema').value
+  };
+}
+
+function limpiarFormularioPregunta() {
+  document.getElementById('pEnunciado').value = '';
+  [0, 1, 2, 3].forEach(i => { document.getElementById('pOpcion' + i).value = ''; });
+  document.getElementById('pCorrecta').value = '0';
+  document.getElementById('pTema').value = '';
+  estado.preguntaEditando = null;
+  document.getElementById('tituloFormPregunta').textContent = 'Nueva pregunta';
+  document.getElementById('btnGuardarPregunta').textContent = 'Guardar pregunta';
+  document.getElementById('btnCancelarPregunta').style.display = 'none';
+}
+
+function editarPregunta(p) {
+  estado.preguntaEditando = p.id;
+  document.getElementById('pBanco').value = p.banco_id;
+  document.getElementById('pEnunciado').value = p.enunciado;
+  p.opciones.forEach((o, i) => { document.getElementById('pOpcion' + i).value = o; });
+  document.getElementById('pCorrecta').value = String(p.correcta);
+  document.getElementById('pTema').value = p.tema || '';
+  document.getElementById('tituloFormPregunta').textContent = 'Editando pregunta';
+  document.getElementById('btnGuardarPregunta').textContent = 'Guardar cambios';
+  document.getElementById('btnCancelarPregunta').style.display = 'inline-block';
+  document.getElementById('pEnunciado').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('btnGuardarPregunta').addEventListener('click', async () => {
+  const datos = leerFormularioPregunta();
+  const r = estado.preguntaEditando
+    ? await actualizarPregunta(estado.preguntaEditando, datos)
+    : await crearPregunta(datos);
+  if (!r.ok) { aviso(r.error, 'error'); return; }
+  aviso(estado.preguntaEditando ? 'Pregunta actualizada.' : 'Pregunta agregada al banco.', 'ok');
+  limpiarFormularioPregunta();
+  await cargarBanco();
+  await cargarBancos();
+});
+
+document.getElementById('btnCancelarPregunta').addEventListener('click', limpiarFormularioPregunta);
+
+document.getElementById('btnImportar').addEventListener('click', async () => {
+  const area = document.getElementById('importarTexto');
+  const bancoDestino = document.getElementById('importarBanco').value || null;
+  const r = await importarPreguntasEnLote(area.value, bancoDestino);
+  if (!r.ok) {
+    aviso(r.error, 'error');
+    if (r.errores && r.errores.length) alert('Detalle:\n\n' + r.errores.join('\n'));
+    return;
+  }
+  area.value = '';
+  aviso(`${r.creadas} pregunta${r.creadas === 1 ? '' : 's'} importada${r.creadas === 1 ? '' : 's'}.`, 'ok');
+  if (r.errores && r.errores.length) alert('Se importaron las líneas correctas. Estas se saltaron:\n\n' + r.errores.join('\n'));
+  await cargarBanco();
+  await cargarBancos();
+});
+
+// ============================================================
+// ACTIVIDADES
+// ============================================================
+const selTipo = document.getElementById('aTipo');
+selTipo.addEventListener('change', aplicarTipoActividad);
+
+function aplicarTipoActividad() {
+  const esTexto = selTipo.value === 'texto';
+  document.getElementById('campoTextoLectura').style.display = esTexto ? 'block' : 'none';
+
+  // Una lectura lleva exactamente 1 pregunta de comprensión, así que
+  // los modos "banco completo" y "al azar" no aplican ahí.
+  document.querySelectorAll('input[name="modoPreguntas"]').forEach(r => {
+    r.disabled = esTexto && r.value !== 'seleccion';
+  });
+  if (esTexto && estado.modoPreguntas !== 'seleccion') {
+    estado.modoPreguntas = 'seleccion';
+    document.querySelectorAll('input[name="modoPreguntas"]').forEach(r => { r.checked = (r.value === 'seleccion'); });
+  }
+  aplicarModoPreguntas();
+}
+
+// ---------- Bancos de origen de la actividad ----------
+function renderSelectorBancosActividad() {
+  const cont = document.getElementById('selectorBancosActividad');
+  if (!cont) return;
+
+  if (estado.bancos.length === 0) {
+    cont.innerHTML = '<div class="vacio" style="border:none;padding:6px;">Primero crea un banco en la sección “Bancos de preguntas”.</div>';
+    return;
+  }
+
+  cont.innerHTML = estado.bancos.map(b => `
+    <button type="button" class="banco-chip ${estado.bancosActividad.includes(b.id) ? 'on' : ''}" data-banco="${esc(b.id)}">
+      ${esc(b.nombre)} <span class="n">${b.preguntas}</span>
+    </button>`).join('') +
+    (estado.bancos.length > 1
+      ? '<button type="button" class="btn btn-secundario btn-mini" id="btnTodosBancos" style="margin-left:4px;">Seleccionar todos</button>'
+      : '');
+
+  cont.querySelectorAll('[data-banco]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.banco;
+      estado.bancosActividad = estado.bancosActividad.includes(id)
+        ? estado.bancosActividad.filter(x => x !== id)
+        : estado.bancosActividad.concat([id]);
+
+      // Se descartan las preguntas ya marcadas que dejaron de estar disponibles.
+      const disponibles = new Set(preguntasDeBancosElegidos().map(p => p.id));
+      estado.seleccionPreguntas = estado.seleccionPreguntas.filter(pid => disponibles.has(pid));
+
+      renderSelectorBancosActividad();
+      renderSelectorPreguntas();
+      actualizarResumenPreguntas();
+    });
+  });
+
+  const btnTodos = document.getElementById('btnTodosBancos');
+  if (btnTodos) btnTodos.addEventListener('click', () => {
+    estado.bancosActividad = estado.bancos.map(b => b.id);
+    renderSelectorBancosActividad();
+    renderSelectorPreguntas();
+    actualizarResumenPreguntas();
+  });
+}
+
+function preguntasDeBancosElegidos() {
+  return estado.banco.filter(p => estado.bancosActividad.includes(p.banco_id));
+}
+
+// ---------- Modo de selección ----------
+document.querySelectorAll('input[name="modoPreguntas"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (!radio.checked) return;
+    estado.modoPreguntas = radio.value;
+    aplicarModoPreguntas();
+  });
+});
+document.getElementById('aCantidadAzar').addEventListener('input', actualizarResumenPreguntas);
+
+const AYUDA_MODO = {
+  completo: 'Se incluye todo lo que haya en los bancos elegidos en el momento de guardar.',
+  seleccion: 'Marca abajo las preguntas que quieres. Aparecerán en ese mismo orden.',
+  azar: 'El sorteo se hace al guardar y queda fijo: todo el grupo ve el mismo examen, y puedes revisarlo con “Vista previa” antes de publicarlo.'
+};
+
+function aplicarModoPreguntas() {
+  const manual = estado.modoPreguntas === 'seleccion';
+  document.getElementById('zonaSeleccionManual').style.display = manual ? 'block' : 'none';
+  document.getElementById('ayudaModo').textContent = AYUDA_MODO[estado.modoPreguntas] || '';
+  if (manual) renderSelectorPreguntas();
+  actualizarResumenPreguntas();
+}
+
+// Calcula la lista definitiva de ids según el modo elegido.
+function preguntasResultantes() {
+  const disponibles = preguntasDeBancosElegidos();
+
+  if (estado.modoPreguntas === 'completo') return disponibles.map(p => p.id);
+
+  if (estado.modoPreguntas === 'azar') {
+    const cantidad = Number(document.getElementById('aCantidadAzar').value) || 0;
+    return elegirPreguntasAlAzar(disponibles, cantidad).map(p => p.id);
+  }
+
+  const validas = new Set(disponibles.map(p => p.id));
+  return estado.seleccionPreguntas.filter(id => validas.has(id));
+}
+
+function actualizarResumenPreguntas() {
+  const caja = document.getElementById('resumenPreguntas');
+  const disponibles = preguntasDeBancosElegidos().length;
+  const bancosElegidos = estado.bancosActividad.length;
+
+  let total, detalle;
+  if (estado.modoPreguntas === 'completo') {
+    total = disponibles;
+    detalle = `Todo el contenido de ${bancosElegidos} banco${bancosElegidos === 1 ? '' : 's'}.`;
+  } else if (estado.modoPreguntas === 'azar') {
+    const pedidas = Number(document.getElementById('aCantidadAzar').value) || 0;
+    total = Math.min(pedidas, disponibles);
+    detalle = pedidas > disponibles
+      ? `Pediste ${pedidas}, pero en los bancos elegidos solo hay ${disponibles}.`
+      : `Sorteadas entre las ${disponibles} disponibles.`;
+  } else {
+    total = preguntasResultantes().length;
+    detalle = `De ${disponibles} disponible${disponibles === 1 ? '' : 's'} en los bancos elegidos.`;
+  }
+
+  caja.className = 'resumen-preguntas' + (total === 0 ? ' vacia' : '');
+  caja.innerHTML = total === 0
+    ? `Todavía no hay ninguna pregunta seleccionada.<span>${esc(detalle)}</span>`
+    : `Esta actividad tendrá ${total} pregunta${total === 1 ? '' : 's'}.<span>${esc(detalle)}</span>`;
+}
+
+function renderSelectorPreguntas() {
+  const cont = document.getElementById('selectorPreguntas');
+  const termino = (document.getElementById('buscarPreguntaActividad').value || '').trim().toLowerCase();
+
+  const encontradas = preguntasDeBancosElegidos().filter(p =>
+    !termino || p.enunciado.toLowerCase().includes(termino) || (p.tema || '').toLowerCase().includes(termino));
+
+  if (estado.bancosActividad.length === 0) {
+    cont.innerHTML = '<div class="vacio" style="border:none;padding:10px;">Elige arriba al menos un banco de origen.</div>';
+    return;
+  }
+  if (estado.banco.length === 0) {
+    cont.innerHTML = '<div class="vacio" style="border:none;padding:10px;">Primero crea preguntas en tus bancos.</div>';
+    return;
+  }
+  if (encontradas.length === 0) {
+    cont.innerHTML = '<div class="vacio" style="border:none;padding:10px;">Ninguna pregunta coincide con ese filtro.</div>';
+    return;
+  }
+
+  cont.innerHTML = encontradas.map(p => `
+    <label class="pregunta-check">
+      <input type="checkbox" value="${esc(p.id)}" ${estado.seleccionPreguntas.includes(p.id) ? 'checked' : ''}>
+      <span><span class="module-badge">${esc(nombreBanco(p.banco_id))}</span> ${esc(p.enunciado)}</span>
+    </label>`).join('');
+
+  cont.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+    chk.addEventListener('change', () => {
+      if (chk.checked) {
+        if (!estado.seleccionPreguntas.includes(chk.value)) estado.seleccionPreguntas.push(chk.value);
+      } else {
+        estado.seleccionPreguntas = estado.seleccionPreguntas.filter(id => id !== chk.value);
+      }
+      actualizarResumenPreguntas();
+    });
+  });
+}
+
+document.getElementById('buscarPreguntaActividad').addEventListener('input', renderSelectorPreguntas);
+
+function leerFormularioActividad() {
+  const fecha = document.getElementById('aFechaLimite').value;
+  const intentos = document.getElementById('aIntentosMax').value;
+  return {
+    grupoId: document.getElementById('aGrupo').value || null,
+    tipo: selTipo.value,
+    titulo: document.getElementById('aTitulo').value,
+    descripcion: document.getElementById('aDescripcion').value,
+    textoLectura: document.getElementById('aTextoLectura').value,
+    activa: document.getElementById('aActiva').checked,
+    fechaLimite: fecha ? new Date(fecha).toISOString() : null,
+    intentosMax: intentos ? Number(intentos) : null,
+    barajar: document.getElementById('aBarajar').checked,
+    preguntas: preguntasResultantes()
+  };
+}
+
+function limpiarFormularioActividad() {
+  document.getElementById('aTitulo').value = '';
+  document.getElementById('aDescripcion').value = '';
+  document.getElementById('aTextoLectura').value = '';
+  document.getElementById('aFechaLimite').value = '';
+  document.getElementById('aIntentosMax').value = '';
+  document.getElementById('aActiva').checked = true;
+  document.getElementById('aBarajar').checked = false;
+  selTipo.value = 'examen';
+  estado.seleccionPreguntas = [];
+  estado.actividadEditando = null;
+  estado.modoPreguntas = 'seleccion';
+  estado.bancosActividad = estado.bancos.map(b => b.id);
+  document.querySelectorAll('input[name="modoPreguntas"]').forEach(r => { r.checked = (r.value === 'seleccion'); });
+  document.getElementById('tituloFormActividad').textContent = 'Nueva actividad';
+  document.getElementById('btnGuardarActividad').textContent = 'Guardar actividad';
+  document.getElementById('btnCancelarActividad').style.display = 'none';
+  renderSelectorBancosActividad();
+  aplicarTipoActividad();
+}
+
+async function editarActividad(a) {
+  const preguntas = await obtenerPreguntasDeActividad(a.id);
+  if (!preguntas.ok) { aviso(preguntas.error, 'error'); return; }
+
+  estado.actividadEditando = a.id;
+  estado.seleccionPreguntas = preguntas.ids;
+  // Al editar se muestran las preguntas ya congeladas en la actividad, así
+  // que se pasa a modo manual con todos los bancos disponibles: si no,
+  // una pregunta de un banco no elegido se perdería al guardar.
+  estado.modoPreguntas = 'seleccion';
+  estado.bancosActividad = estado.bancos.map(b => b.id);
+  document.querySelectorAll('input[name="modoPreguntas"]').forEach(r => { r.checked = (r.value === 'seleccion'); });
+  renderSelectorBancosActividad();
+  document.getElementById('aGrupo').value = a.grupoId;
+  selTipo.value = a.tipo;
+  document.getElementById('aTitulo').value = a.titulo;
+  document.getElementById('aDescripcion').value = a.descripcion || '';
+  document.getElementById('aTextoLectura').value = a.textoLectura || '';
+  document.getElementById('aActiva').checked = a.activa;
+  document.getElementById('aBarajar').checked = a.barajar;
+  document.getElementById('aIntentosMax').value = a.intentosMax || '';
+  document.getElementById('aFechaLimite').value = a.fechaLimite ? aFormatoInput(a.fechaLimite) : '';
+
+  document.getElementById('tituloFormActividad').textContent = 'Editando actividad';
+  document.getElementById('btnGuardarActividad').textContent = 'Guardar cambios';
+  document.getElementById('btnCancelarActividad').style.display = 'inline-block';
+  aplicarTipoActividad();
+  document.getElementById('aTitulo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// datetime-local necesita "YYYY-MM-DDTHH:mm" en hora local.
+function aFormatoInput(iso) {
+  const d = new Date(iso);
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+document.getElementById('btnGuardarActividad').addEventListener('click', async () => {
+  const datos = leerFormularioActividad();
+  const r = estado.actividadEditando
+    ? await actualizarActividad(estado.actividadEditando, datos)
+    : await crearActividad(datos);
+  if (!r.ok) { aviso(r.error, 'error'); return; }
+  aviso(estado.actividadEditando ? 'Actividad actualizada.' : 'Actividad creada.', 'ok');
+  limpiarFormularioActividad();
+  cargarActividades();
+});
+
+document.getElementById('btnCancelarActividad').addEventListener('click', limpiarFormularioActividad);
+
+async function cargarActividades() {
+  const res = await obtenerActividadesProfesor(null);
+  if (!res.ok) { aviso(res.error, 'error'); return; }
+  estado.actividades = res.actividades;
+  renderActividades();
+  renderKPIs();
+}
+
+function renderActividades() {
+  const filtros = document.getElementById('filtrosGrupoActividades');
+  filtros.innerHTML = estado.grupos.length <= 1 ? '' :
+    `<button class="chip ${estado.grupoFiltroActividades === null ? 'active' : ''}" data-grupo="">Todos los grupos</button>` +
+    estado.grupos.map(g => `<button class="chip ${estado.grupoFiltroActividades === g.id ? 'active' : ''}" data-grupo="${esc(g.id)}">${esc(g.nombre)}</button>`).join('');
+  filtros.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      estado.grupoFiltroActividades = chip.dataset.grupo || null;
+      renderActividades();
+    });
+  });
+
+  const lista = document.getElementById('listaActividades');
+  const visibles = estado.grupoFiltroActividades
+    ? estado.actividades.filter(a => a.grupoId === estado.grupoFiltroActividades)
+    : estado.actividades;
+
+  if (visibles.length === 0) {
+    lista.innerHTML = '<div class="vacio">Todavía no has creado actividades. Arma una arriba: elige el grupo, el tipo y las preguntas.</div>';
+    return;
+  }
+
+  lista.innerHTML = '';
+  visibles.forEach(a => {
+    const vencida = a.fechaLimite && new Date(a.fechaLimite) < new Date();
+    const item = document.createElement('div');
+    item.className = 'item-lista';
+    item.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;min-width:240px;">
+          <span class="module-badge">${a.tipo === 'examen' ? 'Examen' : 'Lectura'}</span>
+          <span class="badge-estado ${a.activa ? 'publicada' : 'borrador'}">${a.activa ? 'Publicada' : 'Sin publicar'}</span>
+          <h4 style="margin-top:8px;">${esc(a.titulo)}</h4>
+          <p>
+            ${esc(a.grupoNombre)} · ${a.numPreguntas} pregunta${a.numPreguntas === 1 ? '' : 's'}
+            ${a.intentosMax ? ` · máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}` : ' · intentos ilimitados'}
+            ${a.fechaLimite ? ` · ${vencida ? 'cerró' : 'cierra'} el ${fechaCorta(a.fechaLimite)}` : ''}
+            ${a.barajar ? ' · orden aleatorio' : ''}
+          </p>
+        </div>
+      </div>
+      <div class="acciones" style="margin-top:14px;">
+        <button class="btn btn-secundario btn-mini" data-publicar>${a.activa ? 'Despublicar' : 'Publicar'}</button>
+        <button class="btn btn-secundario btn-mini" data-editar>Editar</button>
+        <button class="btn btn-secundario btn-mini" data-previa>Vista previa</button>
+        <button class="btn btn-secundario btn-mini" data-duplicar>Duplicar</button>
+        <button class="btn btn-peligro btn-mini" data-borrar>Eliminar</button>
+      </div>
+      <div data-zona="previa" style="display:none;margin-top:16px;"></div>`;
+
+    item.querySelector('[data-publicar]').addEventListener('click', async () => {
+      const r = await cambiarEstadoActividad(a.id, !a.activa);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso(a.activa ? 'Actividad despublicada: ya no la ven tus estudiantes.' : 'Actividad publicada: ya la ven tus estudiantes.', 'ok');
+      cargarActividades();
+    });
+    item.querySelector('[data-editar]').addEventListener('click', () => editarActividad(a));
+    item.querySelector('[data-duplicar]').addEventListener('click', async () => {
+      const destino = estado.grupos.length > 1
+        ? prompt('Escribe el nombre del grupo destino (déjalo igual para copiar en el mismo grupo):\n\n' + estado.grupos.map(g => '· ' + g.nombre).join('\n'), a.grupoNombre)
+        : a.grupoNombre;
+      if (destino === null) return;
+      const grupo = estado.grupos.find(g => g.nombre.toLowerCase() === destino.trim().toLowerCase());
+      if (!grupo) { aviso('No encontré un grupo con ese nombre.', 'error'); return; }
+      const r = await duplicarActividad(a.id, grupo.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Actividad duplicada (sin publicar, para que la revises).', 'ok');
+      cargarActividades();
+    });
+    item.querySelector('[data-borrar]').addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar "${a.titulo}"?\n\nSe borran también los resultados que tus estudiantes ya tengan de esta actividad. Esto no se puede deshacer.`)) return;
+      const r = await borrarActividad(a.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Actividad eliminada.', 'ok');
+      cargarActividades();
+    });
+    item.querySelector('[data-previa]').addEventListener('click', async (e) => {
+      const zona = item.querySelector('[data-zona="previa"]');
+      if (zona.style.display === 'block') { zona.style.display = 'none'; e.target.textContent = 'Vista previa'; return; }
+      zona.style.display = 'block';
+      e.target.textContent = 'Cerrar vista previa';
+      zona.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">Cargando…</p>';
+      const preguntas = await obtenerPreguntasDeActividad(a.id);
+      if (!preguntas.ok) { zona.innerHTML = `<p style="color:var(--danger);font-size:0.85rem;">${esc(preguntas.error)}</p>`; return; }
+      const detalle = preguntas.ids.map(id => estado.banco.find(p => p.id === id)).filter(Boolean);
+      zona.innerHTML = `
+        ${a.descripcion ? `<p style="font-size:0.88rem;margin-bottom:12px;"><strong>Instrucciones:</strong> ${esc(a.descripcion)}</p>` : ''}
+        ${a.tipo === 'texto' ? `<div style="background:var(--bg-main);border:1px solid var(--border-color);border-radius:10px;padding:14px;margin-bottom:14px;font-size:0.88rem;line-height:1.65;white-space:pre-wrap;">${esc(a.textoLectura || '')}</div>` : ''}
+        ${detalle.map((p, i) => `
+          <div style="margin-bottom:14px;">
+            <strong style="font-size:0.9rem;">${i + 1}. ${esc(p.enunciado)}</strong>
+            <ul class="opciones-preview">
+              ${p.opciones.map((o, oi) => `<li class="${oi === p.correcta ? 'correcta' : ''}">${esc(o)}${oi === p.correcta ? ' ✓' : ''}</li>`).join('')}
+            </ul>
+          </div>`).join('') || '<div class="vacio">Esta actividad todavía no tiene preguntas.</div>'}
+        <p style="font-size:0.78rem;color:var(--text-muted);">La marca ✓ solo la ves tú: tus estudiantes nunca reciben la respuesta correcta antes de responder.</p>`;
+    });
+
+    lista.appendChild(item);
+  });
+}
+
+// ============================================================
+// RESULTADOS
+// ============================================================
+document.getElementById('rGrupo').addEventListener('change', cargarResultados);
+
+async function cargarResultados() {
+  const grupoId = document.getElementById('rGrupo').value;
+  const cont = document.getElementById('contenidoResultados');
+  if (!grupoId) { cont.innerHTML = '<div class="vacio">Crea un grupo para empezar a ver resultados.</div>'; return; }
+
+  const grupo = estado.grupos.find(g => g.id === grupoId);
+  cont.innerHTML = '<div class="panel-card"><p style="font-size:0.88rem;color:var(--text-muted);">Cargando resultados…</p></div>';
+
+  const [estudiantesRes, resultadosRes] = await Promise.all([
+    obtenerEstudiantesDeGrupo(grupoId),
+    obtenerResultadosDeGrupo(grupoId)
+  ]);
+
+  if (!estudiantesRes.ok) { cont.innerHTML = `<div class="vacio">${esc(estudiantesRes.error)}</div>`; return; }
+  if (!resultadosRes.ok) { cont.innerHTML = `<div class="vacio">${esc(resultadosRes.error)}</div>`; return; }
+
+  const actividadesGrupo = estado.actividades.filter(a => a.grupoId === grupoId);
+  const filas = resumirResultados(estudiantesRes.estudiantes, actividadesGrupo, resultadosRes.resultados);
+  const stats = estadisticaPorPregunta(resultadosRes.resultados, estado.banco);
+
+  const entregas = resultadosRes.resultados.length;
+  const promedioGrupo = entregas === 0 ? null
+    : Math.round(resultadosRes.resultados.reduce((s, r) => s + r.porcentaje, 0) / entregas);
+
+  cont.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><span class="label">Estudiantes</span><strong>${estudiantesRes.estudiantes.length}</strong></div>
+      <div class="stat-card"><span class="label">Actividades</span><strong>${actividadesGrupo.length}</strong></div>
+      <div class="stat-card"><span class="label">Entregas</span><strong>${entregas}</strong></div>
+      <div class="stat-card"><span class="label">Promedio del grupo</span><strong class="pct ${clasePct(promedioGrupo)}">${promedioGrupo === null ? '—' : promedioGrupo + '%'}</strong></div>
+    </div>
+
+    <div class="panel-card">
+      <h3>Resumen por estudiante</h3>
+      <p class="card-sub">Incluye a quienes todavía no han presentado, para que veas de un vistazo quién va atrasado.</p>
+      <div class="acciones" style="margin-bottom:16px;">
+        <button class="btn btn-primario btn-mini" id="btnExportarResumen">Descargar resumen (Excel)</button>
+        <button class="btn btn-secundario btn-mini" id="btnExportarDetalle">Descargar detalle de intentos (Excel)</button>
+      </div>
+      ${filas.length === 0
+        ? '<div class="vacio">Todavía no hay estudiantes o actividades en este grupo.</div>'
+        : `<div class="tabla-scroll"><table class="tabla-datos">
+            <thead><tr><th>Estudiante</th><th>Actividad</th><th>Intentos</th><th>Mejor</th><th>Promedio</th><th>Último</th><th>Última entrega</th></tr></thead>
+            <tbody>${filas.map(f => `
+              <tr>
+                <td>${esc(f.estudiante)}</td>
+                <td>${esc(f.actividad)}</td>
+                <td>${f.intentos}</td>
+                <td class="pct ${clasePct(f.mejor)}">${f.mejor === null ? 'Sin presentar' : f.mejor + '%'}</td>
+                <td class="pct ${clasePct(f.promedio)}">${f.promedio === null ? '—' : f.promedio + '%'}</td>
+                <td class="pct ${clasePct(f.ultimo)}">${f.ultimo === null ? '—' : f.ultimo + '%'}</td>
+                <td>${f.ultimaFecha ? fechaCorta(f.ultimaFecha) : '—'}</td>
+              </tr>`).join('')}
+            </tbody></table></div>`}
+    </div>
+
+    <div class="panel-card">
+      <h3>Preguntas que más se fallan</h3>
+      <p class="card-sub">Ordenadas de menor a mayor acierto: es el mejor indicador de qué tema conviene repasar en clase.</p>
+      ${stats.length === 0
+        ? '<div class="vacio">Cuando tus estudiantes presenten alguna actividad, aquí verás qué preguntas les cuestan más.</div>'
+        : `<div class="tabla-scroll"><table class="tabla-datos">
+            <thead><tr><th>Pregunta</th><th>Tema</th><th>Respuestas</th><th>Acierto</th></tr></thead>
+            <tbody>${stats.map(s => `
+              <tr>
+                <td>${esc(s.enunciado)}</td>
+                <td>${esc(s.tema || '—')}</td>
+                <td>${s.respuestas}</td>
+                <td class="pct ${clasePct(s.porcentajeAcierto)}">${s.porcentajeAcierto}%</td>
+              </tr>`).join('')}
+            </tbody></table></div>`}
+    </div>
+
+    <div class="panel-card">
+      <h3>Todos los intentos</h3>
+      <p class="card-sub">Cada entrega registrada, de la más reciente a la más antigua.</p>
+      ${resultadosRes.resultados.length === 0
+        ? '<div class="vacio">Sin entregas todavía.</div>'
+        : `<div class="tabla-scroll"><table class="tabla-datos">
+            <thead><tr><th>Estudiante</th><th>Actividad</th><th>Fecha</th><th>Puntaje</th><th></th></tr></thead>
+            <tbody>${resultadosRes.resultados.map(r => `
+              <tr>
+                <td>${esc(r.estudiante)}</td>
+                <td>${esc(r.actividadTitulo)}</td>
+                <td>${fechaCorta(r.fecha)}</td>
+                <td class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</td>
+                <td><button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
+              </tr>`).join('')}
+            </tbody></table></div>`}
+    </div>`;
+
+  document.getElementById('btnExportarResumen').addEventListener('click', () => {
+    if (filas.length === 0) { aviso('No hay nada que exportar todavía.', 'error'); return; }
+    exportarResumenCSV(grupo ? grupo.nombre : 'grupo', filas);
+    aviso('Archivo descargado. Ábrelo con Excel.', 'ok');
+  });
+  document.getElementById('btnExportarDetalle').addEventListener('click', () => {
+    if (resultadosRes.resultados.length === 0) { aviso('Todavía no hay entregas que exportar.', 'error'); return; }
+    exportarDetalleCSV(grupo ? grupo.nombre : 'grupo', resultadosRes.resultados);
+    aviso('Archivo descargado. Ábrelo con Excel.', 'ok');
+  });
+  cont.querySelectorAll('[data-borrar-resultado]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('¿Borrar este intento? El estudiante ya no lo verá en su historial.')) return;
+      const r = await borrarResultado(btn.dataset.borrarResultado);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Intento borrado.', 'ok');
+      cargarResultados();
+    });
+  });
+}
+
+// ============================================================
+// KPIs DEL RESUMEN
+// ============================================================
+function renderKPIs() {
+  document.getElementById('kpiGrupos').textContent = estado.grupos.length;
+  document.getElementById('kpiEstudiantes').textContent = estado.grupos.reduce((s, g) => s + g.estudiantes, 0);
+  document.getElementById('kpiActividades').textContent = estado.actividades.filter(a => a.activa).length;
+  document.getElementById('kpiBancos').textContent = estado.bancos.length;
+  document.getElementById('kpiPreguntas').textContent = estado.banco.length;
+}
+
+// ============================================================
+// ARRANQUE
+// ============================================================
+async function cargarTodo() {
+  await cargarGrupos();
+  await cargarBancos();
+  await cargarBanco();
+  await cargarActividades();
+  await cargarResultados();
+  renderSelectorBancosActividad();
+  aplicarModoPreguntas();
+}
+
+(async function inicio() {
+  const sesion = await obtenerSesionActual();
+  const slot = document.getElementById('authNavSlot');
+  if (sesion) {
+    slot.innerHTML = '<a class="nav-item exit" href="#" id="cerrarSesionBtn">Cerrar sesión</a>';
+    document.getElementById('cerrarSesionBtn').addEventListener('click', async e => {
+      e.preventDefault();
+      const cliente = obtenerClienteAuth();
+      if (cliente) await cliente.auth.signOut();
+      window.location.href = 'index.html';
+    });
+  }
+
+  const perfil = await obtenerPerfilEstudiante();
+  document.getElementById('nombreProfesor').textContent = perfil.nombreCompleto;
+  document.getElementById('avatarInitials').textContent =
+    perfil.nombreCompleto.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'PR';
+
+  aplicarTipoActividad();
+  await cargarTodo();
+})();
+</script>
+</body>
+</html>

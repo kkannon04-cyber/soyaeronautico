@@ -96,6 +96,10 @@ function obtenerIntentosLocal() {
 }
 
 // ---------- GUARDAR INTENTO ----------
+// Devuelve { ok: true } o { ok: false, error } para que quien llama pueda
+// mostrar un mensaje honesto en vez de asumir siempre éxito (ver bug real
+// del 2026-08-29: los 2 quizzes de Navegación mostraban "guardado" mientras
+// el insert fallaba en silencio por un constraint desactualizado).
 async function guardarIntento(modulo, nombreModulo, correctas, total) {
   const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
   const sesion = await obtenerSesionActual();
@@ -110,8 +114,11 @@ async function guardarIntento(modulo, nombreModulo, correctas, total) {
       total,
       porcentaje
     });
-    if (error) console.error('No se pudo guardar el intento en Supabase:', error.message);
-    return;
+    if (error) {
+      console.error('No se pudo guardar el intento en Supabase:', error.message);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
   }
 
   const intentos = obtenerIntentosLocal();
@@ -125,6 +132,7 @@ async function guardarIntento(modulo, nombreModulo, correctas, total) {
     porcentaje
   });
   localStorage.setItem(AIS_PROGRESO_KEY, JSON.stringify(intentos));
+  return { ok: true };
 }
 
 // ---------- LECTURA DE INTENTOS ----------
@@ -336,4 +344,157 @@ async function migrarProgresoLocalSiHaceFalta() {
   }
 
   localStorage.setItem(AIS_MIGRADO_KEY, 'true');
+}
+
+// ============================================================
+// SISTEMA DE PROFESORES — lado del estudiante
+//
+// A diferencia del resto de este archivo, estas funciones NO tienen
+// modo invitado: un grupo, un profesor y una actividad calificada
+// existen solo asociados a una cuenta real. Si no hay sesión devuelven
+// { ok:false, error } en vez de caer a localStorage.
+//
+// La calificación de las actividades ocurre en el servidor (funciones
+// obtener_actividad / calificar_actividad de Supabase), así que desde
+// aquí nunca se ven las respuestas correctas antes de terminar.
+// ============================================================
+
+// ---------- ROL DEL USUARIO (student | teacher | admin) ----------
+async function obtenerRolUsuario() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return null;
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.from('perfiles').select('rol').eq('id', sesion.user.id).maybeSingle();
+  if (error) { console.error('No se pudo leer el rol del usuario:', error.message); return null; }
+  return data ? data.rol : null;
+}
+
+// ---------- UNIRSE A UN GRUPO CON EL CÓDIGO DEL PROFESOR ----------
+async function unirseAGrupo(codigo) {
+  const limpio = (codigo || '').trim();
+  if (!limpio) return { ok: false, error: 'Escribe el código que te dio tu profesor.' };
+
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión para unirte a un grupo.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('unirse_a_grupo', { p_codigo: limpio });
+  if (error) return { ok: false, error: error.message };
+
+  const fila = Array.isArray(data) ? data[0] : data;
+  return { ok: true, grupo: fila ? { id: fila.grupo_id, nombre: fila.grupo_nombre } : null };
+}
+
+// ---------- GRUPO ACTUAL DEL ESTUDIANTE ----------
+async function obtenerMiGrupo() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Sin sesión', grupo: null };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('inscripciones')
+    .select('grupo_id, fecha, grupos(nombre, codigo)')
+    .eq('estudiante_id', sesion.user.id)
+    .maybeSingle();
+
+  if (error) { console.error('No se pudo leer el grupo:', error.message); return { ok: false, error: error.message, grupo: null }; }
+  if (!data) return { ok: true, grupo: null };
+
+  return {
+    ok: true,
+    grupo: {
+      id: data.grupo_id,
+      nombre: data.grupos ? data.grupos.nombre : 'Mi grupo',
+      codigo: data.grupos ? data.grupos.codigo : '',
+      desde: data.fecha
+    }
+  };
+}
+
+async function salirDeMiGrupo() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Sin sesión' };
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente.from('inscripciones').delete().eq('estudiante_id', sesion.user.id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// ---------- ACTIVIDADES ASIGNADAS POR EL PROFESOR ----------
+// Devuelve cada actividad publicada del grupo con el estado del propio
+// estudiante (intentos hechos, mejor puntaje, último intento).
+async function obtenerActividadesAsignadas() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return [];
+
+  const cliente = obtenerClienteAuth();
+  const { data: actividades, error } = await cliente
+    .from('actividades')
+    .select('id, titulo, descripcion, tipo, fecha_limite, intentos_max, creado_en')
+    .order('creado_en', { ascending: false });
+
+  if (error) { console.error('No se pudieron leer las actividades asignadas:', error.message); return []; }
+  if (!actividades || actividades.length === 0) return [];
+
+  const { data: resultados } = await cliente
+    .from('resultados_actividad')
+    .select('actividad_id, correctas, total, porcentaje, fecha')
+    .eq('estudiante_id', sesion.user.id);
+
+  const porActividad = {};
+  (resultados || []).forEach(r => {
+    const acc = porActividad[r.actividad_id] || { intentos: 0, mejor: 0, ultima: null };
+    acc.intentos++;
+    acc.mejor = Math.max(acc.mejor, r.porcentaje);
+    if (!acc.ultima || r.fecha > acc.ultima) acc.ultima = r.fecha;
+    porActividad[r.actividad_id] = acc;
+  });
+
+  const ahora = new Date();
+  return actividades.map(a => {
+    const estado = porActividad[a.id] || { intentos: 0, mejor: 0, ultima: null };
+    const vencida = !!a.fecha_limite && new Date(a.fecha_limite) < ahora;
+    const sinIntentos = a.intentos_max !== null && a.intentos_max !== undefined && estado.intentos >= a.intentos_max;
+    return {
+      id: a.id,
+      titulo: a.titulo,
+      descripcion: a.descripcion,
+      tipo: a.tipo,
+      fechaLimite: a.fecha_limite,
+      intentosMax: a.intentos_max,
+      intentos: estado.intentos,
+      mejor: estado.mejor,
+      ultima: estado.ultima,
+      completada: estado.intentos > 0,
+      vencida,
+      bloqueada: vencida || sinIntentos
+    };
+  });
+}
+
+// ---------- RESOLVER UNA ACTIVIDAD ----------
+// Trae la actividad y sus preguntas SIN las respuestas correctas.
+async function obtenerActividadParaResolver(actividadId) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('obtener_actividad', { p_actividad_id: actividadId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, actividad: data };
+}
+
+// Envía las respuestas ({ preguntaId: índiceElegido }) y recibe la
+// calificación ya hecha en el servidor, con el detalle por pregunta.
+async function calificarActividad(actividadId, respuestas) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('calificar_actividad', {
+    p_actividad_id: actividadId,
+    p_respuestas: respuestas
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
 }

@@ -9,8 +9,18 @@
 // estén cargados (van en <head>). Este script debe ser el primer
 // elemento dentro de <body> para evitar que el contenido se vea
 // antes de comprobar la sesión.
+//
+// Rol mínimo (opcional): una página puede exigir además un rol
+// concreto de perfiles.rol con
+//   <script src="auth-gate.js" data-rol-requerido="teacher"></script>
+// Sin ese atributo el comportamiento es el de siempre (solo se exige
+// que haya sesión iniciada), así que las páginas existentes no cambian.
 // ============================================================
 (function () {
+  // Se lee aquí, de forma síncrona: document.currentScript deja de ser
+  // válido en cuanto el script hace su primer await.
+  const rolRequerido = (document.currentScript && document.currentScript.dataset.rolRequerido) || null;
+
   const overlay = document.createElement('div');
   overlay.id = 'authGateOverlay';
   overlay.setAttribute('style',
@@ -41,7 +51,14 @@
   function anotarRebote() { try { sessionStorage.setItem(CLAVE_REBOTES, rebotes() + 1); } catch (e) {} }
   function limpiarRebotes() { try { sessionStorage.removeItem(CLAVE_REBOTES); } catch (e) {} }
 
-  function mostrarSalida(mensaje) {
+  // acciones: HTML de los botones de salida. Si no se pasa nada, se usan
+  // los de siempre (Reintentar / Ir al login).
+  function mostrarSalida(mensaje, acciones) {
+    const botonesPorDefecto =
+      '<button id="authGateReintentar" style="background:#1657C6;color:#fff;border:none;padding:9px 18px;' +
+        'border-radius:30px;font-weight:700;font-size:0.85rem;cursor:pointer;">Reintentar</button>' +
+      '<a href="login.html" style="background:none;border:1px solid #E1E7EF;color:#5B6B7F;padding:9px 18px;' +
+        'border-radius:30px;font-weight:600;font-size:0.85rem;text-decoration:none;">Ir al login</a>';
     overlay.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:340px;text-align:center;padding:24px;">' +
         '<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" style="color:#1657C6;">' +
@@ -52,10 +69,7 @@
         '</svg>' +
         '<span style="line-height:1.5;">' + mensaje + '</span>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">' +
-          '<button id="authGateReintentar" style="background:#1657C6;color:#fff;border:none;padding:9px 18px;' +
-            'border-radius:30px;font-weight:700;font-size:0.85rem;cursor:pointer;">Reintentar</button>' +
-          '<a href="login.html" style="background:none;border:1px solid #E1E7EF;color:#5B6B7F;padding:9px 18px;' +
-            'border-radius:30px;font-weight:600;font-size:0.85rem;text-decoration:none;">Ir al login</a>' +
+          (acciones || botonesPorDefecto) +
         '</div>' +
       '</div>';
     const btn = document.getElementById('authGateReintentar');
@@ -83,6 +97,31 @@
     }
 
     if (sesion) {
+      // Si la página exige un rol concreto, se comprueba contra perfiles.rol
+      // antes de dejar pasar. Un rol insuficiente no manda al login (la
+      // sesión es válida): se explica y se ofrece volver al panel.
+      if (rolRequerido) {
+        let rol = null;
+        try {
+          const { data } = await sbClient.from('perfiles').select('rol').eq('id', sesion.user.id).maybeSingle();
+          rol = data ? data.rol : null;
+        } catch (e) {
+          rol = null;
+        }
+        if (rol !== rolRequerido) {
+          limpiarRebotes();
+          mostrarSalida(
+            rolRequerido === 'teacher'
+              ? 'Esta sección es solo para cuentas de profesor. Si eres instructor y necesitas acceso, escríbele al administrador del sitio.'
+              : 'Tu cuenta no tiene permisos para ver esta sección.',
+            '<a href="Panel_estudiante.html" style="background:#1657C6;color:#fff;border:none;padding:9px 18px;' +
+              'border-radius:30px;font-weight:700;font-size:0.85rem;text-decoration:none;">Ir a mi panel</a>' +
+            '<a href="index.html" style="background:none;border:1px solid #E1E7EF;color:#5B6B7F;padding:9px 18px;' +
+              'border-radius:30px;font-weight:600;font-size:0.85rem;text-decoration:none;">Ir al inicio</a>'
+          );
+          return;
+        }
+      }
       limpiarRebotes();
       overlay.remove();
       return;
