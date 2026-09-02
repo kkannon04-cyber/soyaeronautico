@@ -154,6 +154,22 @@
   .panel-card { background-color: transparent; margin-bottom: 32px; }
   .panel-header { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
 
+  /* Modo acordeón: solo las tarjetas de herramientas (Actividades, Módulos,
+     Progreso por quiz, Simuladores) usan .panel-header.acordeon-toggle;
+     las tarjetas de la columna derecha conservan el .panel-header normal. */
+  .panel-header.acordeon-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    background: none; border: none; padding: 0; margin-bottom: 16px; cursor: pointer;
+    font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--text-main); text-align: left;
+  }
+  .panel-header.acordeon-toggle:hover { color: var(--primary); }
+  .acordeon-chevron { flex-shrink: 0; transition: transform 0.2s ease; color: var(--text-muted); }
+  .panel-header.acordeon-toggle:hover .acordeon-chevron { color: var(--primary); }
+  .panel-card.colapsado .acordeon-chevron { transform: rotate(-90deg); }
+  .panel-body-wrap { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; }
+  .panel-card.colapsado .panel-body-wrap { grid-template-rows: 0fr; }
+  .panel-body { overflow: hidden; min-height: 0; }
+
   /* === CLASES GENERADAS POR JAVASCRIPT === */
   /* Lista de módulos */
   .module-item {
@@ -389,23 +405,43 @@
           <!-- Actividades que asignó el profesor (solo si el estudiante
                está vinculado a un grupo; si no, esta tarjeta no se muestra) -->
           <div class="panel-card" id="actividadesCard" style="display:none;">
-            <div class="panel-header">Actividades de mi profesor</div>
-            <div id="actividadesContainer"></div>
+            <button type="button" class="panel-header acordeon-toggle" data-acordeon="actividades" aria-expanded="true">
+              <span>Actividades de mi profesor</span>
+              <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="panel-body-wrap"><div class="panel-body">
+              <div id="actividadesContainer"></div>
+            </div></div>
           </div>
 
           <div class="panel-card">
-            <div class="panel-header">Módulos de aprendizaje</div>
-            <div id="modulosAprendizajeContainer"></div>
+            <button type="button" class="panel-header acordeon-toggle" data-acordeon="modulos-aprendizaje" aria-expanded="true">
+              <span>Módulos de aprendizaje</span>
+              <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="panel-body-wrap"><div class="panel-body">
+              <div id="modulosAprendizajeContainer"></div>
+            </div></div>
           </div>
 
           <div class="panel-card">
-            <div class="panel-header">Progreso por quiz</div>
-            <div id="modulosContainer"></div>
+            <button type="button" class="panel-header acordeon-toggle" data-acordeon="progreso-quiz" aria-expanded="true">
+              <span>Progreso por quiz</span>
+              <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="panel-body-wrap"><div class="panel-body">
+              <div id="modulosContainer"></div>
+            </div></div>
           </div>
 
           <div class="panel-card">
-            <div class="panel-header">Simuladores</div>
-            <div id="simuladoresContainer"></div>
+            <button type="button" class="panel-header acordeon-toggle" data-acordeon="simuladores" aria-expanded="true">
+              <span>Simuladores</span>
+              <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="panel-body-wrap"><div class="panel-body">
+              <div id="simuladoresContainer"></div>
+            </div></div>
           </div>
         </div>
 
@@ -477,6 +513,24 @@
     menuBtn.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
     backdrop.addEventListener('click', closeSidebar);
     document.addEventListener('keydown', e => { if(e.key === 'Escape') closeSidebar(); });
+  })();
+
+  // ---------- ACORDEÓN DE HERRAMIENTAS (Actividades / Módulos / Quizzes / Simuladores) ----------
+  // Recuerda qué tarjetas dejó abiertas o cerradas el estudiante entre visitas.
+  (function(){
+    document.querySelectorAll('.panel-header.acordeon-toggle').forEach(header => {
+      const card = header.closest('.panel-card');
+      const key = 'aisAcordeon_' + header.dataset.acordeon;
+      if (localStorage.getItem(key) === 'cerrado') {
+        card.classList.add('colapsado');
+        header.setAttribute('aria-expanded', 'false');
+      }
+      header.addEventListener('click', () => {
+        const cerrado = card.classList.toggle('colapsado');
+        header.setAttribute('aria-expanded', cerrado ? 'false' : 'true');
+        localStorage.setItem(key, cerrado ? 'cerrado' : 'abierto');
+      });
+    });
   })();
 
   // ---------- RELOJ ZULU ----------
@@ -593,7 +647,8 @@
     { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html', badge: '50 preguntas' },
     { id: 'simulador-metar', nombre: 'Simulador METAR', url: 'simulador-metar.html', badge: 'Modo examen · 20 reportes' },
     { id: 'navegacion-quiz-tiempo-altimetria', nombre: 'Navegación · Quiz I — Tiempo y Altimetría', url: 'quiz-navegacion-tiempo-altimetria.html', badge: 'Nivel avanzado · 25 preguntas' },
-    { id: 'navegacion-quiz-radioayudas-viento', nombre: 'Navegación · Quiz II — Radioayudas y Viento', url: 'quiz-navegacion-radioayudas-viento.html', badge: 'Nivel avanzado · 25 preguntas' }
+    { id: 'navegacion-quiz-radioayudas-viento', nombre: 'Navegación · Quiz II — Radioayudas y Viento', url: 'quiz-navegacion-radioayudas-viento.html', badge: 'Nivel avanzado · 25 preguntas' },
+    { id: 'quiz-notam', nombre: 'NOTAM', url: 'quiz-notam.html', badge: '25 preguntas' }
   ];
 
   // ---------- MÓDULOS DE APRENDIZAJE (contenido teórico, no quiz) ----------
@@ -602,7 +657,8 @@
     { id: 'plan-de-vuelo', nombre: 'Plan de Vuelo', url: 'plan-de-vuelo.html', paginas: ['plan-de-vuelo'] },
     { id: 'meteorologia', nombre: 'Meteorología Aeronáutica', url: 'meteorologia.html', paginas: ['meteorologia-generalidades', 'meteorologia-nubosidad', 'meteorologia-variables'] },
     { id: 'fraseologia', nombre: 'Fraseología Aeronáutica', url: 'fraseologia.html', paginas: ['fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases', 'fraseologia-tierra', 'fraseologia-emergencias'] },
-    { id: 'navegacion', nombre: 'Navegación Aérea', url: 'navegacion.html', paginas: ['navegacion-fundamentos', 'navegacion-tiempo', 'navegacion-velocidad', 'navegacion-altimetria', 'navegacion-radioayudas', 'navegacion-viento-unidades'] }
+    { id: 'navegacion', nombre: 'Navegación Aérea', url: 'navegacion.html', paginas: ['navegacion-fundamentos', 'navegacion-tiempo', 'navegacion-velocidad', 'navegacion-altimetria', 'navegacion-radioayudas', 'navegacion-viento-unidades'] },
+    { id: 'notam', nombre: 'NOTAM', url: 'notam.html', paginas: ['notam-fundamentos', 'notam-formato', 'notam-codigo-q', 'notam-especiales'] }
   ];
 
   async function renderModulosAprendizaje(){
@@ -762,6 +818,8 @@
         MODULOS_APRENDIZAJE.find(m => m.id === 'fraseologia').paginas.every(p => paginasCompletadas.has(p)) },
     { icono: '🛰️', nombre: 'Piloto Instrumental', check: ({ paginasCompletadas }) =>
         MODULOS_APRENDIZAJE.find(m => m.id === 'navegacion').paginas.every(p => paginasCompletadas.has(p)) },
+    { icono: '📋', nombre: 'Experto en NOTAM', check: ({ paginasCompletadas }) =>
+        MODULOS_APRENDIZAJE.find(m => m.id === 'notam').paginas.every(p => paginasCompletadas.has(p)) },
     { icono: '🎓', nombre: 'AIS Graduado', check: ({ paginasCompletadas }) =>
         MODULOS_APRENDIZAJE.every(m => m.paginas.every(p => paginasCompletadas.has(p))) }
   ];

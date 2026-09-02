@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Navegación · Velocidad e Instrumentos | SoyAeronáutico</title>
+<title>NOTAM · Fundamentos, Series y Tipos | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,9 +104,9 @@
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
   @media (max-width:1100px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
-  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); overflow-x:auto; }
   .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
-  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; white-space:nowrap; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
   .subtab.active .n{ background:var(--accent); color:#fff; }
@@ -119,9 +119,9 @@
   .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
   .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
 
-  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .hero-simple{ max-width:900px; margin:0 auto; padding:32px 32px 8px; }
   .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
-  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.6rem, 3.8vw, 2.3rem); line-height:1.2; margin-bottom:14px; }
   .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
   .hero-note b{ color:var(--text); }
@@ -131,11 +131,11 @@
   .toc a:hover{ color:var(--accent); border-color:var(--accent); }
 
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
-  @media (max-width:600px){ .content{ padding:24px 18px 70px; } .hero-simple{ padding:28px 18px 8px; } .card-box{ padding:14px; } }
-  .topic{ margin-bottom:60px; scroll-margin-top:130px; }
+  @media (max-width:600px){ .content{ padding:24px 18px 70px; } .hero-simple{ padding:24px 18px 8px; } .card-box{ padding:14px; } }
+  .topic{ margin-bottom:60px; scroll-margin-top:150px; }
   .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); cursor:pointer; user-select:none; }
-  .topic-head:focus{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
   .topic-head::after{ content:'▾'; margin-left:auto; color:var(--text-muted); font-size:0.9rem; transition:transform .2s; flex-shrink:0; }
+  .topic.collapsed .topic-head{ margin-bottom:0; padding-bottom:14px; }
   .topic.collapsed .topic-head::after{ transform:rotate(-90deg); }
   .topic.collapsed .topic-body,
   .topic.collapsed .quiz-card{ display:none; }
@@ -156,69 +156,38 @@
   .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
   .mnemo b{ color:var(--vfr); }
 
-  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
-  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
-  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
-  table.ats-table td.mono{ font-family:'IBM Plex Mono'; color:var(--accent); font-weight:600; }
-  .ats-table-wrap{ overflow-x:auto; }
+  table.n-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.n-table th, table.n-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.n-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .n-table-wrap{ overflow-x:auto; }
 
-  /* ---- ilustración SVG (tubo pitot / variómetro) ---- */
-  .illus{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px; margin:18px 0; text-align:center; }
-  .illus svg{ max-width:100%; height:auto; display:block; margin:0 auto; }
-  .illus-cap{ font-size:0.78rem; color:var(--text-muted); margin-top:10px; font-family:'IBM Plex Mono'; }
+  .nmono{ font-family:'IBM Plex Mono'; background:var(--panel); border:1px solid var(--hairline); border-radius:8px; padding:12px 16px; font-size:0.85rem; line-height:1.7; overflow-x:auto; }
 
-  /* ---- herramienta convertidora / calculadora ---- */
-  .tool-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
-  .tool-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-  .tool-row label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px; }
-  .tool-field{ flex:1; min-width:150px; }
-  .tool-row input[type=number]{ width:100%; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 12px; font-family:'IBM Plex Mono'; font-size:0.95rem; color:var(--text); outline:none; }
-  .tool-row input:focus{ border-color:var(--accent); }
-  .tool-output{ background:var(--bg); border:1px dashed var(--hairline); border-radius:8px; padding:14px; font-family:'IBM Plex Mono'; font-size:1.05rem; color:var(--vfr); letter-spacing:0.5px; min-height:24px; word-break:break-word; }
-  .tool-note{ font-size:0.76rem; color:var(--text-muted); margin-top:8px; }
+  /* ---- Selector de series interactivo ---- */
+  .series-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .series-box h4{ font-size:0.95rem; margin-bottom:6px; }
+  .series-box p.hint{ font-size:0.84rem; color:var(--text-muted); margin:0 0 14px; }
+  .series-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .series-tab{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:9px 16px; font-size:0.84rem; font-weight:600; cursor:pointer; color:var(--text-muted); font-family:'IBM Plex Sans'; transition:.15s; }
+  .series-tab:hover{ border-color:var(--accent); color:var(--accent); }
+  .series-tab.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .series-panel{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:16px 18px; font-size:0.87rem; line-height:1.6; }
+  .series-panel b.tag{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.7rem; background:rgba(var(--accent-rgb),0.14); color:var(--accent); padding:3px 10px; border-radius:6px; margin-bottom:8px; }
 
-  /* ---- escalera de velocidades (IAS -> CAS -> TAS -> GS) ---- */
-  .speed-stairs{ display:flex; flex-direction:column; gap:8px; margin:18px 0; }
-  .speed-step{ display:flex; align-items:center; gap:14px; background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:12px 16px; }
-  .speed-step .sp-tag{ flex-shrink:0; width:52px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.82rem; background:var(--accent); color:#fff; }
-  .speed-step .sp-desc{ font-size:0.85rem; color:var(--text-muted); }
-  .speed-step .sp-desc b{ color:var(--text); }
-  .speed-step .sp-arrow{ color:var(--text-muted); font-size:1.1rem; margin-left:auto; flex-shrink:0; }
+  /* ---- Simulador de cadena NOTAMN/R/C ---- */
+  .chain-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .chain-box h4{ font-size:0.95rem; margin-bottom:6px; }
+  .chain-box p.hint{ font-size:0.84rem; color:var(--text-muted); margin:0 0 16px; }
+  .chain-steps{ display:flex; gap:0; align-items:stretch; flex-wrap:wrap; }
+  .chain-step{ flex:1; min-width:150px; position:relative; }
+  .chain-step button{ width:100%; background:var(--bg); border:2px solid var(--hairline); border-radius:10px; padding:14px 10px; cursor:pointer; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.82rem; color:var(--text-muted); transition:.15s; }
+  .chain-step button:hover{ border-color:var(--accent); }
+  .chain-step button.on{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.1); color:var(--accent); }
+  .chain-step .arrow{ display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:1.1rem; padding:0 4px; }
+  .chain-detail{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:16px 18px; margin-top:16px; font-size:0.87rem; line-height:1.6; }
+  .chain-detail .code{ font-family:'IBM Plex Mono'; background:var(--panel-alt); border-radius:6px; padding:10px 12px; margin:8px 0; font-size:0.8rem; white-space:pre-wrap; }
 
-  /* ---- SIMULADOR: la cadena IAS -> CAS -> TAS -> GS ---- */
-  .spd-sim{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
-  .spd-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
-  .spd-head h4{ font-size:0.95rem; color:var(--accent); margin:0; }
-  .spd-hint{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); }
-  .spd-controls{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px 20px; margin:16px 0 4px; }
-  .spd-ctl label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
-  .spd-ctl label b{ color:var(--accent); font-weight:600; }
-  .spd-ctl input[type=range]{ width:100%; margin:0; accent-color:var(--accent); }
-
-  .spd-ladder{ margin-top:18px; background:var(--bg); border:1px solid var(--hairline); border-radius:12px; padding:16px; }
-  .spd-row{ display:flex; align-items:center; gap:12px; }
-  .spd-row .sp-key{ flex-shrink:0; width:44px; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.8rem; color:var(--text); }
-  .spd-track{ flex:1; min-width:60px; height:26px; background:var(--panel-alt); border-radius:5px; overflow:hidden; }
-  .spd-fill{ height:100%; width:0%; border-radius:5px; transition:width .3s ease; }
-  .spd-row .sp-val{ flex-shrink:0; width:74px; text-align:right; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.9rem; color:var(--text); }
-  .spd-delta{ display:flex; align-items:center; gap:12px; padding:6px 0 6px 56px; font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); }
-  .spd-delta b{ font-weight:700; }
-  .spd-delta b.up{ color:var(--vfr); } .spd-delta b.down{ color:var(--danger); } .spd-delta b.zero{ color:var(--text-muted); }
-
-  .spd-eta{ margin-top:14px; display:flex; flex-wrap:wrap; gap:10px 26px; align-items:baseline;
-            background:var(--panel-alt); border-radius:10px; padding:12px 16px; }
-  .spd-eta span{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-muted); }
-  .spd-eta b{ font-family:'IBM Plex Mono'; font-size:1rem; color:var(--accent); }
-  .spd-explain{ margin-top:14px; font-size:0.85rem; line-height:1.6; color:var(--text-muted); }
-  .spd-explain b{ color:var(--text); }
-  .spd-presets{ margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
-  .spd-preset{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:7px 13px; border-radius:20px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; }
-  .spd-preset:hover{ border-color:var(--accent); color:var(--accent); }
-
-  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
-  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
-
+  /* ---------- QUIZ ---------- */
   .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
   .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
@@ -284,8 +253,8 @@
             <a href="ats.html">ATS</a>
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
-            <a href="navegacion.html" class="active">Navegación</a>
-            <a href="notam.html">NOTAM</a>
+            <a href="navegacion.html">Navegación</a>
+            <a href="notam.html" class="active">NOTAM</a>
           </div>
         </div>
       </div>
@@ -323,8 +292,8 @@
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
-      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
-      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html" class="active">NOTAM <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -343,12 +312,10 @@
 
   <div class="subtabs">
     <div class="subtabs-inner">
-      <a href="navegacion-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
-      <a href="navegacion-tiempo.html" class="subtab"><span class="n">1</span> Tiempo</a>
-      <a href="navegacion-velocidad.html" class="subtab active"><span class="n">2</span> Velocidad</a>
-      <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
-      <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
-      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+      <a href="notam-fundamentos.html" class="subtab active"><span class="n">★</span> Fundamentos</a>
+      <a href="notam-formato.html" class="subtab"><span class="n">1</span> Formato</a>
+      <a href="notam-codigo-q.html" class="subtab"><span class="n">2</span> Código Q</a>
+      <a href="notam-especiales.html" class="subtab"><span class="n">3</span> Especiales</a>
     </div>
   </div>
 
@@ -362,42 +329,46 @@
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Navegación — Bloque 2</div>
-  <h1>Velocidad e instrumentos: del velocímetro al variómetro.</h1>
-  <p class="lead">"¿A qué velocidad vuelo?" tiene cuatro respuestas distintas y todas son correctas — solo que cada una corrige un error distinto. Este bloque recorre el nudo, el velocímetro (tubo Pitot), las 4 clases de velocidad (IAS, CAS, TAS, GS) y el variómetro (velocidad vertical).</p>
-  <div class="hero-note">🛫 <div><b>Cómo estudiar esta página:</b> lee cada instrumento y cada velocidad, respondiendo su chequeo rápido. En el tema 6 encontrarás la <b>cadena completa IAS → CAS → TAS → GS</b> en un solo gráfico interactivo: es donde por fin se entiende por qué son cuatro velocidades distintas y no una sola.</div></div>
+  <div class="eyebrow">NOTAM — Bloque ★ Fundamentos</div>
+  <h1>¿Qué es un NOTAM? Series, tipos y validez.</h1>
+  <p class="lead">Antes de meterte con el código Q o el formato casilla por casilla, hay que tener claro qué problema resuelve un NOTAM, en qué se diferencia de una AMDT o un Suplemento AIP, cómo se numeran, qué tipos existen (NOTAMN/R/C) y durante cuánto tiempo son válidos.</p>
+  <div class="hero-note">
+    <span>📋</span>
+    <span><b>Cómo estudiar esta página:</b> lee los temas 1 a 3 para el contexto, usa el <b>simulador de cadena</b> del tema 4 para entender NOTAMN/R/C, y cierra con validez y checklist. Cada tema trae su chequeo rápido.</span>
+  </div>
 </section>
 
 <nav class="toc">
-  <a href="#t1">1. La velocidad y el nudo</a>
-  <a href="#t2">2. El velocímetro (tubo Pitot)</a>
-  <a href="#t3">3. IAS — Velocidad Indicada</a>
-  <a href="#t4">4. CAS — Velocidad Calibrada</a>
-  <a href="#t5">5. TAS — Velocidad Verdadera</a>
-  <a href="#t6">6. GS — Velocidad de Tierra</a>
-  <a href="#t7">7. El Variómetro (VSI)</a>
+  <a href="#t1">1. ¿Qué es un NOTAM?</a>
+  <a href="#t2">2. NOTAM vs AMDT vs Suplemento AIP</a>
+  <a href="#t3">3. Series NOTAM</a>
+  <a href="#t4">4. Numeración</a>
+  <a href="#t5">5. Tipos: NOTAMN, NOTAMR, NOTAMC</a>
+  <a href="#t6">6. Período de validez</a>
+  <a href="#t7">7. El Checklist de NOTAM</a>
 </nav>
 
 <main class="content">
 
   <!-- 1 -->
   <article class="topic" id="t1">
-    <div class="topic-head"><div class="topic-num">1</div><h2>La velocidad y el nudo</h2></div>
+    <div class="topic-head"><div class="topic-num">1</div><h2>¿Qué es un NOTAM y para qué sirve?</h2></div>
     <div class="topic-body">
-      <p>La <b>velocidad</b> es la magnitud física que expresa el espacio recorrido por un móvil en la unidad de tiempo. En aviación, la unidad utilizada es el <b>nudo (KT)</b>: 1 milla náutica por hora.</p>
-      <div class="card-box">
-        <h4>⚓ 1 Nudo</h4>
-        <p style="margin:0;" class="mono">1 NM/hora = 1.852 metros/hora</p>
+      <p><b>NOTAM</b> es la sigla en inglés de <i>Notice To Airmen</i> — aviso a los aviadores. Es un mensaje que distribuye el AIS (Servicio de Información Aeronáutica) para avisar del establecimiento, condición o modificación de cualquier instalación, servicio, procedimiento o peligro aeronáutico, cuyo conocimiento oportuno es esencial para el personal que participa en las operaciones de vuelo.</p>
+      <p>Su razón de ser es la <b>velocidad</b>: se distribuye <i>antes</i> del hecho al que se refiere, salvo en los casos que no se pueden prever — una instalación que se dañó, actividad volcánica o la liberación de material radiactivo. Un NOTAM solo tiene valor si su contenido está actualizado.</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>Complementa el AIP</b>El NOTAM no reemplaza al AIP: lo complementa, como un canal rápido para lo que no puede esperar al próximo ciclo de publicación.</div>
+        <div class="objective-item"><b>Se origina por dos motivos</b>(a) información temporal, no planeada y de corta duración, o (b) cambios permanentes operacionalmente significativos, o temporales de larga duración, hechos con poca antelación.</div>
       </div>
-      <div class="mnemo"><b>🧠 Idea clave:</b> el nudo se hereda de la navegación marítima a vela, donde se contaban los nudos de una cuerda (corredera) para medir la velocidad del barco — la aviación adoptó la misma unidad y el mismo nombre.</div>
+      <div class="mnemo"><b>🧠 Idea clave:</b> si algo cambió y no hay tiempo de esperar la próxima AMDT o Suplemento AIP, ahí es donde entra el NOTAM.</div>
     </div>
     <div class="quiz-card" data-quiz="1">
       <div class="quiz-tag">🎯 Chequeo rápido 1/7</div>
-      <div class="quiz-q">¿A qué equivale 1 nudo?</div>
+      <div class="quiz-q">¿Cuál es el propósito básico de un NOTAM según el Doc 8126?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">1 milla terrestre por hora</button>
-        <button class="quiz-opt" data-correct="true">1 milla náutica por hora (1.852 m/hora)</button>
-        <button class="quiz-opt" data-correct="false">1 kilómetro por hora</button>
+        <button class="quiz-opt" data-correct="false">Reemplazar completamente al AIP</button>
+        <button class="quiz-opt" data-correct="true">Distribuir información con antelación al hecho al que se refiere (salvo lo imprevisible)</button>
+        <button class="quiz-opt" data-correct="false">Sustituir los planes de vuelo</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -405,65 +376,60 @@
 
   <!-- 2 -->
   <article class="topic" id="t2">
-    <div class="topic-head"><div class="topic-num">2</div><h2>El velocímetro (tubo Pitot)</h2></div>
+    <div class="topic-head"><div class="topic-num">2</div><h2>NOTAM vs AMDT vs Suplemento AIP</h2></div>
     <div class="topic-body">
-      <p>El <b>velocímetro</b> es el instrumento que mide la velocidad del avión, comparando dos presiones: la <b>presión de impacto o dinámica</b> (captada por el tubo Pitot, que "mira" de frente al viento relativo) y la <b>presión estática</b> de la cámara del instrumento (captada por una toma que no recibe el impacto directo del aire).</p>
-      <div class="illus">
-        <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama del sistema pitot-estático mostrando el tubo pitot recibiendo presión dinámica y el puerto estático recibiendo presión estática, ambos conectados al velocímetro">
-          <rect x="30" y="95" width="300" height="30" rx="6" fill="var(--panel-alt)" stroke="var(--hairline)"/>
-          <text x="45" y="115" fill="var(--text-muted)" font-size="12" font-family="IBM Plex Mono, monospace">Fuselaje</text>
-          <rect x="10" y="102" width="40" height="16" rx="3" fill="var(--accent)"/>
-          <text x="15" y="98" fill="var(--accent)" font-size="11" font-family="IBM Plex Mono, monospace">Tubo Pitot</text>
-          <line x1="-10" y1="110" x2="10" y2="110" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowP)"/>
-          <text x="55" y="145" fill="var(--accent)" font-size="11" font-family="IBM Plex Mono, monospace">Presión dinámica (impacto)</text>
-          <circle cx="270" cy="95" r="4" fill="var(--warn)"/>
-          <text x="230" y="80" fill="var(--warn)" font-size="11" font-family="IBM Plex Mono, monospace">Puerto estático</text>
-          <path d="M20,110 L 20,180 L 400,180 L 400,140" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
-          <path d="M270,99 L 270,160 L 470,160 L 470,140" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="4 3"/>
-          <rect x="400" y="90" width="140" height="60" rx="8" fill="var(--bg)" stroke="var(--hairline)" stroke-width="1.5"/>
-          <text x="415" y="115" fill="var(--text)" font-size="11" font-family="IBM Plex Mono, monospace">VELOCÍMETRO</text>
-          <text x="415" y="132" fill="var(--text-muted)" font-size="10" font-family="IBM Plex Mono, monospace">compara ambas presiones</text>
-          <defs><marker id="arrowP" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
-        </svg>
-        <div class="illus-cap">En reposo (sin viento) ambas presiones son iguales; al moverse, la presión del Pitot supera a la estática — esa diferencia es la que se traduce en velocidad indicada.</div>
+      <p>El AIS tiene tres canales para publicar cambios, y elegir el correcto depende de <b>cuánto dura</b> el cambio y <b>cuánto texto/gráficos</b> necesita:</p>
+      <div class="n-table-wrap">
+      <table class="n-table">
+        <tr><th>Canal</th><th>Se usa cuando…</th></tr>
+        <tr><td><b>AIP / AMDT AIP</b></td><td>El cambio es permanente y hay tiempo de incorporarlo al ciclo normal (o AIRAC) de publicación.</td></tr>
+        <tr><td><b>Suplemento AIP (AIP SUP)</b></td><td>La información es temporal, pero de <b>larga duración</b> o necesita <b>texto extenso o gráficos</b> — un NOTAM no alcanza para eso.</td></tr>
+        <tr><td><b>NOTAM</b></td><td>La información es de corta duración y no planeada, <b>o</b> es un cambio permanente/de larga duración avisado con poca antelación (y que después se reemplaza por una AMDT o SUP en cuanto sea posible).</td></tr>
+      </table>
       </div>
+      <p>Cuando una AMDT o un SUP AIRAC entra en vigor, además se avisa con un <b>Trigger NOTAM</b> — lo verás en el Bloque 3 de este módulo.</p>
+      <div class="mnemo"><b>🧠 Truco:</b> "corto y sin gráficos" → NOTAM. "Largo o con mapas/diagramas" → Suplemento AIP. "Permanente y sin apuro" → AMDT AIP directamente.</div>
     </div>
     <div class="quiz-card" data-quiz="2">
       <div class="quiz-tag">🎯 Chequeo rápido 2/7</div>
-      <div class="quiz-q">¿Qué dos presiones compara el velocímetro para calcular la velocidad?</div>
+      <div class="quiz-q">Una restricción temporal de 5 meses necesita un mapa detallado del área afectada. ¿Qué canal es el correcto?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La presión de impacto (dinámica, del tubo Pitot) y la presión estática</button>
-        <button class="quiz-opt" data-correct="false">La presión estándar y la presión QNH</button>
-        <button class="quiz-opt" data-correct="false">La presión del combustible y la presión del aceite</button>
+        <button class="quiz-opt" data-correct="false">Un NOTAM, siempre es más rápido</button>
+        <button class="quiz-opt" data-correct="true">Un Suplemento AIP, por su duración y por necesitar gráficos</button>
+        <button class="quiz-opt" data-correct="false">No se publica hasta la próxima AMDT AIP</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
   </article>
 
-  <div class="speed-stairs">
-    <div class="speed-step"><span class="sp-tag">IAS</span><span class="sp-desc">Lectura directa del instrumento, <b>sin corregir</b></span><span class="sp-arrow">↓</span></div>
-    <div class="speed-step"><span class="sp-tag">CAS</span><span class="sp-desc">IAS corregida por <b>errores de instalación</b></span><span class="sp-arrow">↓</span></div>
-    <div class="speed-step"><span class="sp-tag">TAS</span><span class="sp-desc">CAS corregida por <b>densidad y temperatura</b></span><span class="sp-arrow">↓</span></div>
-    <div class="speed-step"><span class="sp-tag">GS</span><span class="sp-desc">TAS corregida por el <b>efecto del viento</b></span><span></span></div>
-  </div>
-
   <!-- 3 -->
   <article class="topic" id="t3">
-    <div class="topic-head"><div class="topic-num">3</div><h2>IAS — Velocidad Indicada</h2></div>
+    <div class="topic-head"><div class="topic-num">3</div><h2>Las series NOTAM</h2></div>
     <div class="topic-body">
-      <p>Es la velocidad que se lee <b>directamente en el instrumento</b>, sin ninguna corrección — ni por variaciones de densidad atmosférica, ni por errores de instalación o descalibración del propio velocímetro.</p>
-      <div class="card-box">
-        <h4>🗼 Por qué le importa al Controlador de Tránsito Aéreo</h4>
-        <p style="margin:0;">El Controlador utiliza la IAS para mantener las <b>separaciones reglamentarias</b> entre aeronaves — es el número que efectivamente "siente" y usa el piloto en cabina para volar, no un valor corregido matemáticamente.</p>
+      <p>Cada NOTAM pertenece a una <b>serie</b>, identificada con una letra (de la A a la Z, excepto S y T, reservadas para SNOWTAM y ASHTAM). Repartir los NOTAM en series permite una distribución selectiva: no todos los usuarios necesitan recibir todo.</p>
+
+      <div class="series-box">
+        <h4>🗂️ Explora las series NOTAM</h4>
+        <p class="hint">Toca cada serie para ver su alcance. Colombia (AIP GEN 3.1) usa 4 series nacionales/internacionales; el Doc 8126 muestra un ejemplo genérico de 5 series posibles.</p>
+        <div class="series-tabs" id="seriesTabs">
+          <button class="series-tab on" data-s="co-a">Colombia · A</button>
+          <button class="series-tab" data-s="co-b">Colombia · B</button>
+          <button class="series-tab" data-s="co-c">Colombia · C</button>
+          <button class="series-tab" data-s="co-d">Colombia · D</button>
+          <button class="series-tab" data-s="oaci">Ejemplo genérico OACI</button>
+        </div>
+        <div class="series-panel" id="seriesPanel"></div>
       </div>
+
+      <div class="mnemo"><b>🧠 Nota:</b> las letras S y T nunca se usan para series NOTAM normales — están reservadas al formato SNOWTAM (S) y ASHTAM (V, con reserva histórica de T para procesamiento). Lo verás en el Bloque 3.</div>
     </div>
     <div class="quiz-card" data-quiz="3">
       <div class="quiz-tag">🎯 Chequeo rápido 3/7</div>
-      <div class="quiz-q">La IAS (Velocidad Indicada) es...</div>
+      <div class="quiz-q">En Colombia, ¿qué serie contiene la información de establecimiento, situación o modificación de instalaciones que afectan a los aeródromos contemplados en AD 1.3, con distribución solo nacional?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La lectura directa del instrumento, sin ninguna corrección</button>
-        <button class="quiz-opt" data-correct="false">La velocidad ya corregida por viento</button>
-        <button class="quiz-opt" data-correct="false">La velocidad del sonido a esa altitud</button>
+        <button class="quiz-opt" data-correct="false">Serie A</button>
+        <button class="quiz-opt" data-correct="false">Serie B</button>
+        <button class="quiz-opt" data-correct="true">Serie C</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -471,18 +437,23 @@
 
   <!-- 4 -->
   <article class="topic" id="t4">
-    <div class="topic-head"><div class="topic-num">4</div><h2>CAS — Velocidad Calibrada</h2></div>
+    <div class="topic-head"><div class="topic-num">4</div><h2>Numeración y continuidad</h2></div>
     <div class="topic-body">
-      <p>Es la <b>IAS corregida por errores de instalación y del instrumento</b>. El piloto utiliza la <b>tabla de calibración de velocidad</b> (propia de cada aeronave) para hacer las compensaciones necesarias.</p>
-      <div class="mnemo"><b>🧠 ¿Por qué hay que calibrar?</b> Las tuberías del sistema pitot-estático pueden picarse o atrapar humedad, y el diafragma interno puede ir perdiendo sensibilidad con el uso — por eso el velocímetro necesita calibrarse periódicamente.</div>
+      <p>Cada NOTAM se identifica con la <b>letra de su serie</b> + un <b>número consecutivo de 4 dígitos</b> + una barra + el <b>año</b> (2 dígitos). Ejemplo: <span class="mono">A0068/20</span>.</p>
+      <ul>
+        <li>Cada serie empieza el <b>1 de enero con el número 0001</b>.</li>
+        <li>La numeración es <b>consecutiva</b>, sin saltos ni reinicios a mitad de año.</li>
+        <li><b>Nunca</b> se renumera un NOTAM ya emitido (aunque contenga la misma información), ni se renumeran los NOTAM al empezar el año.</li>
+      </ul>
+      <div class="mnemo"><b>🧠 Truco:</b> el número identifica un hecho concreto en el tiempo, no un "estado" — por eso jamás se reutiliza ni se reordena.</div>
     </div>
     <div class="quiz-card" data-quiz="4">
       <div class="quiz-tag">🎯 Chequeo rápido 4/7</div>
-      <div class="quiz-q">¿Qué corrige la CAS respecto a la IAS?</div>
+      <div class="quiz-q">¿Qué número le corresponde al primer NOTAM de la serie C que se publica cada 1 de enero?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Errores de instalación y del instrumento (usando la tabla de calibración)</button>
-        <button class="quiz-opt" data-correct="false">El efecto de la densidad del aire con la altura</button>
-        <button class="quiz-opt" data-correct="false">El efecto y la intensidad del viento</button>
+        <button class="quiz-opt" data-correct="true">C0001/[año]</button>
+        <button class="quiz-opt" data-correct="false">Continúa la numeración del año anterior</button>
+        <button class="quiz-opt" data-correct="false">C0000/[año]</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -490,30 +461,38 @@
 
   <!-- 5 -->
   <article class="topic" id="t5">
-    <div class="topic-head"><div class="topic-num">5</div><h2>TAS — Velocidad Verdadera</h2></div>
+    <div class="topic-head"><div class="topic-num">5</div><h2>Tipos: NOTAMN, NOTAMR y NOTAMC</h2></div>
     <div class="topic-body">
-      <p>Es la CAS (o IAS) corregida por <b>densidad y temperatura</b>. A mayor altura, hay menor densidad del aire — por eso dos aeronaves con la <b>misma IAS</b> volando a <b>diferentes niveles</b> tendrán una TAS distinta entre sí.</p>
-      <div class="card-box">
-        <h4>🧮 Cálculo rápido (regla práctica)</h4>
-        <p style="margin:0;">La TAS aumenta aproximadamente un <b>2% respecto al IAS por cada 1.000 pies</b> de altitud. (El método exacto se calcula con computador de vuelo tipo E6B, fuera del alcance de este bloque.)</p>
+      <p>Todo NOTAM lleva, además de su número, un identificador de tipo:</p>
+      <div class="objective-grid">
+        <div class="objective-item"><b>NOTAMN</b>Información nueva. No reemplaza ni cancela nada anterior.</div>
+        <div class="objective-item"><b>NOTAMR</b>Reemplaza a un NOTAM anterior — indica la serie/número/año del que reemplaza.</div>
+        <div class="objective-item"><b>NOTAMC</b>Cancela a un NOTAM anterior — indica la serie/número/año del que cancela.</div>
       </div>
-      <div class="tool-box">
-        <h4 style="margin:0 0 10px; font-size:0.92rem; color:var(--accent);">🧮 Calculadora rápida de TAS</h4>
-        <div class="tool-row">
-          <div class="tool-field"><label>IAS (nudos)</label><input type="number" id="iasInput" placeholder="Ej: 120"></div>
-          <div class="tool-field"><label>Altitud (pies)</label><input type="number" id="altInput" placeholder="Ej: 8000"></div>
+      <p>Reglas clave: NOTAMR y NOTAMC se publican <b>en la misma serie</b> que el NOTAM al que afectan, y un NOTAM <b>solo puede reemplazar o cancelar a uno a la vez</b>. Si el asunto cambia ligeramente, se emite un NOTAMC + un NOTAMN nuevo, en vez de forzar un NOTAMR.</p>
+
+      <div class="chain-box">
+        <h4>🔗 Simulador: la cadena de un NOTAM</h4>
+        <p class="hint">Este es el ejemplo real del Doc 8126: un NOTAM nuevo, que después se reemplaza, y ese reemplazo luego se cancela antes de su fecha de fin. Toca cada paso.</p>
+        <div class="chain-steps" id="chainSteps">
+          <div class="chain-step"><button class="on" data-c="0">A0135/20<br>NOTAMN</button></div>
+          <div class="chain-step arrow">→</div>
+          <div class="chain-step"><button data-c="1">A0137/20<br>NOTAMR A0135/20</button></div>
+          <div class="chain-step arrow">→</div>
+          <div class="chain-step"><button data-c="2">A0139/20<br>NOTAMC A0137/20</button></div>
         </div>
-        <div class="tool-output" id="tasOutput">— completa ambos campos —</div>
-        <div class="tool-note">Fórmula usada (regla rápida): TAS ≈ IAS × (1 + 2% × altitud/1.000 ft). Es una aproximación de estudio, no un valor certificado.</div>
+        <div class="chain-detail" id="chainDetail"></div>
       </div>
+
+      <div class="mnemo"><b>🧠 Truco:</b> si te equivocas al redactar un NOTAM, <b>nunca</b> se publica una "versión corregida" — se cancela (o reemplaza) y se emite uno nuevo con número propio.</div>
     </div>
     <div class="quiz-card" data-quiz="5">
       <div class="quiz-tag">🎯 Chequeo rápido 5/7</div>
-      <div class="quiz-q">Según la regla rápida, ¿cuánto aumenta aproximadamente la TAS respecto al IAS por cada 1.000 pies de altitud?</div>
+      <div class="quiz-q">Un NOTAMR y el NOTAM que reemplaza, ¿en qué serie se publican?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">1%</button>
-        <button class="quiz-opt" data-correct="true">2%</button>
-        <button class="quiz-opt" data-correct="false">5%</button>
+        <button class="quiz-opt" data-correct="false">Pueden estar en series distintas</button>
+        <button class="quiz-opt" data-correct="true">Siempre en la misma serie</button>
+        <button class="quiz-opt" data-correct="false">El NOTAMR siempre pasa a la serie D</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -521,91 +500,30 @@
 
   <!-- 6 -->
   <article class="topic" id="t6">
-    <div class="topic-head"><div class="topic-num">6</div><h2>GS — Velocidad de Tierra (Ground Speed)</h2></div>
+    <div class="topic-head"><div class="topic-num">6</div><h2>Período de validez (Casillas B, C y D)</h2></div>
     <div class="topic-body">
-      <p>También conocida como <b>velocidad absoluta</b>, es la <b>TAS corregida</b> — sumando o restando, según corresponda — por el <b>efecto y la intensidad del viento</b>. Es la velocidad real a la que la aeronave se desplaza sobre el terreno, y la que determina cuánto tiempo tomará realmente llegar a destino.</p>
-      <div class="mnemo"><b>🧠 Idea clave:</b> viento de cola → GS mayor que TAS. Viento de frente (de cara) → GS menor que TAS. Por eso el mismo vuelo de ida y vuelta casi nunca dura lo mismo en ambos sentidos.</div>
-
-      <div class="spd-sim">
-        <div class="spd-head">
-          <h4>📈 La cadena completa: IAS → CAS → TAS → GS</h4>
-          <span class="spd-hint">Mueve cualquier control y mira qué eslabón cambia</span>
-        </div>
-        <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6; margin:6px 0 0;">
-          Las cuatro velocidades no son cuatro cosas distintas: son <b>la misma velocidad corregida tres veces</b>.
-          Cada corrección arregla un error concreto. Aquí puedes ver los cuatro eslabones a la vez.
-        </p>
-
-        <div class="spd-controls">
-          <div class="spd-ctl">
-            <label for="spIas">IAS — lo que marca el velocímetro <b id="spIasVal">120 kt</b></label>
-            <input type="range" id="spIas" min="40" max="300" step="1" value="120">
-          </div>
-          <div class="spd-ctl">
-            <label for="spErr">Error de instalación e instrumento <b id="spErrVal">+2 kt</b></label>
-            <input type="range" id="spErr" min="-10" max="10" step="1" value="2">
-          </div>
-          <div class="spd-ctl">
-            <label for="spAlt">Altitud de vuelo <b id="spAltVal">8.000 ft</b></label>
-            <input type="range" id="spAlt" min="0" max="40000" step="500" value="8000">
-          </div>
-          <div class="spd-ctl">
-            <label for="spWind">Viento en el eje (− cara / + cola) <b id="spWindVal">0 kt</b></label>
-            <input type="range" id="spWind" min="-60" max="60" step="1" value="0">
-          </div>
-        </div>
-
-        <div class="spd-ladder">
-          <div class="spd-row">
-            <span class="sp-key">IAS</span>
-            <div class="spd-track"><div class="spd-fill" id="spBarIas" style="background:var(--text-muted)"></div></div>
-            <span class="sp-val" id="spOutIas">120 kt</span>
-          </div>
-          <div class="spd-delta"><b id="spDeltaCas" class="zero">±0 kt</b> <span id="spWhyCas">error de instalación e instrumento</span></div>
-
-          <div class="spd-row">
-            <span class="sp-key">CAS</span>
-            <div class="spd-track"><div class="spd-fill" id="spBarCas" style="background:var(--mvfr)"></div></div>
-            <span class="sp-val" id="spOutCas">122 kt</span>
-          </div>
-          <div class="spd-delta"><b id="spDeltaTas" class="up">+0 kt</b> <span id="spWhyTas">densidad del aire con la altitud</span></div>
-
-          <div class="spd-row">
-            <span class="sp-key">TAS</span>
-            <div class="spd-track"><div class="spd-fill" id="spBarTas" style="background:var(--accent)"></div></div>
-            <span class="sp-val" id="spOutTas">141 kt</span>
-          </div>
-          <div class="spd-delta"><b id="spDeltaGs" class="zero">±0 kt</b> <span id="spWhyGs">efecto del viento</span></div>
-
-          <div class="spd-row">
-            <span class="sp-key">GS</span>
-            <div class="spd-track"><div class="spd-fill" id="spBarGs" style="background:var(--vfr)"></div></div>
-            <span class="sp-val" id="spOutGs">141 kt</span>
-          </div>
-        </div>
-
-        <div class="spd-eta">
-          <div><span>Recorrer 100 NM tomaría</span> <b id="spEta">42 min</b></div>
-          <div><span>Distancia en 1 hora</span> <b id="spDist">141 NM</b></div>
-        </div>
-
-        <div class="spd-explain" id="spExplain">…</div>
-
-        <div class="spd-presets">
-          <button class="spd-preset" type="button" data-ias="110" data-err="2" data-alt="0"     data-wind="0">Cerca del suelo, sin viento</button>
-          <button class="spd-preset" type="button" data-ias="110" data-err="2" data-alt="10000" data-wind="0">Misma IAS, pero a 10.000 ft</button>
-          <button class="spd-preset" type="button" data-ias="250" data-err="3" data-alt="35000" data-wind="45">Jet en crucero con viento de cola</button>
-          <button class="spd-preset" type="button" data-ias="250" data-err="3" data-alt="35000" data-wind="-45">El mismo vuelo, pero de regreso</button>
-        </div>
+      <p>Todo NOTAM debe decir <b>cuándo empieza</b> y <b>cuándo termina</b> la situación que reporta:</p>
+      <div class="n-table-wrap">
+      <table class="n-table">
+        <tr><th>Casilla</th><th>Qué indica</th><th>Reglas</th></tr>
+        <tr><td><b>B)</b></td><td>Inicio, grupo fecha-hora UTC de 10 dígitos.</td><td>El inicio del día se escribe <span class="mono">0000</span>. No se usan abreviaturas como WIE o WEF.</td></tr>
+        <tr><td><b>C)</b></td><td>Fin, grupo fecha-hora UTC de 10 dígitos.</td><td>El fin del día se escribe <span class="mono">2359</span>. Si es permanente: <span class="mono">PERM</span>. Si es aproximado: fecha-hora + <span class="mono">EST</span> (y ese NOTAM debe cancelarse o reemplazarse antes de esa fecha — nunca queda indefinido). <span class="mono">UFN</span> no se usa.</td></tr>
+        <tr><td><b>D)</b></td><td>Horario/periodicidad, si el hecho no es continuo entre B) y C).</td><td>El primer período de D) coincide con B); el último, con C).</td></tr>
+      </table>
       </div>
+      <div class="card-box">
+        <h4>⚠️ Dato que suelen preguntar</h4>
+        <p style="margin:0;">Un NOTAM con fecha de fin <span class="mono">EST</span> <b>debe</b> cancelarse o reemplazarse antes de esa fecha-hora. Si no se hace, seguiría publicándose por tiempo indefinido — por eso <span class="mono">UFN</span> (hasta nuevo aviso) está prohibido como valor de la Casilla C).</p>
+      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> "PERM" es para lo permanente (y debe incorporarse al AIP en máximo 3 meses); "EST" es para lo incierto, pero con fecha límite obligatoria — nunca "indefinido".</div>
     </div>
     <div class="quiz-card" data-quiz="6">
       <div class="quiz-tag">🎯 Chequeo rápido 6/7</div>
-      <div class="quiz-q">La Velocidad de Tierra (GS) es...</div>
+      <div class="quiz-q">¿Qué obligación trae un NOTAM cuya Casilla C) termina en fecha-hora + EST?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La TAS corregida por el efecto e intensidad del viento</button>
-        <button class="quiz-opt" data-correct="false">La lectura directa del velocímetro sin corregir</button>
-        <button class="quiz-opt" data-correct="false">La IAS corregida solo por errores del instrumento</button>
+        <button class="quiz-opt" data-correct="false">Ninguna, se puede dejar vigente indefinidamente</button>
+        <button class="quiz-opt" data-correct="true">Debe cancelarse o reemplazarse antes de esa fecha-hora</button>
+        <button class="quiz-opt" data-correct="false">Se debe convertir automáticamente en PERM</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -613,28 +531,30 @@
 
   <!-- 7 -->
   <article class="topic" id="t7">
-    <div class="topic-head"><div class="topic-num">7</div><h2>El Variómetro (VSI) — velocidad vertical</h2></div>
+    <div class="topic-head"><div class="topic-num">7</div><h2>El Checklist de NOTAM</h2></div>
     <div class="topic-body">
-      <p>El <b>variómetro</b> o <b>indicador de velocidad vertical (VSI)</b> es un instrumento de lectura directa que muestra si el avión asciende, desciende o vuela nivelado, y a qué velocidad vertical lo hace, en <b>pies por minuto (fpm)</b>.</p>
-      <div class="objective-grid">
-        <div class="objective-item"><b>Principio</b>Diafragma que se contrae/expande por diferencia de presión — a diferencia del altímetro, recibe la misma presión estática dentro y fuera, y mide el <b>régimen de cambio</b> de esa presión.</div>
-        <div class="objective-item"><b>Construcción</b>Caja hermética conectada al sistema estático por un orificio calibrado + una membrana conectada directamente al mismo sistema.</div>
-        <div class="objective-item"><b>Lectura</b>Cero al centro-izquierda; arriba = ascenso (UP), abajo = descenso (DN); graduado en cientos de fpm, hasta 2.000 fpm máximo.</div>
-      </div>
-      <div class="card-box">
-        <h4>⚠️ Errores y por qué no usarlo como referencia principal</h4>
-        <p style="margin:0;">Tiene un <b>retraso de hasta 9 segundos</b> en indicar el régimen exacto en fpm (aunque la dirección — sube o baja — se muestra de inmediato). Por ese retraso y por los falsos picos que genera ante maniobras bruscas o turbulencia, <b>no debe usarse como referencia principal</b> para mantener vuelo nivelado. No se ve afectado por la temperatura.</p>
-      </div>
-      <div class="mnemo"><b>🧠 Procedimiento de emergencia:</b> si falla el sistema estático externo, romper el cristal del variómetro da una toma de presión estática de emergencia — pero sus indicaciones quedarán <b>invertidas</b>, y las de los demás instrumentos conectados al mismo sistema tendrán retrasos o marcarán más alto de lo real.</p>
-      </div>
+      <p>Periódicamente (no más de un intervalo de un mes) se publica un <b>Checklist de NOTAM</b> por cada serie: un listado de todos los NOTAM vigentes, para que el destinatario pueda verificar que sus cancelaciones están al día. <b>No</b> es válido cancelar un NOTAM simplemente omitiéndolo del checklist.</p>
+      <p>El checklist se identifica siempre como un <b>NOTAMR</b> (reemplaza al checklist anterior) y usa el código dedicado <span class="mono">QKKKK</span> en la Casilla Q), con "K" también como calificador de tránsito, objeto y alcance — así queda fuera del boletín de información previa al vuelo (PIB).</p>
+      <p>Su Casilla E) trae tres secciones: la lista de NOTAM vigentes agrupados por año, las últimas AMDT AIP, y el listado de Suplementos AIP vigentes.</p>
+      <div class="nmono">A0037/20 NOTAMR A0016/20
+Q) EAXX/QKKKK/K/K/K/000/999/4323N01205E999
+A) EACC B) 2004010747 C) 2005012359EST
+E) CHECKLIST
+YEAR 2019 0674 0687
+YEAR=2020 0004 0006 0009 ...
+LATEST AIP AMENDMENTS
+AIRAC AIP AMDT 3/20 WEF 23 APR 2020
+CHECKLIST OF AIP SUP AND AIC
+AIRAC AIP SUP: 2/20</div>
+      <div class="mnemo"><b>🧠 Truco:</b> "QKKKK" + calificador "K" en todo — la K de <i>checklist</i> se repite para que el sistema lo filtre fuera del PIB automáticamente.</div>
     </div>
     <div class="quiz-card" data-quiz="7">
       <div class="quiz-tag">🎯 Chequeo rápido 7/7 — ¡última pregunta!</div>
-      <div class="quiz-q">¿Por qué el variómetro NO debe usarse como referencia principal para mantener vuelo nivelado?</div>
+      <div class="quiz-q">¿Es válido cancelar un NOTAM simplemente dejándolo fuera del próximo checklist?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Porque tiene hasta 9 segundos de retraso en indicar el régimen exacto</button>
-        <button class="quiz-opt" data-correct="false">Porque se descalibra fácilmente con la temperatura</button>
-        <button class="quiz-opt" data-correct="false">Porque solo funciona por encima de FL180</button>
+        <button class="quiz-opt" data-correct="false">Sí, para eso existe el checklist</button>
+        <button class="quiz-opt" data-correct="true">No, cancelar solo por omisión en el checklist no está permitido</button>
+        <button class="quiz-opt" data-correct="false">Solo si el NOTAM tenía fecha EST</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -643,14 +563,14 @@
   <div class="finish-card" id="finishCard" style="display:none;">
     <div class="big">🏆</div>
     <h3>Bloque completado</h3>
-    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 7 preguntas correctamente. Ya dominas la escalera IAS→CAS→TAS→GS y el variómetro — sigue con el Bloque 3: Altimetría.</p>
+    <p style="color:var(--text-muted); margin-top:8px;">Ya conoces los fundamentos del NOTAM. Sigue con el Bloque 1 — Formato, para aprender a leer cada casilla de un NOTAM real.</p>
   </div>
 
 </main>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Módulo NAV · Bloque 2 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Módulo NOTAM — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -699,7 +619,7 @@
     if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
     if(correctCount >= TOTAL_QUIZ){
       if(finishCard) finishCard.style.display = 'block';
-      marcarModuloCompletado('navegacion-velocidad');
+      if(typeof marcarModuloCompletado === 'function') marcarModuloCompletado('notam-fundamentos');
     }
   }
   renderProgress();
@@ -728,128 +648,10 @@
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
     });
   });
-
-  // ---------- CALCULADORA RÁPIDA DE TAS ----------
-  const iasInput = document.getElementById('iasInput');
-  const altInput = document.getElementById('altInput');
-  const tasOutput = document.getElementById('tasOutput');
-
-  function updateTAS(){
-    const ias = Number(iasInput.value);
-    const alt = Number(altInput.value);
-    if(!iasInput.value || !altInput.value || isNaN(ias) || isNaN(alt)){
-      tasOutput.textContent = '— completa ambos campos —';
-      return;
-    }
-    const factor = 1 + 0.02 * (alt / 1000);
-    const tas = ias * factor;
-    tasOutput.textContent = `IAS ${ias} kt a ${alt} ft ≈ TAS ${tas.toFixed(1)} kt (factor ×${factor.toFixed(3)})`;
-  }
-  iasInput.addEventListener('input', updateTAS);
-  altInput.addEventListener('input', updateTAS);
-
-  // ---------- CADENA IAS -> CAS -> TAS -> GS ----------
-  (function(){
-    const el = id => document.getElementById(id);
-    if(!el('spIas')) return;
-
-    let ias = 120, err = 2, alt = 8000, wind = 0;
-    const fmt = n => Math.round(n).toLocaleString('es-CO');
-
-    function setDelta(node, v, unidad){
-      const s = v > 0.5 ? 'up' : v < -0.5 ? 'down' : 'zero';
-      node.className = s;
-      node.textContent = (v > 0.5 ? '+' : v < -0.5 ? '−' : '±') + Math.abs(Math.round(v)) + ' ' + unidad;
-    }
-
-    function render(){
-      // misma regla práctica que enseña el bloque: +2% de TAS por cada 1.000 ft
-      const cas = ias + err;
-      const tas = cas * (1 + 0.02 * (alt / 1000));
-      const gs  = Math.max(0, tas + wind);
-      const max = Math.max(ias, cas, tas, gs, 1);
-
-      el('spBarIas').style.width = (ias / max * 100) + '%';
-      el('spBarCas').style.width = (cas / max * 100) + '%';
-      el('spBarTas').style.width = (tas / max * 100) + '%';
-      el('spBarGs').style.width  = (gs  / max * 100) + '%';
-
-      el('spOutIas').textContent = fmt(ias) + ' kt';
-      el('spOutCas').textContent = fmt(cas) + ' kt';
-      el('spOutTas').textContent = fmt(tas) + ' kt';
-      el('spOutGs').textContent  = fmt(gs)  + ' kt';
-
-      setDelta(el('spDeltaCas'), cas - ias, 'kt');
-      setDelta(el('spDeltaTas'), tas - cas, 'kt');
-      setDelta(el('spDeltaGs'),  gs  - tas, 'kt');
-
-      el('spWhyCas').textContent = Math.abs(err) < 0.5
-        ? 'sin error de instalación: la CAS coincide con la IAS'
-        : 'error de instalación e instrumento (tabla de calibración de la aeronave)';
-      el('spWhyTas').textContent = alt < 250
-        ? 'a nivel del mar la densidad es la estándar: la TAS casi no cambia'
-        : `menor densidad del aire a ${fmt(alt)} ft`;
-      el('spWhyGs').textContent = Math.abs(wind) < 0.5 ? 'sin viento: la GS coincide con la TAS'
-                                : wind > 0 ? 'viento de cola: te empuja' : 'viento de cara: te frena';
-
-      el('spIasVal').textContent  = fmt(ias) + ' kt';
-      el('spErrVal').textContent  = (err >= 0 ? '+' : '−') + Math.abs(err) + ' kt';
-      el('spAltVal').textContent  = fmt(alt) + ' ft';
-      el('spWindVal').textContent = (wind > 0 ? '+' : wind < 0 ? '−' : '') + Math.abs(wind) + ' kt';
-
-      if(gs > 0){
-        const min = 100 / gs * 60;
-        el('spEta').textContent = min >= 60
-          ? `${Math.floor(min / 60)} h ${Math.round(min % 60)} min`
-          : `${Math.round(min)} min`;
-      } else {
-        el('spEta').textContent = '—';
-      }
-      el('spDist').textContent = fmt(gs) + ' NM';
-
-      const dTas = tas - cas, dGs = gs - tas;
-      let txt = `El velocímetro marca <b>${fmt(ias)} kt</b>, pero sobre el terreno te estás moviendo a <b>${fmt(gs)} kt</b>. `;
-      if(Math.abs(dTas) < 1 && Math.abs(dGs) < 1){
-        txt += `Con la aeronave a baja altitud y sin viento, las cuatro velocidades casi coinciden — es el único caso en que da igual cuál uses.`;
-      } else {
-        const partes = [];
-        if(Math.abs(err) >= 1)  partes.push(`la calibración del instrumento aporta <b>${err > 0 ? '+' : '−'}${Math.abs(err)} kt</b>`);
-        if(Math.abs(dTas) >= 1) partes.push(`la menor densidad a ${fmt(alt)} ft aporta <b>+${fmt(dTas)} kt</b>`);
-        if(Math.abs(dGs) >= 1)  partes.push(`el viento aporta <b>${dGs > 0 ? '+' : '−'}${fmt(Math.abs(dGs))} kt</b>`);
-        txt += `La diferencia sale de que ${partes.join(', ')}. `;
-        txt += dGs < -1
-          ? `Con viento de cara, la <b>GS</b> es la que manda para calcular tiempos: llegarás más tarde de lo que sugiere el velocímetro.`
-          : dGs > 1
-            ? `Con viento de cola, la <b>GS</b> es la que manda: llegarás antes de lo que sugiere el velocímetro.`
-            : `Recuerda: para el rendimiento de la aeronave importa la <b>IAS</b>; para calcular tiempos de vuelo, la <b>GS</b>.`;
-      }
-      el('spExplain').innerHTML = txt;
-    }
-
-    const bind = (id, set) => el(id).addEventListener('input', e => { set(Number(e.target.value)); render(); });
-    bind('spIas',  v => ias = v);
-    bind('spErr',  v => err = v);
-    bind('spAlt',  v => alt = v);
-    bind('spWind', v => wind = v);
-
-    document.querySelectorAll('.spd-preset').forEach(btn => {
-      btn.addEventListener('click', () => {
-        ias = +btn.dataset.ias; err = +btn.dataset.err; alt = +btn.dataset.alt; wind = +btn.dataset.wind;
-        el('spIas').value = ias; el('spErr').value = err;
-        el('spAlt').value = alt; el('spWind').value = wind;
-        render();
-      });
-    });
-
-    render();
-  })();
 </script>
 
 <script>
   // ---------- ACORDEÓN DE TEMAS ----------
-  // Todos los temas colapsados excepto el primero, para que la página no se
-  // sienta como un solo bloque largo de texto. El TOC abre el tema de
-  // destino antes de saltar a él.
   (function(){
     const topics = document.querySelectorAll('.topic');
     function setOpen(topic, open){
@@ -874,6 +676,68 @@
         if(target && target.classList.contains('topic')) setOpen(target, true);
       });
     });
+  })();
+</script>
+
+<script>
+  // ---------- SELECTOR DE SERIES ----------
+  (function(){
+    const DATA = {
+      'co-a': { tag:'Colombia · Serie A · Distribución internacional', text:'Contiene información relativa al establecimiento, situación o modificación de cualquier instalación, servicio, procedimiento o riesgo aeronáutico que afecte las operaciones de vuelo, con distribución internacional seleccionada.' },
+      'co-b': { tag:'Colombia · Serie B · Distribución nacional', text:'Instalación, servicio, procedimiento o riesgo aeronáutico que afecte operaciones de vuelo de pistas o helipuertos distintos a los de AD 1.3 — solo distribución nacional.' },
+      'co-c': { tag:'Colombia · Serie C · Distribución nacional', text:'Lo mismo que la serie B, pero para los aeródromos sí contemplados en AD 1.3 (los aeródromos principales listados en el AIP) — también solo distribución nacional.' },
+      'co-d': { tag:'Colombia · Serie D · Distribución nacional', text:'Cierres de pista, cierres de aeródromo, trabajos en progreso en pista y modificaciones en los horarios de funcionamiento del aeródromo.' },
+      'oaci': { tag:'Ejemplo genérico OACI (Doc 8126, 6.3.2.2)', text:'Cuando un Estado necesita distribución selectiva, puede repartir sus NOTAM así: Serie A — reglas generales, navegación en ruta y comunicaciones, actividades sobre FL245, aeródromos internacionales principales. Serie B — restricciones de espacio aéreo y actividades bajo FL245, otros aeródromos IFR. Serie C — aeródromos donde solo se permite VFR. Serie D — aeródromos nacionales. Serie E — helipuertos. Es solo un ejemplo de reparto; cada Estado define sus propias series (letras A–Z, excepto S y T).' }
+    };
+    const tabs = document.querySelectorAll('#seriesTabs .series-tab');
+    const panel = document.getElementById('seriesPanel');
+    function render(key){
+      const d = DATA[key];
+      panel.innerHTML = `<b class="tag">${d.tag}</b><br>${d.text}`;
+    }
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('on'));
+        tab.classList.add('on');
+        render(tab.dataset.s);
+      });
+    });
+    render('co-a');
+  })();
+
+  // ---------- SIMULADOR DE CADENA NOTAMN/R/C ----------
+  (function(){
+    const STEPS = [
+      {
+        title: 'A0135/20 — NOTAMN',
+        code: 'A0135/20 NOTAMN\nQ) EACC/QMRLC/IV/NBO/A/000/999\nA) EADD B) 2004010600 C) 2004151200\nE) RWY 09/27 CLSD DUE WIP',
+        text: 'Es información <b>nueva</b>: la pista 09/27 se cierra por trabajos, del 1 al 15 de abril. No hay ningún NOTAM anterior involucrado.'
+      },
+      {
+        title: 'A0137/20 — NOTAMR A0135/20',
+        code: 'A0137/20 NOTAMR A0135/20\nQ) EACC/QMRLC/IV/NBO/A/000/999\nA) EADD B) 2004010600 C) 2004201800\nE) RWY 09/27 CLSD DUE WIP',
+        text: 'Los trabajos se extienden más de lo previsto: se emite un NOTAMR que <b>reemplaza</b> a A0135/20 — misma serie, mismo asunto, pero con nueva fecha de fin (20 de abril). El A0135/20 deja de estar vigente en el instante en que este se publica.'
+      },
+      {
+        title: 'A0139/20 — NOTAMC A0137/20',
+        code: 'A0139/20 NOTAMC A0137/20\nQ) EACC/QMRAK/IV/NBO/A/000/999\nA) EADD B) 2004121000 C)\nE) RWY 09/27 REOPENED, WORKS COMPLETED',
+        text: 'Los trabajos terminan antes del 20 de abril: se emite un NOTAMC que <b>cancela</b> A0137/20 anticipadamente. La Casilla C) no aplica en un NOTAMC — el NOTAM cancelado deja de estar vigente de inmediato.'
+      }
+    ];
+    const buttons = document.querySelectorAll('#chainSteps button[data-c]');
+    const detail = document.getElementById('chainDetail');
+    function render(i){
+      const s = STEPS[i];
+      detail.innerHTML = `<b>${s.title}</b><div class="code">${s.code}</div>${s.text}`;
+    }
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        render(parseInt(btn.dataset.c, 10));
+      });
+    });
+    render(0);
   })();
 </script>
 
@@ -942,6 +806,7 @@
     if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
   })();
 </script>
+
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
   (async function actualizarBotonSesion(){

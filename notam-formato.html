@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meteorología · Generalidades y Atmósfera | SoyAeronáutico</title>
+<title>NOTAM · Anatomía del Formato | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,6 @@
     --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
-    --sky1:#0A2647; --sky2:#1657C6; --sky3:#3E7BFA; --sky4:#8FC1E8; --sky5:#E6F2FB;
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
@@ -105,16 +104,13 @@
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
   @media (max-width:1100px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
-  /* ---- sub-tabs for MET ejes tematicos ---- */
-  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); }
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); overflow-x:auto; }
   .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
-  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; white-space:nowrap; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
   .subtab.active .n{ background:var(--accent); color:#fff; }
-  .subtab.locked{ opacity:0.45; cursor:default; }
 
-  /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
   .quiz-progress-inner{ max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .quiz-progress-label{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.08em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
@@ -122,9 +118,9 @@
   .quiz-progress-fill{ height:100%; width:0%; background:var(--vfr); border-radius:3px; transition:width .35s ease; }
   .quiz-progress-score{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
 
-  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .hero-simple{ max-width:900px; margin:0 auto; padding:32px 32px 8px; }
   .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
-  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.6rem, 3.8vw, 2.3rem); line-height:1.2; margin-bottom:14px; }
   .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
   .hero-note b{ color:var(--text); }
@@ -134,11 +130,11 @@
   .toc a:hover{ color:var(--accent); border-color:var(--accent); }
 
   .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
-  @media (max-width:600px){ .content{ padding:24px 18px 70px; } .hero-simple{ padding:28px 18px 8px; } .card-box{ padding:14px; } }
-  .topic{ margin-bottom:60px; scroll-margin-top:130px; }
+  @media (max-width:600px){ .content{ padding:24px 18px 70px; } .hero-simple{ padding:24px 18px 8px; } .card-box{ padding:14px; } }
+  .topic{ margin-bottom:60px; scroll-margin-top:150px; }
   .topic-head{ display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline); cursor:pointer; user-select:none; }
-  .topic-head:focus{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
   .topic-head::after{ content:'▾'; margin-left:auto; color:var(--text-muted); font-size:0.9rem; transition:transform .2s; flex-shrink:0; }
+  .topic.collapsed .topic-head{ margin-bottom:0; padding-bottom:14px; }
   .topic.collapsed .topic-head::after{ transform:rotate(-90deg); }
   .topic.collapsed .topic-body,
   .topic.collapsed .quiz-card{ display:none; }
@@ -159,58 +155,35 @@
   .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
   .mnemo b{ color:var(--vfr); }
 
-  table.ats-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
-  table.ats-table th, table.ats-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
-  table.ats-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
-  .ats-table-wrap{ overflow-x:auto; }
+  table.n-table{ width:100%; border-collapse:collapse; font-size:0.8rem; margin:16px 0; }
+  table.n-table th, table.n-table td{ border:1px solid var(--hairline); padding:8px 10px; text-align:left; vertical-align:top; }
+  table.n-table th{ background:var(--panel-alt); font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .n-table-wrap{ overflow-x:auto; }
 
-  /* ---- composición atmosférica (barra apilada) ---- */
-  .gas-bar{ display:flex; height:38px; border-radius:8px; overflow:hidden; border:1px solid var(--hairline); margin:14px 0; }
-  .gas-seg{ display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-family:'IBM Plex Mono'; font-weight:600; }
-  .gas-legend{ display:flex; flex-wrap:wrap; gap:14px; font-size:0.82rem; color:var(--text-muted); margin-bottom:6px;}
-  .gas-legend span{ display:flex; align-items:center; gap:6px; }
-  .gas-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+  /* ---- Explorador de NOTAM anotado ---- */
+  .explorer-box{ background:var(--navy); border-radius:14px; padding:4px; margin:18px 0; }
+  .explorer-inner{ background:#0d1b2e; border-radius:12px; padding:20px; }
+  .explorer-hint{ color:#9fb3cc; font-size:0.82rem; margin-bottom:14px; }
+  .notam-raw{ font-family:'IBM Plex Mono'; font-size:0.86rem; line-height:2.2; color:#c8d6e8; }
+  .notam-line{ cursor:pointer; padding:3px 8px; border-radius:5px; transition:.15s; display:inline-block; }
+  .notam-line:hover{ background:rgba(255,255,255,0.08); }
+  .notam-line.on{ background:rgba(79,142,247,0.28); color:#fff; box-shadow:0 0 0 1px rgba(79,142,247,0.6) inset; }
+  .notam-tag{ font-size:0.62rem; color:#5b7aa8; margin-right:8px; }
+  .explorer-detail{ background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:16px 18px; margin-top:16px; font-size:0.87rem; line-height:1.6; color:#dbe6f5; }
+  .explorer-detail b.tag{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.7rem; background:rgba(79,142,247,0.25); color:#8fb4f7; padding:3px 10px; border-radius:6px; margin-bottom:8px; }
 
-  /* ---- diagrama de la atmósfera (capas) ---- */
-  .atmos-wrap{ display:grid; grid-template-columns: 1fr; gap:0; margin:20px 0; border-radius:14px; overflow:hidden; border:1px solid var(--hairline); }
-  .atmos-layer{ position:relative; padding:16px 18px; color:#fff; display:flex; flex-direction:column; gap:4px; }
-  .atmos-layer .lname{ font-family:'Archivo'; font-weight:800; font-size:1rem; }
-  .atmos-layer .lrange{ font-family:'IBM Plex Mono'; font-size:0.72rem; opacity:0.88; }
-  .atmos-layer .ldesc{ font-size:0.82rem; opacity:0.95; max-width:640px; line-height:1.5; }
-  .l-exosfera{ background:linear-gradient(180deg,#050912,#0A1B33); padding-top:26px; }
-  .l-termosfera{ background:linear-gradient(180deg,#0A1B33,#123B6B); }
-  .l-mesosfera{ background:linear-gradient(180deg,#123B6B,#1657C6); }
-  .l-estratosfera{ background:linear-gradient(180deg,#1657C6,#3E7BFA); }
-  .l-troposfera{ background:linear-gradient(180deg,#3E7BFA,#8FC1E8); color:#0A2647; padding-bottom:26px; }
-  .l-troposfera .lrange, .l-troposfera .ldesc{ opacity:0.85; }
+  /* ---- selector genérico de tarjetas ---- */
+  .sel-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:20px; margin:18px 0; }
+  .sel-box h4{ font-size:0.95rem; margin-bottom:6px; }
+  .sel-box p.hint{ font-size:0.84rem; color:var(--text-muted); margin:0 0 14px; }
+  .sel-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .sel-tab{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:9px 16px; font-size:0.84rem; font-weight:600; cursor:pointer; color:var(--text-muted); font-family:'IBM Plex Sans'; transition:.15s; }
+  .sel-tab:hover{ border-color:var(--accent); color:var(--accent); }
+  .sel-tab.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .sel-panel{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:16px 18px; font-size:0.87rem; line-height:1.6; }
+  .sel-panel b.tag{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.7rem; background:rgba(var(--accent-rgb),0.14); color:var(--accent); padding:3px 10px; border-radius:6px; margin-bottom:8px; }
 
-  /* ---- actividad drag & drop ---- */
-  .dnd-box{ border:1px solid var(--hairline); border-radius:14px; padding:18px; background:var(--panel); margin:18px 0; }
-  .dnd-instructions{ font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; }
-  .dnd-layers{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
-  .dnd-layer{ border-radius:10px; padding:12px 14px; color:#fff; min-height:52px; transition:.15s; border:2px dashed rgba(255,255,255,0.35); }
-  .dnd-layer.dragover{ border-color:#fff; transform:scale(1.01); box-shadow:0 0 0 3px rgba(255,255,255,0.25); }
-  .dnd-layer .lname{ font-family:'Archivo'; font-weight:700; font-size:0.9rem; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-  .dnd-layer .lname .rng{ font-family:'IBM Plex Mono'; font-size:0.65rem; opacity:0.85; font-weight:400; }
-  .dnd-dropped{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-  .dnd-chip-placed{ background:rgba(255,255,255,0.92); color:var(--navy); font-size:0.72rem; font-weight:600; padding:5px 10px; border-radius:20px; }
-  .dnd-pool{ display:flex; flex-wrap:wrap; gap:8px; padding-top:6px; border-top:1px dashed var(--hairline); }
-  .dnd-chip{ cursor:grab; background:var(--bg); border:1px solid var(--hairline); border-radius:20px; padding:8px 14px; font-size:0.8rem; font-weight:500; transition:.15s; user-select:none; }
-  .dnd-chip:hover{ border-color:var(--accent); color:var(--accent); }
-  .dnd-chip.selected{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.12); color:var(--accent); font-weight:600; }
-  .dnd-chip.wrong-shake{ animation:shakeChip .4s; border-color:var(--danger); }
-  @keyframes shakeChip{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
-  .dnd-status{ margin-top:10px; font-size:0.85rem; font-weight:600; min-height:20px; }
-  .dnd-status.ok{ color:var(--vfr); }
-  .dnd-status.bad{ color:var(--danger); }
-  .dnd-progress{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); margin-top:6px; }
-  .dnd-reset{ margin-top:12px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:7px 14px; border-radius:8px; font-size:0.78rem; cursor:pointer; }
-  .dnd-reset:hover{ border-color:var(--accent); color:var(--accent); }
-
-  .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
-  .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
-
+  /* ---------- QUIZ ---------- */
   .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
   .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
@@ -232,50 +205,14 @@
   .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
   .mobile-nav.open{ display:block; }
   .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
-  .mobile-nav-panel{
-    position:absolute; top:0; right:0; bottom:0;
-    width:min(300px, 85vw);
-    background:var(--panel);
-    border-left:1px solid var(--hairline);
-    padding:24px 0;
-    display:flex; flex-direction:column;
-    overflow-y:auto;
-    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
-  }
-  .mobile-nav-header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 24px 20px;
-    border-bottom:1px solid var(--hairline);
-    margin-bottom:12px;
-  }
-  .mobile-nav-close{
-    background:none; border:1px solid var(--hairline);
-    color:var(--text); width:40px; height:40px;
-    border-radius:8px; font-size:1.1rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .mobile-nav-links a{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 24px;
-    text-decoration:none; color:var(--text);
-    font-size:0.95rem; font-weight:500;
-    border-bottom:1px solid var(--hairline);
-    transition:background .15s, color .15s, padding-left .15s;
-  }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
   .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
   .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
-  .mobile-nav-footer{
-    margin-top:auto; padding:20px 24px 0;
-    display:flex; align-items:center; justify-content:space-between;
-    border-top:1px solid var(--hairline);
-  }
-  .mobile-nav-footer .theme-toggle{
-    display:flex; align-items:center; gap:8px;
-    background:none; border:1px solid var(--hairline);
-    color:var(--text-muted); padding:8px 14px; border-radius:8px;
-    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
-    transition:color .2s, border-color .2s;
-  }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
@@ -308,12 +245,12 @@
         </button>
         <div class="nav-dropdown-menu" id="modulosMenu">
           <div class="nav-dropdown-menu-inner">
-            <a href="meteorologia.html" class="active">Meteorología</a>
+            <a href="meteorologia.html">Meteorología</a>
             <a href="ats.html">ATS</a>
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
             <a href="navegacion.html">Navegación</a>
-            <a href="notam.html">NOTAM</a>
+            <a href="notam.html" class="active">NOTAM</a>
           </div>
         </div>
       </div>
@@ -347,12 +284,12 @@
     <nav class="mobile-nav-links">
       <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
       <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
-      <a href="meteorologia.html" class="active">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
       <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
-      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="notam.html" class="active">NOTAM <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -371,9 +308,10 @@
 
   <div class="subtabs">
     <div class="subtabs-inner">
-      <a href="meteorologia-generalidades.html" class="subtab active"><span class="n">1</span> Generalidades y Atmósfera</a>
-      <a href="meteorologia-variables.html" class="subtab"><span class="n">2</span> Variables Meteorológicas</a>
-      <a href="meteorologia-nubosidad.html" class="subtab"><span class="n">3</span> Nubosidad · Meteoros</a>
+      <a href="notam-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
+      <a href="notam-formato.html" class="subtab active"><span class="n">1</span> Formato</a>
+      <a href="notam-codigo-q.html" class="subtab"><span class="n">2</span> Código Q</a>
+      <a href="notam-especiales.html" class="subtab"><span class="n">3</span> Especiales</a>
     </div>
   </div>
 
@@ -387,45 +325,58 @@
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Meteorología — Eje temático 1</div>
-  <h1>Generalidades: qué es la meteorología y cómo está armada la atmósfera.</h1>
-  <p class="lead">Antes de hablar de viento, presión o nubes, hay que tener clarísimo dónde ocurre todo eso: la atmósfera. Aquí vemos las definiciones base y recorremos capa por capa, de la superficie hacia el espacio.</p>
-  <div class="hero-note">🎈 <div><b>Cómo estudiar esta página:</b> lee cada bloque, responde el chequeo rápido que sigue y al final arma tú mismo la atmósfera arrastrando las características a su capa correcta.</div></div>
+  <div class="eyebrow">NOTAM — Bloque 1 · Formato</div>
+  <h1>Anatomía del formato NOTAM: casilla por casilla.</h1>
+  <p class="lead">El formato NOTAM (Anexo 15 / PANS-AIM) estandariza cómo se presenta cada tipo de información. Este bloque te lleva casilla por casilla — Q), A), B), C), D), E), F) y G) — sobre un NOTAM real que puedes explorar tocando cada línea.</p>
+  <div class="hero-note">
+    <span>🗂️</span>
+    <span><b>Cómo estudiar esta página:</b> empieza tocando cada línea del NOTAM anotado del tema 1 para tener el panorama completo, y luego profundiza en cada casilla en los temas siguientes.</span>
+  </div>
 </section>
 
 <nav class="toc">
-  <a href="#t1">1. ¿Qué es la Meteorología?</a>
-  <a href="#t2">2. Tiempo vs. Clima</a>
-  <a href="#t3">3. La atmósfera: definición y composición</a>
-  <a href="#t4">4. Tropósfera</a>
-  <a href="#t5">5. Estratosfera</a>
-  <a href="#t6">6. Mesosfera</a>
-  <a href="#t7">7. Termosfera e Ionosfera</a>
-  <a href="#t8">8. Exosfera</a>
-  <a href="#t9">9. Actividad: arma la atmósfera</a>
+  <a href="#t1">1. Explora un NOTAM real</a>
+  <a href="#t2">2. Calificador Alcance (Scope)</a>
+  <a href="#t3">3. Radio estándar por código</a>
+  <a href="#t4">4. Casilla A) — Ubicación</a>
+  <a href="#t5">5. Casillas B), C), D) — Horario</a>
+  <a href="#t6">6. Casillas F) y G) — Límites verticales</a>
+  <a href="#t7">7. Casilla E) — Reglas de redacción</a>
+  <a href="#t8">8. Símbolos especiales</a>
 </nav>
 
 <main class="content">
 
   <!-- 1 -->
   <article class="topic" id="t1">
-    <div class="topic-head"><div class="topic-num">1</div><h2>¿Qué es la Meteorología?</h2></div>
+    <div class="topic-head"><div class="topic-num">1</div><h2>Explora un NOTAM real, casilla por casilla</h2></div>
     <div class="topic-body">
-      <p>La <b>Meteorología</b> es la ciencia que estudia la atmósfera y los fenómenos que ocurren en ella: viento, temperatura, humedad, presión, nubes y precipitación. Su objetivo es describir, entender y predecir el <b>estado de la atmósfera</b> en un lugar y momento determinados.</p>
-      <div class="objective-grid">
-        <div class="objective-item"><b>¿Por qué?</b>Porque casi todos los fenómenos que afectan un vuelo (turbulencia, visibilidad, viento cruzado, hielo, tormentas) nacen en la atmósfera.</div>
-        <div class="objective-item"><b>¿Para qué?</b>Para que el piloto y el controlador tomen decisiones seguras: despegar, desviar, esperar o cancelar.</div>
-        <div class="objective-item"><b>¿Con qué?</b>Con datos de estaciones, radiosondas, satélites y radares que alimentan reportes como el METAR y el TAF.</div>
+      <p>El formato NOTAM tiene dos partes: la que le interesa al servicio de telecomunicaciones (prioridad, direcciones, fecha/hora de presentación) y la que trae la información en sí — serie/número/tipo, y las casillas Q) a G). Este es un ejemplo (con fines didácticos, usando la jurisdicción ficticia "Amswell FIR" que emplea el propio Doc 8126 de OACI para sus ejemplos): un ejercicio militar activa temporalmente una zona restringida. <b>Toca cada línea</b> para ver qué significa.</p>
+
+      <div class="explorer-box">
+        <div class="explorer-inner">
+          <div class="explorer-hint">👆 Toca cualquier línea del NOTAM para explorarla</div>
+          <div class="notam-raw" id="notamRaw">
+            <div class="notam-line" data-item="head"><span class="notam-tag">//</span>B0087/26 NOTAMN</div>
+            <div class="notam-line" data-item="Q"><span class="notam-tag">Q)</span>EACC/QRTCA/IV/BO/W/000/080/4445N07515W015</div>
+            <div class="notam-line" data-item="A"><span class="notam-tag">A)</span>EACC <span class="notam-tag">B)</span>2609151300 <span class="notam-tag">C)</span>2609151700</div>
+            <div class="notam-line" data-item="D"><span class="notam-tag">D)</span>15 17 19 1300-1700</div>
+            <div class="notam-line" data-item="E"><span class="notam-tag">E)</span>TEMPORARY RESTRICTED AREA ACT DUE MIL EXER, RADIUS 15NM CENTRE 4445N07515W</div>
+            <div class="notam-line" data-item="FG"><span class="notam-tag">F)</span>SFC <span class="notam-tag">G)</span>FL080</div>
+          </div>
+          <div class="explorer-detail" id="explorerDetail"></div>
+        </div>
       </div>
-      <div class="mnemo"><b>🧠 Idea clave:</b> la meteorología aeronáutica no es "adivinar el clima", es traducir el estado físico de la atmósfera en información operacional para la aviación.</div>
+
+      <p>Este ejemplo trae 3 fechas de ejercicio (15, 17 y 19 de septiembre), cada una de 1300 a 1700 UTC — por eso necesita la Casilla D) además de B) y C). Como es una restricción de espacio aéreo con techo definido (FL080), también trae F) y G).</p>
     </div>
     <div class="quiz-card" data-quiz="1">
       <div class="quiz-tag">🎯 Chequeo rápido 1/8</div>
-      <div class="quiz-q">La Meteorología estudia principalmente...</div>
+      <div class="quiz-q">En el NOTAM del ejemplo, ¿por qué aparece la Casilla D) además de B) y C)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Las rutas y procedimientos de navegación aérea</button>
-        <button class="quiz-opt" data-correct="true">La atmósfera y los fenómenos que ocurren en ella</button>
-        <button class="quiz-opt" data-correct="false">La estructura del espacio aéreo controlado</button>
+        <button class="quiz-opt" data-correct="false">Es obligatoria en todos los NOTAM</button>
+        <button class="quiz-opt" data-correct="true">Porque el ejercicio no ocurre de forma continua entre el inicio y el fin — solo en 3 fechas concretas</button>
+        <button class="quiz-opt" data-correct="false">Porque el NOTAM es un NOTAMR</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -433,26 +384,29 @@
 
   <!-- 2 -->
   <article class="topic" id="t2">
-    <div class="topic-head"><div class="topic-num">2</div><h2>Tiempo vs. Clima</h2></div>
+    <div class="topic-head"><div class="topic-num">2</div><h2>El calificador Alcance (Scope)</h2></div>
     <div class="topic-body">
-      <p>Son dos palabras que se confunden mucho, pero en meteorología significan cosas distintas:</p>
-      <div class="ats-table-wrap">
-      <table class="ats-table">
-        <tr><th></th><th>Tiempo (Weather)</th><th>Clima (Climate)</th></tr>
-        <tr><td><b>Escala temporal</b></td><td>Corto plazo: horas o días</td><td>Largo plazo: promedios de 30 años o más</td></tr>
-        <tr><td><b>Qué describe</b></td><td>El estado real de la atmósfera hoy, ahora mismo</td><td>El comportamiento típico/esperado de un lugar</td></tr>
-        <tr><td><b>Ejemplo</b></td><td>"Hoy hay lluvia y viento de 15 nudos en el aeropuerto"</td><td>"Esta región es tropical húmeda todo el año"</td></tr>
-        <tr><td><b>Uso en aviación</b></td><td>METAR, SPECI, TAF, reportes en vivo</td><td>Estudios de planeación de rutas, pistas y aeropuertos</td></tr>
+      <p>Dentro de la Casilla Q), el quinto campo (después de FIR/código Q/Tránsito/Objeto) es el <b>Alcance</b>: para qué tipo de información previa al vuelo (PIB) sirve filtrar este NOTAM.</p>
+      <div class="n-table-wrap">
+      <table class="n-table">
+        <tr><th>Código</th><th>Significa</th><th>Regla clave</th></tr>
+        <tr><td><b>A</b></td><td>Aeródromo</td><td>Obligatorio el indicador de lugar del aeródromo en A); coordenadas = punto de referencia del aeródromo (ARP).</td></tr>
+        <tr><td><b>AE</b></td><td>Aeródromo y en ruta</td><td>Cuando una instalación de aeródromo (p. ej. un VOR) también afecta al tránsito en ruta.</td></tr>
+        <tr><td><b>AW</b></td><td>Aeródromo y aviso de navegación</td><td>Un aviso de navegación cerca de un aeródromo, que afecta también al tránsito en ruta.</td></tr>
+        <tr><td><b>E</b></td><td>En ruta</td><td>Obligatorio uno o más indicadores de FIR en A).</td></tr>
+        <tr><td><b>W</b></td><td>Aviso de navegación</td><td>Obligatorio uno o más indicadores de FIR en A). Restricciones de espacio aéreo y avisos (WA-WW, RA-RT) usan este alcance.</td></tr>
+        <tr><td><b>K</b></td><td>Checklist</td><td>Exclusivo del checklist de NOTAM — saca al mensaje del PIB.</td></tr>
       </table>
       </div>
-      <div class="mnemo"><b>🧠 Truco:</b> el <b>tiempo</b> es lo que te pones hoy antes de salir; el <b>clima</b> es lo que ya sabes que te vas a encontrar en esa ciudad todo el año.</div>
+      <div class="mnemo"><b>🧠 Truco:</b> si el código empieza por <span class="mono">Q</span>N (radioayudas) casi siempre es AE; si empieza por <span class="mono">Q</span>R o <span class="mono">Q</span>W (restricciones/avisos) casi siempre es W — como en el ejemplo del tema 1.</div>
     </div>
     <div class="quiz-card" data-quiz="2">
       <div class="quiz-tag">🎯 Chequeo rápido 2/8</div>
-      <div class="quiz-q">Un METAR reporta el estado de la atmósfera en un momento puntual. Esto corresponde a...</div>
+      <div class="quiz-q">Si un NOTAM tiene Alcance "A", ¿qué coordenadas usa por convención en la Casilla Q)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Tiempo (weather)</button>
-        <button class="quiz-opt" data-correct="false">Clima (climate)</button>
+        <button class="quiz-opt" data-correct="true">Las del punto de referencia del aeródromo (ARP)</button>
+        <button class="quiz-opt" data-correct="false">El centro geográfico del país</button>
+        <button class="quiz-opt" data-correct="false">No lleva coordenadas</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -460,82 +414,56 @@
 
   <!-- 3 -->
   <article class="topic" id="t3">
-    <div class="topic-head"><div class="topic-num">3</div><h2>La atmósfera: definición y composición</h2></div>
+    <div class="topic-head"><div class="topic-num">3</div><h2>Radio estándar según el código NOTAM</h2></div>
     <div class="topic-body">
-      <p>La <b>atmósfera</b> es la capa de gases que envuelve la Tierra, retenida por la fuerza de gravedad. No tiene un límite superior definido: simplemente se va haciendo cada vez menos densa hasta mezclarse con el vacío del espacio.</p>
-      <p>Su composición es casi constante hasta unos 80 km de altura (capa homogénea llamada <b>homósfera</b>):</p>
-      <div class="gas-legend">
-        <span><i style="background:#1657C6"></i>Nitrógeno (N₂) 78%</span>
-        <span><i style="background:#3E7BFA"></i>Oxígeno (O₂) 21%</span>
-        <span><i style="background:#E08E3E"></i>Otros gases ~1% (Argón, CO₂, Neón, vapor de agua, ozono...)</span>
+      <p>El último campo de la Casilla Q) es el radio (en millas náuticas, 3 dígitos) del círculo que representa el área de influencia. Para varios tipos de NOTAM, el Doc 8126 estandariza un valor por defecto, para uniformidad:</p>
+      <div class="n-table-wrap">
+      <table class="n-table">
+        <tr><th>Código NOTAM</th><th>Qué cubre</th><th>Radio estándar</th></tr>
+        <tr><td><span class="mono">Q-----</span></td><td>NOTAM de aeródromo/radioayuda con Alcance A</td><td>005 NM</td></tr>
+        <tr><td><span class="mono">QN----</span></td><td>Radioayudas (VOR/DME, NDB…) salvo sistemas de largo alcance</td><td>025 NM</td></tr>
+        <tr><td><span class="mono">QOB---</span></td><td>Obstáculo</td><td>001 NM</td></tr>
+        <tr><td><span class="mono">QOL---</span></td><td>Luz de obstáculo</td><td>001 NM</td></tr>
+        <tr><td><span class="mono">QPH---</span></td><td>Procedimiento de espera</td><td>025 NM</td></tr>
+        <tr><td><span class="mono">QAP---</span></td><td>Punto de notificación</td><td>001 NM</td></tr>
+        <tr><td><span class="mono">QAX---</span></td><td>Punto significativo</td><td>001 NM</td></tr>
+      </table>
       </div>
-      <div class="gas-bar">
-        <div class="gas-seg" style="background:#1657C6; width:78%;">N₂ 78%</div>
-        <div class="gas-seg" style="background:#3E7BFA; width:21%;">O₂ 21%</div>
-        <div class="gas-seg" style="background:#E08E3E; width:1%;"></div>
-      </div>
-      <p>La atmósfera se divide en <b>capas o niveles</b> según cómo se comporta la temperatura con la altura. Ese criterio (sube o baja la temperatura) es la clave para identificar cada capa, y es justo lo que vamos a recorrer a continuación.</p>
-      <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">Las capas NO se distinguen por su composición química (que es casi igual hasta los 80 km), sino por el <b>comportamiento de la temperatura</b>: si aumenta o disminuye con la altura.</p>
-      </div>
+      <p>Si el NOTAM afecta a toda una FIR/UIR o a más de una, el radio se escribe como <span class="mono">999</span> (valor por defecto para "toda el área").</p>
+      <div class="mnemo"><b>🧠 Truco:</b> mientras más puntual es el peligro (obstáculo, punto de notificación), más chico el radio estándar (001 NM); mientras más amplia la instalación (radioayuda), más grande (025 NM).</div>
     </div>
     <div class="quiz-card" data-quiz="3">
       <div class="quiz-tag">🎯 Chequeo rápido 3/8</div>
-      <div class="quiz-q">¿Cuál es el gas más abundante de la atmósfera?</div>
+      <div class="quiz-q">Un NOTAM sobre un obstáculo nuevo (código QOB...) usa, por convención, un radio de:</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Oxígeno</button>
-        <button class="quiz-opt" data-correct="true">Nitrógeno</button>
-        <button class="quiz-opt" data-correct="false">Dióxido de carbono</button>
+        <button class="quiz-opt" data-correct="false">025 NM</button>
+        <button class="quiz-opt" data-correct="true">001 NM</button>
+        <button class="quiz-opt" data-correct="false">999 NM</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
   </article>
 
-  <!-- diagrama general de capas -->
-  <div class="atmos-wrap">
-    <div class="atmos-layer l-exosfera">
-      <div class="lname">🛰️ Exosfera</div>
-      <div class="lrange">≈ 600 km — hasta fundirse con el espacio</div>
-    </div>
-    <div class="atmos-layer l-termosfera">
-      <div class="lname">🌌 Termosfera (incluye la Ionosfera)</div>
-      <div class="lrange">≈ 85 km – 600 km</div>
-    </div>
-    <div class="atmos-layer l-mesosfera">
-      <div class="lname">☄️ Mesosfera</div>
-      <div class="lrange">≈ 50 km – 85 km</div>
-    </div>
-    <div class="atmos-layer l-estratosfera">
-      <div class="lname">🌀 Estratosfera</div>
-      <div class="lrange">≈ 11 km – 50 km</div>
-    </div>
-    <div class="atmos-layer l-troposfera">
-      <div class="lname">✈️ Tropósfera</div>
-      <div class="lrange">Superficie – ≈ 11 km (variable con la latitud)</div>
-    </div>
-  </div>
-
   <!-- 4 -->
   <article class="topic" id="t4">
-    <div class="topic-head"><div class="topic-num">4</div><h2>Tropósfera</h2></div>
+    <div class="topic-head"><div class="topic-num">4</div><h2>Casilla A) — Ubicación</h2></div>
     <div class="topic-body">
-      <p>Es la capa <b>más baja y más importante para la aviación</b>. Va desde la superficie hasta unos <b>11 km (≈36.000 ft)</b> en promedio, aunque su altura varía: es más alta en el ecuador (~18 km) y más baja en los polos (~8 km).</p>
+      <p>La Casilla A) identifica el indicador OACI del aeródromo o de la(s) FIR(s) donde está la instalación, espacio aéreo o condición de la que se informa.</p>
       <ul>
-        <li>Contiene cerca del <b>75-80% de toda la masa de la atmósfera</b> y casi todo el vapor de agua.</li>
-        <li>Aquí ocurre <b>prácticamente todo el "tiempo"</b>: nubes, lluvia, tormentas, viento, turbulencia.</li>
-        <li>La temperatura <b>disminuye con la altura</b>: aproximadamente <b>2°C por cada 1.000 ft</b> (gradiente térmico estándar OACI ≈ 6.5°C/km).</li>
-        <li>Termina en la <b>Tropopausa</b>: una capa de transición delgada donde la temperatura deja de bajar y se estabiliza. Es un límite clave para el vuelo (cerca de ella se ubica el nivel de crucero de muchos aviones comerciales).</li>
+        <li>Solo se puede indicar <b>un aeródromo</b>. Si el hecho afecta a más de uno, se publican NOTAM separados.</li>
+        <li>Se pueden indicar <b>varias FIR</b> cuando corresponda — hasta un máximo de 7 por restricciones de la red de telecomunicaciones (AFTN); si son más, se usa un indicador especial acordado o se publican NOTAM adicionales.</li>
+        <li>Si no existe un indicador OACI para el lugar, se usan las dos letras de nacionalidad del Estado + "XX", y el nombre del lugar debe aparecer en texto claro en la Casilla E).</li>
+        <li>Un NOTAMR o NOTAMC siempre repite la misma Casilla A) que el NOTAM que reemplazan o cancelan.</li>
       </ul>
-      <div class="mnemo"><b>🧠 Truco:</b> "Tropósfera" viene del griego <i>tropos</i> (cambio, giro): es la capa donde todo cambia y se revuelve — por eso ahí vive el clima.</div>
+      <div class="mnemo"><b>🧠 Truco:</b> "un aeródromo, varias FIR" — nunca al revés.</div>
     </div>
     <div class="quiz-card" data-quiz="4">
       <div class="quiz-tag">🎯 Chequeo rápido 4/8</div>
-      <div class="quiz-q">En la tropósfera, a medida que se asciende, la temperatura...</div>
+      <div class="quiz-q">Un hecho afecta a dos aeródromos distintos. ¿Cómo se publica en la Casilla A)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Disminuye (aprox. 2°C cada 1.000 ft)</button>
-        <button class="quiz-opt" data-correct="false">Aumenta constantemente</button>
-        <button class="quiz-opt" data-correct="false">Se mantiene siempre igual</button>
+        <button class="quiz-opt" data-correct="false">Los dos indicadores separados por una barra en un mismo NOTAM</button>
+        <button class="quiz-opt" data-correct="true">Se publican NOTAM separados, uno por aeródromo</button>
+        <button class="quiz-opt" data-correct="false">Se usa el indicador de la FIR que los contiene</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -543,26 +471,27 @@
 
   <!-- 5 -->
   <article class="topic" id="t5">
-    <div class="topic-head"><div class="topic-num">5</div><h2>Estratosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">5</div><h2>Casillas B), C) y D) en profundidad</h2></div>
     <div class="topic-body">
-      <p>Va desde la tropopausa (≈11 km) hasta unos <b>50 km</b> de altura. Aquí la situación se invierte respecto a la tropósfera:</p>
+      <p>Ya viste las reglas generales de validez en el Bloque ★. Dos matices adicionales sobre la Casilla D) (horario):</p>
       <ul>
-        <li>La temperatura <b>aumenta con la altura</b>, gracias a la <b>capa de ozono (O₃)</b>, que absorbe radiación ultravioleta del sol y calienta el aire de esta capa.</li>
-        <li>El aire es muy estable (por eso se llama "estrato": capas horizontales que casi no se mezclan verticalmente).</li>
-        <li>Hay muy poco vapor de agua, casi no hay nubes ni turbulencia — por eso los <b>vuelos supersónicos y algunos globos de gran altura</b> vuelan aquí.</li>
+        <li><b>H24</b> se inserta cuando la actividad cubre el día completo, en vez de repetir el rango horario.</li>
+        <li>Se pueden usar referencias a la salida y puesta del sol: <span class="mono">SR-SS</span> (de salida a puesta de sol), <span class="mono">SR MINUS30-SS</span> (30 min antes de la salida), <span class="mono">SR MINUS30-1500</span>, <span class="mono">1000-SS</span>.</li>
+        <li>Se pueden indicar excepciones: <span class="mono">MON-FRI 0700-1800 EXC FEB 19</span>.</li>
       </ul>
       <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">La <b>capa de ozono</b> está dentro de la <b>estratosfera</b>, no en la tropósfera ni en la mesosfera. Es la responsable de que la temperatura suba en esta capa.</p>
+        <h4>⚠️ Dato que suelen preguntar</h4>
+        <p style="margin:0;">El primer período de la Casilla D) debe coincidir con el inicio de B), y el último con el fin de C) — aunque ese último período no siempre es la última entrada escrita en D).</p>
       </div>
+      <div class="mnemo"><b>🧠 Truco:</b> D) nunca "inventa" un rango fuera de B)-C" — es una subdivisión de ese rango, no una extensión.</div>
     </div>
     <div class="quiz-card" data-quiz="5">
       <div class="quiz-tag">🎯 Chequeo rápido 5/8</div>
-      <div class="quiz-q">¿Por qué la temperatura aumenta con la altura en la estratosfera?</div>
+      <div class="quiz-q">Una actividad ocurre todos los días, durante el día completo, entre el 16 y el 28 de febrero. ¿Qué abreviatura se usa en Casilla D) para no repetir el horario cada día?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Por la cercanía al suelo caliente</button>
-        <button class="quiz-opt" data-correct="true">Por la absorción de radiación UV en la capa de ozono</button>
-        <button class="quiz-opt" data-correct="false">Por la fricción de los meteoritos</button>
+        <button class="quiz-opt" data-correct="false">UFN</button>
+        <button class="quiz-opt" data-correct="true">H24</button>
+        <button class="quiz-opt" data-correct="false">EST</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -570,23 +499,24 @@
 
   <!-- 6 -->
   <article class="topic" id="t6">
-    <div class="topic-head"><div class="topic-num">6</div><h2>Mesosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">6</div><h2>Casillas F) y G) — Límites verticales</h2></div>
     <div class="topic-body">
-      <p>Se extiende aproximadamente entre <b>50 km y 85 km</b>. Es la capa <b>más fría de toda la atmósfera</b>, con temperaturas que pueden bajar de <b>-90°C</b>.</p>
+      <p>F) es el límite inferior y G) el límite superior del área afectada, expresados en metros o pies AMSL (sobre el nivel del mar), AGL (sobre el terreno), como nivel de vuelo (FL), superficie (<span class="mono">SFC</span>/<span class="mono">GND</span>) o, en G), como ilimitado (<span class="mono">UNL</span>).</p>
       <ul>
-        <li>La temperatura vuelve a <b>disminuir con la altura</b> (ya no hay ozono que caliente el aire).</li>
-        <li>Aquí es donde la mayoría de los <b>meteoritos se desintegran</b> por fricción con el aire, generando las "estrellas fugaces".</li>
-        <li>Es difícil de estudiar directamente: demasiado alta para globos y demasiado baja para satélites.</li>
+        <li>El valor y la unidad van <b>pegados, sin espacio</b> (ej. <span class="mono">6500FT</span>); la referencia (AMSL/AGL) va después, con espacio (ej. <span class="mono">6500FT AMSL</span>).</li>
+        <li>En F) nunca se usa el valor <span class="mono">000</span>; en G) nunca se usa <span class="mono">999</span> — para eso están <span class="mono">SFC/GND</span> y <span class="mono">UNL</span> respectivamente.</li>
+        <li>Los valores de F)/G) deben ser <b>coherentes</b> con los campos Límite Inferior/Superior de la Casilla Q) (redondeados hacia abajo/arriba al centenar de pies más cercano).</li>
       </ul>
-      <div class="mnemo"><b>🧠 Truco:</b> Mesosfera = "capa de en medio" y también la capa más helada — donde se queman los meteoritos antes de llegar a nosotros.</div>
+      <div class="nmono" style="font-family:'IBM Plex Mono'; background:var(--panel); border:1px solid var(--hairline); border-radius:8px; padding:12px 16px; font-size:0.85rem;">F) GND G) 30000FT AMSL</div>
+      <div class="mnemo"><b>🧠 Truco:</b> "pegado el número a la unidad, separada la referencia" — <span class="mono">3000FT AMSL</span>, nunca <span class="mono">3000 FT AMSL</span> ni <span class="mono">3000FTAMSL</span>.</div>
     </div>
     <div class="quiz-card" data-quiz="6">
       <div class="quiz-tag">🎯 Chequeo rápido 6/8</div>
-      <div class="quiz-q">¿En qué capa se desintegran la mayoría de los meteoritos al entrar a la atmósfera?</div>
+      <div class="quiz-q">Un área sin techo definido (ilimitado) se expresa en la Casilla G) como:</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Estratosfera</button>
-        <button class="quiz-opt" data-correct="true">Mesosfera</button>
-        <button class="quiz-opt" data-correct="false">Termosfera</button>
+        <button class="quiz-opt" data-correct="false">999</button>
+        <button class="quiz-opt" data-correct="true">UNL</button>
+        <button class="quiz-opt" data-correct="false">FL999</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -594,26 +524,26 @@
 
   <!-- 7 -->
   <article class="topic" id="t7">
-    <div class="topic-head"><div class="topic-num">7</div><h2>Termosfera e Ionosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">7</div><h2>Casilla E) — Reglas de redacción</h2></div>
     <div class="topic-body">
-      <p>La <b>Termosfera</b> va desde ≈85 km hasta ≈600 km. Su nombre lo dice todo: aquí la temperatura <b>vuelve a aumentar</b>, y de forma extrema — puede superar los <b>1.500°C</b> — porque las moléculas de gas (muy escasas) absorben directamente radiación solar de alta energía.</p>
+      <p>La Casilla E) trae el texto en lenguaje claro — fraseología abreviada uniforme, complementada con abreviaturas OACI (Doc 8400) cuando haga falta. Reglas de estilo obligatorias:</p>
       <ul>
-        <li>Dentro de la termosfera está la <b>Ionosfera</b>: una región donde la radiación solar ioniza los gases (les quita electrones), formando partículas cargadas eléctricamente.</li>
-        <li>La ionosfera <b>refleja ondas de radio</b>, lo que permite las comunicaciones de larga distancia (HF).</li>
-        <li>Aquí ocurren las <b>auroras boreales y australes</b>, y orbitan satélites de <b>órbita baja (LEO)</b> y la <b>Estación Espacial Internacional</b>.</li>
+        <li>Debe ser lo más <b>breve</b> posible (idealmente no más de 300 caracteres) y tratar <b>un solo asunto y una sola condición</b>.</li>
+        <li>Las direcciones cardinales (N, S, E, W) y ordinales (NE, SE, SW, NW) <b>no se abrevian</b> cuando se combinan con elementos que suenan parecido al abreviarse (p. ej. calles de rodaje): se escriben completas — <span class="mono">TWY A AND C SOUTHWEST OF RWY 10/28 CLSD</span>.</li>
+        <li>No se usa <span class="mono">/</span> ni <span class="mono">-</span> como separador dentro del texto libre.</li>
+        <li>Un área de forma irregular se define enumerando los puntos <b>en sentido horario</b>, separados por guion, repitiendo el primer punto al final.</li>
+        <li>Un área circular se define con <span class="mono">RADIUS</span> + valor + <span class="mono">CENTRE</span> + coordenadas.</li>
+        <li>Un correo se escribe reemplazando el <span class="mono">@</span> por <span class="mono">(A)</span>.</li>
       </ul>
-      <div class="card-box">
-        <h4>⚠️ Dato que suelen preguntar en examen</h4>
-        <p style="margin:0;">Aunque la termosfera tiene temperaturas altísimas, un astronauta no "sentiría calor" ahí: el aire es tan escaso que casi no hay moléculas para transmitir esa energía como calor (no hay suficiente densidad para la conducción).</p>
-      </div>
+      <div class="mnemo"><b>🧠 Truco:</b> el ejemplo del tema 1 usa exactamente este patrón — <span class="mono">RADIUS 15NM CENTRE 4445N07515W</span> — porque describe un área circular, no un polígono.</div>
     </div>
     <div class="quiz-card" data-quiz="7">
       <div class="quiz-tag">🎯 Chequeo rápido 7/8</div>
-      <div class="quiz-q">La capa que permite las comunicaciones de radio de larga distancia al reflejar las ondas es...</div>
+      <div class="quiz-q">¿Por qué en la Casilla E) se escribe "SOUTHWEST" completo en vez de "SW" cuando se refiere a calles de rodaje?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La Ionosfera (dentro de la Termosfera)</button>
-        <button class="quiz-opt" data-correct="false">La Tropopausa</button>
-        <button class="quiz-opt" data-correct="false">La capa de ozono</button>
+        <button class="quiz-opt" data-correct="false">Porque "SW" no es una abreviatura válida de la OACI</button>
+        <button class="quiz-opt" data-correct="true">Para evitar confusión con designadores que suenan parecido al abreviarse (como nombres de calle de rodaje)</button>
+        <button class="quiz-opt" data-correct="false">Solo es obligatorio en español</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -621,23 +551,32 @@
 
   <!-- 8 -->
   <article class="topic" id="t8">
-    <div class="topic-head"><div class="topic-num">8</div><h2>Exosfera</h2></div>
+    <div class="topic-head"><div class="topic-num">8</div><h2>Símbolos especiales y resumen</h2></div>
     <div class="topic-body">
-      <p>Es la <b>última capa</b>, desde unos 600 km hacia afuera. Es la zona de transición entre la atmósfera y el espacio exterior: no tiene un límite superior claro.</p>
-      <ul>
-        <li>El aire es <b>extremadamente escaso</b>: las moléculas están tan separadas que casi no chocan entre sí.</li>
-        <li>Aquí orbitan los <b>satélites geoestacionarios</b> y de comunicaciones.</li>
-        <li>Se considera el punto donde la atmósfera terrestre se "disuelve" en el vacío del espacio.</li>
-      </ul>
-      <div class="mnemo"><b>🧠 Truco para recordar el orden completo (de superficie hacia arriba):</b> <b>"Toda Estudiante Meteoróloga Toma Examen"</b> → Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
+      <p>El formato NOTAM incluye símbolos especiales pensados para su transmisión por el servicio fijo aeronáutico (AFS): retorno de carro, cambio de línea, espacio en blanco, y paréntesis de apertura/cierre que enmarcan el mensaje completo — por eso en los ejemplos oficiales todo el NOTAM aparece entre paréntesis.</p>
+
+      <div class="sel-box">
+        <h4>🗂️ Repaso: elige una casilla</h4>
+        <p class="hint">Un resumen de una línea por casilla, para repasar antes del chequeo final.</p>
+        <div class="sel-tabs" id="recapTabs">
+          <button class="sel-tab on" data-r="Q">Q)</button>
+          <button class="sel-tab" data-r="A">A)</button>
+          <button class="sel-tab" data-r="BCD">B) C) D)</button>
+          <button class="sel-tab" data-r="E">E)</button>
+          <button class="sel-tab" data-r="FG">F) G)</button>
+        </div>
+        <div class="sel-panel" id="recapPanel"></div>
+      </div>
+
+      <div class="mnemo"><b>🧠 Idea final:</b> cada casilla responde una pregunta — Q) ¿qué y cómo filtrarlo?, A) ¿dónde?, B)/C)/D) ¿cuándo?, E) ¿qué pasó, en palabras?, F)/G) ¿en qué altura?</div>
     </div>
     <div class="quiz-card" data-quiz="8">
       <div class="quiz-tag">🎯 Chequeo rápido 8/8 — ¡última pregunta!</div>
-      <div class="quiz-q">Ordena mentalmente las capas de la atmósfera de la superficie hacia el espacio. ¿Cuál va justo antes de la Exosfera?</div>
+      <div class="quiz-q">¿Qué casilla responde específicamente "¿en qué altura o nivel de vuelo ocurre esto?"?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Estratosfera</button>
-        <button class="quiz-opt" data-correct="false">Mesosfera</button>
-        <button class="quiz-opt" data-correct="true">Termosfera</button>
+        <button class="quiz-opt" data-correct="false">Casilla A)</button>
+        <button class="quiz-opt" data-correct="false">Casilla D)</button>
+        <button class="quiz-opt" data-correct="true">Casillas F) y G)</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -646,56 +585,14 @@
   <div class="finish-card" id="finishCard" style="display:none;">
     <div class="big">🏆</div>
     <h3>Bloque completado</h3>
-    <p style="color:var(--text-muted); margin-top:8px;">Respondiste las 8 preguntas correctamente. Ya conoces las capas de la atmósfera — ahora ponlas a prueba armándolas tú mismo en la actividad de abajo.</p>
+    <p style="color:var(--text-muted); margin-top:8px;">Ya sabes leer cualquier NOTAM casilla por casilla. Sigue con el Bloque 2 — Código Q, para aprender a construir el código de 5 letras.</p>
   </div>
-
-  <!-- 9: actividad interactiva -->
-  <article class="topic" id="t9">
-    <div class="topic-head"><div class="topic-num">9</div><h2>Actividad: arma la atmósfera</h2></div>
-    <div class="topic-body">
-      <p>Abajo tienes las 5 capas de la atmósfera vacías, y una bolsa de <b>características</b> desordenadas. Tu misión: arrastra (o toca) cada característica y colócala en la capa correcta.</p>
-    </div>
-
-    <div class="dnd-box">
-      <div class="dnd-instructions">📌 En computador: arrastra la tarjeta hasta la capa. En celular: toca la tarjeta para seleccionarla y luego toca la capa donde va.</div>
-
-      <div class="dnd-layers" id="dndLayers">
-        <div class="dnd-layer l-exosfera" data-layer="exosfera">
-          <div class="lname">🛰️ Exosfera <span class="rng">≈600 km +</span></div>
-          <div class="dnd-dropped"></div>
-        </div>
-        <div class="dnd-layer l-termosfera" data-layer="termosfera">
-          <div class="lname">🌌 Termosfera / Ionosfera <span class="rng">≈85–600 km</span></div>
-          <div class="dnd-dropped"></div>
-        </div>
-        <div class="dnd-layer l-mesosfera" data-layer="mesosfera">
-          <div class="lname">☄️ Mesosfera <span class="rng">≈50–85 km</span></div>
-          <div class="dnd-dropped"></div>
-        </div>
-        <div class="dnd-layer l-estratosfera" data-layer="estratosfera">
-          <div class="lname">🌀 Estratosfera <span class="rng">≈11–50 km</span></div>
-          <div class="dnd-dropped"></div>
-        </div>
-        <div class="dnd-layer l-troposfera" data-layer="troposfera">
-          <div class="lname">✈️ Tropósfera <span class="rng">Superficie–≈11 km</span></div>
-          <div class="dnd-dropped"></div>
-        </div>
-      </div>
-
-      <div class="dnd-pool" id="dndPool"></div>
-      <div class="dnd-status" id="dndStatus"></div>
-      <div class="dnd-progress" id="dndProgress">0 / 12 colocadas correctamente</div>
-      <button class="dnd-reset" id="dndReset" type="button">↺ Reiniciar actividad</button>
-    </div>
-
-    <div class="mnemo"><b>🧠 Recuerda:</b> "Toda Estudiante Meteoróloga Toma Examen" — Tropósfera, Estratosfera, Mesosfera, Termosfera, Exosfera.</div>
-  </article>
 
 </main>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Módulo MET · Eje 1 — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Módulo NOTAM — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -744,7 +641,7 @@
     if(quizProgressScore) quizProgressScore.textContent = `${correctCount} / ${TOTAL_QUIZ} correctos`;
     if(correctCount >= TOTAL_QUIZ){
       if(finishCard) finishCard.style.display = 'block';
-      marcarModuloCompletado('meteorologia-generalidades');
+      if(typeof marcarModuloCompletado === 'function') marcarModuloCompletado('notam-formato');
     }
   }
   renderProgress();
@@ -773,134 +670,10 @@
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
     });
   });
-
-  // ---------- ACTIVIDAD DRAG & DROP: ARMA LA ATMÓSFERA ----------
-  const CHIPS = [
-    { id:1,  text:"Aquí ocurren la lluvia, el viento y las tormentas", layer:"troposfera" },
-    { id:2,  text:"Contiene entre el 75% y 80% de la masa de la atmósfera", layer:"troposfera" },
-    { id:3,  text:"Termina en la Tropopausa", layer:"troposfera" },
-    { id:4,  text:"La temperatura disminuye con la altura (~2°C/1000ft)", layer:"troposfera" },
-    { id:5,  text:"Contiene la capa de ozono", layer:"estratosfera" },
-    { id:6,  text:"La temperatura aumenta por absorción de radiación UV", layer:"estratosfera" },
-    { id:7,  text:"Aire muy estable, casi sin nubes ni turbulencia", layer:"estratosfera" },
-    { id:8,  text:"Es la capa más fría de toda la atmósfera (hasta -90°C)", layer:"mesosfera" },
-    { id:9,  text:"Aquí se desintegran la mayoría de los meteoritos", layer:"mesosfera" },
-    { id:10, text:"Contiene la Ionosfera, que refleja ondas de radio", layer:"termosfera" },
-    { id:11, text:"Aquí ocurren las auroras boreales y orbita la ISS", layer:"termosfera" },
-    { id:12, text:"Última capa; se mezcla poco a poco con el espacio", layer:"exosfera" },
-  ];
-
-  const dndPool = document.getElementById('dndPool');
-  const dndLayers = document.getElementById('dndLayers');
-  const dndStatus = document.getElementById('dndStatus');
-  const dndProgress = document.getElementById('dndProgress');
-  const dndReset = document.getElementById('dndReset');
-
-  let selectedChip = null;
-  let placedCorrect = 0;
-
-  function shuffle(arr){
-    const a = arr.slice();
-    for(let i = a.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function buildPool(){
-    dndPool.innerHTML = '';
-    placedCorrect = 0;
-    dndLayers.querySelectorAll('.dnd-dropped').forEach(d => d.innerHTML = '');
-    dndStatus.textContent = '';
-    dndStatus.className = 'dnd-status';
-    updateProgress();
-
-    shuffle(CHIPS).forEach(chip => {
-      const el = document.createElement('div');
-      el.className = 'dnd-chip';
-      el.textContent = chip.text;
-      el.draggable = true;
-      el.dataset.id = chip.id;
-      el.dataset.layer = chip.layer;
-
-      el.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', chip.id);
-      });
-
-      el.addEventListener('click', () => {
-        if(selectedChip === el){
-          el.classList.remove('selected');
-          selectedChip = null;
-          return;
-        }
-        document.querySelectorAll('.dnd-chip.selected').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedChip = el;
-      });
-
-      dndPool.appendChild(el);
-    });
-  }
-
-  function updateProgress(){
-    dndProgress.textContent = `${placedCorrect} / ${CHIPS.length} colocadas correctamente`;
-  }
-
-  function placeChip(chipEl, layerEl){
-    const correctLayer = chipEl.dataset.layer;
-    const targetLayer = layerEl.dataset.layer;
-
-    if(correctLayer === targetLayer){
-      const chip = document.createElement('span');
-      chip.className = 'dnd-chip-placed';
-      chip.textContent = chipEl.textContent;
-      layerEl.querySelector('.dnd-dropped').appendChild(chip);
-      chipEl.remove();
-      placedCorrect++;
-      updateProgress();
-      dndStatus.className = 'dnd-status ok';
-      dndStatus.textContent = '✅ ¡Correcto! Esa característica es de esta capa.';
-      if(placedCorrect === CHIPS.length){
-        dndStatus.textContent = '🏆 ¡Perfecto! Armaste toda la atmósfera correctamente.';
-      }
-    }else{
-      chipEl.classList.add('wrong-shake');
-      layerEl.classList.add('dragover');
-      dndStatus.className = 'dnd-status bad';
-      dndStatus.textContent = '❌ Esa característica no pertenece a esta capa. Vuelve a intentarlo.';
-      setTimeout(() => {
-        chipEl.classList.remove('wrong-shake');
-        layerEl.classList.remove('dragover');
-      }, 450);
-    }
-    if(selectedChip === chipEl) selectedChip = null;
-  }
-
-  dndLayers.querySelectorAll('.dnd-layer').forEach(layerEl => {
-    layerEl.addEventListener('dragover', e => { e.preventDefault(); layerEl.classList.add('dragover'); });
-    layerEl.addEventListener('dragleave', () => layerEl.classList.remove('dragover'));
-    layerEl.addEventListener('drop', e => {
-      e.preventDefault();
-      layerEl.classList.remove('dragover');
-      const id = e.dataTransfer.getData('text/plain');
-      const chipEl = dndPool.querySelector(`.dnd-chip[data-id="${id}"]`);
-      if(chipEl) placeChip(chipEl, layerEl);
-    });
-    layerEl.addEventListener('click', () => {
-      if(selectedChip) placeChip(selectedChip, layerEl);
-    });
-  });
-
-  dndReset.addEventListener('click', buildPool);
-
-  buildPool();
 </script>
+
 <script>
   // ---------- ACORDEÓN DE TEMAS ----------
-  // Todos los temas colapsados excepto el primero, para que la página no se
-  // sienta como un solo bloque largo de texto. El TOC abre el tema de
-  // destino antes de saltar a él.
   (function(){
     const topics = document.querySelectorAll('.topic');
     function setOpen(topic, open){
@@ -927,6 +700,61 @@
     });
   })();
 </script>
+
+<script>
+  // ---------- EXPLORADOR DE NOTAM ANOTADO ----------
+  (function(){
+    const DATA = {
+      head: { tag:'Serie / número / tipo', text:'<b>B0087/26</b>: serie B, NOTAM número 87 del año 2026. <b>NOTAMN</b>: es información nueva, no reemplaza ni cancela nada.' },
+      Q:    { tag:'Casilla Q) — Calificadores', text:'<b>EACC</b>: FIR donde ocurre el hecho. <b>QRTCA</b>: código NOTAM — RT = "Zona restringida temporalmente", CA = "Activada". <b>IV</b>: afecta a tránsito IFR y VFR. <b>BO</b>: significativo desde el punto de vista operacional, para entrada en el PIB. <b>W</b>: alcance = aviso de navegación. <b>000/080</b>: límites inferior/superior en la Q), coherentes con F)/G). <b>4445N07515W015</b>: coordenadas del centro + radio de 15 NM.' },
+      A:    { tag:'Casillas A), B) y C)', text:'<b>A) EACC</b>: la FIR completa se ve afectada. <b>B) 2609151300</b>: empieza el 15 de septiembre de 2026 a las 1300 UTC. <b>C) 2609151700</b>: el rango declarado termina a las 1700 UTC del mismo día — pero como hay 3 fechas distintas, la Casilla D) reparte el detalle real.' },
+      D:    { tag:'Casilla D) — Horario', text:'<b>15 17 19 1300-1700</b>: el ejercicio ocurre solo esos 3 días de septiembre, cada uno de 1300 a 1700 UTC — no es continuo entre el 15 y el 19.' },
+      E:    { tag:'Casilla E) — Texto en lenguaje claro', text:'Describe el hecho: zona restringida temporalmente activada por ejercicio militar, con su forma (círculo) definida por <span class="mono">RADIUS</span> + <span class="mono">CENTRE</span> + coordenadas — siguiendo la regla de redacción para áreas circulares.' },
+      FG:   { tag:'Casillas F) y G) — Límites verticales', text:'<b>F) SFC</b>: el límite inferior es la superficie. <b>G) FL080</b>: el límite superior es el nivel de vuelo 080. Coincide con los valores 000/080 ya declarados en la Casilla Q).' }
+    };
+    const lines = document.querySelectorAll('#notamRaw .notam-line');
+    const detail = document.getElementById('explorerDetail');
+    function render(key){
+      const d = DATA[key];
+      detail.innerHTML = `<b class="tag">${d.tag}</b><br>${d.text}`;
+    }
+    lines.forEach(line => {
+      line.addEventListener('click', () => {
+        lines.forEach(l => l.classList.remove('on'));
+        line.classList.add('on');
+        render(line.dataset.item);
+      });
+    });
+    lines[0].classList.add('on');
+    render('head');
+  })();
+
+  // ---------- REPASO DE CASILLAS ----------
+  (function(){
+    const DATA = {
+      Q:   { tag:'Casilla Q)', text:'El "filtro" del NOTAM: FIR, código de 5 letras, tránsito, propósito, alcance, límites verticales y coordenadas/radio — todo en una sola línea comprimida.' },
+      A:   { tag:'Casilla A)', text:'Dónde: un solo aeródromo, o una o varias FIR.' },
+      BCD: { tag:'Casillas B), C), D)', text:'Cuándo: inicio, fin (o PERM/EST) y, si hace falta, el horario detallado dentro de ese rango.' },
+      E:   { tag:'Casilla E)', text:'Qué pasó, en lenguaje claro con fraseología abreviada uniforme y abreviaturas OACI.' },
+      FG:  { tag:'Casillas F), G)', text:'En qué altura: límite inferior y superior del área afectada.' }
+    };
+    const tabs = document.querySelectorAll('#recapTabs .sel-tab');
+    const panel = document.getElementById('recapPanel');
+    function render(key){
+      const d = DATA[key];
+      panel.innerHTML = `<b class="tag">${d.tag}</b><br>${d.text}`;
+    }
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('on'));
+        tab.classList.add('on');
+        render(tab.dataset.r);
+      });
+    });
+    render('Q');
+  })();
+</script>
+
 <script>
   // ---------- DROPDOWN "MÓDULOS" ----------
   (function(){
@@ -992,6 +820,7 @@
     if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
   })();
 </script>
+
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
   (async function actualizarBotonSesion(){

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Navegación · Quiz I — Tiempo y Altimetría (Avanzado) | SoyAeronáutico</title>
+<title>Quiz de NOTAM (25 preguntas) | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,6 +128,7 @@
   .q-num{ font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
   .q-tag{ font-family:'IBM Plex Mono'; font-size:0.65rem; color:var(--text-muted); background:var(--bg); padding:2px 10px; border-radius:12px; border:1px solid var(--hairline); }
   .q-text{ font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.55; }
+  .q-notam{ font-family:'IBM Plex Mono'; font-size:0.78rem; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 14px; margin-bottom:14px; white-space:pre-wrap; line-height:1.6; color:var(--text-muted); }
   .options{ display:flex; flex-direction:column; gap:8px; }
   .opt-btn{ background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
   .opt-btn:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
@@ -210,8 +211,8 @@
             <a href="ats.html">ATS</a>
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
-            <a href="navegacion.html" class="active">Navegación</a>
-            <a href="notam.html">NOTAM</a>
+            <a href="navegacion.html">Navegación</a>
+            <a href="notam.html" class="active">NOTAM</a>
           </div>
         </div>
       </div>
@@ -249,8 +250,8 @@
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
       <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
-      <a href="navegacion.html" class="active">Navegación <span class="mnav-arrow">→</span></a>
-      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html" class="active">NOTAM <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
@@ -269,25 +270,23 @@
 
   <div class="subtabs">
     <div class="subtabs-inner">
-      <a href="navegacion-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
-      <a href="navegacion-tiempo.html" class="subtab"><span class="n">1</span> Tiempo</a>
-      <a href="navegacion-velocidad.html" class="subtab"><span class="n">2</span> Velocidad</a>
-      <a href="navegacion-altimetria.html" class="subtab"><span class="n">3</span> Altimetría</a>
-      <a href="navegacion-radioayudas.html" class="subtab"><span class="n">4</span> Radioayudas</a>
-      <a href="navegacion-viento-unidades.html" class="subtab"><span class="n">5</span> Viento y Unidades</a>
+      <a href="notam-fundamentos.html" class="subtab"><span class="n">★</span> Fundamentos</a>
+      <a href="notam-formato.html" class="subtab"><span class="n">1</span> Formato</a>
+      <a href="notam-codigo-q.html" class="subtab"><span class="n">2</span> Código Q</a>
+      <a href="notam-especiales.html" class="subtab"><span class="n">3</span> Especiales</a>
     </div>
   </div>
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Navegación — Quiz I · 25 preguntas · Nivel avanzado</div>
-  <h1>Tiempo y Altimetría — examen de nivel avanzado</h1>
-  <p class="lead">25 preguntas de cálculo y análisis sobre los bloques 1 (Tiempo) y 3 (Altimetría) del módulo: conversión UTC/hora local, husos horarios, relación tiempo↔arco, reglajes QNH/QFE/QNE, errores del altímetro por presión, temperatura y desviación ISA, y niveles de vuelo.</p>
+  <div class="eyebrow">NOTAM — Quiz · 25 preguntas</div>
+  <h1>Quiz de NOTAM</h1>
+  <p class="lead">25 preguntas sobre el formato NOTAM, el código Q, las series y tipos, la validez, y los mensajes especiales (Trigger NOTAM, SNOWTAM, ASHTAM). Varias preguntas traen NOTAM inventados con fines didácticos, usando la misma jurisdicción ficticia ("Amswell FIR" / EACC-EADD) que emplea el propio Doc 8126 de OACI para sus ejemplos de entrenamiento.</p>
   <div class="hero-note">
-    <span>🧮</span>
-    <span><b>Antes de empezar:</b> los ejercicios de error de altímetro usan la regla práctica de <b>33,5 ft por cada hPa</b> por debajo de 10.000 ft, y <b>25 ft por cada hPa</b> por encima — la misma aproximación de bolsillo que usan los talleres de esta materia. La temperatura ISA se calcula con la regla rápida de <b>−2°C cada 1.000 ft</b> desde 15°C en superficie. Ten papel y lápiz a mano.</span>
+    <span>📋</span>
+    <span><b>Antes de empezar:</b> si necesitas repasar el código Q o las casillas del formato, los bloques 1 y 2 del módulo NOTAM tienen las tablas completas y un constructor interactivo.</span>
   </div>
-  <a href="navegacion.html" class="btn-volver-modulo">← Volver al módulo Navegación</a>
+  <a href="notam.html" class="btn-volver-modulo">← Volver al módulo NOTAM</a>
 </section>
 
 <div class="quiz-container" id="quizContainer">
@@ -303,12 +302,12 @@
 
 <div class="finish-note" id="finishNote" aria-live="polite">
   <span id="finishMsg">✅ Resultado guardado en tu progreso.</span>
-  <span><a href="quiz-navegacion-radioayudas-viento.html">Ir al Quiz II →</a> · <a href="Panel_estudiante.html">Ver mi progreso →</a></span>
+  <span><a href="notam.html">Volver al módulo NOTAM →</a> · <a href="Panel_estudiante.html">Ver mi progreso →</a></span>
 </div>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Módulo NAV — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Módulo NOTAM — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -333,161 +332,185 @@
   updateZuluMini();
   setInterval(updateZuluMini, 1000);
 
-  // ---------- 25 PREGUNTAS — Tiempo y Altimetría (nivel avanzado) ----------
-  // Todas las respuestas numéricas se verificaron con un script aparte contra
-  // las mismas fórmulas ya usadas en navegacion-tiempo.html y navegacion-altimetria.html
-  // (regla ISA de -2°C/1000ft, gradiente de presión 33,5 ft/hPa <10.000ft y 25 ft/hPa
-  // >10.000ft, y la regla de huso horario longitud÷15 con residuo de 7°30').
+  // ---------- 25 PREGUNTAS — NOTAM ----------
+  // Los códigos Q usados en los ejemplos se verificaron contra las tablas del
+  // Doc 8400 (Código NOTAM) y el Apéndice G del Doc 8126 (criterios de
+  // selección): asunto (2ª/3ª letras), condición (4ª/5ª letras) y alcance.
   const questions = [
     {
-      q: "Un vuelo despega de Medellín a las 08:15 LT (UTC−5) y tiene una duración de 3h 40min. ¿A qué hora llega en UTC?",
-      options: ["16:55", "11:55", "21:15", "06:55"],
-      correct: 0,
-      explain: "Salida en UTC: 08:15 + 5:00 = 13:15 UTC. Sumando la duración: 13:15 + 3:40 = 16:55 UTC."
-    },
-    {
-      q: "Un vuelo despega a las 21:50 UTC con un EET (Estimated En-Route Time) de 2h 35min. ¿Cuál es su ETA?",
-      options: ["23:25", "00:25", "00:15", "01:25"],
+      q: "¿Cuál es el propósito básico de un NOTAM?",
+      options: [
+        "Reemplazar por completo al AIP",
+        "Distribuir información con antelación al hecho al que se refiere, salvo lo imprevisible",
+        "Sustituir el plan de vuelo presentado",
+        "Servir únicamente para reportar el clima"
+      ],
       correct: 1,
-      explain: "21:50 + 2:35 = 24:25, que cruza medianoche: el ETA es 00:25 UTC del día siguiente."
+      explain: "El NOTAM distribuye información antes del hecho, excepto en casos imprevisibles como fallas súbitas, actividad volcánica o liberación de material radiactivo."
     },
     {
-      q: "Un vuelo sale de Bogotá (UTC−5) a las 22:30 LT con destino a un punto en huso UTC−3, con un EET de 4h 10min. ¿Qué hora local marca el reloj de destino al aterrizar?",
-      options: ["02:40", "03:40", "04:40", "05:40"],
-      correct: 2,
-      explain: "Salida en UTC: 22:30+5:00=27:30 → 03:30 UTC del día siguiente. Llegada en UTC: 03:30+4:10=07:40 UTC. Hora local de destino (UTC−3): 07:40−3:00=04:40 LT."
+      q: "Una restricción temporal de espacio aéreo va a durar 4 meses y necesita un mapa detallado del área. ¿Qué canal de publicación es el correcto?",
+      options: ["Un NOTAM normal", "Un Suplemento AIP (AIP SUP)", "No se publica hasta la próxima AMDT AIP anual", "Un ASHTAM"],
+      correct: 1,
+      explain: "Por su duración larga y la necesidad de gráficos, corresponde a un Suplemento AIP, no a un NOTAM."
     },
     {
-      q: "Convierte 6°45' de longitud a tiempo, usando la regla 1°=4 minutos y 1'=4 segundos.",
-      options: ["24 min 0 s", "26 min 45 s", "30 min 0 s", "27 min 0 s"],
+      q: "En Colombia (AIP GEN 3.1), ¿qué serie de NOTAM contiene cierres de pista, cierres de aeródromo, trabajos en progreso en pista y cambios de horario del aeródromo?",
+      options: ["Serie A", "Serie B", "Serie C", "Serie D"],
       correct: 3,
-      explain: "6° × 4 min = 24 min. 45' × 4 s = 180 s = 3 min. Total: 24 min + 3 min = 27 min 0 s."
+      explain: "La Serie D del AIP Colombia está dedicada específicamente a cierres de pista/aeródromo, trabajos en progreso y cambios de horario."
     },
     {
-      q: "Convierte 2h 12min 40s de tiempo a arco, usando la regla 1h=15°, 1min=15', 1s=15''.",
-      options: ["30°00'", "31°40'", "33°10'", "33°40'"],
+      q: "¿Qué número le corresponde al primer NOTAM de cualquier serie que se publica el 1 de enero?",
+      options: ["Continúa la numeración del año anterior", "0000", "0001", "Empieza en 1000 por convención"],
       correct: 2,
-      explain: "2h×15°=30°. 12min×15'=180'=3°. 40s×15''=600''=10'. Total: 30°+3°+10'=33°10'."
+      explain: "Cada serie reinicia su numeración consecutiva en 0001 el 1 de enero de cada año — pero un NOTAM ya emitido nunca se renumera."
     },
     {
-      q: "Según la regla de cálculo del huso horario (longitud÷15, con la regla del residuo de 7°30'), ¿a qué huso horario geográfico corresponde un punto en 172°40' de longitud Oeste?",
-      options: ["Huso 12 (UTC−12)", "Huso 11 (UTC−11)", "Huso 12 (UTC+12)", "Huso 13 (UTC−13)"],
-      correct: 0,
-      explain: "172°40'÷15 = 11 con residuo de 7°40'. Como el residuo (7°40') es mayor a 7°30', el huso sube a 12. Por ser longitud Oeste, el huso es UTC−12."
-    },
-    {
-      q: "Calcula el huso horario geográfico de un punto en 47°20' de longitud Este.",
-      options: ["UTC+4", "UTC+3", "UTC+2", "UTC+3:20"],
+      q: "Un NOTAMR (A0140/26 NOTAMR A0138/26) y el NOTAM A0138/26 que reemplaza, ¿en qué serie deben publicarse?",
+      options: ["Pueden estar en series distintas si el asunto cambió", "Siempre en la misma serie", "El NOTAMR siempre pasa a la serie más alta disponible", "No importa la serie, solo el número"],
       correct: 1,
-      explain: "47°20'÷15 = 3 con residuo de 2°20'. Como el residuo es menor a 7°30', el huso se queda en 3. Por ser Este: UTC+3."
+      explain: "El NOTAMR (y el NOTAMC) se publican siempre en la misma serie del NOTAM al que reemplazan o cancelan."
     },
     {
-      q: "Un punto tiene huso horario UTC+7. Si en este momento son las 05:20 UTC, ¿qué hora local marca ese punto y a qué día corresponde?",
-      options: ["22:20, mismo día", "12:20, día siguiente", "22:20, día anterior", "12:20, mismo día"],
-      correct: 3,
-      explain: "05:20 + 7:00 = 12:20, sin cruzar la medianoche (no llega a 24:00), así que es el mismo día."
+      q: "Un NOTAM tiene como fecha de fin (Casilla C) '2611202359EST'. ¿Qué obligación trae ese 'EST'?",
+      options: [
+        "Ninguna, puede quedar vigente indefinidamente",
+        "Debe cancelarse o reemplazarse antes de esa fecha-hora",
+        "Se convierte automáticamente en PERM",
+        "Significa que el NOTAM ya expiró"
+      ],
+      correct: 1,
+      explain: "EST indica una fecha de fin aproximada; ese NOTAM debe cancelarse o reemplazarse antes de la fecha-hora indicada — dejarlo así se considera un error de gestión, no un uso válido de 'indefinido' (UFN no está permitido)."
     },
     {
-      q: "Un aeródromo está a 3.200 ft de elevación. Con el QNH correctamente ajustado, en plataforma el altímetro debe marcar:",
-      options: ["3.200 ft", "0 ft", "1.013 ft", "Depende de la temperatura"],
-      correct: 0,
-      explain: "El QNH hace que el altímetro indique la ALTITUD (sobre el nivel del mar); en tierra, eso es exactamente la elevación del aeródromo."
-    },
-    {
-      q: "Estando en plataforma con QFE ajustado, el altímetro marca 150 ft en vez de 0 ft. ¿Qué explica este error?",
-      options: ["El reglaje puesto es más bajo de lo que debería", "El aeródromo mide 150 ft de elevación", "El reglaje puesto es más alto de lo que debería", "Es normal, el QFE nunca marca exactamente 0"],
+      q: "Una actividad ocurre todos los días, durante el día completo, entre el 10 y el 20 de un mes. En la Casilla D), ¿qué abreviatura evita repetir el horario cada día?",
+      options: ["UFN", "EST", "H24", "WEF"],
       correct: 2,
-      explain: "Un reglaje más alto siempre produce una lectura más alta. Si con QFE debería marcar 0 y marca +150 ft, el valor puesto en la ventanilla está por encima del QFE correcto."
+      explain: "H24 se inserta después de las fechas cuando la actividad cubre el día completo, evitando repetir 0000-2359 cada vez."
     },
     {
-      q: "Un piloto vuela en crucero con QNH puesto (1005 hPa). Antes de alcanzar la altitud de transición, cambia el reglaje a QNE (1013 hPa). Su altímetro:",
-      options: ["Disminuye su lectura", "Aumenta su lectura", "No cambia", "Se pone en cero"],
+      q: "El Checklist de NOTAM usa el código dedicado QKKKK y el calificador 'K' en tránsito, propósito y alcance. ¿Para qué sirve específicamente ese calificador 'K' repetido?",
+      options: [
+        "Para que el checklist tenga prioridad urgente de transmisión",
+        "Para permitir filtrarlo y excluirlo del boletín de información previa al vuelo (PIB)",
+        "Para indicar que el checklist es válido por 1 año",
+        "No tiene ninguna función especial, es solo relleno"
+      ],
       correct: 1,
-      explain: "El QNE (1013) es mayor que el QNH local (1005). Un reglaje mayor siempre produce una lectura mayor, así que la indicación sube al hacer el cambio."
+      explain: "El código QKKKK junto con 'K' como tránsito/propósito/alcance permite que los sistemas filtren el checklist y lo excluyan del PIB automáticamente."
     },
     {
-      q: "¿Cuál de las siguientes afirmaciones sobre los reglajes es correcta?",
-      options: ["QNH indica altura sobre el aeródromo, QFE indica altitud sobre el nivel del mar", "QNE siempre indica la elevación real del aeródromo", "QFE y QNH son siempre el mismo valor numérico", "QFE indica altura sobre el aeródromo, QNH indica altitud sobre el nivel del mar"],
-      correct: 3,
-      explain: "QFE = altura sobre el aeródromo (marca 0 en la pista). QNH = altitud sobre el nivel medio del mar (marca la elevación real en tierra)."
+      q: "NOTAM: \"Q) EACC/QMNLC/IV/BO/A/000/999  A) EADD  E) APRON CLSD DUE TO WIP\". ¿Qué significan las letras \"MN\" y \"LC\" del código?",
+      options: [
+        "MN = Pista, LC = Limitado",
+        "MN = Plataforma, LC = Cerrado",
+        "MN = Mínimos, LC = Luces controladas",
+        "MN = Maniobra, LC = Localizador cerrado"
+      ],
+      correct: 1,
+      explain: "MN es el asunto \"Plataforma\" (apron) dentro de AGA-Área de movimiento, y LC es la condición \"Cerrado\", coherente con el texto en lenguaje claro \"APRON CLSD\"."
     },
     {
-      q: "Un piloto tiene puesto un reglaje de 1015 hPa, pero el QNH real bajo su posición es 1001 hPa (diferencia de 14 hPa). El altímetro indica 6.500 ft, volando por debajo de 10.000 ft (gradiente ≈33,5 ft/hPa). ¿Cuál es su altitud REAL aproximada?",
-      options: ["≈6.030 ft", "≈6.969 ft", "≈6.500 ft", "≈5.031 ft"],
-      correct: 0,
-      explain: "El reglaje (1015) es mayor que el QNH real (1001): el altímetro sobre-indica. Real ≈ 6.500 − 14×33,5 = 6.500 − 469 = 6.031 ft."
+      q: "Se necesita codificar: \"El radiofaro no direccional (NDB) no está disponible.\" ¿Cuál es el código Q correcto?",
+      options: ["QNBAU", "QNBAS", "QNVAS", "QNDAS"],
+      correct: 1,
+      explain: "NB = Radiofaro no direccional (NDB); AS = No utilizable (U/S). \"No disponible con razón\" sería AU, pero la fraseología estándar para un NDB \"fuera de servicio\" es AS (U/S), la más usada en los ejemplos oficiales de Doc 8126."
     },
     {
-      q: "Con un reglaje de 998 hPa puesto, y un QNH real de 1012 hPa (diferencia de 14 hPa), el altímetro indica 4.200 ft, por debajo de 10.000 ft. ¿Altitud real aproximada?",
-      options: ["≈4.200 ft", "≈3.730 ft", "≈5.138 ft", "≈4.670 ft"],
-      correct: 3,
-      explain: "El reglaje (998) es menor que el QNH real (1012): el altímetro sub-indica. Real ≈ 4.200 + 14×33,5 = 4.200 + 469 = 4.669 ft."
+      q: "NOTAM: \"Q) EACC/QICAS/IV/BO/A/000/999  A) EADD  E) ILS RWY 11 U/S\". ¿A qué instalación se refiere el asunto \"IC\"?",
+      options: ["Al indicador de trayectoria de aproximación de precisión (PAPI)", "Al sistema de aterrizaje por instrumentos (ILS)", "Al radar de aproximación de precisión (PAR)", "A la torre de control"],
+      correct: 1,
+      explain: "IC es el asunto \"Sistema de aterrizaje por instrumentos (ILS)\", dentro de la familia CNS. Combinado con la condición AS (U/S), da \"ILS U/S\"."
     },
     {
-      q: "Volando por encima de 10.000 ft con QNE (1013 hPa) puesto, pero con un QNH real de 993 hPa (diferencia de 20 hPa, gradiente ≈25 ft/hPa), el altímetro marca 18.000 ft. ¿Altitud real aproximada?",
-      options: ["18.500 ft", "18.000 ft", "17.500 ft", "17.000 ft"],
+      q: "¿Qué código NOTAM corresponde a un obstáculo recién erigido cerca de un aeródromo?",
+      options: ["QOBAS", "QOLCE", "QOBCE", "QOBLC"],
       correct: 2,
-      explain: "El reglaje (1013) es mayor que el QNH real (993): sobre-indica. Real ≈ 18.000 − 20×25 = 18.000 − 500 = 17.500 ft."
+      explain: "OB = Obstáculo; CE = Erigido/Montado (\"Erected\"). QOBCE es exactamente el código que usa el propio ejemplo del Doc 8126 para un obstáculo nuevo."
     },
     {
-      q: "A FL250, con un error de reglaje de 16 hPa (gradiente ≈25 ft/hPa por encima de 10.000 ft), el error aproximado en la altitud es:",
-      options: ["300 ft", "400 ft", "500 ft", "665 ft"],
+      q: "En la Casilla Q), ¿qué campo indica si un NOTAM es relevante para IFR, VFR, o ambos?",
+      options: ["El calificador Alcance", "El calificador Tránsito", "El calificador Propósito", "El campo de coordenadas"],
       correct: 1,
-      explain: "16 hPa × 25 ft/hPa = 400 ft de error."
+      explain: "El calificador Tránsito usa I (IFR), V (VFR), IV (ambos) o K (checklist)."
     },
     {
-      q: "Con una diferencia de presión de 24 hPa, volando a 8.000 ft (gradiente ≈33,5 ft/hPa por debajo de 10.000 ft), el error aproximado en la altitud es:",
-      options: ["804 ft", "700 ft", "900 ft", "1.005 ft"],
+      q: "Un NOTAM sobre el cierre de una plataforma (apron) de un aeródromo, sin afectar el tránsito en ruta, ¿qué valor de Alcance (Scope) debería llevar en la Casilla Q)?",
+      options: ["A (Aeródromo)", "E (En ruta)", "W (Aviso de navegación)", "AE (Aeródromo y en ruta)"],
       correct: 0,
-      explain: "24 hPa × 33,5 ft/hPa = 804 ft de error."
+      explain: "Una plataforma es una instalación exclusivamente de aeródromo (Scope A); no afecta al tránsito en ruta como sí lo haría, por ejemplo, un VOR."
     },
     {
-      q: "Calcula la temperatura ISA a 9.000 ft (regla rápida: 15°C − 2°C por cada 1.000 ft).",
-      options: ["3°C", "0°C", "−3°C", "−18°C"],
-      correct: 2,
-      explain: "15 − 2×9 = 15 − 18 = −3°C."
-    },
-    {
-      q: "Un aeródromo está a 5.500 ft, con una temperatura real de 21°C. La temperatura ISA a esa altitud es 15−2×5,5=4°C. ¿Cuál es la desviación respecto a ISA?",
-      options: ["ISA+13", "ISA+17", "ISA+21", "ISA+4"],
-      correct: 1,
-      explain: "Desviación = temperatura real − temperatura ISA = 21 − 4 = +17 → ISA+17."
-    },
-    {
-      q: "A 11.000 ft la temperatura real es −1°C. La temperatura ISA a esa altitud es 15−2×11=−7°C. ¿Cuál es la desviación respecto a ISA?",
-      options: ["ISA−6", "ISA+1", "ISA−1", "ISA+6"],
-      correct: 3,
-      explain: "Desviación = −1 − (−7) = +6 → ISA+6."
-    },
-    {
-      q: "En un aeródromo a 4.000 ft, con condiciones ISA+15 (temperatura 15°C por encima de la ISA esperada), ¿qué efecto tiene esto sobre el rendimiento de despegue?",
-      options: ["Empeora el rendimiento y alarga la carrera de despegue", "Mejora el rendimiento y acorta la carrera de despegue", "No tiene efecto sobre el rendimiento", "Solo afecta la temperatura de los frenos"],
+      q: "Por convención (Tabla III-6-1 del Doc 8126), ¿qué radio estándar se usa en la Casilla Q) para un NOTAM sobre un obstáculo (código QOB...)?",
+      options: ["001 NM", "005 NM", "025 NM", "999 NM"],
       correct: 0,
-      explain: "Una temperatura mayor a la ISA reduce la densidad del aire: menos sustentación y menos empuje, por lo que se necesita más pista para despegar."
+      explain: "El radio estándar para obstáculos (QOB...) es 001 NM — el más pequeño de la tabla, coherente con que es un peligro muy puntual."
     },
     {
-      q: "En condiciones ISA+20, comparada con la altitud de presión, la altitud densidad será:",
-      options: ["Menor que la altitud de presión", "Mayor que la altitud de presión", "Igual a la altitud de presión", "Siempre negativa"],
+      q: "En las Casillas F) y G), ¿cómo se escribe correctamente un límite de 6.500 pies sobre el nivel del mar?",
+      options: ["6500 FT AMSL", "6500FT AMSL", "6500FTAMSL", "6.500FT-AMSL"],
       correct: 1,
-      explain: "Cuando la temperatura real es mayor a la ISA, el aire es menos denso de lo esperado para esa altitud de presión: la altitud densidad resulta MAYOR que la de presión."
+      explain: "El valor y la unidad van pegados sin espacio (6500FT); la referencia (AMSL) va después, separada por un espacio."
     },
     {
-      q: "La altitud de transición de un aeródromo es 10.000 ft. Un vuelo en ascenso debe cambiar el reglaje de QNH a QNE (1013 hPa) exactamente en:",
-      options: ["9.500 ft", "10.500 ft", "10.000 ft", "FL100 exactamente, nunca en pies"],
+      q: "¿Qué valor NUNCA se usa en la Casilla F) (límite inferior), y qué se usa en su lugar cuando el límite es la superficie?",
+      options: ["000; se usa SFC o GND", "999; se usa UNL", "001; se usa MSL", "No hay ninguna restricción de valores"],
+      correct: 0,
+      explain: "El valor 000 no se usa en F) — para expresar que el límite es la superficie se usan las abreviaturas SFC o GND."
+    },
+    {
+      q: "En la Casilla E), ¿por qué se escribe \"SOUTHWEST\" completo en vez de \"SW\" cuando el texto se refiere a calles de rodaje?",
+      options: [
+        "\"SW\" no es una abreviatura reconocida por la OACI en ningún contexto",
+        "Para evitar confusión con designadores que suenan parecido al abreviarse (como nombres de calle de rodaje)",
+        "Es obligatorio solo si el NOTAM está en español",
+        "No hay ninguna regla especial al respecto"
+      ],
+      correct: 1,
+      explain: "Las direcciones cardinales/ordinales se escriben completas cuando se combinan con elementos como calles de rodaje, para evitar ambigüedad con designadores abreviados."
+    },
+    {
+      q: "Un área circular en la Casilla E) se describe con las palabras clave:",
+      options: ["\"AREA OF\" + coordenadas", "\"RADIUS\" + valor + \"CENTRE\" + coordenadas", "\"WITHIN\" + coordenadas + \"LIMIT\"", "Solo con las coordenadas, sin palabras clave"],
+      correct: 1,
+      explain: "La regla de redacción para un área circular es: la palabra RADIUS, el valor del radio, la palabra CENTRE, y las coordenadas del centro."
+    },
+    {
+      q: "En un ejemplo del Doc 8126, un NOTAM amplía el significado del código escribiendo \"VOZ 116,30 MHZ VOR U/S\" en la Casilla E). ¿Dónde se ubica la ampliación del ASUNTO (identificación y frecuencia del VOR) respecto al significado del código?",
+      options: ["Después del significado del código", "Antes del significado del código", "No se puede ampliar el asunto, solo la condición", "En una casilla aparte, nunca en E)"],
+      correct: 1,
+      explain: "La ampliación relativa al asunto (2ª/3ª letras) precede al significado del código; la ampliación de la condición (4ª/5ª letras) lo sigue."
+    },
+    {
+      q: "En un Trigger NOTAM, la Casilla Q) siempre lleva un valor fijo en la 4ª y 5ª letra del código, sin importar el asunto elegido. ¿Cuál es?",
+      options: ["XX", "AK", "TT", "KK"],
       correct: 2,
-      explain: "En ascenso, el cambio de QNH a QNE se realiza al alcanzar la altitud de transición (que se expresa en pies, no en nivel de vuelo)."
+      explain: "El Trigger NOTAM usa siempre \"TT\" como condición (4ª/5ª letras), lo que permite filtrarlo específicamente en cualquier oficina AIS."
     },
     {
-      q: "Si el nivel de transición (calculado por ATC según el QNH del momento) resulta ser FL65, un vuelo en descenso cambia su reglaje de QNE a QNH:",
-      options: ["A la altitud de transición, no al nivel", "Nunca en descenso", "Solo si hay tránsito IFR", "Al pasar FL65 hacia abajo"],
-      correct: 3,
-      explain: "En descenso, el cambio de QNE (estándar) a QNH ocurre al atravesar el NIVEL de transición hacia abajo — un valor distinto de la altitud de transición usada en el ascenso."
+      q: "Un AMDT AIP AIRAC tiene fecha de entrada en vigor (WEF) el 26 de marzo. ¿Con cuántos días mínimos de anticipación debe emitirse el Trigger NOTAM correspondiente, y hasta cuántos días después de la fecha efectiva permanece válido?",
+      options: ["7 días antes, válido 7 días después", "14 días antes, válido 28 días después", "28 días antes, válido 14 días después", "No hay un plazo mínimo definido"],
+      correct: 2,
+      explain: "El Trigger NOTAM debe emitirse con al menos 28 días de anticipación a la fecha efectiva, y permanece válido 14 días después de esa fecha."
     },
     {
-      q: "Una aeronave indica FL220 con el reglaje estándar (1013 hPa) puesto correctamente, pero el QNH real de la región es 1029 hPa (16 hPa por encima del estándar, gradiente ≈25 ft/hPa por encima de 10.000 ft). Su altitud REAL es aproximadamente:",
-      options: ["22.000 ft", "22.400 ft", "21.600 ft", "22.800 ft"],
+      q: "Una pista amaneció con una capa de nieve compacta y hay que reportar su condición real de superficie y fricción. ¿Qué mensaje corresponde?",
+      options: ["ASHTAM", "SNOWTAM", "Trigger NOTAM", "Checklist de NOTAM"],
       correct: 1,
-      explain: "El reglaje (1013) es menor que el QNH real (1029): el altímetro sub-indica. Real ≈ 22.000 + 16×25 = 22.000 + 400 = 22.400 ft."
+      explain: "El SNOWTAM reporta el Informe de Condición de Pista (RCR): nieve, hielo, aguanieve o agua sobre el área de movimiento."
+    },
+    {
+      q: "¿Cuál es el período máximo de validez de un ASHTAM?",
+      options: ["8 horas", "24 horas", "72 horas", "14 días"],
+      correct: 1,
+      explain: "El ASHTAM tiene una validez máxima de 24 horas; se emite uno nuevo cada vez que cambia el nivel de alerta volcánica."
+    },
+    {
+      q: "Según el AIP Colombia (GEN 3.1), una oficina NOTAM internacional en Francia que envía un SNOWTAM hacia Colombia usaría, como dirección AFTN/AMHS, el prefijo:",
+      options: ["SKZZNA + nacionalidad", "SKZZSA + nacionalidad", "SKZZVA + nacionalidad", "SKZZAA + nacionalidad"],
+      correct: 1,
+      explain: "El prefijo para SNOWTAM es SKZZSA seguido de las dos letras de nacionalidad del país de origen (para Francia, por ejemplo, sería SKZZSALE si se usara el mismo patrón que el ejemplo de España en el AIP)."
     }
   ];
 
@@ -511,7 +534,7 @@
 
       const header = document.createElement('div');
       header.className = 'q-header';
-      header.innerHTML = `<span class="q-num">${idx+1}/${questions.length}</span><span class="q-tag">NAV · Quiz I</span>`;
+      header.innerHTML = `<span class="q-num">${idx+1}/${questions.length}</span><span class="q-tag">NOTAM</span>`;
       card.appendChild(header);
 
       const qText = document.createElement('div');
@@ -585,13 +608,13 @@
       if(!intentoGuardado && typeof guardarIntento === 'function'){
         intentoGuardado = true;
         const mensajesTier = {
-          excelente: '🏆 ¡Excelente! Dominas el cálculo de tiempo y altimetría. Resultado guardado en tu progreso.',
+          excelente: '🏆 ¡Excelente! Dominas el NOTAM. Resultado guardado en tu progreso.',
           bien: '✅ ¡Buen trabajo! Resultado guardado en tu progreso.',
-          reforzar: '💪 Resultado guardado. Repasa los bloques 1 y 3 del módulo y vuelve a intentarlo cuando quieras.'
+          reforzar: '💪 Resultado guardado. Repasa los bloques del módulo NOTAM y vuelve a intentarlo cuando quieras.'
         };
         finishMsg.textContent = 'Guardando tu resultado…';
         finishNote.classList.add('show');
-        guardarIntento('navegacion-quiz-tiempo-altimetria', 'Navegación · Quiz I — Tiempo y Altimetría', correctAnswers, total).then(res => {
+        guardarIntento('quiz-notam', 'NOTAM', correctAnswers, total).then(res => {
           finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
         });
       } else {

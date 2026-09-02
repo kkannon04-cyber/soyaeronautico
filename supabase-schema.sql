@@ -780,3 +780,87 @@ create policy "El profesor gestiona su propio banco de preguntas"
     and public.es_profesor()
     and exists (select 1 from public.bancos b where b.id = banco_id and b.profesor_id = auth.uid())
   );
+
+-- ============================================================
+-- MIGRACIÓN — MODO SEGURO DE EXAMEN: incidentes de cambio de pestaña
+-- (2026-08-31)
+--
+-- Cuando un estudiante presenta una actividad tipo "examen" y cambia de
+-- pestaña o minimiza la ventana (evento visibilitychange del navegador,
+-- ver tomar-actividad.html), queda una fila aquí. No sustituye a
+-- resultados_actividad porque el incidente ocurre ANTES de entregar
+-- (cuando todavía no existe un resultado), así que se referencia
+-- directo a la actividad y al estudiante, no a un resultado puntual.
+--
+-- Límite real de este mecanismo: detecta cambio de pestaña y minimizado,
+-- pero ningún sitio web puede impedir cerrar la pestaña ni detectar un
+-- apagón. El profesor ve esto al entrar a su panel (no es una alerta en
+-- vivo / push, igual que el resto del panel no usa Supabase Realtime).
+-- ============================================================
+
+create table if not exists public.incidentes_actividad (
+  id uuid primary key default gen_random_uuid(),
+  actividad_id uuid not null references public.actividades(id) on delete cascade,
+  estudiante_id uuid not null references public.perfiles(id) on delete cascade,
+  tipo text not null check (tipo in ('cambio_pestana')),
+  fecha timestamptz not null default now()
+);
+
+alter table public.incidentes_actividad enable row level security;
+create index if not exists incidentes_actividad_actividad_id_idx on public.incidentes_actividad (actividad_id);
+create index if not exists incidentes_actividad_estudiante_id_idx on public.incidentes_actividad (estudiante_id);
+
+-- El estudiante solo puede registrar incidentes de una actividad activa
+-- de su propio grupo, y siempre a su propio nombre — mismo patrón de
+-- comprobación que usan obtener_actividad() y calificar_actividad().
+drop policy if exists "El estudiante registra sus propios incidentes" on public.incidentes_actividad;
+create policy "El estudiante registra sus propios incidentes"
+  on public.incidentes_actividad for insert
+  with check (
+    auth.uid() = estudiante_id
+    and exists (
+      select 1 from public.actividades a
+      join public.inscripciones i on i.grupo_id = a.grupo_id
+      where a.id = actividad_id and i.estudiante_id = auth.uid() and a.activa
+    )
+  );
+
+-- El profesor ve los incidentes de sus propias actividades (así aparecen
+-- marcados en "Resultados" en su panel).
+drop policy if exists "El profesor ve los incidentes de sus actividades" on public.incidentes_actividad;
+create policy "El profesor ve los incidentes de sus actividades"
+  on public.incidentes_actividad for select
+  using (exists (
+    select 1 from public.actividades a
+    where a.id = actividad_id and a.profesor_id = auth.uid()
+  ));
+
+-- ============================================================
+-- MIGRACIÓN — Módulo de aprendizaje "NOTAM" (4 páginas: fundamentos,
+-- formato, código Q, especiales) y su quiz de 25 preguntas
+-- (quiz-notam.html). Ejecutar una sola vez adicional sobre el esquema
+-- anterior. Mismo patrón de "lista blanca" ya usado para Navegación:
+-- si se agrega una página o quiz nuevo con un id distinto, hay que
+-- sumarlo aquí también o sus inserts empezarán a fallar en silencio
+-- para cualquier usuario con sesión iniciada (ver los 2 bugs de este
+-- tipo ya documentados más arriba en este archivo).
+-- ============================================================
+
+alter table public.intentos drop constraint if exists intentos_modulo_valido;
+alter table public.intentos add constraint intentos_modulo_valido
+  check (modulo in ('quiz-ats', 'quiz-fpl', 'quiz-designadores', 'quiz-fraseologia',
+                     'simulador-metar', 'simulador-plan-vuelo', 'simulador-fraseologia',
+                     'navegacion-quiz-tiempo-altimetria', 'navegacion-quiz-radioayudas-viento',
+                     'quiz-notam'));
+
+alter table public.modulos_completados drop constraint if exists modulos_completados_pagina_check;
+alter table public.modulos_completados add constraint modulos_completados_pagina_check
+  check (pagina in (
+    'ats', 'plan-de-vuelo',
+    'meteorologia-generalidades', 'meteorologia-nubosidad', 'meteorologia-variables',
+    'fraseologia-fundamentos', 'fraseologia-oaci', 'fraseologia-fases',
+    'fraseologia-tierra', 'fraseologia-emergencias',
+    'navegacion-fundamentos', 'navegacion-tiempo', 'navegacion-velocidad',
+    'navegacion-altimetria', 'navegacion-radioayudas', 'navegacion-viento-unidades',
+    'notam-fundamentos', 'notam-formato', 'notam-codigo-q', 'notam-especiales'
+  ));

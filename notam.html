@@ -3,77 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiénes somos | SoyAeronáutico</title>
+<title>NOTAM | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFFFFF;
-    --panel:#F5F8FC;
-    --panel-alt:#EAF1FB;
-    --accent:#1657C6;
-    --accent-rgb:22,87,198;
-    --navy:#0A2647;
-    --text:#0F1B2D;
-    --text-muted:#5B6B7F;
-    --muted-rgb:91,107,127;
-    --hairline:#E1E7EF;
-    --shadow-rgb:15,23,42;
-    --danger:#D64545;
-    --vfr:#2E9E6D;
-    --mvfr:#3E7BFA;
-    --ifr:#D64545;
-    --lifr:#8B5CF6;
-    --live:#2E9E6D;
-    --live-rgb:46,158,109;
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
+    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
-    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
   [data-theme="dark"]{
-    --bg:#0B1220;
-    --panel:#121C2E;
-    --panel-alt:#17223A;
-    --accent:#4F8EF7;
-    --accent-rgb:79,142,247;
-    --navy:#0A2647;
-    --text:#EDEFF3;
-    --text-muted:#8894A8;
-    --muted-rgb:136,148,168;
-    --hairline:#2A3548;
-    --shadow-rgb:0,0,0;
-    --danger:#C9564F;
-    --vfr:#4FA88C;
-    --mvfr:#4A8FD1;
-    --ifr:#C9564F;
-    --lifr:#B15FC7;
-    --live:#4FA88C;
-    --live-rgb:79,168,140;
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
+    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
-    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; }
   *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
   .mono{font-family:'IBM Plex Mono', monospace;}
   a{color:inherit;}
-  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; }
 
-  /* ---------- STICKY HEADER ---------- */
   .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 32px;
-    background:var(--topbar-bg);
-    backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--hairline);
-  }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
   .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
   a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
   .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
@@ -81,13 +46,11 @@
   .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
   .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
   @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
-  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
-
-  nav.desktop-nav{display:flex; align-items:center; gap:24px; font-size:0.88rem; font-weight:500; flex-wrap:wrap;}
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
   nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
   nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
-  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
-  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
   nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
   nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
@@ -116,7 +79,7 @@
   .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
   .nav-dropdown-menu-inner{
     background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
-    padding:8px; min-width:180px; box-shadow:var(--shadow-instrument);
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
   }
   .nav-dropdown-menu a{
     display:block; padding:9px 12px; border-radius:6px;
@@ -135,91 +98,46 @@
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
   @media (max-width:600px){ .zulu-mini{ display:none; } }
-  .theme-toggle svg{ display:block; }
   .theme-toggle .icon-moon{ display:none; }
   [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
   [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
   @media (max-width:1100px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
-  /* ---------- HERO (mismo patrón que la portada) ---------- */
-  .hero-fifa{
-    position:relative; width:100%; min-height:380px;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; border-bottom:1px solid var(--hairline);
-    background:linear-gradient(135deg, var(--navy), var(--accent));
-  }
-  .hero-bg{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; object-position:center 30%; z-index:0;
-  }
-  .hero-overlay{
-    position:absolute; inset:0; z-index:1;
-    background:linear-gradient(0deg, rgba(6,16,32,0.88) 0%, rgba(6,16,32,0.45) 100%);
-  }
-  .hero-content{
-    position:relative; z-index:2; text-align:center;
-    padding:48px 24px; max-width:760px; color:#FFFFFF;
-  }
-  .hero-content .eyebrow{ color:#8FB6F2; margin-bottom:14px; display:block; }
-  .hero-content h1{
-    font-size:clamp(2rem, 4.6vw, 3.2rem); line-height:1.15; margin-bottom:18px;
-    text-shadow:0 4px 16px rgba(0,0,0,0.35);
-  }
-  .hero-content p.lead{
-    color:#DCE5F3; font-size:clamp(0.95rem, 1.8vw, 1.1rem); line-height:1.6;
-    margin:0 auto; max-width:620px;
-  }
-  @media (max-width:640px){ .hero-fifa{ min-height:320px; } .hero-content{ padding:32px 20px; } }
+  .hero-simple{ max-width:900px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
 
-  /* ---------- INTRO ---------- */
-  .intro{ max-width:760px; margin:0 auto; padding:56px 32px 8px; text-align:center; }
-  .intro .eyebrow{ display:block; margin-bottom:14px; }
-  .intro p{ color:var(--text); font-size:1rem; line-height:1.75; margin:0; }
+  .quiz-cta-row{ display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
+  .btn-quiz-nav{ display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; padding:12px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.9rem; }
+  .btn-quiz-nav:hover{ filter:brightness(1.08); transform:translateY(-2px); }
+  .btn-quiz-nav.alt{ background:none; color:var(--accent); border:1px solid var(--accent); }
 
-  /* ---------- SECCIONES (mismo patrón que la portada) ---------- */
-  .sections{ max-width:1200px; margin:0 auto; padding:56px 32px; }
-  .sections-head{ margin-bottom:32px; padding-bottom:16px; border-bottom:2px solid var(--text); }
-  .sections-head .eyebrow{ margin-bottom:10px; display:block; }
-  .sections-head h2{ font-size:1.6rem; margin-bottom:10px; }
-  .sections-head p{ color:var(--text-muted); max-width:560px; margin:0; }
+  .content{ max-width:900px; margin:0 auto; padding:36px 32px 90px; }
 
-  .modules-grid-fifa{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px; }
-  .module-card-fifa{
-    display:flex; flex-direction:column;
-    text-decoration:none; color:inherit;
-    background:var(--bg); border:1px solid var(--hairline); border-radius:14px;
-    overflow:hidden; box-shadow:var(--shadow-instrument);
-    transition:transform .25s cubic-bezier(.4,0,.2,1), border-color .25s, box-shadow .25s;
-  }
-  .module-card-fifa:hover{ transform:translateY(-4px); border-color:var(--accent); }
-  .mc-cover{ height:100px; position:relative; flex-shrink:0; overflow:hidden; }
-  .mc-cover.bg-qui{ background:linear-gradient(135deg, #78350F, #F59E0B); }
-  .mc-cover.bg-des{ background:linear-gradient(135deg, #701A75, #D946EF); }
-  .mc-cover.bg-fra{ background:linear-gradient(135deg, #0C4A6E, #0EA5E9); }
-  .mc-cover.bg-glo{ background:linear-gradient(135deg, #111827, #6B7280); }
-  .mc-cover.has-photo .mc-cover-photo{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 38%;
-  }
-  .mc-cover.has-photo::after{
-    content:''; position:absolute; inset:0;
-    background:linear-gradient(180deg, rgba(4,12,26,0.05) 0%, rgba(4,12,26,0.55) 100%);
-  }
-  .mc-code{
-    position:relative; z-index:1;
-    margin:14px; font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; letter-spacing:0.06em;
-    color:#FFF; background:rgba(0,0,0,0.28); backdrop-filter:blur(4px);
-    padding:4px 9px; border-radius:4px; border:1px solid rgba(255,255,255,0.25);
-    display:inline-block;
-  }
-  .mc-body{ padding:18px 20px 20px; display:flex; flex-direction:column; flex:1; }
-  .mc-body h3{ font-size:1.02rem; margin-bottom:6px; }
-  .mc-body p{ color:var(--text-muted); font-size:0.82rem; line-height:1.5; margin:0 0 14px; flex:1; }
-  .mc-cta{ font-weight:600; font-size:0.86rem; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .module-card-fifa:hover .mc-cta{ gap:10px; }
+  .modules-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:32px 0; }
+  .module-card{ border:1px solid var(--hairline); border-radius:14px; padding:24px; background:var(--panel); transition:.2s; position:relative; overflow:hidden; }
+  .module-card::before{ content:''; position:absolute; inset:-8px; border:1px dashed rgba(var(--muted-rgb),0.15); border-radius:6px; pointer-events:none; }
+  .module-card a{ text-decoration:none; display:block; position:relative; z-index:1; }
+  .module-card:hover{ border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow-card); }
 
-  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; max-width:900px; margin:0 auto; }
-  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+  .module-icon{ font-size:2.4rem; margin-bottom:12px; }
+  .module-number{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:block; }
+  .module-title{ font-size:1.1rem; font-weight:700; margin-bottom:8px; font-family:'Archivo', sans-serif; }
+  .module-desc{ font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px; }
+  .module-status{ font-family:'IBM Plex Mono'; font-size:0.72rem; padding:6px 10px; border-radius:6px; display:inline-block; margin-bottom:6px; }
+  .module-status.completed{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+
+  .module-meta{ font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); margin-top:12px; }
+  .module-meta-item{ display:inline-block; margin-right:14px; }
+  .module-meta-item::before{ content:'◆ '; opacity:0.5; margin-right:4px; }
+
+  .norm-strip{ display:flex; flex-wrap:wrap; gap:10px; margin:28px 0; }
+  .norm-chip{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); background:var(--panel); border:1px solid var(--hairline); border-radius:20px; padding:6px 14px; }
+  .norm-chip b{ color:var(--text); }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
@@ -293,7 +211,7 @@
       </div>
     </a>
     <nav class="desktop-nav">
-      <div class="nav-dropdown" id="modulosDropdown">
+      <div class="nav-dropdown active" id="modulosDropdown">
         <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
           Módulos
           <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -305,7 +223,7 @@
             <a href="fraseologia.html">Fraseología</a>
             <a href="plan-de-vuelo.html">Plan de Vuelo</a>
             <a href="navegacion.html">Navegación</a>
-            <a href="notam.html">NOTAM</a>
+            <a href="notam.html" class="active">NOTAM</a>
           </div>
         </div>
       </div>
@@ -314,7 +232,7 @@
       <a href="satelite.html">Satélite</a>
       <a href="glosario.html">Glosario</a>
       <a href="quizzes.html">Quizzes</a>
-      <a href="quienes-somos.html" class="active">Quiénes somos</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
     </nav>
     <div class="nav-right">
       <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
@@ -344,11 +262,11 @@
       <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a>
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
       <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
-      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="notam.html" class="active">NOTAM <span class="mnav-arrow">→</span></a>
       <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
       <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
       <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
-      <a href="quienes-somos.html" class="active">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
       <a href="login.html" id="navLoginBtnMobile">Iniciar sesión <span class="mnav-arrow">→</span></a>
     </nav>
     <div class="mobile-nav-footer">
@@ -360,101 +278,98 @@
     </div>
   </div>
 </div>
-
 </div>
 
-<section class="hero-fifa">
-  <img class="hero-bg" src="ASSETS/equipo-cea-hero.jpg" alt="Equipo de operadores aeronáuticos en jornada de campo, junto a un vehículo de rescate y extinción de incendios y personal de bomberos aeroportuarios.">
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <span class="eyebrow">Sobre el proyecto</span>
-    <h1>Quiénes somos</h1>
-    <p class="lead">SoyAeronáutico es una plataforma educativa pensada para estudiantes y profesionales de aviación que se están preparando en Servicios de Tránsito Aéreo, Comunicaciones y Meteorología aeronáutica (AIS · COM · MET), con herramientas prácticas para estudiar, practicar y medir el propio progreso.</p>
+<section class="hero-simple">
+  <div class="eyebrow">Módulo NOTAM — Curso Básico Operador AIS·COM·MET</div>
+  <h1>NOTAM: Avisos a los Aviadores.</h1>
+  <p class="lead">Un NOTAM (<span class="mono">NOtice To AirMen</span>) es la vía rápida con la que el sistema AIS avisa de algo que cambió a último momento: una pista cerrada, un VOR fuera de servicio, un ejercicio militar, una ceniza volcánica. Este módulo recorre para qué sirve, cómo se arma letra por letra el código Q, cómo leer cada casilla del formato, y qué son sus primos SNOWTAM, ASHTAM y el Trigger NOTAM.</p>
+  <div class="hero-note">
+    <span>📋</span>
+    <span><b>Estructura:</b> 4 bloques progresivos, cada uno con explicación, ejemplos reales del Doc 8126/Doc 8400 de OACI y una <b>herramienta interactiva</b> propia — desde un decodificador de código Q hasta un NOTAM real anotado que puedes explorar casilla por casilla. Cierra con chequeos rápidos en cada bloque.</span>
+  </div>
+  <div class="quiz-cta-row">
+    <a href="quiz-notam.html" class="btn-quiz-nav"><span>📝</span> Ir al Quiz de NOTAM (25 preguntas)</a>
   </div>
 </section>
 
-<section class="intro">
-  <span class="eyebrow">Qué es SoyAeronáutico</span>
-  <p>Nació como un portal de estudio independiente para acompañar a quienes se forman como operadores de estación aeronáutica AIS · COM · MET, y a cualquier estudiante o profesional de aviación que quiera repasar procedimientos, fraseología y meteorología de forma práctica. En vez de quedarse solo en la teoría, la idea es poder practicar con cuestionarios, simuladores y un panel de progreso propio.</p>
-</section>
+<main class="content">
 
-<section class="sections">
-  <div class="sections-head">
-    <span class="eyebrow">Qué ofrecemos</span>
-    <h2>Cuatro formas de prepararte.</h2>
-    <p>Cada herramienta apunta a un objetivo distinto dentro de la misma preparación.</p>
+  <div class="norm-strip">
+    <span class="norm-chip"><b>OACI</b> Anexo 15 — Servicios de Información Aeronáutica</span>
+    <span class="norm-chip"><b>OACI</b> Doc 8126 — Manual AIS, Cap. 6-8</span>
+    <span class="norm-chip"><b>OACI</b> Doc 8400 — PANS-ABC, Código NOTAM</span>
+    <span class="norm-chip"><b>AIP Colombia</b> GEN 3.1-4/5/6</span>
   </div>
-  <div class="modules-grid-fifa">
-    <a class="module-card-fifa" href="quizzes.html">
-      <div class="mc-cover bg-qui has-photo">
-        <img class="mc-cover-photo" src="ASSETS/quizzes.jpg" alt="">
-        <span class="mc-code">QUI</span>
-      </div>
-      <div class="mc-body">
-        <h3>Quizzes</h3>
-        <p>Cuestionarios por módulo — ATS, Plan de Vuelo, Designadores de Aeródromos y Fraseología — con retroalimentación inmediata.</p>
-        <span class="mc-cta">Hacer quizzes →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="simulador-metar.html">
-      <div class="mc-cover bg-des has-photo">
-        <img class="mc-cover-photo" src="ASSETS/atc.jpg" alt="">
-        <span class="mc-code">SIM</span>
-      </div>
-      <div class="mc-body">
-        <h3>Simuladores</h3>
-        <p>Práctica guiada: reportes METAR, llenado de plan de vuelo OACI, fraseología ATC por voz y un puesto de trabajo tipo NALA/CWP.</p>
-        <span class="mc-cta">Ver simuladores →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="Panel_estudiante.html">
-      <div class="mc-cover bg-fra"><span class="mc-code">PAN</span></div>
-      <div class="mc-body">
-        <h3>Panel del estudiante</h3>
-        <p>Progreso guardado, racha de estudio e insignias por logros, para ver cómo avanza tu preparación con el tiempo.</p>
-        <span class="mc-cta">Ir a mi panel →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="glosario.html">
-      <div class="mc-cover bg-glo has-photo">
-        <img class="mc-cover-photo" src="ASSETS/glosario.jpg" alt="">
-        <span class="mc-code">GLO</span>
-      </div>
-      <div class="mc-body">
-        <h3>Glosario y guías</h3>
-        <p>Material de referencia sobre meteorología, comunicaciones y procedimientos aeronáuticos.</p>
-        <span class="mc-cta">Buscar términos →</span>
-      </div>
-    </a>
-  </div>
-</section>
 
-<section class="sections" style="padding-top:0;">
-  <div class="sections-head">
-    <span class="eyebrow">Nuestro enfoque</span>
-    <h2>Precisión antes que cantidad.</h2>
-  </div>
-  <div class="card-box">
-    <h4>Terminología aeronáutica correcta</h4>
-    <p style="margin:0;">Buscamos usar terminología aeronáutica correcta y mantenernos cerca de la normativa OACI/RAC en cada herramienta. Este es un portal de estudio independiente — el contenido tiene fines educativos y no reemplaza la documentación oficial (AIP, OACI, RAC).</p>
-  </div>
-</section>
+  <div class="modules-grid">
 
-<section class="sections" style="padding-top:0;">
-  <div class="sections-head">
-    <span class="eyebrow">Autoría</span>
-    <h2>Quién está detrás de SoyAeronáutico.</h2>
+    <div class="module-card">
+      <a href="notam-fundamentos.html">
+        <div class="module-icon">📋</div>
+        <span class="module-number">Bloque ★</span>
+        <div class="module-title">Fundamentos: qué es, series y tipos</div>
+        <div class="module-desc">Qué es un NOTAM y cuándo se usa en vez de un AIP Supplement, las series A–D, los tipos NOTAMN/NOTAMR/NOTAMC, el período de validez y el Checklist — con un simulador de la cadena de reemplazo/cancelación.</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">7 bloques</div>
+          <div class="module-meta-item">7 chequeos</div>
+          <div class="module-meta-item">~20 min</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="module-card">
+      <a href="notam-formato.html">
+        <div class="module-icon">🗂️</div>
+        <span class="module-number">Bloque 1</span>
+        <div class="module-title">Anatomía del formato NOTAM</div>
+        <div class="module-desc">Las casillas Q), A), B), C), D), E), F) y G), explicadas una por una sobre un NOTAM real — tócalo y explóralo casilla por casilla — más las reglas de redacción de la Casilla E).</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">8 bloques</div>
+          <div class="module-meta-item">8 chequeos</div>
+          <div class="module-meta-item">~25 min</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="module-card">
+      <a href="notam-codigo-q.html">
+        <div class="module-icon">🔤</div>
+        <span class="module-number">Bloque 2</span>
+        <div class="module-title">El código Q — decodificador interactivo</div>
+        <div class="module-desc">Cómo se arman las 5 letras del código NOTAM (QSSCC): categorías AGA/ATM/CNS/Avisos, sujeto y condición — con un constructor donde armas el código y ves su significado en tiempo real.</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">6 bloques</div>
+          <div class="module-meta-item">6 chequeos</div>
+          <div class="module-meta-item">~20 min</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="module-card">
+      <a href="notam-especiales.html">
+        <div class="module-icon">🌋</div>
+        <span class="module-number">Bloque 3</span>
+        <div class="module-title">Trigger NOTAM, SNOWTAM y ASHTAM</div>
+        <div class="module-desc">El Trigger NOTAM que anuncia una AMDT/SUP AIRAC, el SNOWTAM de condiciones de pista y el ASHTAM de ceniza volcánica — con un comparador y la línea de tiempo AIRAC de 28+14 días.</div>
+        <span class="module-status completed">✓ Disponible</span>
+        <div class="module-meta">
+          <div class="module-meta-item">6 bloques</div>
+          <div class="module-meta-item">6 chequeos</div>
+          <div class="module-meta-item">~20 min</div>
+        </div>
+      </a>
+    </div>
+
   </div>
-  <div class="card-box">
-    <h4>Cristian Arcila — creador y autor del proyecto</h4>
-    <p style="margin:0 0 12px;">SoyAeronáutico fue creado y desarrollado por <strong>Cristian Arcila</strong>, autor de su contenido educativo, de sus simuladores y de las herramientas de consulta que integran la plataforma.</p>
-    <p style="margin:0;">El contenido original, el material didáctico, los simuladores y el diseño de este sitio son propiedad intelectual de Cristian Arcila &copy; 2026. Todos los derechos reservados. Los datos meteorológicos y las imágenes de satélite provienen de fuentes públicas oficiales (NOAA, CIRA/RAMMB) y se acreditan en cada herramienta.</p>
-  </div>
-</section>
+</main>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>SoyAeronáutico — AIS · COM · MET</span>
+  <span>Módulo NOTAM — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
