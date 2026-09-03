@@ -133,6 +133,7 @@
   .badge-estado { display:inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .badge-estado.publicada { background: rgba(16,185,129,0.14); color: var(--success); }
   .badge-estado.borrador { background: rgba(245,158,11,0.16); color: #b45309; }
+  .badge-estado.incidente { background: rgba(245,158,11,0.16); color: #b45309; margin-left: 6px; white-space: nowrap; }
 
   .codigo-grupo { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; letter-spacing: 3px; background: #f1f5f9; padding: 10px 18px; border-radius: 10px; display: inline-block; color: var(--primary); }
 
@@ -583,6 +584,15 @@ function clasePct(p) {
   if (p >= 85) return 'ok';
   if (p >= 60) return 'medio';
   return 'bajo';
+}
+
+// Una lectura no tiene "nota": la pregunta de confirmación solo certifica
+// que el estudiante pasó por el texto. Por eso, a diferencia de un examen,
+// aquí se muestra un badge Leído/— en vez de un porcentaje.
+function celdaResultado(tipo, valor, textoVacio) {
+  if (valor === null) return `<td class="pct nulo">${textoVacio}</td>`;
+  if (tipo === 'texto') return `<td><span class="badge-estado publicada">✓ Leído</span></td>`;
+  return `<td class="pct ${clasePct(valor)}">${valor}%</td>`;
 }
 
 function mostrarSeccion(nombre) {
@@ -1418,13 +1428,21 @@ async function cargarResultados() {
   const grupo = estado.grupos.find(g => g.id === grupoId);
   cont.innerHTML = '<div class="panel-card"><p style="font-size:0.88rem;color:var(--text-muted);">Cargando resultados…</p></div>';
 
-  const [estudiantesRes, resultadosRes] = await Promise.all([
+  const [estudiantesRes, resultadosRes, incidentesRes] = await Promise.all([
     obtenerEstudiantesDeGrupo(grupoId),
-    obtenerResultadosDeGrupo(grupoId)
+    obtenerResultadosDeGrupo(grupoId),
+    obtenerIncidentesDeGrupo(grupoId)
   ]);
 
   if (!estudiantesRes.ok) { cont.innerHTML = `<div class="vacio">${esc(estudiantesRes.error)}</div>`; return; }
   if (!resultadosRes.ok) { cont.innerHTML = `<div class="vacio">${esc(resultadosRes.error)}</div>`; return; }
+
+  const incidentesPorEA = incidentesRes.ok ? incidentesRes.porEstudianteActividad : {};
+  const badgeIncidentes = (estudianteId, actividadId) => {
+    const n = incidentesPorEA[`${estudianteId}|${actividadId}`] || 0;
+    if (n === 0) return '';
+    return `<span class="badge-estado incidente" title="El estudiante cambió de pestaña o minimizó la ventana durante esta actividad">⚠ ${n} cambio${n === 1 ? '' : 's'} de pestaña</span>`;
+  };
 
   const actividadesGrupo = estado.actividades.filter(a => a.grupoId === grupoId);
   const filas = resumirResultados(estudiantesRes.estudiantes, actividadesGrupo, resultadosRes.resultados);
@@ -1456,11 +1474,11 @@ async function cargarResultados() {
             <tbody>${filas.map(f => `
               <tr>
                 <td>${esc(f.estudiante)}</td>
-                <td>${esc(f.actividad)}</td>
+                <td>${esc(f.actividad)}${badgeIncidentes(f.estudianteId, f.actividadId)}</td>
                 <td>${f.intentos}</td>
-                <td class="pct ${clasePct(f.mejor)}">${f.mejor === null ? 'Sin presentar' : f.mejor + '%'}</td>
-                <td class="pct ${clasePct(f.promedio)}">${f.promedio === null ? '—' : f.promedio + '%'}</td>
-                <td class="pct ${clasePct(f.ultimo)}">${f.ultimo === null ? '—' : f.ultimo + '%'}</td>
+                ${celdaResultado(f.tipo, f.mejor, 'Sin presentar')}
+                ${celdaResultado(f.tipo, f.promedio, '—')}
+                ${celdaResultado(f.tipo, f.ultimo, '—')}
                 <td>${f.ultimaFecha ? fechaCorta(f.ultimaFecha) : '—'}</td>
               </tr>`).join('')}
             </tbody></table></div>`}
@@ -1493,9 +1511,11 @@ async function cargarResultados() {
             <tbody>${resultadosRes.resultados.map(r => `
               <tr>
                 <td>${esc(r.estudiante)}</td>
-                <td>${esc(r.actividadTitulo)}</td>
+                <td>${esc(r.actividadTitulo)}${badgeIncidentes(r.estudianteId, r.actividadId)}</td>
                 <td>${fechaCorta(r.fecha)}</td>
-                <td class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</td>
+                <td>${r.actividadTipo === 'texto'
+                  ? '<span class="badge-estado publicada">✓ Leído</span>'
+                  : `<span class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</span>`}</td>
                 <td><button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
               </tr>`).join('')}
             </tbody></table></div>`}
