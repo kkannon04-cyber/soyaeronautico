@@ -29,6 +29,7 @@
     --font-main: 'IBM Plex Sans', sans-serif;
     --font-heading: 'Archivo', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
+    --shadow-card-hover: 0 16px 36px -16px rgba(15,23,42,0.22);
   }
   [data-theme="dark"] {
     --primary: #4F8EF7;
@@ -38,6 +39,7 @@
     --text-main: #EDEFF3;
     --text-muted: #8894A8;
     --border-color: #2A3548;
+    --shadow-card-hover: 0 16px 36px -16px rgba(0,0,0,0.65);
   }
   [data-theme="dark"] .clock-widget { background-color: #17223A; }
   [data-theme="dark"] .module-badge,
@@ -49,27 +51,48 @@
   a { color: inherit; text-decoration: none; }
   h1, h2, h3 { font-family: var(--font-heading); }
   body { display: flex; min-height: 100vh; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+  ::selection { background: var(--primary); color: #fff; }
+  .nav-menu, .main-content, .selector-preguntas, .tabla-scroll { scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; }
+  .nav-menu::-webkit-scrollbar, .main-content::-webkit-scrollbar, .selector-preguntas::-webkit-scrollbar, .tabla-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .nav-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
+  .main-content::-webkit-scrollbar-thumb, .selector-preguntas::-webkit-scrollbar-thumb, .tabla-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+  .main-content::-webkit-scrollbar-track, .selector-preguntas::-webkit-scrollbar-track, .tabla-scroll::-webkit-scrollbar-track { background: transparent; }
 
   /* === BARRA LATERAL === */
-  .sidebar { width: 260px; flex-shrink: 0; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; z-index: 100; transition: transform 0.25s ease; }
+  .sidebar { width: 260px; flex-shrink: 0; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; z-index: 100; transition: transform 0.25s ease, margin-left 0.25s ease; }
+  /* En escritorio la barra se pliega hacia la izquierda y el contenido ocupa todo el ancho.
+     La regla vive dentro de una consulta de ancho mínimo a propósito: por debajo de 900 px la
+     barra es un cajón `position:fixed` que se muestra con transform, y un margen negativo la
+     dejaría fuera de la pantalla incluso estando "abierta". */
+  @media (min-width: 901px) {
+    html.sidebar-collapsed .sidebar { margin-left: -260px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
   .sidebar-header { padding: 24px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .logo-icon { width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--primary); }
   .logo-icon svg { display: block; }
   .logo-text h1 { font-size: 1.1rem; margin: 0; font-weight: 700; }
   .logo-text p { font-family: var(--font-mono); font-size: 0.7rem; color: #94a3b8; letter-spacing: 1px; }
   .nav-menu { padding: 16px 12px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-  .nav-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: 8px; transition: all 0.2s; cursor: pointer; border: none; background: none; text-align: left; width: 100%; font-family: var(--font-main); }
+  .nav-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: 8px; transition: background-color 0.2s, color 0.2s; cursor: pointer; border: none; background: none; text-align: left; width: 100%; font-family: var(--font-main); }
   .nav-item:hover, .nav-item.active { background-color: var(--sidebar-hover); color: white; }
   .nav-item.active { background-color: var(--sidebar-active); font-weight: 600; }
-  .nav-sep { margin: 12px 16px 6px; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; color: #64748b; text-transform: uppercase; }
+  .nav-item:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+  .nav-item svg { flex-shrink: 0; opacity: 0.85; }
+  .nav-item.active svg, .nav-item:hover svg { opacity: 1; }
+  .nav-sep { margin: 12px 16px 6px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 1px; color: #8899b3; text-transform: uppercase; }
   #authNavSlot { padding: 16px 12px; }
   .nav-item.exit { color: #94a3b8; }
   .nav-item.exit:hover { background-color: rgba(239,68,68,0.1); color: #fca5a5; }
 
   /* === ÁREA PRINCIPAL === */
   .main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow-y: auto; }
-  .topbar { background-color: var(--card-bg); min-height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; gap: 16px; }
-  .menu-btn { display:none; align-items:center; justify-content:center; width:44px; height:44px; border-radius:8px; border:1px solid var(--border-color); background:none; color:var(--text-main); cursor:pointer; font-size:1.1rem; flex-shrink:0; }
+  .topbar { background-color: var(--card-bg); min-height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; gap: 16px; box-shadow: 0 4px 16px -12px rgba(15,23,42,0.25); }
+  /* Antes solo aparecía en móvil; ahora es también el conmutador de la barra lateral en
+     escritorio, así que está visible siempre. */
+  .menu-btn { display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:8px; border:1px solid var(--border-color); background:none; color:var(--text-main); cursor:pointer; font-size:1.1rem; flex-shrink:0; transition:background-color .15s, border-color .15s, color .15s; }
+  .menu-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .menu-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .clock-widget { display: flex; align-items: center; gap: 8px; background-color: #f1f5f9; padding: 6px 14px; border-radius: 20px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; }
   .clock-widget span:first-child { color: var(--text-muted); font-size: 0.75rem; }
   .clock-widget #zulu-time { background-color: #0f172a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; letter-spacing: 0.5px; }
@@ -81,11 +104,13 @@
   [data-theme="dark"] .theme-toggle-btn .icon-sun { display:none; }
   [data-theme="dark"] .theme-toggle-btn .icon-moon { display:block; }
   .user-info { text-align: right; }
-  .avatar { width: 38px; height: 38px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+  .avatar { width: 38px; height: 38px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
 
   .dashboard-container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
   .seccion { display: none; }
-  .seccion.activa { display: block; }
+  .seccion.activa { display: block; animation: entradaSeccion 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes entradaSeccion { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .seccion.activa { animation: none; } }
   .seccion-head { margin-bottom: 24px; }
   .seccion-head h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
   .seccion-head p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.55; max-width: 720px; }
@@ -96,7 +121,8 @@
   .panel-card > .card-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
 
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 26px; }
-  .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+  .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); border-color: var(--primary); }
   .stat-card span.label { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: var(--text-muted); display: block; }
   .stat-card strong { font-size: 1.6rem; font-weight: 700; margin-top: 6px; display: block; font-family: var(--font-mono); }
 
@@ -114,7 +140,10 @@
   .check-linea { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin-bottom: 10px; }
   .check-linea input { width: auto; }
 
-  .btn { border: none; border-radius: 8px; padding: 11px 20px; font-size: 0.87rem; font-weight: 600; cursor: pointer; font-family: var(--font-main); transition: 0.15s; }
+  .btn { border: none; border-radius: 8px; padding: 11px 20px; font-size: 0.87rem; font-weight: 600; cursor: pointer; font-family: var(--font-main); transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.1s, opacity 0.15s; }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
   .btn-primario { background: var(--primary); color: #fff; }
   .btn-primario:hover { background: var(--primary-hover); }
   .btn-secundario { background: none; border: 1px solid var(--border-color); color: var(--text-main); }
@@ -125,7 +154,8 @@
   .acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
   /* === LISTAS === */
-  .item-lista { border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 14px; background: var(--card-bg); }
+  .item-lista { border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 14px; background: var(--card-bg); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+  .item-lista:hover { border-color: var(--primary); box-shadow: var(--shadow-card-hover); }
   .item-lista .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
   .item-lista h4 { font-size: 1rem; margin-bottom: 4px; }
   .item-lista p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
@@ -150,7 +180,10 @@
   .pct.nulo { color: var(--text-muted); font-weight: 500; }
 
   /* === UTILIDADES === */
-  .chip { display:inline-block; border:1px solid var(--border-color); background:none; color:var(--text-muted); border-radius:20px; padding:7px 14px; font-size:0.78rem; cursor:pointer; margin:0 6px 6px 0; font-family: var(--font-main); }
+  .chip { display:inline-block; border:1px solid var(--border-color); background:none; color:var(--text-muted); border-radius:20px; padding:7px 14px; font-size:0.78rem; cursor:pointer; margin:0 6px 6px 0; font-family: var(--font-main); transition: border-color 0.15s, color 0.15s, background-color 0.15s, transform 0.1s; }
+  .chip:hover { border-color: var(--primary); color: var(--primary); }
+  .chip:active { transform: translateY(1px); }
+  .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .chip.active { border-color: var(--primary); color: var(--primary); background:#eff6ff; font-weight:600; }
   .vacio { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; padding: 18px; border: 1px dashed var(--border-color); border-radius: 12px; text-align: center; }
   .aviso { position: fixed; right: 20px; bottom: 20px; z-index: 300; background: var(--text-main); color: var(--bg-main); padding: 13px 18px; border-radius: 10px; font-size: 0.87rem; font-weight: 500; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; line-height: 1.45; }
@@ -162,7 +195,7 @@
   .pregunta-check:hover { background: rgba(37,99,235,0.05); }
   .pregunta-check input { margin-top: 3px; width: auto; flex-shrink: 0; }
   .sub-bloque { border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
-  .sub-titulo { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+  .sub-titulo { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.3px;
     color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
   .resumen-preguntas { background: #eff6ff; border: 1px solid var(--primary); border-radius: 10px;
     padding: 12px 14px; font-size: 0.88rem; font-weight: 600; color: var(--primary); }
@@ -170,8 +203,10 @@
   .resumen-preguntas span { display: block; font-weight: 400; font-size: 0.82rem; margin-top: 3px; color: var(--text-muted); }
   .banco-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border-color);
     background: none; border-radius: 20px; padding: 8px 14px; font-size: 0.82rem; cursor: pointer;
-    margin: 0 6px 6px 0; font-family: var(--font-main); color: var(--text-main); }
+    margin: 0 6px 6px 0; font-family: var(--font-main); color: var(--text-main); transition: border-color 0.15s, background-color 0.15s, color 0.15s, transform 0.1s; }
   .banco-chip:hover { border-color: var(--primary); }
+  .banco-chip:active { transform: translateY(1px); }
+  .banco-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .banco-chip.on { border-color: var(--primary); background: #eff6ff; color: var(--primary); font-weight: 600; }
   .banco-chip .n { font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-muted); }
   .banco-chip.on .n { color: var(--primary); }
@@ -200,6 +235,17 @@
   .credito-autor { border-top:1px solid rgba(128,128,128,0.22); margin-top:40px; padding:20px 24px; text-align:center; font-size:0.78rem; color:var(--text-muted); }
   .credito-autor strong { color:inherit; font-weight:600; }
 </style>
+<script>
+  /* Se aplica el estado plegado de la barra lateral ANTES de pintar la página. Si se hiciera al
+     final del cuerpo, la barra aparecería un instante y se cerraría de golpe a la vista.
+     Comparte clave con el Panel del Estudiante, para que la preferencia sea la misma al saltar
+     de un panel al otro. */
+  try{
+    if(localStorage.getItem('aisPanelSidebar') === 'oculto'){
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
+  }catch(e){ /* modo privado o almacenamiento bloqueado: la barra queda visible */ }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
 <script src="progreso.js"></script>
@@ -224,14 +270,35 @@
     </div>
   </a>
   <div class="nav-menu">
-    <button class="nav-item active" type="button" data-seccion="resumen">Resumen</button>
-    <button class="nav-item" type="button" data-seccion="grupos">Mis grupos</button>
-    <button class="nav-item" type="button" data-seccion="banco">Bancos de preguntas</button>
-    <button class="nav-item" type="button" data-seccion="actividades">Actividades</button>
-    <button class="nav-item" type="button" data-seccion="resultados">Resultados</button>
+    <button class="nav-item active" type="button" data-seccion="resumen">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
+      Resumen
+    </button>
+    <button class="nav-item" type="button" data-seccion="grupos">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.2 14.3c2.5.2 4.3 2.4 4.3 5.7"/></svg>
+      Mis grupos
+    </button>
+    <button class="nav-item" type="button" data-seccion="banco">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5v6c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8v-6"/><path d="M4 11.5v6c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8v-6"/></svg>
+      Bancos de preguntas
+    </button>
+    <button class="nav-item" type="button" data-seccion="actividades">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="1.8"/><path d="M9 3.3h6a1 1 0 0 1 1 1V6H8V4.3a1 1 0 0 1 1-1Z"/><path d="m8.5 12.5 2 2 4.5-4.5"/><path d="M8.5 16.5h7"/></svg>
+      Actividades
+    </button>
+    <button class="nav-item" type="button" data-seccion="resultados">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M12 20V4M20 20v-7"/><path d="M2.5 20h19"/></svg>
+      Resultados
+    </button>
     <div class="nav-sep">Vista de estudiante</div>
-    <a class="nav-item" href="Panel_estudiante.html">Mi panel de estudiante</a>
-    <a class="nav-item" href="quizzes.html">Zona de Quizzes</a>
+    <a class="nav-item" href="Panel_estudiante.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 8l10 5 8.5-4.25V15"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg>
+      Mi panel de estudiante
+    </a>
+    <a class="nav-item" href="quizzes.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg>
+      Zona de Quizzes
+    </a>
   </div>
   <div id="authNavSlot"></div>
 </aside>
@@ -609,17 +676,43 @@ function mostrarSeccion(nombre) {
 // ============================================================
 // NAVEGACIÓN / CRONO / TEMA
 // ============================================================
+/* El mismo botón hace dos cosas según el ancho de la pantalla:
+     · en móvil (≤900 px) abre y cierra el cajón deslizante sobre el contenido, como hasta ahora;
+     · en escritorio pliega y despliega la barra lateral, recordando la preferencia entre páginas
+       y visitas (misma clave que el Panel del Estudiante). */
 const sidebar = document.getElementById('sidebar');
 const backdrop = document.getElementById('sidebarBackdrop');
 const menuBtn = document.getElementById('menuBtn');
+const CLAVE_SIDEBAR = 'aisPanelSidebar';
+const esMovilPanel = () => window.matchMedia('(max-width: 900px)').matches;
+
+function aplicarPlegadoSidebar(oculto) {
+  document.documentElement.classList.toggle('sidebar-collapsed', oculto);
+  menuBtn.setAttribute('aria-expanded', String(!oculto));
+  menuBtn.setAttribute('aria-label', oculto ? 'Mostrar menú lateral' : 'Ocultar menú lateral');
+  menuBtn.title = oculto ? 'Mostrar menú lateral' : 'Ocultar menú lateral';
+}
 function cerrarSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+
+if (!esMovilPanel()) aplicarPlegadoSidebar(document.documentElement.classList.contains('sidebar-collapsed'));
+
 menuBtn.addEventListener('click', () => {
-  const abierto = sidebar.classList.toggle('open');
-  backdrop.classList.toggle('open', abierto);
-  menuBtn.setAttribute('aria-expanded', String(abierto));
+  if (esMovilPanel()) {
+    const abierto = sidebar.classList.toggle('open');
+    backdrop.classList.toggle('open', abierto);
+    menuBtn.setAttribute('aria-expanded', String(abierto));
+    return;
+  }
+  const oculto = !document.documentElement.classList.contains('sidebar-collapsed');
+  aplicarPlegadoSidebar(oculto);
+  try { localStorage.setItem(CLAVE_SIDEBAR, oculto ? 'oculto' : 'visible'); } catch (e) { /* almacenamiento bloqueado */ }
 });
 backdrop.addEventListener('click', cerrarSidebar);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSidebar(); });
+// Al pasar de móvil a escritorio, el cajón deja de tener sentido y debe quedar cerrado.
+window.addEventListener('resize', () => {
+  if (!esMovilPanel()) { cerrarSidebar(); aplicarPlegadoSidebar(document.documentElement.classList.contains('sidebar-collapsed')); }
+});
 
 document.querySelectorAll('.nav-item[data-seccion]').forEach(btn => {
   btn.addEventListener('click', () => mostrarSeccion(btn.dataset.seccion));
@@ -752,13 +845,17 @@ function copiar(texto, mensaje) {
   }
 }
 
-document.getElementById('btnCrearGrupo').addEventListener('click', async () => {
+document.getElementById('btnCrearGrupo').addEventListener('click', async (e) => {
+  const btn = e.currentTarget, textoOriginal = btn.textContent;
   const input = document.getElementById('nuevoGrupoNombre');
-  const r = await crearGrupo(input.value);
-  if (!r.ok) { aviso(r.error, 'error'); return; }
-  input.value = '';
-  aviso(`Grupo creado. Su código es ${r.grupo.codigo}`, 'ok');
-  cargarGrupos();
+  btn.disabled = true; btn.textContent = 'Creando…';
+  try {
+    const r = await crearGrupo(input.value);
+    if (!r.ok) { aviso(r.error, 'error'); return; }
+    input.value = '';
+    aviso(`Grupo creado. Su código es ${r.grupo.codigo}`, 'ok');
+    cargarGrupos();
+  } finally { btn.disabled = false; btn.textContent = textoOriginal; }
 });
 
 function renderSelectoresDeGrupo() {
@@ -875,16 +972,20 @@ function renderSelectoresDeBanco() {
   renderSelectorBancosActividad();
 }
 
-document.getElementById('btnCrearBanco').addEventListener('click', async () => {
+document.getElementById('btnCrearBanco').addEventListener('click', async (e) => {
+  const btn = e.currentTarget, textoOriginal = btn.textContent;
   const nombre = document.getElementById('nuevoBancoNombre');
   const desc = document.getElementById('nuevoBancoDesc');
-  const r = await crearBanco(nombre.value, desc.value);
-  if (!r.ok) { aviso(r.error, 'error'); return; }
-  nombre.value = '';
-  desc.value = '';
-  aviso('Banco creado.', 'ok');
-  estado.bancosActividad.push(r.banco.id);
-  await cargarBancos();
+  btn.disabled = true; btn.textContent = 'Creando…';
+  try {
+    const r = await crearBanco(nombre.value, desc.value);
+    if (!r.ok) { aviso(r.error, 'error'); return; }
+    nombre.value = '';
+    desc.value = '';
+    aviso('Banco creado.', 'ok');
+    estado.bancosActividad.push(r.banco.id);
+    await cargarBancos();
+  } finally { btn.disabled = false; btn.textContent = textoOriginal; }
 });
 
 document.getElementById('filtroBanco').addEventListener('change', e => {
@@ -1012,34 +1113,42 @@ function editarPregunta(p) {
   document.getElementById('pEnunciado').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-document.getElementById('btnGuardarPregunta').addEventListener('click', async () => {
-  const datos = leerFormularioPregunta();
-  const r = estado.preguntaEditando
-    ? await actualizarPregunta(estado.preguntaEditando, datos)
-    : await crearPregunta(datos);
-  if (!r.ok) { aviso(r.error, 'error'); return; }
-  aviso(estado.preguntaEditando ? 'Pregunta actualizada.' : 'Pregunta agregada al banco.', 'ok');
-  limpiarFormularioPregunta();
-  await cargarBanco();
-  await cargarBancos();
+document.getElementById('btnGuardarPregunta').addEventListener('click', async (e) => {
+  const btn = e.currentTarget, textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const datos = leerFormularioPregunta();
+    const r = estado.preguntaEditando
+      ? await actualizarPregunta(estado.preguntaEditando, datos)
+      : await crearPregunta(datos);
+    if (!r.ok) { aviso(r.error, 'error'); return; }
+    aviso(estado.preguntaEditando ? 'Pregunta actualizada.' : 'Pregunta agregada al banco.', 'ok');
+    limpiarFormularioPregunta();
+    await cargarBanco();
+    await cargarBancos();
+  } finally { btn.disabled = false; if (btn.textContent === 'Guardando…') btn.textContent = textoOriginal; }
 });
 
 document.getElementById('btnCancelarPregunta').addEventListener('click', limpiarFormularioPregunta);
 
-document.getElementById('btnImportar').addEventListener('click', async () => {
-  const area = document.getElementById('importarTexto');
-  const bancoDestino = document.getElementById('importarBanco').value || null;
-  const r = await importarPreguntasEnLote(area.value, bancoDestino);
-  if (!r.ok) {
-    aviso(r.error, 'error');
-    if (r.errores && r.errores.length) alert('Detalle:\n\n' + r.errores.join('\n'));
-    return;
-  }
-  area.value = '';
-  aviso(`${r.creadas} pregunta${r.creadas === 1 ? '' : 's'} importada${r.creadas === 1 ? '' : 's'}.`, 'ok');
-  if (r.errores && r.errores.length) alert('Se importaron las líneas correctas. Estas se saltaron:\n\n' + r.errores.join('\n'));
-  await cargarBanco();
-  await cargarBancos();
+document.getElementById('btnImportar').addEventListener('click', async (e) => {
+  const btn = e.currentTarget, textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Importando…';
+  try {
+    const area = document.getElementById('importarTexto');
+    const bancoDestino = document.getElementById('importarBanco').value || null;
+    const r = await importarPreguntasEnLote(area.value, bancoDestino);
+    if (!r.ok) {
+      aviso(r.error, 'error');
+      if (r.errores && r.errores.length) alert('Detalle:\n\n' + r.errores.join('\n'));
+      return;
+    }
+    area.value = '';
+    aviso(`${r.creadas} pregunta${r.creadas === 1 ? '' : 's'} importada${r.creadas === 1 ? '' : 's'}.`, 'ok');
+    if (r.errores && r.errores.length) alert('Se importaron las líneas correctas. Estas se saltaron:\n\n' + r.errores.join('\n'));
+    await cargarBanco();
+    await cargarBancos();
+  } finally { btn.disabled = false; btn.textContent = textoOriginal; }
 });
 
 // ============================================================
@@ -1292,15 +1401,19 @@ function aFormatoInput(iso) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-document.getElementById('btnGuardarActividad').addEventListener('click', async () => {
-  const datos = leerFormularioActividad();
-  const r = estado.actividadEditando
-    ? await actualizarActividad(estado.actividadEditando, datos)
-    : await crearActividad(datos);
-  if (!r.ok) { aviso(r.error, 'error'); return; }
-  aviso(estado.actividadEditando ? 'Actividad actualizada.' : 'Actividad creada.', 'ok');
-  limpiarFormularioActividad();
-  cargarActividades();
+document.getElementById('btnGuardarActividad').addEventListener('click', async (e) => {
+  const btn = e.currentTarget, textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const datos = leerFormularioActividad();
+    const r = estado.actividadEditando
+      ? await actualizarActividad(estado.actividadEditando, datos)
+      : await crearActividad(datos);
+    if (!r.ok) { aviso(r.error, 'error'); return; }
+    aviso(estado.actividadEditando ? 'Actividad actualizada.' : 'Actividad creada.', 'ok');
+    limpiarFormularioActividad();
+    cargarActividades();
+  } finally { btn.disabled = false; if (btn.textContent === 'Guardando…') btn.textContent = textoOriginal; }
 });
 
 document.getElementById('btnCancelarActividad').addEventListener('click', limpiarFormularioActividad);

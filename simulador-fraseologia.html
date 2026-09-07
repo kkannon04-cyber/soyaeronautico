@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -22,6 +22,7 @@
     --topbar-bg:rgba(255,255,255,0.85);
     --on-accent:#FFFFFF;
     --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
@@ -34,6 +35,7 @@
     --topbar-bg:rgba(11,18,32,0.85);
     --on-accent:#0B1220;
     --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
@@ -70,7 +72,7 @@
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
   .nav-dropdown-menu{ display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); padding-top:14px; z-index:60; }
   .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
-  .nav-dropdown-menu-inner{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:8px; min-width:180px; box-shadow:var(--shadow-instrument); }
+  .nav-dropdown-menu-inner{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:8px; min-width:180px; box-shadow:var(--shadow-card); }
   .nav-dropdown-menu a{ display:block; padding:9px 12px; border-radius:6px; font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none; transition:background .15s, color .15s; }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
   .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
@@ -78,7 +80,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -109,7 +111,7 @@
   .pill-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
   .pill-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
   .btn:active{ transform:translateY(1px); }
   .btn-primary{ background:var(--accent); color:var(--on-accent); }
   .btn-primary:hover{ filter:brightness(1.08); }
@@ -158,15 +160,15 @@
 
   /* ---------- MULTIPLE CHOICE ---------- */
   .mc-grid{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:4px; }
-  .mc-option{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:12px 16px; font-family:'IBM Plex Mono'; font-size:0.82rem; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; line-height:1.4; }
-  .mc-option:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
-  .mc-option:disabled{ cursor:not-allowed; }
-  .mc-option.correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); font-weight:600; }
-  .mc-option.wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); color:var(--danger); font-weight:600; }
+  .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-family:'IBM Plex Mono'; font-size:0.82rem; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; line-height:1.4; }
+  .opt-btn:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
+  .opt-btn:disabled{ cursor:not-allowed; }
+  .opt-btn.correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); font-weight:600; }
+  .opt-btn.wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); color:var(--danger); font-weight:600; }
 
   /* ---------- FEEDBACK ---------- */
   .feedback-list{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
-  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:12px 16px; background:var(--bg); }
+  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:13px 16px; background:var(--bg); }
   .fb-block.ok{ border-left-color:var(--vfr); }
   .fb-block.bad{ border-left-color:var(--danger); }
   .fb-block.partial{ border-left-color:var(--warn); }
@@ -1394,9 +1396,9 @@ setInterval(updateZuluMini, 1000);
         { text: step.expected, correct: true, why: null },
         ...step.distractors.map(d => ({ text: d.text, correct: false, why: d.why }))
       ]);
-      mcGrid.innerHTML = options.map((op, i) => `<button class="mc-option" type="button" data-idx="${i}">${digitizeDisplay(op.text)}</button>`).join('');
+      mcGrid.innerHTML = options.map((op, i) => `<button class="opt-btn" type="button" data-idx="${i}">${digitizeDisplay(op.text)}</button>`).join('');
       mcGrid._options = options;
-      mcGrid.querySelectorAll('.mc-option').forEach(btn => {
+      mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
         btn.addEventListener('click', () => comprobarMc(btn, mcGrid._options));
       });
     }
@@ -1414,7 +1416,7 @@ setInterval(updateZuluMini, 1000);
     const idx = Number(btnSeleccionado.dataset.idx);
     const chosen = options[idx];
     const ok = chosen.correct;
-    mcGrid.querySelectorAll('.mc-option').forEach((btn, i) => {
+    mcGrid.querySelectorAll('.opt-btn').forEach((btn, i) => {
       btn.disabled = true;
       if(options[i].correct) btn.classList.add('correct');
       else if(btn === btnSeleccionado) btn.classList.add('wrong');

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -32,6 +32,8 @@
     --notam-grad:linear-gradient(90deg, #F2F6FC 0%, #E7EEF9 100%);
     --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
     --shadow-notam:0 12px 30px -14px rgba(15,23,42,0.12);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
   }
 
   [data-theme="dark"]{
@@ -57,6 +59,8 @@
     --notam-grad:linear-gradient(90deg, #17223A 0%, #121C2E 100%);
     --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
     --shadow-notam:0 12px 30px -14px rgba(0,0,0,0.55);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
   }
 
   html{ transition:background .2s; }
@@ -161,7 +165,7 @@
   .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
   .nav-dropdown-menu-inner{
     background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
-    padding:8px; min-width:180px; box-shadow:var(--shadow-instrument);
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
   }
   .nav-dropdown-menu a{
     display:block; padding:9px 12px; border-radius:6px;
@@ -187,13 +191,14 @@
 
   .nav-login-btn{
     display:inline-block; text-decoration:none;
-    background:var(--accent); color:#fff;
+    background:var(--accent); color:var(--on-accent);
     font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem;
     padding:8px 20px; border-radius:30px;
     transition:filter .15s;
     white-space:nowrap;
   }
   .nav-login-btn:hover{ filter:brightness(1.08); }
+  .nav-login-btn:active{ transform:translateY(1px); }
 
   .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
 
@@ -240,14 +245,14 @@
     color:#DCE5F3; font-size:clamp(0.95rem, 1.8vw, 1.1rem); line-height:1.6;
     margin:0 auto 30px; max-width:620px;
   }
-  .btn-primary{
+  .hero-cta{
     display:inline-block; text-decoration:none;
-    background:var(--accent); color:#FFFFFF;
+    background:var(--accent); color:var(--on-accent);
     font-family:'Archivo'; font-weight:700; font-size:1.02rem;
     padding:14px 32px; border-radius:8px;
     transition:transform .2s, filter .2s;
   }
-  .btn-primary:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+  .hero-cta:hover{ filter:brightness(1.1); transform:translateY(-2px); }
 
   /* ---------- LIVE TICKER: reloj Zulu + búsqueda METAR en línea ---------- */
   .live-ticker-wrapper{
@@ -282,6 +287,7 @@
     transition:filter .15s; flex-shrink:0;
   }
   .metar-btn:hover{ filter:brightness(1.15); }
+  .metar-btn:active{ transform:translateY(1px); }
   .metar-btn:disabled{ opacity:0.6; cursor:wait; }
 
   /* Chips rápidos: fila de píldoras con scroll horizontal (sin flechas, como el modelo) */
@@ -726,7 +732,7 @@
     <span class="eyebrow">AIS · COM · MET</span>
     <h1>Bienvenido a bordo, compañero.</h1>
     <p class="lead">Gracias por elegir este camino. Como operador AIS·COM·MET vas a ser una pieza clave en la aviación: el puente entre pilotos, controladores y meteorólogos. Cada reporte que redactes, cada frecuencia que operes y cada dato que verifiques ayuda a mantener el cielo seguro para todos.</p>
-    <a href="#modulos" class="btn-primary">Comenzar a Estudiar</a>
+    <a href="#modulos" class="hero-cta">Comenzar a Estudiar</a>
     <p class="hero-byline">Un proyecto creado por <strong>Cristian Arcila</strong></p>
   </div>
 </section>

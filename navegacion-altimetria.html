@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -13,21 +13,23 @@
     --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
     --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
     --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
-    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
-    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
     --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
     --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
     --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
-    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
-    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
     --live:#4FA88C; --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; }
@@ -93,7 +95,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -221,18 +223,18 @@
 
   .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
   .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-v{ background:rgba(var(--vfr-rgb),0.15); color:var(--vfr); }
 
   .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
   .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
   .quiz-options{ display:flex; flex-direction:column; gap:9px; }
-  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
-  .quiz-opt:hover{ border-color:var(--accent); }
-  .quiz-card.answered .quiz-opt{ cursor:default; }
-  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
-  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
-  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .opt-btn:hover{ border-color:var(--accent); }
+  .quiz-card.answered .opt-btn{ cursor:default; }
+  .quiz-card.answered .opt-btn:hover{ border-color:var(--hairline); }
+  .opt-btn.correct{ background:rgba(var(--vfr-rgb),0.15); border-color:var(--vfr); font-weight:600; }
+  .opt-btn.incorrect{ background:rgba(var(--danger-rgb),0.15); border-color:var(--danger); }
   .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
 
   .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
@@ -478,9 +480,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 1/10</div>
       <div class="quiz-q">¿En qué principio físico se basa el funcionamiento del altímetro?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">A mayor altitud, menor presión atmosférica</button>
-        <button class="quiz-opt" data-correct="false">A mayor altitud, mayor temperatura</button>
-        <button class="quiz-opt" data-correct="false">A mayor velocidad, mayor presión estática</button>
+        <button class="opt-btn" data-correct="true">A mayor altitud, menor presión atmosférica</button>
+        <button class="opt-btn" data-correct="false">A mayor altitud, mayor temperatura</button>
+        <button class="opt-btn" data-correct="false">A mayor velocidad, mayor presión estática</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -630,9 +632,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 2/10</div>
       <div class="quiz-q">¿Qué muestra la ventanilla de Kollsman en un altímetro?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La presión referencial (el reglaje) que el piloto ha ajustado</button>
-        <button class="quiz-opt" data-correct="false">La temperatura exterior en tiempo real</button>
-        <button class="quiz-opt" data-correct="false">La velocidad vertical de la aeronave</button>
+        <button class="opt-btn" data-correct="true">La presión referencial (el reglaje) que el piloto ha ajustado</button>
+        <button class="opt-btn" data-correct="false">La temperatura exterior en tiempo real</button>
+        <button class="opt-btn" data-correct="false">La velocidad vertical de la aeronave</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -656,9 +658,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 3/10</div>
       <div class="quiz-q">Al ajustar el altímetro con el reglaje QNH, ¿qué indica el instrumento?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">ALTITUD (distancia vertical respecto al nivel del mar)</button>
-        <button class="quiz-opt" data-correct="false">ALTURA (distancia vertical respecto a la pista)</button>
-        <button class="quiz-opt" data-correct="false">NIVEL DE VUELO</button>
+        <button class="opt-btn" data-correct="true">ALTITUD (distancia vertical respecto al nivel del mar)</button>
+        <button class="opt-btn" data-correct="false">ALTURA (distancia vertical respecto a la pista)</button>
+        <button class="opt-btn" data-correct="false">NIVEL DE VUELO</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -682,9 +684,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 4/10</div>
       <div class="quiz-q">Con el reglaje QFE ajustado, ¿qué marca el altímetro exactamente en la pista?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Cero (0)</button>
-        <button class="quiz-opt" data-correct="false">La elevación real del aeródromo en pies</button>
-        <button class="quiz-opt" data-correct="false">1013,25 hPa</button>
+        <button class="opt-btn" data-correct="true">Cero (0)</button>
+        <button class="opt-btn" data-correct="false">La elevación real del aeródromo en pies</button>
+        <button class="opt-btn" data-correct="false">1013,25 hPa</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -709,9 +711,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 5/10</div>
       <div class="quiz-q">¿Por qué se usa obligatoriamente el QNE por encima de la altitud de transición?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Para que todas las aeronaves usen la misma referencia y queden separadas verticalmente</button>
-        <button class="quiz-opt" data-correct="false">Porque a esa altura ya no hay presión atmosférica real que medir</button>
-        <button class="quiz-opt" data-correct="false">Porque el QNH deja de transmitirse por radio a esa altura</button>
+        <button class="opt-btn" data-correct="true">Para que todas las aeronaves usen la misma referencia y queden separadas verticalmente</button>
+        <button class="opt-btn" data-correct="false">Porque a esa altura ya no hay presión atmosférica real que medir</button>
+        <button class="opt-btn" data-correct="false">Porque el QNH deja de transmitirse por radio a esa altura</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -737,9 +739,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 6/10</div>
       <div class="quiz-q">¿Cuál es la diferencia central entre "Elevación" y "Altura"?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Elevación es de un punto fijo en tierra respecto al MSL; Altura es de la aeronave respecto al AGL</button>
-        <button class="quiz-opt" data-correct="false">Son sinónimos exactos, intercambiables en cualquier contexto</button>
-        <button class="quiz-opt" data-correct="false">Elevación se mide en metros; Altura siempre en pies</button>
+        <button class="opt-btn" data-correct="true">Elevación es de un punto fijo en tierra respecto al MSL; Altura es de la aeronave respecto al AGL</button>
+        <button class="opt-btn" data-correct="false">Son sinónimos exactos, intercambiables en cualquier contexto</button>
+        <button class="opt-btn" data-correct="false">Elevación se mide en metros; Altura siempre en pies</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -764,9 +766,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 7/10</div>
       <div class="quiz-q">Una aeronave vuela a 14.000 pies con reglaje QNE. ¿Cómo se expresa correctamente ese nivel?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">FL140</button>
-        <button class="quiz-opt" data-correct="false">14.000 pies AGL</button>
-        <button class="quiz-opt" data-correct="false">QFE 140</button>
+        <button class="opt-btn" data-correct="true">FL140</button>
+        <button class="opt-btn" data-correct="false">14.000 pies AGL</button>
+        <button class="opt-btn" data-correct="false">QFE 140</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -791,9 +793,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 8/10</div>
       <div class="quiz-q">Un avión vuela de una zona de alta presión hacia una de baja presión sin reajustar el altímetro. ¿Qué ocurre?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">El altímetro marca más altitud de la real; el avión vuela más bajo de lo indicado</button>
-        <button class="quiz-opt" data-correct="false">El altímetro marca menos altitud de la real; el avión vuela más alto de lo indicado</button>
-        <button class="quiz-opt" data-correct="false">No hay ningún efecto sobre la lectura del altímetro</button>
+        <button class="opt-btn" data-correct="true">El altímetro marca más altitud de la real; el avión vuela más bajo de lo indicado</button>
+        <button class="opt-btn" data-correct="false">El altímetro marca menos altitud de la real; el avión vuela más alto de lo indicado</button>
+        <button class="opt-btn" data-correct="false">No hay ningún efecto sobre la lectura del altímetro</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -815,9 +817,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 9/10</div>
       <div class="quiz-q">¿Cuáles son los valores estándar de presión y temperatura al nivel medio del mar según la ISA?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">1013,25 hPa y +15°C</button>
-        <button class="quiz-opt" data-correct="false">1000 hPa y 0°C</button>
-        <button class="quiz-opt" data-correct="false">960 hPa y +20°C</button>
+        <button class="opt-btn" data-correct="true">1013,25 hPa y +15°C</button>
+        <button class="opt-btn" data-correct="false">1000 hPa y 0°C</button>
+        <button class="opt-btn" data-correct="false">960 hPa y +20°C</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -863,9 +865,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 10/10 — ¡última pregunta!</div>
       <div class="quiz-q">Según el gradiente térmico ISA, ¿qué ocurre con la temperatura entre los 33.000 y los 53.000 pies?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Sigue disminuyendo 2°C por cada 1.000 ft</button>
-        <button class="quiz-opt" data-correct="true">Permanece constante</button>
-        <button class="quiz-opt" data-correct="false">Aumenta 2°C por cada 1.000 ft</button>
+        <button class="opt-btn" data-correct="false">Sigue disminuyendo 2°C por cada 1.000 ft</button>
+        <button class="opt-btn" data-correct="true">Permanece constante</button>
+        <button class="opt-btn" data-correct="false">Aumenta 2°C por cada 1.000 ft</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -938,7 +940,7 @@
   function answerQuiz(card, btn, isCorrect){
     if(card.classList.contains('answered')) return;
     card.classList.add('answered');
-    card.querySelectorAll('.quiz-opt').forEach(b => {
+    card.querySelectorAll('.opt-btn').forEach(b => {
       b.disabled = true;
       if(b.dataset.correct === 'true') b.classList.add('correct');
     });
@@ -955,7 +957,7 @@
     renderProgress();
   }
   document.querySelectorAll('.quiz-card').forEach(card => {
-    card.querySelectorAll('.quiz-opt').forEach(btn => {
+    card.querySelectorAll('.opt-btn').forEach(btn => {
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
     });
   });

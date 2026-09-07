@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -31,8 +31,9 @@
     --live:#2E9E6D;
     --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
-    --metar-btn-text:#FFFFFF;
+    --on-accent:#FFFFFF;
     --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
   [data-theme="dark"]{
     --bg:#0B1220;
@@ -56,8 +57,9 @@
     --live:#4FA88C;
     --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
-    --metar-btn-text:#0B1220;
+    --on-accent:#0B1220;
     --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
@@ -94,7 +96,7 @@
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
   .nav-dropdown-menu{ display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); padding-top:14px; z-index:60; }
   .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
-  .nav-dropdown-menu-inner{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:8px; min-width:180px; box-shadow:var(--shadow-instrument); }
+  .nav-dropdown-menu-inner{ background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:8px; min-width:180px; box-shadow:var(--shadow-card); }
   .nav-dropdown-menu a{ display:block; padding:9px 12px; border-radius:6px; font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none; transition:background .15s, color .15s; }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
   .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
@@ -102,7 +104,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -131,16 +133,21 @@
   .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
   .pill-btn{ font-family:'IBM Plex Sans'; font-size:0.82rem; font-weight:600; padding:8px 16px; border-radius:30px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:all .15s; }
   .pill-btn:hover{ border-color:var(--accent); color:var(--accent); }
-  .pill-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--metar-btn-text); }
+  .pill-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
   .pill-btn.mode-exam.active{ background:var(--lifr); border-color:var(--lifr); }
   .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; }
   .btn:active{ transform:translateY(1px); }
-  .btn-primary{ background:var(--accent); color:var(--metar-btn-text); }
+  .btn-primary{ background:var(--accent); color:var(--on-accent); }
   .btn-primary:hover{ filter:brightness(1.08); }
   .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
   .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
   .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .reset-btn{ background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .reset-btn:hover{ filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
+  .reset-btn:active{ transform:translateY(1px); }
+  .btn-volver-panel{ display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:7px 16px; border-radius:30px; font-weight:600; font-size:0.82rem; text-decoration:none; transition:filter .15s, background .15s; white-space:nowrap; }
+  .btn-volver-panel:hover{ filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
 
   /* ---------- SCENARIO PANEL ---------- */
   .instrument{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; position:relative; box-shadow:var(--shadow-instrument); margin-bottom:22px; }
@@ -165,15 +172,15 @@
 
   /* ---------- MULTIPLE CHOICE ---------- */
   .mc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-top:4px; }
-  .mc-option{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:12px 16px; font-family:'IBM Plex Sans'; font-size:0.9rem; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; }
-  .mc-option:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
-  .mc-option:disabled{ cursor:not-allowed; }
-  .mc-option.correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); font-weight:600; }
-  .mc-option.wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); color:var(--danger); font-weight:600; }
+  .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-family:'IBM Plex Sans'; font-size:0.9rem; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; }
+  .opt-btn:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
+  .opt-btn:disabled{ cursor:not-allowed; }
+  .opt-btn.correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); font-weight:600; }
+  .opt-btn.wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); color:var(--danger); font-weight:600; }
 
   /* ---------- FEEDBACK BLOCKS ---------- */
   .feedback-list{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
-  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:12px 16px; background:var(--bg); }
+  .fb-block{ border:1px solid var(--hairline); border-left:3px solid var(--hairline); border-radius:8px; padding:13px 16px; background:var(--bg); }
   .fb-block.ok{ border-left-color:var(--vfr); }
   .fb-block.bad{ border-left-color:var(--danger); }
   .fb-head{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; margin-bottom:4px; }
@@ -466,8 +473,8 @@
         </table>
         <p id="examResultMsg" class="exam-result-msg">✅ Resultado guardado en tu progreso.</p>
         <div class="action-row" style="margin-top:16px;">
-          <button class="btn btn-primary" id="btnReiniciarExamen" type="button">Repetir examen</button>
-          <a class="btn btn-outline" href="Panel_estudiante.html" style="text-decoration:none; display:inline-flex; align-items:center;">Volver al Panel del Estudiante</a>
+          <button class="reset-btn" id="btnReiniciarExamen" type="button">Repetir examen</button>
+          <a class="btn-volver-panel" href="Panel_estudiante.html">Volver al Panel del Estudiante</a>
           <a class="btn btn-outline" href="quizzes.html" style="text-decoration:none; display:inline-flex; align-items:center;">Ver todos los quizzes</a>
         </div>
       </div>
@@ -624,6 +631,7 @@ setInterval(updateZuluMini, 1000);
   let examIndice = 0;
   let examResultados = [];
   const EXAM_TOTAL = 20;
+  const RETRASO_RESULTADO_FINAL_MS = 1200; // pausa antes de mostrar el resumen tras la pregunta 20
 
   // ---------- Referencias DOM ----------
   const catRow = document.getElementById('catRow');
@@ -735,18 +743,57 @@ setInterval(updateZuluMini, 1000);
     btnAyuda.textContent = visible ? 'Ocultar listado' : 'Ver listado completo';
   });
 
-  btnNuevo.addEventListener('click', () => {
+  // Misma acción de "Nueva pregunta" / "Siguiente pregunta →", compartida entre el click del
+  // botón y la tecla Enter (ver manejarTeclaEnter más abajo) para no duplicar la lógica.
+  function avanzarOAvisar(){
     if(examEnCurso){
       if(!respondida){ examWarning.style.display = 'block'; return; }
       avanzarExamen();
     }
     else nuevaPregunta();
-  });
+  }
+
+  btnNuevo.addEventListener('click', avanzarOAvisar);
 
   btnComprobar.addEventListener('click', comprobarIcao);
-  icaoInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !respondida) comprobarIcao(); });
 
-  btnReiniciarExamen.addEventListener('click', () => iniciarExamen());
+  // ---------- Enter para todo el flujo de la pregunta ----------
+  // Un único listener en document en vez de uno por control: así no importa dónde esté el foco
+  // (el campo ICAO, una opción de la pregunta o ningún control en particular) y no hay riesgo de
+  // que dos listeners respondan al mismo Enter (por ejemplo, uno respondiendo la pregunta y,
+  // en el mismo evento, otro creyendo que ya está respondida y saltando a la siguiente).
+  //   · Si la pregunta no está respondida y hay un designador escrito, Enter equivale a
+  //     "Comprobar". En opción múltiple no hace falta: el Enter nativo del botón enfocado ya
+  //     selecciona esa opción.
+  //   · Si ya está respondida, Enter equivale a pulsar "Nueva pregunta" / "Siguiente pregunta →".
+  function manejarTeclaEnter(e){
+    if(e.key !== 'Enter') return;
+    const objetivo = e.target;
+    // No interferir con la búsqueda del listado de ayuda ni con botones/enlaces: estos ya
+    // reaccionan a su propio Enter nativo (evita disparar la acción dos veces).
+    if(objetivo === helpSearch) return;
+    if(objetivo.tagName === 'BUTTON' || objetivo.tagName === 'A') return;
+    if(examSummary.style.display === 'block') return; // el resumen ya está a la vista
+
+    if(!respondida){
+      if(icaoInputArea.style.display !== 'none' && !icaoInput.disabled && icaoInput.value.trim()){
+        e.preventDefault();
+        comprobarIcao();
+      }
+      return;
+    }
+    e.preventDefault();
+    avanzarOAvisar();
+  }
+  document.addEventListener('keydown', manejarTeclaEnter);
+
+  btnReiniciarExamen.addEventListener('click', () => {
+    const mensaje = examResultados.length > 0
+      ? `Llevas ${examResultados.length} de ${EXAM_TOTAL} respondidas. ¿Reiniciar de todas formas? Perderás tu avance actual.`
+      : '¿Reiniciar el examen? Perderás tu avance actual.';
+    if (!confirm(mensaje)) return;
+    iniciarExamen();
+  });
 
   // ---------- Construcción de pregunta ----------
   function elegirTipoEfectivo(){
@@ -818,10 +865,10 @@ setInterval(updateZuluMini, 1000);
       const opciones = shuffle([aerodromo, ...distractores]);
 
       mcGrid.innerHTML = opciones.map(op => `
-        <button class="mc-option" type="button" data-icao="${op.icao}">${op.nombre}</button>
+        <button class="opt-btn" type="button" data-icao="${op.icao}">${op.nombre}</button>
       `).join('');
 
-      mcGrid.querySelectorAll('.mc-option').forEach(btn => {
+      mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
         btn.addEventListener('click', () => comprobarNombre(btn));
       });
     }
@@ -856,7 +903,7 @@ setInterval(updateZuluMini, 1000);
     const seleccion = btnSeleccionado.dataset.icao;
     const ok = seleccion === aerodromo.icao;
 
-    mcGrid.querySelectorAll('.mc-option').forEach(btn => {
+    mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
       btn.disabled = true;
       if(btn.dataset.icao === aerodromo.icao) btn.classList.add('correct');
       else if(btn === btnSeleccionado) btn.classList.add('wrong');
@@ -887,7 +934,13 @@ setInterval(updateZuluMini, 1000);
       </div>
     `;
 
-    if(examEnCurso) registrarResultadoExamen(ok, aerodromo);
+    if(examEnCurso){
+      registrarResultadoExamen(ok, aerodromo);
+      // Pregunta 20: el resultado final se muestra solo, sin esperar a que el estudiante
+      // pulse Enter o "Siguiente pregunta →". Se deja un instante para que alcance a ver si
+      // acertó o no esta última pregunta antes de pasar al resumen del examen.
+      if(examIndice >= EXAM_TOTAL) setTimeout(finalizarExamen, RETRASO_RESULTADO_FINAL_MS);
+    }
   }
 
   // ---------------- Modo examen ----------------
@@ -929,6 +982,11 @@ setInterval(updateZuluMini, 1000);
   }
 
   function finalizarExamen(){
+    // Puede llegar a llamarse dos veces para el mismo examen: una vez automáticamente al
+    // responder la pregunta 20 (ver pintarResultado) y otra si, en el instante antes de que
+    // eso ocurra, el estudiante alcanza a pulsar Enter o "Siguiente pregunta →". La segunda
+    // llamada no hace nada (evita guardar el intento duplicado en el progreso).
+    if(!examEnCurso) return;
     examEnCurso = false;
     examProgress.style.display = 'none';
     btnAyuda.disabled = false;

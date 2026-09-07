@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -34,6 +34,7 @@
     --live-rgb: 46,158,109;
     --topbar-bg: rgba(255,255,255,0.85);
     --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent: #FFFFFF;
   }
   [data-theme="dark"] {
     --bg: #0B1220;
@@ -60,6 +61,7 @@
     --live-rgb: 79,168,140;
     --topbar-bg: rgba(11,18,32,0.85);
     --shadow-card: 0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent: #0B1220;
   }
   html { transition: background .2s; scroll-behavior: smooth; }
   body { transition: background .2s, color .2s; margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
@@ -111,7 +113,8 @@
   .nav-icon-btn { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover { color:var(--accent); border-color:var(--hairline); }
   .nav-right { display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:active{ transform:translateY(1px); }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini { font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -130,8 +133,8 @@
   .hero-simple p.lead { color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; margin-bottom:4px; }
   .hero-note { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 10px; font-size:0.9rem; color:var(--text-muted); }
   .hero-note b { color:var(--text); }
-  .btn-quiz-back { display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:10px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
-  .btn-quiz-back:hover { filter:brightness(1.08); }
+  .btn-volver-modulo-solido { display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .btn-volver-modulo-solido:hover { filter:brightness(1.08); }
 
   .quiz-container { max-width:900px; margin:0 auto; padding:20px 32px 60px; }
   .question-card { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:24px; transition:border-color .2s; }
@@ -157,9 +160,10 @@
   body.no-tts .q-play-btn { display:none; }
   .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
   .options { display:flex; flex-direction:column; gap:8px; }
-  .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
   .opt-btn.mono { font-family:'IBM Plex Mono'; font-size:0.83rem; }
   .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
+  .opt-btn:active { transform:translateY(1px); }
   .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.12); }
   .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); }
   .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.08); }
@@ -173,8 +177,9 @@
   .score-panel { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px; }
   .score-panel .mono { font-weight:600; }
   .score-panel .nota { font-size:1.2rem; font-weight:700; color:var(--accent); }
-  .reset-btn { background:var(--accent); color:#fff; border:none; padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s; font-family:'IBM Plex Sans'; }
-  .reset-btn:hover { filter:brightness(1.08); }
+  .reset-btn { background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .reset-btn:hover { filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
+  .reset-btn:active { transform:translateY(1px); }
   .btn-volver-panel { display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:7px 16px; border-radius:30px; font-weight:600; font-size:0.82rem; text-decoration:none; transition:filter .15s, background .15s; white-space:nowrap; }
   .btn-volver-panel:hover { filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
   .finish-note { display:none; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; max-width:900px; margin:20px auto 0; padding:14px 20px; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; font-size:0.9rem; }
@@ -336,7 +341,7 @@
     <span>📋</span>
     <span><b>Instrucciones:</b> cada pregunta tiene una única opción correcta. En las preguntas de tipo "Situación" puedes pulsar <b>🔊 Escuchar</b> para oír el mensaje de radio antes de elegir tu respuesta. Selecciona una opción para ver la retroalimentación y reinicia cuando quieras con el botón de abajo.</span>
   </div>
-  <a href="fraseologia.html" class="btn-quiz-back">← Volver a la guía de Fraseología</a>
+  <a href="fraseologia.html" class="btn-volver-modulo-solido">← Volver a la guía de Fraseología</a>
 </section>
 
 <div class="quiz-container" id="quizContainer">
@@ -782,7 +787,13 @@
     notaSpan.textContent = '—';
   }
 
-  document.getElementById('resetQuiz').addEventListener('click', resetQuiz);
+  document.getElementById('resetQuiz').addEventListener('click', () => {
+    const mensaje = totalAnswered > 0
+      ? `Llevas ${totalAnswered} de ${questions.length} respondidas. ¿Reiniciar de todas formas? Perderás tu avance actual.`
+      : '¿Reiniciar el quiz? Perderás tu avance actual.';
+    if (!confirm(mensaje)) return;
+    resetQuiz();
+  });
 
   // render inicial
   renderQuestions();

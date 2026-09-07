@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -13,22 +13,24 @@
     --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
     --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
     --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
-    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
-    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
     --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
     --sky1:#0A2647; --sky2:#1657C6; --sky3:#3E7BFA; --sky4:#8FC1E8; --sky5:#E6F2FB;
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
     --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
     --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
-    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
-    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
     --live:#4FA88C; --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; }
@@ -94,7 +96,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -191,7 +193,7 @@
 
   .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
   .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-v{ background:rgba(var(--vfr-rgb),0.15); color:var(--vfr); }
   .badge-w{ background:rgba(224,142,62,0.18); color:var(--warn); }
 
   /* ---- actividad drag & drop (reutilizada: rosa de los vientos) ---- */
@@ -221,12 +223,12 @@
   .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
   .quiz-options{ display:flex; flex-direction:column; gap:9px; }
-  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
-  .quiz-opt:hover{ border-color:var(--accent); }
-  .quiz-card.answered .quiz-opt{ cursor:default; }
-  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
-  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
-  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .opt-btn:hover{ border-color:var(--accent); }
+  .quiz-card.answered .opt-btn{ cursor:default; }
+  .quiz-card.answered .opt-btn:hover{ border-color:var(--hairline); }
+  .opt-btn.correct{ background:rgba(var(--vfr-rgb),0.15); border-color:var(--vfr); font-weight:600; }
+  .opt-btn.incorrect{ background:rgba(var(--danger-rgb),0.15); border-color:var(--danger); }
   .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
 
   .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
@@ -437,9 +439,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 1/13</div>
       <div class="quiz-q">¿Cuáles son las cinco variables meteorológicas básicas que se estudian en este eje?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Nubes, lluvia, granizo, hielo y tormentas</button>
-        <button class="quiz-opt" data-correct="true">Viento, visibilidad, humedad, temperatura y presión</button>
-        <button class="quiz-opt" data-correct="false">Tropósfera, estratosfera, mesosfera, termosfera y exosfera</button>
+        <button class="opt-btn" data-correct="false">Nubes, lluvia, granizo, hielo y tormentas</button>
+        <button class="opt-btn" data-correct="true">Viento, visibilidad, humedad, temperatura y presión</button>
+        <button class="opt-btn" data-correct="false">Tropósfera, estratosfera, mesosfera, termosfera y exosfera</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -496,9 +498,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 2/13</div>
       <div class="quiz-q">La dirección del viento reportada en un METAR indica...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Hacia dónde se dirige el aire</button>
-        <button class="quiz-opt" data-correct="true">De dónde viene el aire</button>
-        <button class="quiz-opt" data-correct="false">La orientación de la pista activa</button>
+        <button class="opt-btn" data-correct="false">Hacia dónde se dirige el aire</button>
+        <button class="opt-btn" data-correct="true">De dónde viene el aire</button>
+        <button class="opt-btn" data-correct="false">La orientación de la pista activa</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -562,9 +564,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 3/13</div>
       <div class="quiz-q">En la representación gráfica del viento, una barba completa equivale a...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">50 nudos</button>
-        <button class="quiz-opt" data-correct="true">10 nudos</button>
-        <button class="quiz-opt" data-correct="false">5 nudos</button>
+        <button class="opt-btn" data-correct="false">50 nudos</button>
+        <button class="opt-btn" data-correct="true">10 nudos</button>
+        <button class="opt-btn" data-correct="false">5 nudos</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -597,9 +599,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 4/13</div>
       <div class="quiz-q">El viento en superficie alcanza normalmente su velocidad máxima...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Entre el mediodía y la caída de la tarde</button>
-        <button class="quiz-opt" data-correct="false">Justo antes del amanecer</button>
-        <button class="quiz-opt" data-correct="false">A medianoche</button>
+        <button class="opt-btn" data-correct="true">Entre el mediodía y la caída de la tarde</button>
+        <button class="opt-btn" data-correct="false">Justo antes del amanecer</button>
+        <button class="opt-btn" data-correct="false">A medianoche</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -621,9 +623,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 5/13</div>
       <div class="quiz-q">La franja de viento débil en el ecuador, donde se forman abundantes cumulonimbos, se conoce como...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Vientos del oeste (Westerlies)</button>
-        <button class="quiz-opt" data-correct="true">Zona de Confluencia Intertropical (ZCIT)</button>
-        <button class="quiz-opt" data-correct="false">Corriente en chorro polar</button>
+        <button class="opt-btn" data-correct="false">Vientos del oeste (Westerlies)</button>
+        <button class="opt-btn" data-correct="true">Zona de Confluencia Intertropical (ZCIT)</button>
+        <button class="opt-btn" data-correct="false">Corriente en chorro polar</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -655,9 +657,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 6/13</div>
       <div class="quiz-q">La brisa de valle (viento anabático) se caracteriza por soplar...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">De día, pendiente arriba, del valle hacia la montaña</button>
-        <button class="quiz-opt" data-correct="false">De noche, pendiente abajo, de la montaña al valle</button>
-        <button class="quiz-opt" data-correct="false">Solo sobre el mar</button>
+        <button class="opt-btn" data-correct="true">De día, pendiente arriba, del valle hacia la montaña</button>
+        <button class="opt-btn" data-correct="false">De noche, pendiente abajo, de la montaña al valle</button>
+        <button class="opt-btn" data-correct="false">Solo sobre el mar</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -695,9 +697,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 7/13</div>
       <div class="quiz-q">La fuerza de Coriolis desvía la trayectoria de una partícula de aire hacia...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La derecha en el hemisferio norte y la izquierda en el sur</button>
-        <button class="quiz-opt" data-correct="false">Siempre hacia el ecuador</button>
-        <button class="quiz-opt" data-correct="false">Siempre hacia los polos</button>
+        <button class="opt-btn" data-correct="true">La derecha en el hemisferio norte y la izquierda en el sur</button>
+        <button class="opt-btn" data-correct="false">Siempre hacia el ecuador</button>
+        <button class="opt-btn" data-correct="false">Siempre hacia los polos</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -734,9 +736,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 8/13</div>
       <div class="quiz-q">La cizalladura del viento (wind shear) se define como...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">Un cambio en dirección o velocidad del viento en una distancia corta</button>
-        <button class="quiz-opt" data-correct="false">La ausencia total de viento en superficie</button>
-        <button class="quiz-opt" data-correct="false">El aumento gradual y constante de la presión</button>
+        <button class="opt-btn" data-correct="true">Un cambio en dirección o velocidad del viento en una distancia corta</button>
+        <button class="opt-btn" data-correct="false">La ausencia total de viento en superficie</button>
+        <button class="opt-btn" data-correct="false">El aumento gradual y constante de la presión</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -766,9 +768,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 9/13</div>
       <div class="quiz-q">¿Qué meteoro reduce la visibilidad a menos de 1 km y está asociado a una humedad de 90-100%, compuesto por gotas de agua o hielo?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Calima</button>
-        <button class="quiz-opt" data-correct="true">Niebla</button>
-        <button class="quiz-opt" data-correct="false">Bruma</button>
+        <button class="opt-btn" data-correct="false">Calima</button>
+        <button class="opt-btn" data-correct="true">Niebla</button>
+        <button class="opt-btn" data-correct="false">Bruma</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -799,9 +801,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 10/13</div>
       <div class="quiz-q">El punto de rocío es...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">La temperatura a la que el aire debe enfriarse para saturarse</button>
-        <button class="quiz-opt" data-correct="false">El porcentaje de nubes que cubre el cielo</button>
-        <button class="quiz-opt" data-correct="false">La altura donde se forman las nubes cumulonimbo</button>
+        <button class="opt-btn" data-correct="true">La temperatura a la que el aire debe enfriarse para saturarse</button>
+        <button class="opt-btn" data-correct="false">El porcentaje de nubes que cubre el cielo</button>
+        <button class="opt-btn" data-correct="false">La altura donde se forman las nubes cumulonimbo</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -846,9 +848,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 11/13</div>
       <div class="quiz-q">La transmisión de calor por medio de corrientes verticales ascendentes se llama...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Conducción</button>
-        <button class="quiz-opt" data-correct="true">Convección</button>
-        <button class="quiz-opt" data-correct="false">Advección</button>
+        <button class="opt-btn" data-correct="false">Conducción</button>
+        <button class="opt-btn" data-correct="true">Convección</button>
+        <button class="opt-btn" data-correct="false">Advección</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -901,9 +903,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 12/13</div>
       <div class="quiz-q">El gradiente térmico vertical estándar establece que la temperatura disminuye aproximadamente...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="true">2°C por cada 1.000 ft de ascenso</button>
-        <button class="quiz-opt" data-correct="false">10°C por cada 1.000 ft de ascenso</button>
-        <button class="quiz-opt" data-correct="false">2°C por cada 100 ft de ascenso</button>
+        <button class="opt-btn" data-correct="true">2°C por cada 1.000 ft de ascenso</button>
+        <button class="opt-btn" data-correct="false">10°C por cada 1.000 ft de ascenso</button>
+        <button class="opt-btn" data-correct="false">2°C por cada 100 ft de ascenso</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -941,9 +943,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 13/13 — ¡última pregunta!</div>
       <div class="quiz-q">Un sistema de baja presión en superficie se asocia normalmente con...</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Cielos despejados y vientos en calma</button>
-        <button class="quiz-opt" data-correct="true">Nubosidad, precipitación y tiempo inestable</button>
-        <button class="quiz-opt" data-correct="false">Ausencia total de viento</button>
+        <button class="opt-btn" data-correct="false">Cielos despejados y vientos en calma</button>
+        <button class="opt-btn" data-correct="true">Nubosidad, precipitación y tiempo inestable</button>
+        <button class="opt-btn" data-correct="false">Ausencia total de viento</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -1070,7 +1072,7 @@
   function answerQuiz(card, btn, isCorrect){
     if(card.classList.contains('answered')) return;
     card.classList.add('answered');
-    card.querySelectorAll('.quiz-opt').forEach(b => {
+    card.querySelectorAll('.opt-btn').forEach(b => {
       b.disabled = true;
       if(b.dataset.correct === 'true') b.classList.add('correct');
     });
@@ -1087,7 +1089,7 @@
     renderProgress();
   }
   document.querySelectorAll('.quiz-card').forEach(card => {
-    card.querySelectorAll('.quiz-opt').forEach(btn => {
+    card.querySelectorAll('.opt-btn').forEach(btn => {
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
     });
   });

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -23,6 +23,7 @@
     --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
   }
   [data-theme="dark"]{
     --bg:#0B1220;
@@ -38,6 +39,7 @@
     --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
   }
   *{box-sizing:border-box;}
   body{
@@ -112,13 +114,14 @@
   .nav-right{ display:flex; align-items:center; gap:14px; }
   .nav-login-btn{
     display:inline-block; text-decoration:none;
-    background:var(--accent); color:#fff;
+    background:var(--accent); color:var(--on-accent);
     font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem;
     padding:8px 20px; border-radius:30px;
     transition:filter .15s;
     white-space:nowrap;
   }
   .nav-login-btn:hover{ filter:brightness(1.08); }
+  .nav-login-btn:active{ transform:translateY(1px); }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
   @media (max-width:600px){ .zulu-mini{ display:none; } }
   .theme-toggle svg{ display:block; }
@@ -135,13 +138,13 @@
 
   .quiz-index{ max-width:900px; margin:0 auto; padding:20px 32px 60px; }
   .quiz-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
-  .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 22px; transition:transform .2s, border-color .2s; }
-  .quiz-card:hover{ transform:translateY(-4px); border-color:var(--accent); }
-  .quiz-card .badge{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.65rem; font-weight:600; color:var(--accent); background:rgba(var(--accent-rgb),0.12); padding:2px 12px; border-radius:12px; margin-bottom:10px; }
-  .quiz-card h3{ font-size:1.1rem; margin-bottom:6px; }
-  .quiz-card p{ color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin:0 0 16px; }
-  .quiz-card .btn-start{ display:inline-block; background:var(--accent); color:#fff; padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s; border:none; cursor:pointer; font-family:'IBM Plex Sans'; text-decoration:none; }
-  .quiz-card .btn-start:hover{ filter:brightness(1.08); }
+  .quiz-listing-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 22px; box-shadow:var(--shadow-card); transition:transform .2s, border-color .2s; }
+  .quiz-listing-card:hover{ transform:translateY(-4px); border-color:var(--accent); }
+  .quiz-listing-card .badge{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.65rem; font-weight:600; color:var(--accent); background:rgba(var(--accent-rgb),0.12); padding:2px 12px; border-radius:12px; margin-bottom:10px; }
+  .quiz-listing-card h3{ font-size:1.1rem; margin-bottom:6px; }
+  .quiz-listing-card p{ color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin:0 0 16px; }
+  .quiz-listing-card .btn-start{ display:inline-block; background:var(--accent); color:#fff; padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s; border:none; cursor:pointer; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .quiz-listing-card .btn-start:hover{ filter:brightness(1.08); }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
@@ -287,7 +290,7 @@
 <div class="quiz-index">
   <div class="quiz-grid">
     <!-- Quiz ATS (50 preguntas) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">50 preguntas</div>
       <h3>Servicios de Tránsito Aéreo (ATS)</h3>
       <p>Objetivos, clasificación del espacio aéreo, FIS, alerta, comunicaciones y más.</p>
@@ -295,7 +298,7 @@
     </div>
 
     <!-- Quiz Plan de Vuelo (25 preguntas) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">25 preguntas</div>
       <h3>Plan de Vuelo — nivel medio-alto</h3>
       <p>Normativa, plazos, mecanismos de presentación, tipos de vuelo y llenado del FPL en Colombia.</p>
@@ -303,7 +306,7 @@
     </div>
 
     <!-- Quiz NOTAM (25 preguntas) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">25 preguntas</div>
       <h3>NOTAM</h3>
       <p>Formato NOTAM, código Q, series y tipos, validez, Trigger NOTAM, SNOWTAM y ASHTAM — con NOTAM de ejemplo para decodificar.</p>
@@ -311,7 +314,7 @@
     </div>
 
     <!-- Quiz Navegación I: Tiempo y Altimetría (25 preguntas) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">25 preguntas</div>
       <h3>Navegación — Quiz I: Tiempo y Altimetría</h3>
       <p>Nivel avanzado con ejercicios de cálculo: UTC/hora local, husos horarios, reglajes QNH/QFE/QNE, errores del altímetro y desviación ISA.</p>
@@ -319,7 +322,7 @@
     </div>
 
     <!-- Quiz Navegación II: Radioayudas y Viento (25 preguntas) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">25 preguntas</div>
       <h3>Navegación — Quiz II: Radioayudas y Viento</h3>
       <p>Nivel avanzado con ejercicios de cálculo: radiales VOR, TO/FROM, QDM/QDR, groundspeed por DME, viento cruzado y conversión de unidades.</p>
@@ -327,7 +330,7 @@
     </div>
 
     <!-- Simulador METAR -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">Simulador</div>
       <h3>Simulador METAR</h3>
       <p>Codifica reportes METAR a partir de escenarios reales, con retroalimentación bloque por bloque y modo examen.</p>
@@ -335,7 +338,7 @@
     </div>
 
     <!-- Quiz Designadores de Aeródromos -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">73 aeródromos</div>
       <h3>Designadores de Aeródromos</h3>
       <p>Escribe el código OACI o identifica el nombre de aeródromos controlados, no controlados y de aviación de estado en Colombia.</p>
@@ -343,7 +346,7 @@
     </div>
 
     <!-- Simulador Plan de Vuelo -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">Simulador</div>
       <h3>Simulador Plan de Vuelo</h3>
       <p>Completa un formulario FPL campo por campo, con validación en tiempo real y retroalimentación por casilla según la normativa OACI/Colombia.</p>
@@ -351,7 +354,7 @@
     </div>
 
     <!-- Simulador NALA -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">Simulador CWP</div>
       <h3>Simulador NALA — Plan de Vuelo y Radar</h3>
       <p>Ponte en el lugar de un puesto de trabajo real: crea planes de vuelo, transmítelos por AFTN y sigue el tráfico en vivo en el radar y el mapa de rutas.</p>
@@ -359,7 +362,7 @@
     </div>
 
     <!-- Quiz de Fraseología (opción múltiple) -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">50 preguntas</div>
       <h3>Fraseología Aeronáutica — Parte 1 · Teórico</h3>
       <p>Preguntas de opción múltiple sobre fundamentos y marco normativo, fraseología OACI, fases de vuelo, emergencias y coordinación tierra-tierra, con situaciones de radio en español e inglés. Sin micrófono ni voz.</p>
@@ -367,14 +370,14 @@
     </div>
 
     <!-- Simulador ATC por voz -->
-    <div class="quiz-card">
+    <div class="quiz-listing-card">
       <div class="badge">Simulador · Voz + Mapa</div>
       <h3>Fraseología Aeronáutica — Parte 2 · Simulador ATC</h3>
       <p>Ahora tú eres el controlador: la aeronave te llama por voz, tú das la instrucción correcta hablando y la aeronave la ejecuta en un mapa de ruta en vivo, misión por misión.</p>
       <a href="simulador-fraseologia.html" class="btn-start">Comenzar →</a>
     </div>
 
-    <div class="quiz-card" style="border:2px dashed var(--hairline); background:transparent;">
+    <div class="quiz-listing-card" style="border:2px dashed var(--hairline); background:transparent;">
       <div class="badge" style="color:var(--text-muted); background:transparent;">Próximamente</div>
       <h3 style="color:var(--text-muted);">Más quizzes</h3>
       <p style="color:var(--text-muted);">PBN y más están en desarrollo.</p>

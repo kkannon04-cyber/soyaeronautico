@@ -62,6 +62,12 @@
     .instrucciones { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin-bottom:26px; font-size:0.9rem; color:var(--text-muted); line-height:1.6; }
     .instrucciones b { color:var(--text); }
 
+    /* Modo seguro de examen: aviso de cambio de pestaña y de borrador recuperado */
+    .aviso-seguridad { display:none; gap:10px; align-items:flex-start; background:rgba(245,158,11,0.1); border:1px solid #f59e0b; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:0.86rem; color:#b45309; line-height:1.5; }
+    [data-theme="dark"] .aviso-seguridad { color:#fbbf24; }
+    .aviso-borrador { display:none; gap:10px; align-items:flex-start; background:rgba(var(--accent-rgb),0.08); border:1px solid var(--accent); border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:0.86rem; color:var(--text-muted); line-height:1.5; }
+    .aviso-borrador b { color:var(--text); }
+
     .lectura { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:26px; margin-bottom:22px; font-size:0.97rem; line-height:1.75; white-space:pre-wrap; }
     .lectura-acciones { text-align:center; margin-bottom:30px; }
 
@@ -72,7 +78,7 @@
     .q-num { font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
     .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
     .options { display:flex; flex-direction:column; gap:8px; }
-    .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:border-color .15s, background .15s; }
+    .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:border-color .15s, background .15s; }
     .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
     .opt-btn.elegida { border-color:var(--accent); background:rgba(var(--accent-rgb),0.10); font-weight:600; }
     .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(46,158,109,0.14); font-weight:600; }
@@ -146,6 +152,16 @@
       <span id="textoInstrucciones"></span>
     </div>
 
+    <div class="aviso-borrador" id="avisoBorrador">
+      <span>💾</span>
+      <span>Recuperamos las respuestas que ya habías marcado en este intento. Puedes seguir donde quedaste.</span>
+    </div>
+
+    <div class="aviso-seguridad" id="avisoSeguridad" role="alert" aria-live="assertive">
+      <span>⚠️</span>
+      <span>Detectamos que cambiaste de pestaña o minimizaste la ventana (<span id="contadorCambios">0</span> veces). Esto queda registrado y tu profesor puede verlo en tus resultados.</span>
+    </div>
+
     <div id="zonaLectura" style="display:none;">
       <div class="lectura" id="textoLectura"></div>
       <div class="lectura-acciones">
@@ -183,6 +199,56 @@
   let preguntas = [];
   const respuestas = {};   // { preguntaId: índiceElegido }
   let entregado = false;
+
+  // ---------- MODO SEGURO DE EXAMEN ----------
+  // examenActivo se enciende cuando las preguntas quedan visibles y se
+  // apaga al entregar. Mientras está activo: se vigila el cambio de
+  // pestaña y se avisa antes de cerrar la pestaña sin entregar.
+  let examenActivo = false;
+  let cambiosPestana = 0;
+  let claveBorrador = null;
+
+  document.addEventListener('visibilitychange', () => {
+    if (!examenActivo || !document.hidden) return;
+    cambiosPestana++;
+    document.getElementById('contadorCambios').textContent = cambiosPestana;
+    document.getElementById('avisoSeguridad').style.display = 'flex';
+    registrarIncidenteActividad(actividadId, 'cambio_pestana');
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (!examenActivo) return;
+    // Aviso nativo del navegador: no se puede impedir cerrar la pestaña
+    // ni el equipo, solo advertir antes de intentarlo.
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  // ---------- BORRADOR AUTOMÁTICO (respaldo ante apagón/recarga/pérdida de conexión) ----------
+  function guardarBorrador() {
+    if (!claveBorrador) return;
+    try {
+      localStorage.setItem(claveBorrador, JSON.stringify({
+        respuestas,
+        intentosUsados: actividad.intentos_usados,
+        guardadoEn: Date.now()
+      }));
+    } catch (e) { /* localStorage lleno o bloqueado: no se pierde el examen en curso, solo el respaldo */ }
+  }
+
+  function leerBorrador() {
+    if (!claveBorrador) return null;
+    try {
+      const guardado = JSON.parse(localStorage.getItem(claveBorrador));
+      if (!guardado || typeof guardado.respuestas !== 'object') return null;
+      return guardado;
+    } catch (e) { return null; }
+  }
+
+  function borrarBorrador() {
+    if (!claveBorrador) return;
+    try { localStorage.removeItem(claveBorrador); } catch (e) { /* no crítico */ }
+  }
 
   function esc(t) {
     return String(t === null || t === undefined ? '' : t)
@@ -233,12 +299,14 @@
         btn.type = 'button';
         btn.className = 'opt-btn';
         btn.textContent = texto;
+        if (respuestas[p.id] === i) btn.classList.add('elegida');
         btn.addEventListener('click', () => {
           if (entregado) return;
           respuestas[p.id] = i;
           opciones.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('elegida'));
           btn.classList.add('elegida');
           actualizarContador();
+          guardarBorrador();
         });
         opciones.appendChild(btn);
       });
@@ -250,6 +318,7 @@
     cont.style.display = 'block';
     document.getElementById('barraEntrega').style.display = 'flex';
     actualizarContador();
+    examenActivo = true;
   }
 
   function actualizarContador() {
@@ -260,6 +329,8 @@
 
   function mostrarResultado(resultado) {
     entregado = true;
+    examenActivo = false;
+    borrarBorrador();
     document.getElementById('barraEntrega').style.display = 'none';
 
     // Revela la respuesta correcta solo ahora, con el detalle que
@@ -354,6 +425,20 @@
 
     actividad = res.actividad;
     preguntas = actividad.preguntas || [];
+
+    const sesion = await obtenerSesionActual();
+    if (sesion) {
+      claveBorrador = `aisBorrador_${actividadId}_${sesion.user.id}`;
+      const borrador = leerBorrador();
+      // Solo se restaura si es el mismo intento: si intentos_usados ya avanzó,
+      // el borrador es de un intento anterior ya calificado y no debe mezclarse.
+      if (borrador && borrador.intentosUsados === actividad.intentos_usados && Object.keys(borrador.respuestas).length > 0) {
+        Object.assign(respuestas, borrador.respuestas);
+        document.getElementById('avisoBorrador').style.display = 'flex';
+      } else if (borrador) {
+        borrarBorrador();
+      }
+    }
 
     if (actividad.cerrada) {
       mostrarBloqueo('Esta actividad ya cerró',

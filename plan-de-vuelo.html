@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -21,8 +21,8 @@
     --muted-rgb:91,107,127;
     --hairline:#E1E7EF;
     --shadow-rgb:15,23,42;
-    --danger:#D64545;
-    --vfr:#2E9E6D;
+    --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109;
     --mvfr:#3E7BFA;
     --ifr:#D64545;
     --lifr:#8B5CF6;
@@ -31,6 +31,7 @@
     --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
   }
   [data-theme="dark"]{
     --bg:#0B1220;
@@ -44,8 +45,8 @@
     --muted-rgb:136,148,168;
     --hairline:#2A3548;
     --shadow-rgb:0,0,0;
-    --danger:#C9564F;
-    --vfr:#4FA88C;
+    --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140;
     --mvfr:#4A8FD1;
     --ifr:#C9564F;
     --lifr:#B15FC7;
@@ -54,6 +55,7 @@
     --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
   }
   html{ transition:background .2s; scroll-behavior:smooth; }
   body{ transition:background .2s, color .2s; }
@@ -133,7 +135,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -226,9 +228,9 @@
 
   .badge{ display:inline-flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.72rem; border-radius:5px; padding:2px 8px; }
   .badge-a{ background:rgba(var(--accent-rgb),0.15); color:var(--accent); }
-  .badge-v{ background:rgba(46,158,109,0.15); color:var(--vfr); }
+  .badge-v{ background:rgba(var(--vfr-rgb),0.15); color:var(--vfr); }
   .badge-m{ background:rgba(62,123,250,0.15); color:var(--mvfr); }
-  .badge-i{ background:rgba(214,69,69,0.15); color:var(--ifr); }
+  .badge-i{ background:rgba(var(--danger-rgb),0.15); color:var(--ifr); }
   .badge-l{ background:rgba(139,92,246,0.15); color:var(--lifr); }
   .badge-w{ background:rgba(224,142,62,0.15); color:var(--warn); }
 
@@ -247,12 +249,12 @@
   .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
   .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
   .quiz-options{ display:flex; flex-direction:column; gap:9px; }
-  .quiz-opt{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 15px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
-  .quiz-opt:hover{ border-color:var(--accent); }
-  .quiz-card.answered .quiz-opt{ cursor:default; }
-  .quiz-card.answered .quiz-opt:hover{ border-color:var(--hairline); }
-  .quiz-opt.correct{ background:rgba(46,158,109,0.15); border-color:var(--vfr); font-weight:600; }
-  .quiz-opt.incorrect{ background:rgba(214,69,69,0.15); border-color:var(--danger); }
+  .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
+  .opt-btn:hover{ border-color:var(--accent); }
+  .quiz-card.answered .opt-btn{ cursor:default; }
+  .quiz-card.answered .opt-btn:hover{ border-color:var(--hairline); }
+  .opt-btn.correct{ background:rgba(var(--vfr-rgb),0.15); border-color:var(--vfr); font-weight:600; }
+  .opt-btn.incorrect{ background:rgba(var(--danger-rgb),0.15); border-color:var(--danger); }
   .quiz-feedback{ margin-top:12px; font-size:0.86rem; min-height:18px; font-weight:500; }
 
   .finish-card{ text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:36px 24px; margin-top:10px; }
@@ -465,9 +467,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 1/10</div>
       <div class="quiz-q">¿Quiénes están autorizados para presentar un plan de vuelo en Colombia?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Cualquier persona con acceso a la web de la Aerocivil</button>
-        <button class="quiz-opt" data-correct="true">Miembros de la tripulación con licencia activa (piloto, copiloto, alumno o despachador)</button>
-        <button class="quiz-opt" data-correct="false">Solo los controladores de tránsito aéreo</button>
+        <button class="opt-btn" data-correct="false">Cualquier persona con acceso a la web de la Aerocivil</button>
+        <button class="opt-btn" data-correct="true">Miembros de la tripulación con licencia activa (piloto, copiloto, alumno o despachador)</button>
+        <button class="opt-btn" data-correct="false">Solo los controladores de tránsito aéreo</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -495,9 +497,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 2/10</div>
       <div class="quiz-q">¿Qué mecanismo de presentación NO permite mensajes de modificación (CHG)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Plan de vuelo vía WEB</button>
-        <button class="quiz-opt" data-correct="false">Plan de vuelo telefónico</button>
-        <button class="quiz-opt" data-correct="true">Plan de vuelo centralizado (FILING)</button>
+        <button class="opt-btn" data-correct="false">Plan de vuelo vía WEB</button>
+        <button class="opt-btn" data-correct="false">Plan de vuelo telefónico</button>
+        <button class="opt-btn" data-correct="true">Plan de vuelo centralizado (FILING)</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -522,9 +524,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 3/10</div>
       <div class="quiz-q">¿Cuál es el plazo máximo de antelación para presentar un plan de vuelo?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">24 horas</button>
-        <button class="quiz-opt" data-correct="false">72 horas</button>
-        <button class="quiz-opt" data-correct="true">120 horas (5 días)</button>
+        <button class="opt-btn" data-correct="false">24 horas</button>
+        <button class="opt-btn" data-correct="false">72 horas</button>
+        <button class="opt-btn" data-correct="true">120 horas (5 días)</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -549,9 +551,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 4/10</div>
       <div class="quiz-q">¿Qué ocurre si se modifica un plan de vuelo repetitivo (RPL)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Se actualiza automáticamente sin cambios</button>
-        <button class="quiz-opt" data-correct="true">Pierde la condición de repetitivo y se debe diligenciar de nuevo completo</button>
-        <button class="quiz-opt" data-correct="false">Solo se modifica la casilla 18</button>
+        <button class="opt-btn" data-correct="false">Se actualiza automáticamente sin cambios</button>
+        <button class="opt-btn" data-correct="true">Pierde la condición de repetitivo y se debe diligenciar de nuevo completo</button>
+        <button class="opt-btn" data-correct="false">Solo se modifica la casilla 18</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -585,9 +587,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 5/10</div>
       <div class="quiz-q">¿En qué casilla se registra la información suplementaria como personas a bordo y nombre del piloto?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Casilla 18</button>
-        <button class="quiz-opt" data-correct="true">Casilla 19</button>
-        <button class="quiz-opt" data-correct="false">Casilla 15</button>
+        <button class="opt-btn" data-correct="false">Casilla 18</button>
+        <button class="opt-btn" data-correct="true">Casilla 19</button>
+        <button class="opt-btn" data-correct="false">Casilla 15</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -610,9 +612,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 6/10</div>
       <div class="quiz-q">¿Qué tipo de vuelo se identifica con la sigla "X" y requiere autorización de DONA cuando la aeronave no cumple todos los requisitos de aeronavegabilidad?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Vuelo Adicional</button>
-        <button class="quiz-opt" data-correct="true">Vuelo Ferry</button>
-        <button class="quiz-opt" data-correct="false">Vuelo de Traslado</button>
+        <button class="opt-btn" data-correct="false">Vuelo Adicional</button>
+        <button class="opt-btn" data-correct="true">Vuelo Ferry</button>
+        <button class="opt-btn" data-correct="false">Vuelo de Traslado</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -642,9 +644,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 7/10</div>
       <div class="quiz-q">¿Qué tipo de vuelo nacional requiere autorización de la Dirección de Operaciones de la Navegación Aérea (DONA)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Vuelo Adicional</button>
-        <button class="quiz-opt" data-correct="false">Vuelo de Traslado</button>
-        <button class="quiz-opt" data-correct="true">Vuelo Ferry</button>
+        <button class="opt-btn" data-correct="false">Vuelo Adicional</button>
+        <button class="opt-btn" data-correct="false">Vuelo de Traslado</button>
+        <button class="opt-btn" data-correct="true">Vuelo Ferry</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -672,9 +674,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 8/10</div>
       <div class="quiz-q">En un vuelo internacional de traslado, ¿qué debe incluirse en la casilla 18 además de RMK/TRANSFER FLT?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Solo la matrícula de la aeronave</button>
-        <button class="quiz-opt" data-correct="true">El grupo fecha-hora y originador del mensaje de autorización</button>
-        <button class="quiz-opt" data-correct="false">La hora de salida prevista</button>
+        <button class="opt-btn" data-correct="false">Solo la matrícula de la aeronave</button>
+        <button class="opt-btn" data-correct="true">El grupo fecha-hora y originador del mensaje de autorización</button>
+        <button class="opt-btn" data-correct="false">La hora de salida prevista</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -709,9 +711,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 9/10</div>
       <div class="quiz-q">¿Qué indica la sigla <code>DCT</code> en la casilla 15 (Ruta)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Una ruta con escalas técnicas</button>
-        <button class="quiz-opt" data-correct="true">Vuelo directo entre dos puntos</button>
-        <button class="quiz-opt" data-correct="false">Un cambio de nivel de vuelo</button>
+        <button class="opt-btn" data-correct="false">Una ruta con escalas técnicas</button>
+        <button class="opt-btn" data-correct="true">Vuelo directo entre dos puntos</button>
+        <button class="opt-btn" data-correct="false">Un cambio de nivel de vuelo</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -739,9 +741,9 @@
       <div class="quiz-tag">🎯 Chequeo rápido 10/10 — ¡última pregunta!</div>
       <div class="quiz-q">¿Qué información debe contener el informe de llegada (cierre del FPL)?</div>
       <div class="quiz-options">
-        <button class="quiz-opt" data-correct="false">Solo la identificación de la aeronave</button>
-        <button class="quiz-opt" data-correct="true">Identificación, aeródromo de salida, destino (si aplica), aeródromo de llegada y hora de llegada</button>
-        <button class="quiz-opt" data-correct="false">La ruta completa y el combustible restante</button>
+        <button class="opt-btn" data-correct="false">Solo la identificación de la aeronave</button>
+        <button class="opt-btn" data-correct="true">Identificación, aeródromo de salida, destino (si aplica), aeródromo de llegada y hora de llegada</button>
+        <button class="opt-btn" data-correct="false">La ruta completa y el combustible restante</button>
       </div>
       <div class="quiz-feedback"></div>
     </div>
@@ -814,7 +816,7 @@
   function answerQuiz(card, btn, isCorrect){
     if(card.classList.contains('answered')) return;
     card.classList.add('answered');
-    card.querySelectorAll('.quiz-opt').forEach(b => {
+    card.querySelectorAll('.opt-btn').forEach(b => {
       b.disabled = true;
       if(b.dataset.correct === 'true') b.classList.add('correct');
     });
@@ -831,7 +833,7 @@
     renderProgress();
   }
   document.querySelectorAll('.quiz-card').forEach(card => {
-    card.querySelectorAll('.quiz-opt').forEach(btn => {
+    card.querySelectorAll('.opt-btn').forEach(btn => {
       btn.addEventListener('click', () => answerQuiz(card, btn, btn.dataset.correct === 'true'));
     });
   });

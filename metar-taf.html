@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -27,8 +27,9 @@
     --live:#2E9E6D;
     --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
-    --metar-btn-text:#FFFFFF;
+    --on-accent:#FFFFFF;
     --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
 
   [data-theme="dark"]{
@@ -47,8 +48,9 @@
     --live:#4FA88C;
     --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
-    --metar-btn-text:#0B1220;
+    --on-accent:#0B1220;
     --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
   }
 
   html{ transition:background .2s; scroll-behavior:smooth; }
@@ -117,7 +119,7 @@
   .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
   .nav-dropdown-menu-inner{
     background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
-    padding:8px; min-width:180px; box-shadow:var(--shadow-instrument);
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
   }
   .nav-dropdown-menu a{
     display:block; padding:9px 12px; border-radius:6px;
@@ -131,7 +133,7 @@
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
   .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
   .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:#fff; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
   .nav-login-btn:hover{ filter:brightness(1.08); }
   @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
   .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
@@ -198,7 +200,7 @@
 
   .btn-row{ display:flex; gap:12px; margin-top:20px; }
   .btn-primary{
-    background:var(--accent); color:var(--metar-btn-text); border:none; font-weight:700;
+    background:var(--accent); color:var(--on-accent); border:none; font-weight:700;
     padding:11px 26px; border-radius:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:0.9rem;
     transition:filter .15s;
   }
@@ -213,11 +215,12 @@
 
   .chip-wrap{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .chip-sm{
-    font-family:'IBM Plex Mono'; font-size:0.7rem; font-weight:600;
+    font-family:'IBM Plex Sans'; font-size:0.7rem; font-weight:600;
     background:var(--panel-alt); border:1px solid var(--hairline); color:var(--text-muted);
-    padding:5px 10px; border-radius:20px; cursor:pointer; transition:border-color .2s, color .2s;
+    padding:5px 10px; border-radius:20px; cursor:pointer; transition:border-color .2s, color .2s, background .2s;
   }
-  .chip-sm:hover, .chip-sm.active{ color:var(--accent); border-color:var(--accent); }
+  .chip-sm:hover{ color:var(--accent); border-color:var(--accent); }
+  .chip-sm.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 
   /* ---------- RESULTS ---------- */
   .results-wrap{ max-width:1200px; margin:0 auto; padding:24px 32px 80px; }
