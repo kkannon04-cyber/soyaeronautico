@@ -255,6 +255,8 @@
   .help-modal li{ margin-bottom:5px; }
   .help-modal .help-steps{ counter-reset:none; background:var(--panel-alt); border:1px solid var(--hairline); border-radius:8px; padding:11px 12px 11px 30px; }
   .help-modal kbd{ background:var(--panel-alt); border:1px solid var(--hairline); border-bottom-width:2px; border-radius:4px; padding:0 5px; font-family:'IBM Plex Mono', monospace; font-size:.75rem; }
+  .help-atajos{ list-style:none; padding-left:0; }
+  .help-atajos li{ padding:3px 0; border-bottom:1px solid var(--hairline); }
   .help-modal .help-foot{ margin-top:16px; padding-top:10px; border-top:1px solid var(--hairline); font-size:.7rem; color:var(--text-muted); }
 
   /* bottom toolbar */
@@ -270,7 +272,9 @@
   ::-webkit-scrollbar-track{ background:var(--panel); }
 
   /* ---------- mapa de rutas ---------- */
-  #flightMap{ width:100%; height:520px; background:var(--panel); border:1px solid var(--hairline); border-radius:8px; }
+  /* Alto proporcional a la pantalla, con 520px como tope: en un portátil de 768px de alto un
+     mapa fijo de 520px no dejaba ver la barra de estado ni la leyenda sin desplazarse. */
+  #flightMap{ width:100%; height:min(58vh, 520px); background:var(--panel); border:1px solid var(--hairline); border-radius:8px; }
 
   /* Leyenda del mapa de rutas: agrupada por tipo de capa (tráfico / espacio aéreo /
      referencia) en vez de una sola fila de puntos de color. Cada símbolo reproduce
@@ -299,8 +303,28 @@
 
   .map-status-bar{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:.64rem; color:var(--text-muted); padding:2px 4px 10px; }
   .map-status-bar .map-hint{ flex:1 1 320px; }
-  .map-status-bar .map-speed{ margin-left:auto; white-space:nowrap; }
-  .map-status-bar .map-speed b{ color:var(--accent); font-family:var(--font-ui); }
+  .map-speed{ margin-left:auto; white-space:nowrap; }
+  .map-speed b{ color:var(--accent); font-family:var(--font-ui); }
+
+  /* ---------- barra plegable de leyenda y controles del mapa ----------
+     El bloque de leyenda + ayuda + tres filas de botones mide ~300px fijos y se comía la mitad
+     del mapa en un portátil. Se pliega entero en esta barra de una línea, que conserva a la
+     vista el viento y la velocidad de simulación. */
+  .map-chrome-toggle{ display:flex; align-items:center; gap:8px; width:100%; margin-bottom:8px;
+    background:var(--panel-alt); border:1px solid var(--hairline); border-radius:7px;
+    padding:5px 10px; cursor:pointer; color:var(--text-muted); font-family:var(--font-ui);
+    font-size:.64rem; letter-spacing:.04em; text-transform:uppercase; transition:border-color .15s, color .15s; }
+  .map-chrome-toggle:hover{ border-color:var(--accent); color:var(--accent); }
+  .map-chrome-toggle:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+  .mc-caret{ transition:transform .2s; font-size:.7rem; line-height:1; }
+  #win-map.chrome-plegado .mc-caret{ transform:rotate(-90deg); }
+  #win-map.chrome-plegado .map-chrome{ display:none; }
+  @media (prefers-reduced-motion:reduce){ .mc-caret{ transition:none; } }
+
+  /* El mapa se queda con todo el alto que no use el encabezado: al plegarlo, crece solo.
+     min-height evita que en una ventana muy baja quede reducido a una franja inservible. */
+  #win-map .win-body{ display:flex; flex-direction:column; }
+  #flightMap{ flex:1 1 auto; min-height:170px; }
 
   .map-toolbar{ display:flex; gap:8px; align-items:center; padding:0 4px 10px; flex-wrap:wrap; }
   .map-toolbar select.tb-btn{ appearance:auto; }
@@ -439,6 +463,31 @@
   .measure-readout{ font-family:var(--font-ui); font-size:.62rem; font-weight:600; color:var(--text); background:var(--panel); border:1px solid var(--accent); border-radius:4px; padding:2px 6px; white-space:nowrap; }
   .leaflet-container.measuring{ cursor:crosshair !important; }
 
+  /* ---------- reproducción de la sesión (replay) ---------- */
+  .replay-bar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .replay-vel{ display:inline-flex; gap:3px; }
+  .replay-slider{ width:100%; margin:2px 0 8px; accent-color:var(--accent); }
+  .replay-estado{ font-size:.68rem; color:var(--text-muted); margin-bottom:6px; font-variant-numeric:tabular-nums; }
+  .replay-aviso{ color:var(--warn); }
+  .replay-evento{ font-size:.66rem; line-height:1.5; padding:3px 5px; border-bottom:1px solid var(--hairline); }
+  .replay-evento .hh{ font-family:var(--font-ui); color:var(--text-muted); }
+  .replay-evento.destacado{ background:rgba(var(--warn-rgb),.10); }
+
+  /* ---------- escenarios de entrenamiento ---------- */
+  .esc-card{ border:1px solid var(--hairline); border-radius:8px; padding:9px 11px; margin-bottom:8px; background:var(--panel-alt); }
+  .esc-cab{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .esc-cab h4{ margin:0; font-size:.78rem; }
+  .esc-nivel{ font-size:.58rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted);
+              border:1px solid var(--hairline); border-radius:20px; padding:2px 8px; white-space:nowrap; }
+  .esc-resumen{ font-size:.68rem; color:var(--text-muted); line-height:1.5; margin:5px 0 8px; }
+  .esc-briefing{ font-size:.7rem; line-height:1.6; margin:4px 0 10px; }
+  .obj{ display:flex; align-items:flex-start; gap:7px; font-size:.68rem; line-height:1.5; padding:4px 0;
+        border-bottom:1px solid var(--hairline); }
+  .obj-mark{ font-weight:700; flex:none; width:14px; text-align:center; }
+  .obj-ok .obj-mark{ color:var(--vfr); }
+  .obj-no .obj-mark{ color:var(--danger); }
+  .obj-no{ color:var(--text-muted); }
+
   /* ---------- radar PPI ---------- */
   .radar-wrap{ position:relative; background:#04070c; border-radius:0 0 10px 10px; padding:10px; }
   .radar-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:0 2px 8px; font-size:.62rem; color:#7f95ab; }
@@ -497,6 +546,41 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- ESCRITORIO ESTRECHO (portátiles) ----------
+     Las ventanas del CWP están dimensionadas para un monitor grande. Entre 901 y 1280px siguen
+     flotando (el modo apilado solo entra por debajo de 901px), pero con el espaciado de origen
+     el contenido no cabe y cada ventana acaba con su propio scroll interno: se siente enorme e
+     incómoda. Aquí se aprieta la densidad — nunca la tipografía ni los colores del portal — y
+     los campos del formulario OACI pasan a repartirse el ancho disponible en vez de conservar
+     anchos fijos en píxeles que dejan huecos y desbordan. */
+  @media (min-width:901px) and (max-width:1280px){
+    .win-body{ padding:10px 12px; }
+    .grid-row{ gap:7px; margin-bottom:7px; }
+    .grid-row > div{ flex:1 1 92px !important; width:auto !important; min-width:0; }
+    input.f, select.f, textarea.f{ padding:4px 5px; font-size:.74rem; }
+    .wbtn{ padding:6px 12px; }
+    .sidebar{ width:168px; }
+    .win-scroll{ max-height:min(46vh, 340px); }
+    #aftnFreeText{ height:170px; }
+    #historyBox{ height:200px; }
+  }
+
+  /* ---------- PANTALLAS BAJAS (portátiles de 768-900px de alto) ----------
+     Medido: sobre el mapa hay 331px fijos de leyenda, pista de ayuda y tres filas de controles.
+     Con el mapa a 520px la ventana pedía 787px de alto contra 571px de escritorio disponible en
+     un 1366x768: se salía 256px por debajo y había que desplazar todo el área para ver el mapa
+     completo. Aquí se aprieta ese encabezado y el mapa pasa a ocupar lo que de verdad queda. */
+  @media (min-width:901px) and (max-height:900px){
+    .map-legend{ padding:6px 10px; gap:12px; margin-bottom:6px; }
+    .map-legend .lg-item{ font-size:.64rem; }
+    .map-legend .lg-group{ gap:9px; }
+    .map-status-bar{ gap:10px; padding:2px 4px 6px; }
+    .map-toolbar{ padding:0 4px 6px; gap:6px; }
+    /* 545px = lo que ocupan la barra del portal, la del CWP, la barra inferior, el pie y el
+       encabezado ya apretado de la ventana. El suelo de 200px evita que el mapa desaparezca. */
+    #flightMap{ height:min(520px, max(200px, calc(100vh - 545px))); }
+  }
 
   /* ---------- TABLET / MÓVIL ----------
      El CWP real es un puesto de escritorio con ventanas flotantes arrastrables; en una pantalla
@@ -644,7 +728,10 @@
   <div class="windows-area" id="windowsArea">
 
     <!-- FP OPERATION window -->
-    <div class="sim-window" id="win-fpop" style="top:20px; left:20px; width:900px;">
+    <!-- Los anchos van como min(ancho de diseño, área de trabajo): en un monitor grande se
+         respeta la medida pensada para cada ventana, y en un portátil se encogen solas al
+         redimensionar en vez de quedar más anchas que el escritorio del CWP. -->
+    <div class="sim-window" id="win-fpop" style="top:20px; left:20px; width:min(900px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>FP OPERATION</span>
         <span class="win-close" onclick="closeWindow('win-fpop')">X</span>
@@ -724,7 +811,7 @@
     </div>
 
     <!-- FREE AFTN window -->
-    <div class="sim-window" id="win-aftn" style="top:60px; left:960px; width:480px;">
+    <div class="sim-window" id="win-aftn" style="top:60px; left:960px; width:min(480px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>FREE AFTN TRANSMISSION</span>
         <span class="win-close" onclick="closeWindow('win-aftn')">X</span>
@@ -763,7 +850,7 @@
     </div>
 
     <!-- FP HISTORY window -->
-    <div class="sim-window" id="win-hist" style="top:20px; left:940px; width:520px;">
+    <div class="sim-window" id="win-hist" style="top:20px; left:940px; width:min(520px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span id="histTitle">FP HISTORY</span>
         <span class="win-close" onclick="closeWindow('win-hist')">X</span>
@@ -774,7 +861,7 @@
     </div>
 
     <!-- QUEUE / ARCHIVE window -->
-    <div class="sim-window" id="win-queue" style="top:330px; left:940px; width:520px;">
+    <div class="sim-window" id="win-queue" style="top:330px; left:940px; width:min(520px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>ARCHIVE — MENSAJES ENCOLADOS</span>
         <span class="win-close" onclick="closeWindow('win-queue')">X</span>
@@ -785,7 +872,7 @@
     </div>
     
     <!-- RADAR DISPLAY window -->
-    <div class="sim-window" id="win-radar" style="top:40px; left:870px; width:460px;">
+    <div class="sim-window" id="win-radar" style="top:40px; left:870px; width:min(460px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>PANTALLA RADAR (PPI)</span>
         <span class="win-close" onclick="closeWindow('win-radar')">X</span>
@@ -805,12 +892,23 @@
     </div>
 
     <!-- ROUTE MAP window -->
-    <div class="sim-window" id="win-map" style="top:40px; left:60px; width:780px;">
+    <div class="sim-window" id="win-map" style="top:40px; left:60px; width:min(780px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>MAPA DE RUTAS — TRÁFICO EN VIVO</span>
         <span class="win-close" onclick="closeWindow('win-map')">X</span>
       </div>
       <div class="win-body" style="padding:10px;">
+        <!-- Leyenda y controles se pliegan en una sola barra: ocupaban ~300px fijos por encima
+             del mapa, que es justo lo que se quiere ver. Al plegarlos, el mapa se queda con todo
+             ese espacio. En la propia barra sigue leyéndose el viento y la velocidad de
+             simulación, que es lo único que hay que vigilar de continuo. -->
+        <button type="button" class="map-chrome-toggle" id="btnMapChrome"
+                onclick="toggleMapChrome()" aria-expanded="true" aria-controls="mapChrome">
+          <span class="mc-caret" aria-hidden="true">▾</span>
+          <span class="mc-txt">Controles y leyenda</span>
+          <span class="map-speed">Viento <b id="mapWindLabel">CALMA</b> · Sim <b id="mapSpeedLabel">x60</b></span>
+        </button>
+        <div id="mapChrome" class="map-chrome">
         <!-- La leyenda reproduce EXACTAMENTE los símbolos que se dibujan en el mapa: el mismo
              SVG de aeronave (sin rotar = rumbo 360) con sus mismas clases de estado. Antes
              documentaba un estado "Encolado" que ningún avión llegaba a tener nunca, y no
@@ -839,7 +937,6 @@
         </div>
         <div class="map-status-bar">
           <span class="map-hint">Click en una aeronave (o en su ruta) para instruirla · Click en un aeródromo para pistas, elevación y METAR · La nariz apunta al <b>rumbo</b>; la estela marca la <b>derrota</b>. Todo en grados magnéticos (°M)</span>
-          <span class="map-speed">Viento <b id="mapWindLabel">CALMA</b> · Sim <b id="mapSpeedLabel">x60</b></span>
         </div>
         <div class="map-toolbar">
           <div class="sim-speed" id="simSpeedCtl" title="Velocidad de la simulación: 1 segundo real equivale a estos segundos simulados">
@@ -864,12 +961,13 @@
           <button type="button" class="tb-btn" id="btnStcaMute" onclick="toggleStcaMute()" title="Silencia la alerta sonora del STCA sin desactivar el aviso visual">Alerta STCA: con sonido</button>
           <button type="button" class="tb-btn on" id="btnAutoFreno" onclick="toggleAutoFrenoSTCA()" title="Al saltar una alerta nueva, baja la simulación a x10 para dar tiempo a resolverla">Frenar en STCA: sí</button>
         </div>
+        </div><!-- /#mapChrome -->
         <div id="flightMap"></div>
       </div>
     </div>
 
     <!-- ATC QUICK EDIT window -->
-    <div class="sim-window" id="win-atcedit" style="top:60px; left:880px; width:380px;">
+    <div class="sim-window" id="win-atcedit" style="top:60px; left:880px; width:min(380px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>ATC — INSTRUCCIÓN RÁPIDA</span>
         <span class="win-close" onclick="closeWindow('win-atcedit')">X</span>
@@ -886,6 +984,7 @@
           <div style="flex:1"><label class="f-label">DIRECTO A (punto de su ruta)</label><input class="f" id="atcEditDirect" list="directToList" autocomplete="off" placeholder="ILSEV"><datalist id="directToList"></datalist></div>
         </div>
         <div class="win-buttons" style="justify-content:flex-end; flex-wrap:wrap;">
+          <button class="wbtn" id="btnAtcUndo" onclick="undoLastAtcInstruction()" disabled>DESHACER</button>
           <button class="wbtn" onclick="resumeOwnNavigation()" title="Cancela el rumbo asignado y reengancha la aeronave a la ruta del plan">REANUDAR RUTA</button>
           <button class="wbtn" onclick="applyAtcEdit()">TRANSMITIR</button>
           <button class="wbtn" onclick="closeWindow('win-atcedit')">CERRAR</button>
@@ -895,7 +994,7 @@
     </div>
 
     <!-- FLIGHT PROGRESS STRIPS window -->
-    <div class="sim-window" id="win-strips" style="top:60px; left:40px; width:520px;">
+    <div class="sim-window" id="win-strips" style="top:60px; left:40px; width:min(520px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>FICHAS DE PROGRESO DE VUELO (STRIPS)</span>
         <span class="win-close" onclick="closeWindow('win-strips')">X</span>
@@ -906,7 +1005,7 @@
     </div>
 
     <!-- ESTIMATES window -->
-    <div class="sim-window" id="win-est" style="top:100px; left:100px; width:540px;">
+    <div class="sim-window" id="win-est" style="top:100px; left:100px; width:min(540px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>ESTIMADOS — HORA SOBRE CADA PUNTO (ETO)</span>
         <span class="win-close" onclick="closeWindow('win-est')">X</span>
@@ -917,7 +1016,7 @@
     </div>
 
     <!-- METEO window -->
-    <div class="sim-window" id="win-meteo" style="top:140px; left:160px; width:560px;">
+    <div class="sim-window" id="win-meteo" style="top:140px; left:160px; width:min(560px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>METEO — METAR / TAF DEL AERÓDROMO</span>
         <span class="win-close" onclick="closeWindow('win-meteo')">X</span>
@@ -932,13 +1031,38 @@
       </div>
     </div>
 
+    <!-- ESCENARIOS window -->
+    <div class="sim-window" id="win-escenario" style="top:100px; left:120px; width:min(560px, calc(100vw - 230px));">
+      <div class="win-head" data-drag>
+        <span>ESCENARIOS DE ENTRENAMIENTO</span>
+        <span class="win-close" onclick="closeWindow('win-escenario')">X</span>
+      </div>
+      <div class="win-body">
+        <div id="escenarioBox"></div>
+      </div>
+    </div>
+
+    <!-- REPLAY window -->
+    <div class="sim-window" id="win-replay" style="top:120px; left:180px; width:min(560px, calc(100vw - 230px));">
+      <div class="win-head" data-drag>
+        <span>REPRODUCCIÓN DE LA SESIÓN</span>
+        <span class="win-close" onclick="closeWindow('win-replay')">X</span>
+      </div>
+      <div class="win-body">
+        <div id="replayBox"></div>
+      </div>
+    </div>
+
     <!-- DEBRIEF window -->
-    <div class="sim-window" id="win-debrief" style="top:80px; left:220px; width:580px;">
+    <div class="sim-window" id="win-debrief" style="top:80px; left:220px; width:min(580px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>DEBRIEF — RESUMEN DE LA SESIÓN</span>
         <span class="win-close" onclick="closeWindow('win-debrief')">X</span>
       </div>
       <div class="win-body">
+        <div class="win-buttons" style="justify-content:flex-end; margin-bottom:8px;">
+          <button class="wbtn" onclick="exportarDebriefPDF()" title="Abre el diálogo de impresión del navegador: elige «Guardar como PDF» para conservar la sesión">EXPORTAR PDF</button>
+        </div>
         <div id="debriefBox"></div>
       </div>
     </div>
@@ -964,7 +1088,8 @@
   <button type="button" class="tb-btn" onclick="openMeteo()">METEO / QNH</button>
   <button type="button" class="tb-btn highlight" onclick="openWindow('win-radar')">RADAR</button>
   <button type="button" class="tb-btn highlight" onclick="openWindow('win-map')">MAPA DE RUTAS</button>
-  <button type="button" class="tb-btn" onclick="cargarTraficoDePractica()" title="Carga dos aeronaves en sentidos opuestos por la aerovía G431 al mismo nivel, para practicar la resolución de un conflicto">TRÁFICO DE PRÁCTICA</button>
+  <button type="button" class="tb-btn highlight" onclick="openEscenarios()" title="Ejercicios listos para resolver, con objetivo declarado y calificación al final">ESCENARIOS</button>
+  <button type="button" class="tb-btn" onclick="openReplay()" title="Vuelve a ver la sesión grabada con una barra de tiempo">REPLAY</button>
   <button type="button" class="tb-btn" onclick="openDebrief()">DEBRIEF</button>
   <a class="tb-btn" href="notam.html" target="_blank" rel="noopener" style="text-decoration:none;" title="Abre el módulo NOTAM del portal en una pestaña nueva">NOTAM ↗</a>
   <button type="button" class="tb-btn" onclick="closeAll()">CLOSE ALL</button>
@@ -984,7 +1109,7 @@
 
     <h3>Empieza por aquí (3 minutos)</h3>
     <ol class="help-steps">
-      <li>Pulsa <b>TRÁFICO DE PRÁCTICA</b> en la barra inferior. Se cargan dos aeronaves en sentidos opuestos por la misma aerovía y al mismo nivel: van a converger.</li>
+      <li>Pulsa <b>ESCENARIOS</b> en la barra inferior y carga <b>«Conflicto frontal en G431»</b>. Se cargan dos aeronaves en sentidos opuestos por la misma aerovía y al mismo nivel: van a converger.</li>
       <li>Abre <b>MAPA DE RUTAS</b> y <b>STRIPS</b>. Sube la velocidad a <b>x60</b> y observa cómo se acercan.</li>
       <li>Cuando suene el <b>STCA</b>, haz click sobre una aeronave (en el mapa, en el radar o en su ficha) y emítele un <b>NIVEL</b> distinto o un <b>RUMBO</b>. Usa <b>❚❚</b> para pausar y pensar.</li>
       <li>Cuando la separación se recupere, pulsa <b>REANUDAR RUTA</b> para devolverla a su plan. Al final, mira el <b>DEBRIEF</b>.</li>
@@ -1018,10 +1143,30 @@
       <li><b>RUMBO</b> — de 001 a 360. La aeronave abandona la ruta y vuela ese rumbo hasta nueva orden.</li>
       <li><b>DIRECTO</b> — navegación propia hacia un punto de su ruta que aún no ha sobrevolado; al alcanzarlo se reengancha al plan.</li>
       <li><b>REANUDAR RUTA</b> — cancela la vectorización y la devuelve a su ruta por el punto más cercano por delante.</li>
+      <li><b>DESHACER</b> — revierte la última instrucción emitida en la sesión y deja constancia de ello en el historial. Pulsando varias veces se van deshaciendo hacia atrás. Es una ayuda del simulador para cuando te equivocas de aeronave o de cifra: en operación real una autorización transmitida se corrige emitiendo otra.</li>
+    </ul>
+
+    <h3>Estela turbulenta</h3>
+    <p>Además del STCA, el simulador vigila la <b>separación por estela turbulenta</b> entre una aeronave y la que va detrás por la misma derrota, al mismo nivel o menos de 1 000 FT por debajo. El data block muestra <b>ESTELA</b> con la distancia actual y la mínima exigida en cuanto una alcanza a otra, y la marca en ámbar si esa mínima se infringe. Las mínimas son las publicadas por <b>OACI en el Doc 4444 (PANS-ATM)</b> y la tabla completa se muestra al final del <b>DEBRIEF</b>, para que puedas comprobarla en vez de fiarte de un número suelto. Las categorías salen de la casilla 9 del plan (o del tipo de aeronave): <b>J</b> super, <b>H</b> pesada, <b>M</b> media, <b>L</b> ligera.</p>
+
+    <h3>Escenarios y calificación</h3>
+    <p><b>ESCENARIOS</b> carga un ejercicio con objetivo declarado —no solo tránsito suelto— y evalúa seis criterios sobre lo que de verdad ocurrió: sin colisiones, sin pérdida efectiva de separación, sin infracción por estela, sin incursión en zonas ENR 5.1, sin autorizar por debajo de la MEA, y que todas las aeronaves lleguen a su destino. Los ves cumplirse o perderse <b>en vivo</b> mientras trabajas. Al pulsar <b>FINALIZAR Y CALIFICAR</b> se guarda la nota en tu progreso, igual que un quiz del portal.</p>
+
+    <h3>Reproducir la sesión</h3>
+    <p><b>REPLAY</b> graba la sesión sola desde que despega la primera aeronave. Al reproducirla se congela la simulación viva y puedes recorrer el ejercicio con la barra de tiempo, hacia delante y hacia atrás, para ver el momento exacto en que se perdió la separación. La lista de la derecha muestra lo ocurrido hasta el instante que estés mirando. Pulsa <b>SALIR DEL REPLAY</b> para volver al tránsito en vivo, que sigue donde lo dejaste.</p>
+
+    <h3>Atajos de teclado</h3>
+    <p>Funcionan siempre que no estés escribiendo en una casilla:</p>
+    <ul class="help-atajos">
+      <li><kbd>M</kbd> mapa · <kbd>R</kbd> radar · <kbd>S</kbd> strips · <kbd>E</kbd> estimados · <kbd>W</kbd> meteo · <kbd>D</kbd> debrief</li>
+      <li><kbd>F</kbd> nuevo plan · <kbd>A</kbd> texto libre AFTN · <kbd>X</kbd> escenarios · <kbd>V</kbd> replay</li>
+      <li><kbd>P</kbd> pausar o reanudar · <kbd>+</kbd> acelerar · <kbd>−</kbd> frenar la simulación</li>
+      <li><kbd>Z</kbd> (o <kbd>Ctrl</kbd>+<kbd>Z</kbd>) deshacer la última instrucción ATC</li>
+      <li><kbd>?</kbd> esta ayuda · <kbd>Esc</kbd> cerrar la ventana de encima</li>
     </ul>
 
     <h3>Herramientas</h3>
-    <p><b>STRIPS</b>: una ficha de progreso por vuelo, con nivel, rumbo, GS y distancia restante. <b>EST</b>: hora estimada sobre cada punto de la ruta, calculada tramo a tramo con su propia velocidad respecto al suelo. <b>METEO / QNH</b>: METAR y TAF reales del aeródromo (fuente aviationweather.gov / NOAA), con el reglaje altimétrico extraído del reporte. <b>RADAR</b>: presentación PPI con estación y alcance seleccionables, anillos rotulados en NM y blancos clicables. <b>Regla RMB/DIST</b>: marca dos puntos del mapa y lee rumbo verdadero y distancia. <b>DEBRIEF</b>: resumen de la sesión.</p>
+    <p><b>ESCENARIOS</b>: ejercicios con objetivo y calificación. <b>REPLAY</b>: reproducción de la sesión grabada. <b>STRIPS</b>: una ficha de progreso por vuelo, con nivel, rumbo, GS y distancia restante. <b>EST</b>: hora estimada sobre cada punto de la ruta, calculada tramo a tramo con su propia velocidad respecto al suelo. <b>METEO / QNH</b>: METAR y TAF reales del aeródromo (fuente aviationweather.gov / NOAA), con el reglaje altimétrico extraído del reporte. <b>RADAR</b>: presentación PPI con estación y alcance seleccionables, anillos rotulados en NM y blancos clicables. <b>Regla RMB/DIST</b>: marca dos puntos del mapa y lee rumbo verdadero y distancia. <b>DEBRIEF</b>: resumen de la sesión, exportable a PDF con el historial completo de cada vuelo.</p>
 
     <h3>Parámetros y fuentes</h3>
     <p>Son valores del ejercicio, <b>no</b> mínimas de separación reglamentarias — las aplicables las fija el AIP / RAC según el tipo de espacio aéreo y de vigilancia:</p>
@@ -3011,8 +3156,9 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Pide el último METAR de un aeródromo al proxy propio (mismo endpoint que usa metar-taf.html,
-// que a su vez consulta aviationweather.gov desde el servidor de Netlify — sin CORS).
+// Pide el último METAR de un aeródromo a la función propia del simulador, que consulta
+// aviationweather.gov desde el servidor de Netlify — sin CORS. Trae también el TAF (que este
+// popup no usa), y de paso deja su caché caliente para la ventana METEO.
 async function fetchMetarParaPopup(icao){
   const cacheado = metarPopupCache.get(icao);
   if(cacheado && cacheado.expira > Date.now()) return cacheado;
@@ -3021,11 +3167,12 @@ async function fetchMetarParaPopup(icao){
   const timer = setTimeout(()=> controller.abort(), 8000);
   let resultado;
   try{
-    const res = await fetch(`/.netlify/functions/metar?icao=${icao}&type=metar&hours=3`, { signal: controller.signal, cache:'no-store' });
+    const res = await fetch(`/.netlify/functions/metar-nala?icao=${icao}&hours=3`, { signal: controller.signal, cache:'no-store' });
     const data = await res.json();
     if(!res.ok || (data && data.error)) throw new Error((data && data.error) || 'network');
-    if(!Array.isArray(data) || !data.length) throw new Error('notfound');
-    const ultimo = data[0]; // aviationweather.gov entrega el reporte más reciente primero
+    if(data.errores && data.errores.metar) throw new Error(data.errores.metar);
+    const ultimo = data.metar;   // el reporte más reciente, ya desempaquetado por la función
+    if(!ultimo) throw new Error('notfound');
     // Fuente externa (aviationweather.gov): se escapa antes de insertarlo en el
     // popup, que se pinta con innerHTML.
     const raw = escapeHtml((ultimo.rawOb || '').trim() || '—');
@@ -3066,6 +3213,37 @@ async function popupopenMetarHandler(e){
   e.popup.update();
 }
 
+/* ---------- PLEGAR LEYENDA Y CONTROLES DEL MAPA ----------
+   La preferencia se recuerda entre sesiones: quien trabaja con el mapa a pantalla casi completa
+   no tiene que volver a plegarlo cada vez que entra. Leaflet necesita que le avisen del cambio
+   de tamaño de su contenedor, o el mapa se queda con franjas grises sin teselas. */
+const CLAVE_MAP_CHROME = 'nalaMapChromePlegado';
+
+function aplicarMapChrome(plegado){
+  const win = document.getElementById('win-map');
+  const btn = document.getElementById('btnMapChrome');
+  if(!win || !btn) return;
+  win.classList.toggle('chrome-plegado', plegado);
+  btn.setAttribute('aria-expanded', String(!plegado));
+  btn.querySelector('.mc-txt').textContent = plegado ? 'Mostrar controles y leyenda' : 'Controles y leyenda';
+  btn.title = plegado
+    ? 'Mostrar la leyenda y los controles del mapa'
+    : 'Plegarlos para que el mapa ocupe toda la ventana';
+  if(flightMap) setTimeout(()=>flightMap.invalidateSize(), 60);
+}
+
+function toggleMapChrome(){
+  const plegado = !document.getElementById('win-map').classList.contains('chrome-plegado');
+  aplicarMapChrome(plegado);
+  try{ localStorage.setItem(CLAVE_MAP_CHROME, plegado ? '1' : '0'); }catch(e){}
+}
+
+function restaurarMapChrome(){
+  let plegado = false;
+  try{ plegado = localStorage.getItem(CLAVE_MAP_CHROME) === '1'; }catch(e){}
+  aplicarMapChrome(plegado);
+}
+
 // Alterna las etiquetas ICAO permanentes de los aeropuertos (visibles siempre vs. solo al pasar el mouse).
 function toggleAirportLabels(){
   airportLabelsVisible = !airportLabelsVisible;
@@ -3100,7 +3278,10 @@ function toggleGoesLayer(){
     if(!goesLayer){
       goesLayer = L.tileLayer(
         'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GOES-East_ABI_GeoColor/default/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
-        { attribution:'Satélite: NASA GIBS / NOAA GOES-East ABI GeoColor', maxNativeZoom:6, maxZoom:12, opacity:.7 }
+        // maxNativeZoom 6 = el detalle real que publica GIBS para esta capa; no se piden teselas
+        // más finas porque no existen. maxZoom 19 solo mantiene la nubosidad VISIBLE (ampliada)
+        // al acercarse sobre el mapa base: sin él la capa desaparecería al pasar de z12.
+        { attribution:'Satélite: NASA GIBS / NOAA GOES-East ABI GeoColor', maxNativeZoom:6, maxZoom:19, opacity:.7 }
       );
     }
     goesLayer.addTo(flightMap);
@@ -3238,14 +3419,17 @@ function initMap(){
   flightMap = L.map('flightMap', { zoomControl:true }).setView([6.5, -74.5], 6);
   flightMap.on('click', handleMeasureClick);
 
+  // maxZoom 19: es la resolución nativa que sirven estas fuentes sobre ciudades y aeropuertos.
+  // Con el tope anterior (12) Leaflet reescalaba las mismas teselas al acercarse y la imagen se
+  // veía borrosa aunque el proveedor sí tuviera detalle disponible.
   baseLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors', maxZoom: 12
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
   });
   baseLayers.sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics', maxZoom: 12
+    attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics', maxZoom: 19
   });
   baseLayers.topo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri — Source: Esri, Garmin, USGS, NPS', maxZoom: 12
+    attribution: 'Tiles &copy; Esri — Source: Esri, Garmin, USGS, NPS', maxZoom: 19
   });
   currentBaseLayer = baseLayers.osm.addTo(flightMap);
 
@@ -3519,6 +3703,12 @@ function planeTooltipHtml(fp){
     alert = `<div class="db-warn">⚠ STCA · ${escapeHtml(fp.conflictWith || '?')}${cuando}</div>`;
   }
   else if(fp.zoneBust) alert = `<div class="db-warn">⚠ ${escapeHtml(fp.zoneBust)}</div>`;
+  if(fp.wakeAlert && !fp.collided){
+    const w = fp.wakeInfo;
+    const clase = w.infringe ? 'db-warn' : 'db-line';
+    alert += `<div class="${clase}">${w.infringe ? '⚠ ' : ''}ESTELA ${escapeHtml(w.precede)} · `
+           + `${w.distNM.toFixed(1)}/${w.minNM} NM</div>`;
+  }
   const seg = currentAirwaySegment(fp);
   const espacio = seg && seg.airspace ? ` · <b>${seg.airspace}</b>` : '';
   const via = seg && seg.airway ? ` ${escapeHtml(seg.airway)}` : '';
@@ -3666,6 +3856,101 @@ const CONFLICT_LATERAL_NM = 8;
 const CONFLICT_VERTICAL_FT = 1000;
 const COLLISION_LATERAL_NM = 2;
 const COLLISION_VERTICAL_FT = 500;
+
+/* ---------- SEPARACIÓN POR ESTELA TURBULENTA ----------
+   FUENTE: OACI, Doc 4444 (PANS-ATM), mínimas de separación radar por estela turbulenta. Se
+   aplican a una aeronave que sigue a otra por la MISMA derrota, al mismo nivel o menos de
+   1 000 FT por debajo. No son un valor de ejercicio inventado: son la tabla publicada, y por eso
+   se muestra entera en la interfaz (ventana de ayuda y debrief) para que el estudiante la
+   audite en vez de creerse un número suelto.
+
+   Categorías OACI por masa máxima al despegue: J (SUPER, A380), H (PESADA, ≥136 t),
+   M (MEDIA, 7-136 t), L (LIGERA, ≤7 t). El par que no aparece en la tabla no tiene mínima por
+   estela: entre MEDIA y MEDIA, por ejemplo, rige la separación radar normal. */
+const WAKE_MIN_NM = {
+  J: { H:6, M:7, L:8 },   // precede SUPER
+  H: { H:4, M:5, L:6 },   // precede PESADA
+  M: { L:5 },             // precede MEDIA, sigue LIGERA
+};
+// La estela se hunde: solo afecta a quien va detrás al mismo nivel o por debajo, no por encima.
+const WAKE_VERTICAL_FT = 1000;
+// Cono por detrás: se considera "en la misma derrota" si ambas difieren menos de esto y la que
+// sigue viene realmente por detrás de la que precede.
+const WAKE_TRACK_TOLERANCE_DEG = 45;
+
+// Categoría de estela de un vuelo: la del plan (casilla 9) y, si falta, la del tipo de aeronave.
+function wakeCategory(fp){
+  const cat = (fp.wake || '').trim().toUpperCase();
+  if(['J','H','M','L'].includes(cat)) return cat;
+  const info = acTypeInfo(fp.acType);
+  return info && info.wtc ? info.wtc : null;
+}
+
+// Mínima por estela aplicable cuando "sigue" va detrás de "precede"; null si ese par no tiene.
+function wakeMinimumNM(precede, sigue){
+  const a = wakeCategory(precede), b = wakeCategory(sigue);
+  if(!a || !b) return null;
+  return (WAKE_MIN_NM[a] && WAKE_MIN_NM[a][b]) || null;
+}
+
+// Decide si "sigue" va realmente detrás de "precede" en la misma derrota: mismo rumbo dentro de
+// la tolerancia, y el que sigue por detrás (el marcador de la que precede queda dentro de un
+// cono al frente del que sigue).
+function vaDetrasDe(precede, sigue){
+  const difDerrota = Math.abs(normalizeDeg(precede._track - sigue._track));
+  const desvio = Math.min(difDerrota, 360 - difDerrota);
+  if(desvio > WAKE_TRACK_TOLERANCE_DEG) return false;
+  const rumboHaciaAdelante = bearingBetween(sigue._pos.lat, sigue._pos.lon, precede._pos.lat, precede._pos.lon);
+  const difAlFrente = Math.abs(normalizeDeg(rumboHaciaAdelante - (sigue._track || 0)));
+  return Math.min(difAlFrente, 360 - difAlFrente) <= WAKE_TRACK_TOLERANCE_DEG;
+}
+
+// Margen de aviso: la mínima por estela (5 NM para una MEDIA detrás de una PESADA) es MENOR que
+// los 8 NM de separación del ejercicio, así que esperar a que se infrinja no enseñaría nada — el
+// STCA ya habría saltado antes. Lo que hace de verdad un controlador es verlo venir: en cuanto
+// detecta una MEDIA alcanzando a una PESADA, sabe que va a necesitar esos 5 NM. Por eso el par
+// se anuncia desde que entra en la banda de aviso, y solo se registra como infracción cuando
+// baja de la mínima publicada.
+const WAKE_AVISO_EXTRA_NM = 8;
+
+// Evalúa el par (a,b) por estela. Devuelve el detalle mientras uno siga al otro dentro de la
+// banda de aviso, marcando con "infringe" si ya está por debajo de la mínima publicada.
+function evaluarEstela(a, b){
+  for(const [precede, sigue] of [[a,b],[b,a]]){
+    const minNM = wakeMinimumNM(precede, sigue);
+    if(!minNM) continue;
+    // La estela desciende: solo afecta a quien va al mismo nivel o por debajo, y el Doc 4444
+    // acota ese "por debajo" a MENOS de 1 000 FT — a 1 000 FT justos ya no aplica.
+    const debajoFt = precede._altFt - sigue._altFt;
+    if(debajoFt < 0 || debajoFt >= WAKE_VERTICAL_FT) continue;
+    if(!vaDetrasDe(precede, sigue)) continue;
+    const distNM = getDistanceNM(precede._pos.lat, precede._pos.lon, sigue._pos.lat, sigue._pos.lon);
+    if(distNM >= minNM + WAKE_AVISO_EXTRA_NM) continue;
+    return { precede: precede.flightId, sigue: sigue.flightId, minNM, distNM,
+             infringe: distNM < minNM,
+             catPrecede: wakeCategory(precede), catSigue: wakeCategory(sigue) };
+  }
+  return null;
+}
+
+// Nombre en claro de la categoría de estela, para los mensajes al estudiante.
+function wakeCatLabel(cat){
+  return cat === 'J' ? 'SUPER' : cat === 'H' ? 'PESADA' : cat === 'M' ? 'MEDIA' : cat === 'L' ? 'LIGERA' : '—';
+}
+
+// La tabla se pinta a partir de WAKE_MIN_NM, no se reescribe a mano: así lo que el estudiante lee
+// es literalmente lo que el simulador aplica, y no pueden desincronizarse.
+function tablaMinimasEstela(){
+  const filas = Object.keys(WAKE_MIN_NM).map(precede=>{
+    const pares = Object.keys(WAKE_MIN_NM[precede])
+      .map(sigue=>`${wakeCatLabel(sigue)} ${WAKE_MIN_NM[precede][sigue]} NM`).join(' · ');
+    return `<tr><td>${wakeCatLabel(precede)} (${precede})</td><td>${pares}</td></tr>`;
+  }).join('');
+  return `<table class="est-table" style="margin-top:5px">
+      <thead><tr><th>Precede</th><th>Sigue — mínima</th></tr></thead>
+      <tbody>${filas}</tbody></table>
+    <div style="margin-top:4px">Los pares que no aparecen no tienen mínima por estela: entre ellos rige la separación radar normal.</div>`;
+}
 
 /* ---------- STCA PREDICTIVO ----------
    Un STCA (Short Term Conflict Alert) es, por definición, una herramienta de PREDICCIÓN: avisa
@@ -3896,6 +4181,10 @@ function tickSimulation(){
   checkConflicts(positions);
   checkZoneIncursions(positions);
   positions.forEach(fp=>{ paintPlane(fp); updatePlaneTooltip(fp); });
+  // La grabación va al final del tick, con conflictos y zonas ya evaluados: así el fotograma
+  // guarda el estado tal y como se vio en pantalla, no uno intermedio.
+  grabarFrameReplay(simNow, positions);
+  evaluarObjetivosEscenario();
   if(document.getElementById('win-strips').classList.contains('open')) renderStrips();
   if(document.getElementById('win-est').classList.contains('open')) renderEstimates();
 }
@@ -3957,6 +4246,11 @@ function checkPositionReports(fp, geo){
 // Anota un evento en el histórico del plan y refresca la ventana si está abierta.
 function logFlight(fp, text, source){
   fp.history.push({ ts: nowStampHeader(), text, source: source || 'ATC' });
+  // El mismo apunte se guarda con la hora SIMULADA para poder sincronizarlo con la
+  // reproducción de la sesión: el historial usa hora real, que no sirve para ubicarlo en una
+  // línea de tiempo que ha corrido a x60.
+  replayEventos.push({ t: nowSimMs(), flightId: fp.flightId, text });
+  if(replayEventos.length > REPLAY_MAX_EVENTOS) replayEventos.shift();
   if(currentFP && currentFP.flightId === fp.flightId) renderHistoryWindow(fp.flightId);
 }
 
@@ -3990,10 +4284,17 @@ function diffMinutesHHMM(fromHHMM, toHHMM){
 // Revisa todos los pares de aeronaves activas: marca conflicto (separación insuficiente) o colisión (contacto real).
 function checkConflicts(positions){
   const inConflict = new Set();
+  const enEstela = new Map();   // flightId de la que sigue -> detalle de la infracción
   for(let i=0;i<positions.length;i++){
     for(let j=i+1;j<positions.length;j++){
       const a = positions[i], b = positions[j];
       if(a.collided || b.collided) continue;
+
+      // Estela turbulenta: mínima propia e independiente de la separación radar general. Una
+      // MEDIA detrás de una PESADA a 4,5 NM cumple los 8 NM del ejercicio y aun así infringe
+      // los 5 NM por estela del Doc 4444, así que se evalúa aparte.
+      const estela = evaluarEstela(a, b);
+      if(estela) enEstela.set(estela.sigue, estela);
       const altDiff = Math.abs(a._altFt - b._altFt);
       const approach = closestApproachNM(a._prevPos, a._pos, b._prevPos, b._pos);
       if(approach.dist <= COLLISION_LATERAL_NM && altDiff <= COLLISION_VERTICAL_FT){
@@ -4028,6 +4329,7 @@ function checkConflicts(positions){
   }
   let changed = false;
   const nuevos = [];
+  const nuevasEstelas = [];
   positions.forEach(fp=>{
     if(fp.collided) return;
     const wasConflict = !!fp.conflict;
@@ -4035,6 +4337,23 @@ function checkConflicts(positions){
     if(fp.conflict !== wasConflict) changed = true;
     if(fp.conflict && !wasConflict) nuevos.push(fp);
     if(!fp.conflict){ fp.conflictWith = null; fp.conflictInfo = null; }
+
+    // Se distingue el AVISO (viene detrás, hay que vigilarlo) de la INFRACCIÓN (ya está por
+    // debajo de la mínima publicada). Solo la segunda se anota en el historial y cuenta en el
+    // debrief; si se registrara también el aviso, el historial se llenaría de ruido.
+    const infringiaAntes = !!fp.wakeBust;
+    fp.wakeInfo = enEstela.get(fp.flightId) || null;
+    fp.wakeAlert = !!fp.wakeInfo;
+    fp.wakeBust = !!(fp.wakeInfo && fp.wakeInfo.infringe);
+    if(fp.wakeBust !== infringiaAntes) changed = true;
+    if(fp.wakeBust && !infringiaAntes) nuevasEstelas.push(fp);
+  });
+  nuevasEstelas.forEach(fp=>{
+    const w = fp.wakeInfo;
+    logFlight(fp, `ESTELA — separación insuficiente: ${fp.flightId} (${wakeCatLabel(w.catSigue)}) va a `
+      + `${w.distNM.toFixed(1)} NM detrás de ${w.precede} (${wakeCatLabel(w.catPrecede)}), al mismo nivel o `
+      + `menos de ${WAKE_VERTICAL_FT} FT por debajo. La mínima publicada para ese par es ${w.minNM} NM `
+      + `(OACI, Doc 4444 — separación radar por estela turbulenta).`);
   });
   nuevos.forEach(fp=>{
     const d = fp.conflictInfo;
@@ -4098,6 +4417,9 @@ function checkZoneIncursions(positions){
     const prevZone = fp.zoneBust || null;   // id de la zona en la que estaba en el tick anterior
     fp.zoneBust = hit ? hit.id : null;
     if(hit && hit.id !== prevZone){
+      // Se guarda además de forma estructurada: la evaluación de los escenarios necesita saber
+      // QUÉ zona fue y dónde está, y no puede depender de volver a leer el texto del historial.
+      (fp.zoneBusts = fp.zoneBusts || []).push({ id: hit.id, lat: hit.lat, lon: hit.lon });
       logFlight(fp, `ALERTA: ingresó a zona ${zoneKindLabel(hit.kind)} ${hit.id} ${hit.name} (${hit.lowerFt===0?'GND':hit.lowerFt+'FT'}/${hit.upperLabel || hit.upperFt+'FT'}).`);
     }
     if(!hit && prevZone){
@@ -4174,6 +4496,13 @@ function openAtcEditModal(flightId){
       + `<br>Ahora: ${d ? d.lateralNM.toFixed(1) : '?'} NM / ${d ? Math.round(d.verticalFt) : '?'} FT.`
       + (d && !d.inminente ? ` Previsto: ${d.previstaNM.toFixed(1)} NM / ${Math.round(d.previstaVertFt)} FT.` : '')
       + `<br>Hay que garantizar ${CONFLICT_LATERAL_NM} NM horizontales <b>o</b> ${CONFLICT_VERTICAL_FT} FT verticales.`;
+  } else if(fp.wakeAlert){
+    const w = fp.wakeInfo;
+    note.style.display = 'block';
+    note.innerHTML = `<b>Estela turbulenta ${w.infringe ? '— separación insuficiente' : '— vigile la separación'} con ${escapeHtml(w.precede)}</b><br>`
+      + `Va ${w.distNM.toFixed(1)} NM detrás de una ${wakeCatLabel(w.catPrecede)}, al mismo nivel o menos de ${WAKE_VERTICAL_FT} FT por debajo.<br>`
+      + `Mínima publicada para ${wakeCatLabel(w.catPrecede)} seguida de ${wakeCatLabel(w.catSigue)}: <b>${w.minNM} NM</b> (OACI, Doc 4444). `
+      + `Auméntele la separación longitudinal o súbala por encima de la que precede.`;
   } else if(fp.zoneBust){
     note.style.display = 'block';
     note.innerHTML = `<b>Dentro de la zona ${escapeHtml(fp.zoneBust)}</b> — sáquela de la zona o cámbiele el nivel fuera de la banda publicada.`;
@@ -4184,6 +4513,7 @@ function openAtcEditModal(flightId){
   document.getElementById('atcEditDirect').value = '';
   renderDirectToOptions(fp);
   document.getElementById('atcEditFlash').style.display='none';
+  refreshUndoButton();
   openWindow('win-atcedit');
 }
 
@@ -4237,6 +4567,10 @@ function applyAtcEdit(){
     return flashAtc('err', `Instrucción cancelada: ${escapeHtml(lvl)} está por debajo de la MEA de ${mea.meaFt.toLocaleString('es-CO')} FT en el tramo ${escapeHtml(mea.tramo)}.`);
   }
 
+  // Estado ANTES de tocar nada: si la instrucción llega a emitirse, esto es lo que restaura
+  // DESHACER. Se captura aquí y no dentro del bloque de abajo porque ahí ya está modificado.
+  const estadoPrevio = { cfl: fp.cfl, vectorHdg: fp.vectorHdg, directTo: fp.directTo };
+
   const parts = [];
   if(lvl && lvl !== (fp.cfl || fp.level)){
     fp.cfl = lvl;
@@ -4253,10 +4587,73 @@ function applyAtcEdit(){
   }
 
   if(!parts.length) return flashAtc('err','No hay ninguna instrucción nueva que emitir.');
+  pushAtcUndo(fp, estadoPrevio, parts.join(' / '));
   logFlight(fp, 'INSTRUCCIÓN ATC — ' + parts.join(' / '));
   updatePlaneTooltip(fp);
   renderSidebar();
   flashAtc('ok', 'Instrucción transmitida: ' + escapeHtml(parts.join(' / ')));
+}
+
+/* ---------- DESHACER LA ÚLTIMA INSTRUCCIÓN ----------
+   Equivocarse de aeronave o de cifra al teclear una autorización es de lo más común mientras se
+   aprende, y hasta ahora la única salida era volver a abrir la ficha y reconstruir a mano el
+   estado anterior — que el estudiante muchas veces ya no recordaba. La pila guarda el estado
+   previo de cada instrucción emitida en la sesión, así que se pueden ir pelando una a una.
+   OJO: deshacer es una herramienta del SIMULADOR, no fraseología. En la vida real una
+   autorización transmitida se corrige emitiendo otra, y eso queda dicho en el historial. */
+const atcUndoStack = [];
+const ATC_UNDO_MAX = 50;
+
+function pushAtcUndo(fp, estadoPrevio, descripcion){
+  atcUndoStack.push({ flightId: fp.flightId, prev: estadoPrevio, descripcion, hora: nowHHMMZulu() });
+  if(atcUndoStack.length > ATC_UNDO_MAX) atcUndoStack.shift();
+  refreshUndoButton();
+}
+
+function refreshUndoButton(){
+  const btn = document.getElementById('btnAtcUndo');
+  if(!btn) return;
+  const ultima = atcUndoStack[atcUndoStack.length - 1];
+  btn.disabled = !ultima;
+  btn.title = ultima
+    ? `Deshacer: ${ultima.flightId} — ${ultima.descripcion} (${ultima.hora}Z)`
+    : 'No hay ninguna instrucción que deshacer en esta sesión.';
+}
+
+function undoLastAtcInstruction(){
+  const ultima = atcUndoStack.pop();
+  refreshUndoButton();
+  if(!ultima){
+    if(document.getElementById('win-atcedit').classList.contains('open')){
+      flashAtc('err','No hay ninguna instrucción que deshacer en esta sesión.');
+    }
+    return;
+  }
+  const fp = flightPlans.find(p=>p.flightId===ultima.flightId);
+  if(!fp || fp.collided || fp.landed){
+    if(document.getElementById('win-atcedit').classList.contains('open')){
+      flashAtc('err', `No se puede deshacer: ${escapeHtml(ultima.flightId)} ya no está en vuelo.`);
+    }
+    return;
+  }
+  fp.cfl = ultima.prev.cfl;
+  fp.vectorHdg = ultima.prev.vectorHdg;
+  fp.directTo = ultima.prev.directTo;
+  logFlight(fp, `DESHACER — se revierte la instrucción «${ultima.descripcion}» emitida a las ${ultima.hora}Z. `
+    + `Vuelve a ${fp.cfl ? 'NIVEL ' + fp.cfl : 'su nivel de plan'}`
+    + (fp.vectorHdg != null ? `, RUMBO ${fmtHeading(fp.vectorHdg)}` : '')
+    + (fp.directTo ? `, DIRECTO ${fp.directTo}` : '')
+    + (fp.vectorHdg == null && !fp.directTo ? ' y navegación propia por la ruta del plan.' : '.'));
+  updatePlaneTooltip(fp);
+  renderSidebar();
+  if(document.getElementById('win-strips').classList.contains('open')) renderStrips();
+  // Si la ficha abierta es la de esa aeronave, se refrescan sus campos para que no muestren
+  // valores que ya no están vigentes.
+  if(atcEditFlightId === fp.flightId && document.getElementById('win-atcedit').classList.contains('open')){
+    document.getElementById('atcEditLevel').value = fp.cfl || fp.level || '';
+    document.getElementById('atcEditHeading').value = fp.vectorHdg != null ? fmtHeading(fp.vectorHdg) : '';
+    flashAtc('ok', `Deshecha la instrucción: ${escapeHtml(ultima.descripcion)}.`);
+  }
 }
 
 // Cancela la vectorización y devuelve la aeronave a su ruta, reenganchándola en el punto más
@@ -4266,6 +4663,7 @@ function resumeOwnNavigation(){
   const fp = flightPlans.find(p=>p.flightId===atcEditFlightId);
   if(!fp) return;
   if(fp.vectorHdg == null && !fp.directTo) return flashAtc('err','La aeronave ya está en navegación propia por su ruta.');
+  const estadoPrevio = { cfl: fp.cfl, vectorHdg: fp.vectorHdg, directTo: fp.directTo };
   const geo = getRouteGeometry(fp);
   let mejor = null;
   geo.pts.forEach((p,i)=>{
@@ -4276,6 +4674,7 @@ function resumeOwnNavigation(){
   fp.vectorHdg = null;
   const destinoCode = mejor ? mejor.code : fp.dest;
   fp.directTo = destinoCode;
+  pushAtcUndo(fp, estadoPrevio, `REANUDE NAVEGACIÓN PROPIA, DIRECTO ${destinoCode}`);
   logFlight(fp, `INSTRUCCIÓN ATC — REANUDE NAVEGACIÓN PROPIA, DIRECTO ${destinoCode}`
     + (mejor ? ` (${mejor.d.toFixed(0)} NM).` : '.'));
   flashAtc('ok', `Reanudando navegación propia directo a ${destinoCode}.`);
@@ -4376,6 +4775,7 @@ function openWindow(id){
   const eraNueva = !w.classList.contains('open');
   w.classList.add('open');
   if(eraNueva && !isStackedLayout()) placeWindowInView(w);
+  fitOpenWindowsToArea();   // que la recién abierta no cuelgue por debajo del escritorio
   bringToFront(w);
   if(id === 'win-map' && flightMap) setTimeout(()=>flightMap.invalidateSize(), 60);
 }
@@ -4414,19 +4814,108 @@ function placeWindowInView(w){
   w.style.top = Math.max(0, Math.min(top, Math.max(0, maxH - 60))) + 'px';
 }
 
+// Al achicar la ventana del navegador, las ventanas ya abiertas conservaban la posición que se
+// les calculó cuando la pantalla era más ancha y se quedaban fuera del escritorio del CWP (sin
+// forma de arrastrarlas de vuelta). placeWindowInView() no cubre esto porque solo corre al
+// abrir. Aquí solo se corrige la POSICIÓN: el ancho lo resuelve el min() del CSS, y escribirlo
+// en píxeles desde JS lo dejaría congelado para siempre.
+function fitOpenWindowsToArea(){
+  const area = document.getElementById('windowsArea');
+  if(!area) return;
+  const ventanas = document.querySelectorAll('.sim-window.open');
+  // En modo apilado las ventanas van en flujo normal: cualquier tope de alto heredado del
+  // escritorio recortaría su contenido, así que se retira al cruzar el umbral.
+  if(isStackedLayout()){ ventanas.forEach(w=>{ w.style.maxHeight = ''; w.style.height = ''; }); return; }
+  const maxW = area.clientWidth, maxH = area.clientHeight;
+  ventanas.forEach(w=>{
+    const ancho = w.offsetWidth;
+    const left = parseInt(w.style.left, 10) || 0;
+    const top = parseInt(w.style.top, 10) || 0;
+    w.style.left = Math.max(0, Math.min(left, Math.max(0, maxW - ancho))) + 'px';
+    // Se deja siempre visible la barra de título (60px), que es de donde se arrastra.
+    const nuevoTop = Math.max(0, Math.min(top, Math.max(0, maxH - 60)));
+    w.style.top = nuevoTop + 'px';
+    // Tope de alto, no alto fijo: el cuerpo ya tiene overflow:auto, así que una ventana larga
+    // (tiras, debrief) se desplaza por dentro en vez de colgar por debajo del escritorio.
+    const disponible = Math.max(120, maxH - nuevoTop - 8);
+    w.style.maxHeight = disponible + 'px';
+    // El mapa es la excepción: se le da alto DEFINIDO (no solo un tope) para que #flightMap,
+    // que es un flex item, pueda repartirse el espacio sobrante. Sin un alto definido no hay
+    // "espacio sobrante" que repartir y el mapa no crecería al plegar la leyenda.
+    if(w.id === 'win-map') w.style.height = disponible + 'px';
+  });
+}
+
 function toggleHelp(open){
   document.getElementById('helpOverlay').classList.toggle('open', open);
 }
 
-// Cierra con Escape la ayuda, o en su defecto la ventana que esté encima.
+/* ---------- ATAJOS DE TECLADO ----------
+   Un puesto de control real se maneja con las dos manos en el teclado; aquí cada ventana exigía
+   ir a la barra inferior con el ratón. Los atajos son de una sola tecla, como en un CWP, pero
+   se ignoran mientras el foco está en un campo de texto: escribir "SKBO" en una casilla no puede
+   abrir el radar y el mapa por el camino. La lista completa está en la ventana de INSTRUCCIONES.
+   Escape conserva su comportamiento de siempre (cerrar la ayuda o la ventana de encima). */
+const ATAJOS = {
+  m: { desc:'Mapa de rutas',        accion:()=>openWindow('win-map') },
+  r: { desc:'Radar',                accion:()=>openWindow('win-radar') },
+  s: { desc:'Fichas de progreso',   accion:()=>openStrips() },
+  e: { desc:'Estimados',            accion:()=>openEstimates() },
+  w: { desc:'Meteo / QNH',          accion:()=>openMeteo() },
+  d: { desc:'Debrief',              accion:()=>openDebrief() },
+  f: { desc:'Nuevo plan de vuelo',  accion:()=>openFPOperationCreate() },
+  a: { desc:'Texto libre AFTN',     accion:()=>openWindow('win-aftn') },
+  x: { desc:'Escenarios de entrenamiento', accion:()=>openEscenarios() },
+  v: { desc:'Reproducir la sesión', accion:()=>openReplay() },
+  z: { desc:'Deshacer la última instrucción ATC', accion:()=>undoLastAtcInstruction() },
+  p: { desc:'Pausar / reanudar la simulación',    accion:()=>toggleSimPause() },
+  '+': { desc:'Acelerar la simulación', accion:()=>cambiarVelocidadRelativa(1) },
+  '-': { desc:'Frenar la simulación',   accion:()=>cambiarVelocidadRelativa(-1) },
+  '?': { desc:'Abrir esta ayuda',       accion:()=>toggleHelp(true) },
+};
+
+// Sube o baja un escalón en la escala de velocidades ya existente (0 = pausa, x1 … x240).
+const ESCALA_VELOCIDAD = [1, 10, 60, 240];
+function cambiarVelocidadRelativa(paso){
+  if(simRate === 0){ if(paso > 0) setSimRate(ESCALA_VELOCIDAD[0]); return; }
+  const i = ESCALA_VELOCIDAD.indexOf(simRate);
+  const actual = i >= 0 ? i : 0;
+  const destino = Math.min(ESCALA_VELOCIDAD.length - 1, Math.max(0, actual + paso));
+  setSimRate(ESCALA_VELOCIDAD[destino]);
+}
+
+// true si el foco está en algo donde el usuario está escribiendo de verdad.
+function escribiendoEnCampo(){
+  const el = document.activeElement;
+  if(!el) return false;
+  if(el.isContentEditable) return true;
+  return ['INPUT','TEXTAREA','SELECT'].includes(el.tagName);
+}
+
 document.addEventListener('keydown', e=>{
-  if(e.key !== 'Escape') return;
-  const help = document.getElementById('helpOverlay');
-  if(help.classList.contains('open')){ toggleHelp(false); return; }
-  const abiertas = [...document.querySelectorAll('.sim-window.open')];
-  if(!abiertas.length) return;
-  abiertas.sort((a,b)=> (parseInt(b.style.zIndex,10)||0) - (parseInt(a.style.zIndex,10)||0));
-  closeWindow(abiertas[0].id);
+  if(e.key === 'Escape'){
+    const help = document.getElementById('helpOverlay');
+    if(help.classList.contains('open')){ toggleHelp(false); return; }
+    const abiertas = [...document.querySelectorAll('.sim-window.open')];
+    if(!abiertas.length) return;
+    abiertas.sort((a,b)=> (parseInt(b.style.zIndex,10)||0) - (parseInt(a.style.zIndex,10)||0));
+    closeWindow(abiertas[0].id);
+    return;
+  }
+  // Ctrl+Z deshace aunque se esté escribiendo: es el gesto universal y no compite con nada
+  // propio del formulario (los campos son de una línea).
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){
+    e.preventDefault();
+    undoLastAtcInstruction();
+    return;
+  }
+  if(e.ctrlKey || e.altKey || e.metaKey) return;
+  if(escribiendoEnCampo()) return;
+  if(document.getElementById('helpOverlay').classList.contains('open')) return;
+  const atajo = ATAJOS[e.key.toLowerCase()];
+  if(!atajo) return;
+  e.preventDefault();
+  atajo.accion();
 });
 
 (function enableDrag(){
@@ -4469,6 +4958,12 @@ document.addEventListener('keydown', e=>{
     const winMap = document.getElementById('win-map');
     if(winMap) new ResizeObserver(()=>{ if(flightMap) flightMap.invalidateSize(); }).observe(winMap);
   }
+
+  let reajuste = null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(reajuste);
+    reajuste = setTimeout(fitOpenWindowsToArea, 120);
+  });
 })();
 
 /* ===================== FP OPERATION ===================== */
@@ -4664,7 +5159,7 @@ function renderSidebar(){
     <div class="fp-chip${sel}" onclick="openFPOperationView(flightPlans.find(p=>p.id===${fp.id}))">
       <div class="cs">${escapeHtml(fp.flightId)}</div><div class="route">${escapeHtml(fp.dep)} → ${escapeHtml(fp.dest)} · ${escapeHtml(fp.eobt)}Z</div>${statusHtml}${takeoffBtn}${atcBtn}
     </div>`;
-  }).join('') : '<div class="side-empty">Sin planes activos.<br><br>Crea uno con <b>+ NUEVO</b>, o pulsa <b>TRÁFICO DE PRÁCTICA</b> en la barra inferior para cargar un escenario de conflicto listo para resolver.</div>';
+  }).join('') : '<div class="side-empty">Sin planes activos.<br><br>Crea uno con <b>+ NUEVO</b>, o pulsa <b>ESCENARIOS</b> en la barra inferior para cargar un ejercicio listo para resolver.</div>';
 }
 
 /* ===================== DESPEGUE (activación del plan de vuelo) ===================== */
@@ -5061,7 +5556,7 @@ function renderStrips(){
   const box = document.getElementById('stripsList');
   if(!box) return;
   if(!flightPlans.length){
-    box.innerHTML = '<div class="win-empty">No hay planes de vuelo todavía.<br>Crea uno desde <b>FP OPERATION</b> o pulsa <b>TRÁFICO DE PRÁCTICA</b> para cargar un escenario listo.</div>';
+    box.innerHTML = '<div class="win-empty">No hay planes de vuelo todavía.<br>Crea uno desde <b>FP OPERATION</b> o carga un ejercicio desde <b>ESCENARIOS</b>.</div>';
     return;
   }
   box.innerHTML = flightPlans.map(fp=>{
@@ -5267,9 +5762,9 @@ function minutesToHHMM(mins){
 }
 
 /* ===================== METEO — METAR / TAF REALES =====================
-   Sustituye al botón "METEO" que no hacía nada. Consulta el mismo proxy propio que ya usa
-   metar-taf.html (aviationweather.gov desde el servidor de Netlify, sin CORS) y extrae además
-   el QNH del reporte — que era el otro botón muerto de la barra. */
+   Sustituye al botón "METEO" que no hacía nada. Consulta la función propia del simulador
+   (aviationweather.gov desde el servidor de Netlify, sin CORS) y extrae además el QNH del
+   reporte — que era el otro botón muerto de la barra. */
 function populateMeteoList(){
   const dl = document.getElementById('meteoAdList');
   if(dl) dl.innerHTML = Object.keys(AIRPORTS).sort().map(c=>{
@@ -5312,70 +5807,43 @@ async function renderMeteo(codigos){
     const card = document.getElementById('meteo-' + c);
     if(!card) continue;
     try{
-      const [metar, taf] = await Promise.all([fetchAwc(c,'metar'), fetchAwc(c,'taf')]);
+      const { metar, taf, errores } = await fetchMeteoNala(c);
       const rawM = metar && (metar.rawOb || '');
       const rawT = taf && (taf.rawTAF || taf.rawOb || '');
+      // Un boletín ausente no significa lo mismo que un boletín que no se pudo
+      // consultar: al controlador hay que decírselo distinto.
+      const faltaM = (errores && errores.metar) || 'Sin METAR disponible para este aeródromo.';
+      const faltaT = (errores && errores.taf) || 'Sin TAF publicado para este aeródromo.';
       const qnh = extraerQNH(rawM);
       const info = AIRPORT_DETAILS[c];
       card.innerHTML = `<h4>${escapeHtml(c)}${AIRPORT_NAMES[c] ? ' — ' + escapeHtml(AIRPORT_NAMES[c].ciudad) + ' · ' + escapeHtml(AIRPORT_NAMES[c].aeropuerto) : ''}</h4>`
         + (info ? `<div class="meteo-meta">Elevación ARP ${info.elevFt} FT · Pistas: ${info.runways.map(r=>escapeHtml(r.id)).join(', ')}</div>` : '')
         + (qnh ? `<div class="meteo-meta">QNH <b style="color:var(--accent)">${escapeHtml(qnh)}</b> — ajuste altimétrico para volar altitudes (QNE/QNH: ver módulo de altimetría del portal).</div>` : '')
-        + `<div style="margin-top:7px"><div class="ap-metar-label">METAR</div><div class="meteo-raw">${rawM ? escapeHtml(rawM) : '<span class="meteo-err">Sin METAR disponible para este aeródromo.</span>'}</div>`
+        + `<div style="margin-top:7px"><div class="ap-metar-label">METAR</div><div class="meteo-raw">${rawM ? escapeHtml(rawM) : `<span class="meteo-err">${escapeHtml(faltaM)}</span>`}</div>`
         + (metar && metar.obsTime ? `<div class="meteo-meta">Observación ${formatMetarObsTime(metar.obsTime)}</div>` : '')
         + `</div>`
-        + `<div style="margin-top:8px"><div class="ap-metar-label">TAF</div><div class="meteo-raw">${rawT ? escapeHtml(rawT) : '<span class="meteo-err">Sin TAF publicado para este aeródromo.</span>'}</div></div>`;
+        + `<div style="margin-top:8px"><div class="ap-metar-label">TAF</div><div class="meteo-raw">${rawT ? escapeHtml(rawT) : `<span class="meteo-err">${escapeHtml(faltaT)}</span>`}</div></div>`;
     }catch(e){
       card.innerHTML = `<h4>${escapeHtml(c)}</h4><div class="meteo-err">No se pudo consultar la meteorología (${escapeHtml(e.message || 'red')}). Reintenta en unos segundos.</div>`;
     }
   }
 }
 
-async function fetchAwc(icao, tipo){
+// Pide METAR y TAF de un aeródromo en UNA sola solicitud a la función propia del
+// simulador. Antes se pedían por separado y en paralelo al endpoint compartido
+// (/.netlify/functions/metar), cuyo cupo de una solicitud por segundo y por IP
+// rechazaba la segunda con 429: la tarjeta se quedaba sin METAR o sin TAF.
+// Devuelve { metar, taf, errores } — null significa "no publica ese boletín";
+// errores.metar / errores.taf solo aparece si la consulta falló de verdad.
+async function fetchMeteoNala(icao){
   const ctrl = new AbortController();
   const t = setTimeout(()=>ctrl.abort(), 9000);
   try{
-    const res = await fetch(`/.netlify/functions/metar?icao=${icao}&type=${tipo}&hours=3`, { signal: ctrl.signal, cache:'no-store' });
+    const res = await fetch(`/.netlify/functions/metar-nala?icao=${icao}&hours=3`, { signal: ctrl.signal, cache:'no-store' });
     const data = await res.json();
     if(!res.ok || (data && data.error)) throw new Error((data && data.error) || 'servicio no disponible');
-    return Array.isArray(data) && data.length ? data[0] : null;
+    return data;
   } finally { clearTimeout(t); }
-}
-
-/* ===================== TRÁFICO DE PRÁCTICA =====================
-   Provocar una pérdida de separación a propósito exigía crear dos planes cruzados a mano, así
-   que la mitad interesante del simulador (STCA, vectores, resolución de conflicto) casi nunca
-   se llegaba a ver. Este escenario carga dos aeronaves en sentidos opuestos por la MISMA
-   aerovía publicada (G431, AIP Colombia ENR 3) y al MISMO nivel: la convergencia es inevitable
-   y el estudiante tiene que resolverla con nivel, rumbo o directo. Los datos son reales; lo
-   único "de ejercicio" son los indicativos. */
-function cargarTraficoDePractica(){
-  const eobt = nowHHMMZulu();
-  const base = { navcom:'S', surv:'C', rules:'I', type:'S', sid:'', star:'', rvsm:'', cssr:'',
-                 no:'01', altn:'', field18:'0', status:'PROGRAMADO', departed:false, history:[] };
-  const escenario = [
-    { ...base, flightId:'AVA8801', acType:'A320', wake:'M', dep:'SKCC', dest:'SKBO',
-      route:'CUC G431 EJA DCT BOG DCT', speed:'N0440', level:'F320', eobt },
-    { ...base, flightId:'RPB8802', acType:'B738', wake:'M', dep:'SKBO', dest:'SKCC',
-      route:'BOG DCT EJA G431 CUC DCT', speed:'N0450', level:'F320', eobt },
-  ];
-  let creados = 0;
-  escenario.forEach(datos=>{
-    if(flightPlans.some(p=>p.flightId===datos.flightId)) return;
-    const fp = { ...datos, id: idSeq++, eobd: todayYYMMDD(), radio: airlineFromFlightId(datos.flightId) };
-    const eetMin = calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level);
-    fp.eet = minutesToHHMM(eetMin);
-    fp.eta = addMinutesToHHMM(fp.eobt, eetMin);
-    fp.history = [{ ts: nowStampHeader(), text: buildICAOText(fp), source:'TRÁFICO DE PRÁCTICA' }];
-    flightPlans.push(fp);
-    fpDepart(fp.flightId);
-    creados++;
-  });
-  renderSidebar();
-  openStrips();
-  openWindow('win-map');
-  if(!creados){
-    alert('El tráfico de práctica ya está cargado (AVA8801 y RPB8802).');
-  }
 }
 
 /* ===================== DEBRIEF DE LA SESIÓN =====================
@@ -5391,6 +5859,7 @@ function renderDebrief(){
   const espera = flightPlans.filter(p=>!p.departed);
   const conIncursion = flightPlans.filter(p=>p.history.some(h=>/ingresó a zona/.test(h.text)));
   const conStca = flightPlans.filter(p=>p.history.some(h=>/^STCA/.test(h.text)));
+  const conEstela = flightPlans.filter(p=>p.history.some(h=>/^ESTELA — separación insuficiente/.test(h.text)));
   const instrucciones = flightPlans.reduce((n,p)=> n + p.history.filter(h=>/^INSTRUCCIÓN ATC/.test(h.text)).length, 0);
 
   const tarjeta = (n, etiqueta, tono) =>
@@ -5405,10 +5874,13 @@ function renderDebrief(){
       ${tarjeta(espera.length, 'En espera de despegue')}
       ${tarjeta(aterrizados.length, 'Aterrizados', 'ok')}
       ${tarjeta(conStca.length, 'Vuelos con alerta STCA', conStca.length ? 'warn' : '')}
+      ${tarjeta(conEstela.length, 'Infracciones por estela', conEstela.length ? 'warn' : '')}
       ${tarjeta(conIncursion.length, 'Incursiones de zona', conIncursion.length ? 'warn' : '')}
       ${tarjeta(colisiones.length, 'Colisiones', colisiones.length ? 'danger' : '')}
       ${tarjeta(instrucciones, 'Instrucciones ATC emitidas')}
     </div>
+    ${escenarioActivo ? `<h4 class="db-h">Ejercicio — ${escapeHtml(escenarioActivo.def.nombre)}</h4>
+      ${estadoObjetivos().map(o=>`<div class="obj ${o.ok ? 'obj-ok' : 'obj-no'}"><span class="obj-mark">${o.ok ? '✓' : '✗'}</span>${escapeHtml(o.texto)}</div>`).join('')}` : ''}
     ${desvios.length ? `<h4 class="db-h">Puntualidad — hora real de llegada frente al ETA calculado</h4>
       <table class="est-table"><thead><tr><th>Vuelo</th><th>ETA</th><th>Real</th><th>Desviación</th></tr></thead><tbody>
       ${aterrizados.map(p=>{
@@ -5424,9 +5896,675 @@ function renderDebrief(){
       colisión a menos de ${COLLISION_LATERAL_NM} NM con menos de ${COLLISION_VERTICAL_FT} FT; zonas ENR 5.1 graficadas como círculo
       ilustrativo de ${ZONE_RADIUS_NM} NM. Son valores de simulación, <b>no</b> mínimas de separación reglamentarias: las mínimas
       aplicables las fija el AIP / RAC según el tipo de espacio aéreo y de vigilancia.
+      <br><br>
+      La separación por <b>estela turbulenta</b> sí usa la tabla publicada por OACI en el Doc 4444 (PANS-ATM), aplicable a la
+      aeronave que sigue a otra por la misma derrota, al mismo nivel o menos de ${WAKE_VERTICAL_FT} FT por debajo:
+      ${tablaMinimasEstela()}
     </div>`;
 }
 function openDebrief(){ renderDebrief(); openWindow('win-debrief'); }
+
+/* ---------- EXPORTAR EL DEBRIEF A PDF ----------
+   El debrief vivía solo en pantalla y se perdía al recargar, así que no había forma de entregarle
+   la sesión a un profesor ni de guardarla para comparar. Se compone un documento aparte y se
+   manda a imprimir: el propio navegador ofrece "Guardar como PDF". Se hace en un IFRAME oculto y
+   no en una ventana nueva porque los bloqueadores de emergentes cancelan window.open() sin avisar
+   y el usuario se queda pensando que el botón no hace nada. No añade ninguna dependencia. */
+function exportarDebriefPDF(){
+  renderDebrief();
+  const contenido = document.getElementById('debriefBox');
+  if(!contenido) return;
+
+  const ahora = new Date();
+  const sello = `${pad(ahora.getUTCDate())}/${pad(ahora.getUTCMonth()+1)}/${ahora.getUTCFullYear()} ${nowHHMMZulu()}Z`;
+
+  // Historial completo por vuelo: es la parte que de verdad se revisa en un debrief — qué se
+  // instruyó, cuándo, y qué alertas saltaron.
+  const historial = flightPlans.map(fp=>{
+    const lineas = (fp.history||[]).map(h=>
+      `<li><span class="hh">${escapeHtml(h.ts||'')}</span> ${escapeHtml(h.text||'')}</li>`).join('');
+    return `<section class="vuelo">
+      <h3>${escapeHtml(fp.flightId)} · ${escapeHtml(fp.acType||'----')} · ${escapeHtml(fp.dep||'----')} → ${escapeHtml(fp.dest||'----')}</h3>
+      <p class="meta">Ruta: ${escapeHtml(fp.route||'—')} · Nivel de plan: ${escapeHtml(fp.level||'—')} ·
+         EOBT ${escapeHtml(fp.eobt||'—')}Z · ETA ${escapeHtml(fp.eta||'—')}Z${fp.ata ? ' · Real ' + escapeHtml(fp.ata) + 'Z' : ''}</p>
+      ${lineas ? `<ul>${lineas}</ul>` : '<p class="meta">Sin anotaciones.</p>'}
+    </section>`;
+  }).join('');
+
+  // La paleta va con valores literales, no con var() heredadas: el documento impreso es otro
+  // documento y, además, debe salir siempre en la versión clara aunque el portal esté en modo
+  // oscuro (un PDF con fondo azul noche es ilegible en papel y gasta tinta a lo tonto).
+  const doc = `<!doctype html><html lang="es"><head><meta charset="utf-8">
+    <title>Debrief NALA ${sello}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root{
+        --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB; --accent:#1657C6; --navy:#0A2647;
+        --text:#0F1B2D; --text-muted:#5B6B7F; --hairline:#E1E7EF;
+        --danger:#D64545; --vfr:#2E9E6D; --warn:#E08E3E;
+      }
+      @page { margin: 14mm; }
+      /* Sin esto el navegador descarta los fondos al imprimir y la cabecera de marca sale en
+         blanco: es justo lo que se ha pedido que se vea. */
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      body{ font-family:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; color:var(--text);
+            font-size:11px; line-height:1.55; margin:0; }
+      h1,h2,h3,h4{ font-family:'Archivo', sans-serif; margin:0; }
+
+      /* ---- cabecera de marca (mismo lenguaje que el encabezado de las ventanas del CWP) ---- */
+      .marca{ background:linear-gradient(90deg, var(--accent), var(--navy)); color:#fff;
+              padding:13px 16px; border-radius:8px; display:flex; align-items:center; gap:12px; }
+      .marca-logo{ width:34px; height:34px; flex:none; color:#fff; }
+      .marca-logo svg{ display:block; }
+      .marca-nombre{ font-family:'Archivo', sans-serif; font-weight:800; font-size:16px; letter-spacing:.02em; line-height:1.15; }
+      .marca-sub{ font-family:'IBM Plex Mono', monospace; font-size:8.5px; letter-spacing:.08em;
+                  opacity:.85; text-transform:uppercase; }
+      .marca-doc{ margin-left:auto; text-align:right; font-family:'IBM Plex Mono', monospace; font-size:9px; opacity:.95; }
+      .titulo{ margin:14px 0 2px; font-size:15px; color:var(--navy); }
+      .titulo-sub{ color:var(--text-muted); font-size:10px; margin-bottom:10px;
+                   font-family:'IBM Plex Mono', monospace; }
+
+      h2{ font-size:12px; color:var(--accent); margin:16px 0 6px; padding-bottom:3px;
+          border-bottom:2px solid var(--accent); text-transform:uppercase; letter-spacing:.04em; }
+      h3{ font-size:11.5px; margin:11px 0 3px; color:var(--navy); }
+      .db-h{ font-family:'Archivo', sans-serif; font-size:11.5px; margin:12px 0 4px; color:var(--navy); }
+
+      /* ---- tarjetas de cifras ---- */
+      .db-cards{ display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 4px; }
+      .db-card{ background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--accent);
+                border-radius:6px; padding:6px 10px; min-width:88px; }
+      .db-card b{ display:block; font-size:15px; color:var(--accent);
+                  font-family:'IBM Plex Mono', monospace; font-weight:600; line-height:1.1; }
+      .db-card span{ display:block; font-size:8px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
+      .db-card--warn{ border-left-color:var(--warn); background:#FDF5EC; }
+      .db-card--warn b{ color:var(--warn); }
+      .db-card--danger{ border-left-color:var(--danger); background:#FBEDED; }
+      .db-card--danger b{ color:var(--danger); }
+      .db-card--ok{ border-left-color:var(--vfr); background:#EDF7F2; }
+      .db-card--ok b{ color:var(--vfr); }
+
+      /* ---- objetivos del ejercicio ---- */
+      .obj{ display:flex; gap:7px; font-size:10px; padding:3px 0; border-bottom:1px solid var(--hairline); }
+      .obj-mark{ font-weight:700; width:12px; flex:none; text-align:center; }
+      .obj-ok .obj-mark{ color:var(--vfr); }
+      .obj-no{ color:var(--text-muted); }
+      .obj-no .obj-mark{ color:var(--danger); }
+
+      table{ border-collapse:collapse; width:100%; font-size:10px; margin-top:4px; }
+      th,td{ border:1px solid var(--hairline); padding:3px 7px; text-align:left; }
+      th{ background:var(--panel-alt); color:var(--navy); font-weight:600;
+          text-transform:uppercase; font-size:8.5px; letter-spacing:.04em; }
+      td{ font-family:'IBM Plex Mono', monospace; }
+
+      ul{ margin:3px 0 0 15px; padding:0; }
+      li{ margin-bottom:2px; }
+      .hh{ color:var(--accent); font-family:'IBM Plex Mono', monospace; font-weight:500; }
+      .meta{ color:var(--text-muted); margin:2px 0; font-size:9.5px; font-family:'IBM Plex Mono', monospace; }
+      .vuelo{ page-break-inside:avoid; border-left:2px solid var(--panel-alt); padding-left:9px; margin-bottom:9px; }
+      .vuelo h3{ color:var(--accent); }
+      .win-scroll,.win-empty{ font-size:10px; }
+      .win-empty{ color:var(--text-muted); font-style:italic; }
+      .meteo-card{ border:1px solid var(--hairline); background:var(--panel); border-radius:5px; padding:5px 7px; margin-bottom:4px; }
+      .meteo-meta{ color:var(--text-muted); font-size:9.5px; }
+      .qerr{ color:var(--danger); }
+
+      .pie{ margin-top:16px; border-top:2px solid var(--accent); padding-top:7px;
+            font-size:8.5px; color:var(--text-muted); line-height:1.6; }
+      .pie b{ color:var(--navy); }
+    </style></head><body>
+    <div class="marca">
+      <div class="marca-logo">
+        <!-- Mismo distintivo que el encabezado del portal, en blanco sobre la banda de marca. -->
+        <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--navy)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="marca-nombre">SoyAeronáutico</div>
+        <div class="marca-sub">Portal AIS · COM · MET</div>
+      </div>
+      <div class="marca-doc">CWP 6 · Simulador NALA<br>${sello}</div>
+    </div>
+
+    <h1 class="titulo">Debrief de sesión</h1>
+    <div class="titulo-sub">Puesto de trabajo CWP de práctica ATC/AIS</div>
+
+    <h2>Resumen de la sesión</h2>
+    ${contenido.innerHTML}
+    ${historial ? `<h2>Historial por vuelo</h2>${historial}` : ''}
+    <div class="pie">
+      Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.<br>
+      Creado por <b>Cristian Arcila</b> · © ${ahora.getUTCFullYear()} — Todos los derechos reservados
+    </div>
+    </body></html>`;
+
+  const marco = document.createElement('iframe');
+  marco.setAttribute('aria-hidden', 'true');
+  marco.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
+  document.body.appendChild(marco);
+  const idoc = marco.contentWindow.document;
+  idoc.open(); idoc.write(doc); idoc.close();
+  // Se espera al load del iframe: imprimir antes de que el documento esté compuesto saca páginas
+  // en blanco en Chrome.
+  const lanzar = ()=>{
+    marco.contentWindow.focus();
+    marco.contentWindow.print();
+    // El diálogo de impresión es modal y bloquea el hilo; al volver ya se puede retirar el marco.
+    setTimeout(()=>marco.remove(), 1000);
+  };
+  // Hay que esperar a las tipografías de la marca (Archivo / IBM Plex): si se imprime antes de
+  // que carguen, el PDF sale con la tipografía de reserva y pierde la identidad del portal.
+  // El tope de 2,5 s evita que el botón se quede muerto si Google Fonts no responde: en ese caso
+  // se imprime igual, solo que con la tipografía de reserva.
+  const conFuentes = ()=>{
+    const tope = new Promise(r=>setTimeout(r, 2500));
+    const listas = idoc.fonts ? idoc.fonts.ready : null;
+    (listas ? Promise.race([listas, tope]) : tope).then(lanzar);
+  };
+  if(idoc.readyState === 'complete') setTimeout(conFuentes, 60);
+  else marco.onload = ()=>setTimeout(conFuentes, 60);
+}
+
+/* ===================== REPRODUCCIÓN DE LA SESIÓN (REPLAY) =====================
+   El debrief cuenta QUÉ pasó, pero no CÓMO se llegó ahí. La pregunta que de verdad se hace en
+   una sesión de entrenamiento —"¿en qué momento se me fue la separación?"— solo se contesta
+   volviendo a ver el tránsito moverse. Se graba una muestra periódica del estado de cada
+   aeronave (posición, nivel, rumbo, alertas) y se puede recorrer con una barra de tiempo.
+
+   Se graba en tiempo SIMULADO, no real: la sesión puede haber corrido a x240 y lo que interesa
+   reproducir es el vuelo, no el reloj de pared del estudiante. */
+const REPLAY_SAMPLE_SIM_MS = 10 * 1000;   // una muestra cada 10 s simulados
+const REPLAY_MAX_FRAMES = 2000;           // ~5,5 h simuladas; suficiente para cualquier ejercicio
+const REPLAY_MAX_EVENTOS = 500;
+let replayFrames = [];
+let replayEventos = [];
+let replayUltimaMuestraMs = null;
+let replayActivo = false;
+let replayIndice = 0;
+let replayTimer = null;
+let replayVel = 1;
+let replayLayer = null;
+let replayMarcadores = {};
+let simRateAntesDeReplay = null;
+
+function grabarFrameReplay(simNow, positions){
+  if(replayActivo) return;                       // durante la reproducción no se graba encima
+  if(!positions.length) return;
+  if(replayUltimaMuestraMs != null && simNow - replayUltimaMuestraMs < REPLAY_SAMPLE_SIM_MS) return;
+  replayUltimaMuestraMs = simNow;
+  replayFrames.push({
+    t: simNow,
+    av: positions.map(fp=>({
+      id: fp.flightId,
+      lat: fp._pos.lat, lon: fp._pos.lon,
+      alt: fp._altFt, hdg: fp._hdg, gs: fp._gs,
+      cf: !!fp.conflict, wk: !!fp.wakeBust, zb: fp.zoneBust || null,
+      acType: fp.acType, dest: fp.dest,
+    })),
+  });
+  if(replayFrames.length > REPLAY_MAX_FRAMES) replayFrames.shift();
+}
+
+function openReplay(){
+  renderReplay();
+  openWindow('win-replay');
+}
+
+// Entrar en modo reproducción: se pausa la simulación viva y se oculta su tránsito, para que no
+// se confundan dos bandadas de aviones sobre el mismo mapa (una congelada y otra reproducida).
+function entrarEnReplay(){
+  if(replayActivo) return;
+  if(!replayFrames.length) return;
+  replayActivo = true;
+  simRateAntesDeReplay = simRate;
+  setSimRate(0);
+  mostrarTraficoVivo(false);
+  if(!replayLayer) replayLayer = L.layerGroup().addTo(flightMap);
+  openWindow('win-map');
+  // El mapa se abre al frente y tapaba los propios mandos de la reproducción, que es justo lo
+  // que hay que tener a mano mientras se revisa la sesión.
+  const wRep = document.getElementById('win-replay');
+  if(wRep && wRep.classList.contains('open')) bringToFront(wRep);
+  renderReplay();
+  // Pintar ya el fotograma en el que se está: si no, al entrar el mapa queda vacío (el tránsito
+  // vivo oculto y ningún avión de reproducción) hasta que se toca la barra de tiempo.
+  irAFrameReplay(replayIndice);
+}
+
+function salirDeReplay(){
+  if(!replayActivo) return;
+  pausarReplay();
+  replayActivo = false;
+  limpiarMarcadoresReplay();
+  mostrarTraficoVivo(true);
+  if(simRateAntesDeReplay != null) setSimRate(simRateAntesDeReplay);
+  simRateAntesDeReplay = null;
+  renderReplay();
+}
+
+// Oculta o restituye las capas del tránsito en vivo sin destruirlas: al volver del replay todo
+// sigue exactamente donde estaba.
+function mostrarTraficoVivo(visible){
+  Object.values(mapLayers).forEach(layer=>{
+    if(layer.planeMarker) layer.planeMarker.setOpacity(visible ? 1 : 0);
+    [['trail',.45], ['vector',.9], ['line',.75]].forEach(([k, op])=>{
+      if(layer[k]) layer[k].setStyle({ opacity: visible ? op : 0 });
+    });
+    (layer.fixMarkers||[]).forEach(m=> m.setStyle({ opacity: visible ? 1 : 0, fillOpacity: visible ? .9 : 0 }));
+    const el = layer.planeMarker && layer.planeMarker.getTooltip() && layer.planeMarker.getTooltip().getElement();
+    if(el) el.style.display = visible ? '' : 'none';
+  });
+}
+
+function limpiarMarcadoresReplay(){
+  if(replayLayer) replayLayer.clearLayers();
+  replayMarcadores = {};
+}
+
+// Pinta en el mapa el fotograma i.
+function pintarFrameReplay(i){
+  if(!replayLayer || !replayFrames[i]) return;
+  const frame = replayFrames[i];
+  const vistos = new Set();
+  frame.av.forEach(a=>{
+    vistos.add(a.id);
+    let m = replayMarcadores[a.id];
+    if(!m){
+      m = L.marker([a.lat, a.lon], { icon: planeDivIcon(), zIndexOffset:400 })
+        .bindTooltip('', { permanent:true, direction:'right', offset:[12,0], className:'fp-tooltip datablock' });
+      replayLayer.addLayer(m);
+      replayMarcadores[a.id] = m;
+    } else {
+      m.setLatLng([a.lat, a.lon]);
+    }
+    const nivel = a.alt != null ? 'F' + String(Math.round(a.alt/100)).padStart(3,'0') : '—';
+    m.setTooltipContent(`<div class="db-cs">${escapeHtml(a.id)}</div>`
+      + `<div class="db-line"><b>${nivel}</b> · ${Math.round(a.gs||0)} KT</div>`
+      + (a.cf ? '<div class="db-warn">⚠ STCA</div>' : '')
+      + (a.wk ? '<div class="db-warn">⚠ ESTELA</div>' : '')
+      + (a.zb ? `<div class="db-warn">⚠ ${escapeHtml(a.zb)}</div>` : ''));
+    const el = m.getElement && m.getElement();
+    const icon = el && el.querySelector('.plane-icon');
+    if(icon){
+      icon.className = 'plane-icon' + (a.cf || a.wk ? ' conflict' : '') + (a.zb ? ' zonebust' : '');
+      const g = icon.querySelector('.plane-glyph');
+      if(g) g.style.setProperty('--hdg', normalizeDeg(a.hdg || 0).toFixed(1) + 'deg');
+    }
+  });
+  // Aeronaves que ya no están en este fotograma (aterrizaron o aún no habían despegado).
+  Object.keys(replayMarcadores).forEach(id=>{
+    if(vistos.has(id)) return;
+    replayLayer.removeLayer(replayMarcadores[id]);
+    delete replayMarcadores[id];
+  });
+}
+
+function irAFrameReplay(i){
+  replayIndice = Math.max(0, Math.min(replayFrames.length - 1, i));
+  pintarFrameReplay(replayIndice);
+  renderReplayEstado();
+}
+
+const REPLAY_INTERVALO_MS = 500;   // un fotograma cada medio segundo a x1
+function reproducirReplay(){
+  if(!replayActivo) entrarEnReplay();
+  if(!replayFrames.length || replayTimer) return;
+  if(replayIndice >= replayFrames.length - 1) replayIndice = 0;
+  replayTimer = setInterval(()=>{
+    if(replayIndice >= replayFrames.length - 1){ pausarReplay(); return; }
+    irAFrameReplay(replayIndice + 1);
+  }, REPLAY_INTERVALO_MS / replayVel);
+  renderReplayEstado();
+}
+
+function pausarReplay(){
+  if(replayTimer){ clearInterval(replayTimer); replayTimer = null; }
+  renderReplayEstado();
+}
+
+function alternarReplay(){ replayTimer ? pausarReplay() : reproducirReplay(); }
+
+function setReplayVel(v){
+  replayVel = v;
+  if(replayTimer){ pausarReplay(); reproducirReplay(); }
+  else renderReplayEstado();
+}
+
+// Hora simulada de un fotograma, en HHMM Z.
+function horaDeFrame(i){
+  const f = replayFrames[i];
+  if(!f) return '----';
+  const d = new Date(f.t);
+  return `${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}`;
+}
+
+function renderReplay(){
+  const box = document.getElementById('replayBox');
+  if(!box) return;
+  if(!replayFrames.length){
+    box.innerHTML = '<div class="win-empty">Todavía no hay nada grabado.<br>'
+      + 'La sesión se graba sola en cuanto despega la primera aeronave: carga un escenario o un plan de vuelo y vuelve aquí.</div>';
+    return;
+  }
+  box.innerHTML = `
+    <div class="replay-bar">
+      <button type="button" class="wbtn" id="replayPlay" onclick="alternarReplay()">▶ REPRODUCIR</button>
+      <button type="button" class="wbtn" onclick="irAFrameReplay(0)" title="Volver al principio">⏮</button>
+      <button type="button" class="wbtn" onclick="irAFrameReplay(replayIndice-1)" title="Un paso atrás">◀</button>
+      <button type="button" class="wbtn" onclick="irAFrameReplay(replayIndice+1)" title="Un paso adelante">▶</button>
+      <span class="replay-vel">
+        ${[1,2,4,8].map(v=>`<button type="button" class="sp${replayVel===v?' active':''}" onclick="setReplayVel(${v})">x${v}</button>`).join('')}
+      </span>
+      <button type="button" class="wbtn" id="replaySalir" onclick="salirDeReplay()">SALIR DEL REPLAY</button>
+    </div>
+    <input type="range" id="replaySlider" class="replay-slider" min="0" max="${replayFrames.length-1}"
+           value="${replayIndice}" oninput="irAFrameReplay(parseInt(this.value,10))"
+           aria-label="Momento de la sesión">
+    <div class="replay-estado" id="replayEstado"></div>
+    <h4 class="db-h">Lo que ocurrió</h4>
+    <div class="win-scroll" id="replayEventos"></div>`;
+  renderReplayEstado();
+}
+
+function renderReplayEstado(){
+  const est = document.getElementById('replayEstado');
+  const slider = document.getElementById('replaySlider');
+  const play = document.getElementById('replayPlay');
+  if(slider) slider.value = replayIndice;
+  if(play) play.textContent = replayTimer ? '❚❚ PAUSA' : '▶ REPRODUCIR';
+  if(est){
+    const f = replayFrames[replayIndice];
+    est.innerHTML = replayActivo
+      ? `<b>${horaDeFrame(replayIndice)}Z</b> · fotograma ${replayIndice+1} de ${replayFrames.length} · `
+        + `${f ? f.av.length : 0} aeronave(s) en el aire`
+      : '<span class="replay-aviso">La simulación sigue corriendo. Pulsa REPRODUCIR para congelarla y ver la sesión grabada.</span>';
+  }
+  const lista = document.getElementById('replayEventos');
+  if(lista){
+    const hasta = replayFrames[replayIndice] ? replayFrames[replayIndice].t : Infinity;
+    const hechos = replayEventos.filter(e=> e.t <= hasta).slice(-40).reverse();
+    lista.innerHTML = hechos.length
+      ? hechos.map(e=>{
+          const d = new Date(e.t);
+          const destacar = /STCA|ESTELA|COLISIÓN|ALERTA/.test(e.text);
+          return `<div class="replay-evento${destacar ? ' destacado' : ''}">`
+            + `<span class="hh">${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}Z</span> `
+            + `<b>${escapeHtml(e.flightId)}</b> ${escapeHtml(e.text)}</div>`;
+        }).join('')
+      : '<div class="win-empty">Sin anotaciones hasta este momento de la sesión.</div>';
+  }
+}
+
+/* ===================== ESCENARIOS DE ENTRENAMIENTO =====================
+   Aquí vive todo el tránsito de práctica del simulador. Antes había además un botón suelto de
+   "tráfico de práctica" que cargaba este mismo conflicto de G431 pero sin decir qué se esperaba
+   del estudiante ni si lo había conseguido; se ha unificado aquí, que es donde el ejercicio va
+   acompañado de su objetivo y de una evaluación al final. La nota se guarda con el mismo
+   mecanismo que los quizzes del portal (progreso.js), para que el profesor la vea junto al resto
+   del progreso.
+
+   Todos los datos aeronáuticos (aerovías, puntos, aeródromos, categorías de estela) salen de las
+   tablas ya cargadas en el simulador, que provienen del AIP. Lo único de ejercicio son los
+   indicativos de los vuelos. */
+const ESCENARIOS = [
+  {
+    id: 'g431-frontal',
+    nombre: 'Conflicto frontal en G431',
+    nivel: 'Básico',
+    resumen: 'Dos aeronaves en sentidos opuestos por la misma aerovía y al mismo nivel. '
+      + 'Es el ejercicio con el que conviene empezar.',
+    briefing: 'AVA8801 sube de Cúcuta a Bogotá y RPB8802 hace el recorrido inverso, ambas por la '
+      + 'aerovía G431 (AIP Colombia, ENR 3) y ambas a F320. La convergencia es inevitable. '
+      + 'Resuélvela con nivel, rumbo o directo antes de que se pierda la separación, y devuélvelas '
+      + 'a su ruta cuando estén a salvo.',
+    trafico: [
+      { flightId:'AVA8801', acType:'A320', wake:'M', dep:'SKCC', dest:'SKBO',
+        route:'CUC G431 EJA DCT BOG DCT', speed:'N0440', level:'F320' },
+      { flightId:'RPB8802', acType:'B738', wake:'M', dep:'SKBO', dest:'SKCC',
+        route:'BOG DCT EJA G431 CUC DCT', speed:'N0450', level:'F320' },
+    ],
+  },
+  {
+    id: 'estela-a301',
+    nombre: 'Estela turbulenta en ruta',
+    nivel: 'Intermedio',
+    resumen: 'Una MEDIA alcanza por detrás a una PESADA al mismo nivel.',
+    briefing: 'AVA9020 (Boeing 767, categoría PESADA) va delante rumbo a Barranquilla. Detrás, por '
+      + 'la misma ruta y al mismo nivel, la alcanza AVA9021 (Airbus A320, categoría MEDIA), que vuela '
+      + '50 KT más rápido y arranca 25 NM por detrás. La mínima por estela turbulenta para PESADA '
+      + 'seguida de MEDIA es de 5 NM (OACI, Doc 4444). El data block avisa en cuanto una alcanza a la '
+      + 'otra, mucho antes de que se infrinja: aumenta la separación longitudinal o sube a la de '
+      + 'atrás por encima de la que precede.',
+    trafico: [
+      { flightId:'AVA9020', acType:'B763', wake:'H', dep:'SKBO', dest:'SKBQ',
+        route:'BOG DCT EJA A301 BAQ DCT', speed:'N0430', level:'F300', avanceNM:40 },
+      { flightId:'AVA9021', acType:'A320', wake:'M', dep:'SKBO', dest:'SKBQ',
+        route:'BOG DCT EJA A301 BAQ DCT', speed:'N0480', level:'F300', avanceNM:15 },
+    ],
+  },
+];
+
+/* Varias zonas restringidas están publicadas justo SOBRE un aeródromo y desde el suelo: SKR40
+   (Bogotá, GND/18500 FT) cubre El Dorado y SKR50 (Cúcuta, GND/18000 FT) cubre Camilo Daza. Una
+   aeronave que despega de ahí está dentro de la zona durante todo el ascenso y no hay
+   instrucción de control que lo evite, así que puntuar eso como error del estudiante sería
+   calificarle por algo imposible. Se descuentan las incursiones en zonas centradas sobre su
+   propio aeródromo de salida o de destino; el aviso en el historial se sigue emitiendo igual,
+   porque saber que se está dentro de una zona sí es información operativa. */
+function incursionEvitable(fp, zona){
+  return ![fp.dep, fp.dest].some(code=>{
+    const ad = AIRPORTS[code];
+    return ad && getDistanceNM(ad.lat, ad.lon, zona.lat, zona.lon) <= ZONE_RADIUS_NM;
+  });
+}
+
+// Objetivos comunes a todos los escenarios: son los criterios con los que se evalúa el ejercicio.
+// Cada uno se comprueba leyendo el estado y el historial de los vuelos del escenario, así que
+// mide lo que de verdad pasó en la sesión, no lo que el estudiante diga que hizo.
+const OBJETIVOS = [
+  { id:'sin-colision', texto:'Ninguna colisión',
+    cumple: vuelos => !vuelos.some(fp=>fp.collided) },
+  { id:'sin-perdida', texto:'Sin pérdida efectiva de separación (STCA con separación ya perdida)',
+    cumple: vuelos => !vuelos.some(fp=>fp.history.some(h=>/^STCA — pérdida de separación/.test(h.text))) },
+  { id:'sin-estela', texto:'Sin infracción de la mínima por estela turbulenta',
+    cumple: vuelos => !vuelos.some(fp=>fp.history.some(h=>/^ESTELA — separación insuficiente/.test(h.text))) },
+  { id:'sin-zonas', texto:'Sin incursión evitable en zonas prohibidas, restringidas o peligrosas (ENR 5.1)',
+    cumple: vuelos => !vuelos.some(fp=>(fp.zoneBusts||[]).some(z=>incursionEvitable(fp, z))) },
+  { id:'sin-bajo-mea', texto:'Ningún nivel autorizado por debajo de la MEA publicada',
+    cumple: vuelos => !vuelos.some(fp=>fp.history.some(h=>/^AVISO MEA/.test(h.text))) },
+  { id:'todas-llegan', texto:'Todas las aeronaves llegan a su aeródromo de destino',
+    cumple: vuelos => vuelos.length > 0 && vuelos.every(fp=>fp.landed) },
+];
+
+let escenarioActivo = null;   // { def, flightIds, iniciado }
+
+function openEscenarios(){
+  renderEscenarios();
+  openWindow('win-escenario');
+}
+
+function cargarEscenario(id){
+  const def = ESCENARIOS.find(e=>e.id===id);
+  if(!def) return;
+  if(escenarioActivo && !confirm(
+      `Ya hay un ejercicio en curso («${escenarioActivo.def.nombre}»).\n\n`
+    + `Cargar otro no borra el tránsito que ya está en el aire: se añade encima.\n`
+    + `¿Continuar de todas formas?`)) return;
+
+  const eobt = nowHHMMZulu();
+  const base = { navcom:'S', surv:'C', rules:'I', type:'S', sid:'', star:'', rvsm:'', cssr:'',
+                 no:'01', altn:'', field18:'0', status:'PROGRAMADO', departed:false, history:[] };
+  const creados = [];
+  def.trafico.forEach(datos=>{
+    if(flightPlans.some(p=>p.flightId===datos.flightId)) return;
+    const fp = { ...base, ...datos, eobt, id: idSeq++, eobd: todayYYMMDD(),
+                 radio: airlineFromFlightId(datos.flightId) };
+    const eetMin = calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level);
+    fp.eet = minutesToHHMM(eetMin);
+    fp.eta = addMinutesToHHMM(fp.eobt, eetMin);
+    fp.history = [{ ts: nowStampHeader(), text: buildICAOText(fp), source:'ESCENARIO — ' + def.nombre }];
+    flightPlans.push(fp);
+    fpDepart(fp.flightId);
+    // Escalonado inicial: sin esto, dos aeronaves del mismo aeródromo y con la misma EOBT nacen
+    // literalmente una encima de la otra y colisionan en el primer tick, que no es el ejercicio.
+    // "avanceNM" coloca a la aeronave ya en ruta, como si llevara un rato volando.
+    // Hay que fijar también la POSICIÓN, no solo la distancia recorrida: el primer tick sitúa a
+    // la aeronave en el kilómetro cero de su ruta y solo después la adelanta, y ese salto inicial
+    // hacía que las dos se cruzaran por el aeródromo de salida y colisionaran ahí mismo.
+    if(datos.avanceNM){
+      const geo = getRouteGeometry(fp);
+      const p = pointAtDistance(geo.pts, geo.cumDist, datos.avanceNM);
+      fp._distFlown = datos.avanceNM;
+      fp._pos = { lat: p.lat, lon: p.lon };
+      fp._prevPos = { lat: p.lat, lon: p.lon };
+      fp._track = p.track;
+      fp._hdg = p.track;
+      fp._altFt = parseLevelFt(fp.level) || fp._altFt;
+    }
+    creados.push(fp.flightId);
+  });
+
+  escenarioActivo = {
+    def,
+    flightIds: def.trafico.map(t=>t.flightId),
+    iniciado: nowHHMMZulu(),
+    calificado: false,
+  };
+  renderSidebar();
+  openStrips();
+  openWindow('win-map');
+  renderEscenarios();
+  if(!creados.length){
+    alert(`El tránsito de «${def.nombre}» ya estaba cargado; se reanuda el seguimiento del ejercicio.`);
+  }
+}
+
+// Vuelos que pertenecen al escenario en curso.
+function vuelosDelEscenario(){
+  if(!escenarioActivo) return [];
+  return flightPlans.filter(fp=> escenarioActivo.flightIds.includes(fp.flightId));
+}
+
+// Se llama en cada tick: refresca la lista de objetivos si la ventana está abierta, para que el
+// estudiante vea en vivo lo que ya ha perdido y lo que aún conserva.
+function evaluarObjetivosEscenario(){
+  if(!escenarioActivo) return;
+  if(!document.getElementById('win-escenario').classList.contains('open')) return;
+  renderEstadoObjetivos();
+}
+
+function estadoObjetivos(){
+  const vuelos = vuelosDelEscenario();
+  return OBJETIVOS.map(o=>({ ...o, ok: o.cumple(vuelos) }));
+}
+
+// Firma del último estado pintado: evaluarObjetivosEscenario() entra en cada tick (2,5 veces por
+// segundo) y cada evaluación recorre el historial completo de los vuelos con expresiones
+// regulares. Repintar solo cuando algo cambia de verdad ahorra ese trabajo y evita que la lista
+// parpadee bajo el cursor.
+let firmaObjetivos = null;
+
+function renderEstadoObjetivos(){
+  const cont = document.getElementById('escObjetivos');
+  if(!cont || !escenarioActivo) return;
+  const vuelos = vuelosDelEscenario();
+  const enVuelo = vuelos.filter(fp=>fp.departed && !fp.landed && !fp.collided).length;
+  const estado = estadoObjetivos();
+  const firma = estado.map(o=>o.ok ? '1' : '0').join('') + '|' + enVuelo + '/' + vuelos.length;
+  if(firma === firmaObjetivos) return;
+  firmaObjetivos = firma;
+  cont.innerHTML = estado.map(o=>
+    `<div class="obj ${o.ok ? 'obj-ok' : 'obj-no'}"><span class="obj-mark">${o.ok ? '✓' : '✗'}</span>${escapeHtml(o.texto)}</div>`
+  ).join('')
+  + `<div class="meteo-meta" style="margin-top:6px">${enVuelo} de ${vuelos.length} aeronave(s) todavía en el aire. `
+  + `Los objetivos se evalúan sobre todo el ejercicio: una vez perdido, un objetivo no se recupera.</div>`;
+}
+
+function renderEscenarios(){
+  const box = document.getElementById('escenarioBox');
+  if(!box) return;
+  const lista = ESCENARIOS.map(e=>`
+    <div class="esc-card">
+      <div class="esc-cab">
+        <h4>${escapeHtml(e.nombre)}</h4>
+        <span class="esc-nivel">${escapeHtml(e.nivel)}</span>
+      </div>
+      <p class="esc-resumen">${escapeHtml(e.resumen)}</p>
+      <button type="button" class="wbtn" onclick="cargarEscenario('${e.id}')">CARGAR EJERCICIO</button>
+    </div>`).join('');
+
+  const activo = escenarioActivo ? `
+    <h4 class="db-h">Ejercicio en curso — ${escapeHtml(escenarioActivo.def.nombre)}</h4>
+    <p class="esc-briefing">${escapeHtml(escenarioActivo.def.briefing)}</p>
+    <div id="escObjetivos"></div>
+    <div class="win-buttons" style="margin-top:10px; flex-wrap:wrap;">
+      <button type="button" class="wbtn" onclick="finalizarEscenario()">FINALIZAR Y CALIFICAR</button>
+      <button type="button" class="wbtn" onclick="abandonarEscenario()">ABANDONAR EJERCICIO</button>
+    </div>
+    <div class="msg-flash" id="escFlash" style="display:none"></div>` : '';
+
+  box.innerHTML = activo + `<h4 class="db-h">Ejercicios disponibles</h4>${lista}`;
+  // El contenedor de objetivos se acaba de reconstruir vacío: hay que invalidar la firma o
+  // renderEstadoObjetivos() se saldría por "no ha cambiado nada" y lo dejaría en blanco.
+  firmaObjetivos = null;
+  renderEstadoObjetivos();
+}
+
+function abandonarEscenario(){
+  if(!escenarioActivo) return;
+  if(!confirm('Se deja de seguir el ejercicio. El tránsito que ya está en el aire sigue volando.\n\n¿Continuar?')) return;
+  escenarioActivo = null;
+  renderEscenarios();
+}
+
+async function finalizarEscenario(){
+  if(!escenarioActivo) return;
+  const resultados = estadoObjetivos();
+  const correctas = resultados.filter(r=>r.ok).length;
+  const total = resultados.length;
+  const porcentaje = Math.round((correctas/total)*100);
+  const vuelos = vuelosDelEscenario();
+  const sinAterrizar = vuelos.filter(fp=>!fp.landed && !fp.collided).length;
+
+  if(sinAterrizar && !confirm(
+      `Todavía hay ${sinAterrizar} aeronave(s) en el aire.\n\n`
+    + `Si calificas ahora, el objetivo "todas las aeronaves llegan a su destino" contará como no cumplido.\n`
+    + `¿Calificar de todas formas?`)) return;
+
+  escenarioActivo.calificado = true;
+  const nombreModulo = `Simulador NALA — ${escenarioActivo.def.nombre}`;
+  const flash = document.getElementById('escFlash');
+  const detalle = resultados.map(r=>`${r.ok ? '✓' : '✗'} ${escapeHtml(r.texto)}`).join('<br>');
+
+  if(flash){
+    flash.style.display = 'block';
+    flash.className = 'msg-flash ' + (porcentaje >= 70 ? 'ok' : 'err');
+    flash.innerHTML = `<b>${correctas} de ${total} objetivos cumplidos (${porcentaje} %)</b><br>${detalle}<br>Guardando…`;
+  }
+
+  // Se guarda con el mismo mecanismo que los quizzes del portal: si hay sesión va a Supabase, y
+  // si no, al progreso local. guardarIntento() devuelve {ok,error} — no se anuncia "guardado"
+  // sin comprobarlo.
+  let guardado = { ok:false, error:'progreso.js no disponible' };
+  try{
+    if(typeof guardarIntento === 'function'){
+      guardado = await guardarIntento('simulador-nala', nombreModulo, correctas, total);
+    }
+  }catch(e){ guardado = { ok:false, error: e.message }; }
+
+  if(flash){
+    flash.innerHTML = `<b>${correctas} de ${total} objetivos cumplidos (${porcentaje} %)</b><br>${detalle}<br>`
+      + (guardado.ok
+          ? 'Resultado guardado en tu progreso.'
+          : `No se pudo guardar el resultado: ${escapeHtml(guardado.error || 'error desconocido')}.`);
+  }
+  openDebrief();
+}
 
 /* ===================== INICIO ===================== */
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -5440,6 +6578,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderSimSpeedControls();
   refreshWindLabels();
   paintLegendPlanes();
+  restaurarMapChrome();
 
   openWindow('win-fpop');
 
