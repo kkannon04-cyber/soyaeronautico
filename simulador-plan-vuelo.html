@@ -157,33 +157,113 @@
   .scenario-narrative{ position:relative; z-index:1; font-size:0.95rem; line-height:1.65; color:var(--text); margin-bottom:16px; }
   .scenario-narrative b{ color:var(--accent); }
 
-  /* ---------- FPL PAPER FORM (fiel al formato OACI / RAC 215 Apéndice 7) ---------- */
-  .fpl-paper{ border:1px solid var(--hairline); border-radius:10px; overflow:hidden; position:relative; z-index:1; background:var(--bg); }
-  .fpl-msgbar{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); background:var(--panel-alt); border-bottom:1px solid var(--hairline); }
-  .fpl-row{ display:grid; border-bottom:1px solid var(--hairline); }
+  /* ==========================================================================
+     FORMULARIO DE PLAN DE VUELO
+     Estructura, orden, rótulos bilingües y símbolos de transmisión tomados del
+     formato oficial (GSAN-2.2-12-04) / RAC 215 Ap. 7 / Doc 4444 Ap. 2.
+     La paleta y la tipografía son las del portal, no las del formulario impreso.
+     ========================================================================== */
+  .fpl-form{ border:1.5px solid var(--text-muted); border-radius:8px; overflow:hidden; position:relative; z-index:1; background:var(--bg); }
+
+  .fpl-head{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:12px 16px; border-bottom:1.5px solid var(--text-muted); }
+  .fpl-head-brand{ display:flex; align-items:center; gap:9px; }
+  .fpl-head-brand svg{ display:block; color:var(--accent); flex-shrink:0; }
+  .fpl-head-brand b{ font-family:'Archivo'; font-size:0.9rem; letter-spacing:0.01em; display:block; line-height:1.2; }
+  .fpl-head-brand span{ font-family:'IBM Plex Mono'; font-size:0.55rem; letter-spacing:0.09em; color:var(--text-muted); text-transform:uppercase; }
+  .fpl-head-title{ flex:1; text-align:center; font-family:'Archivo'; font-weight:800; font-size:1.15rem; letter-spacing:0.01em; min-width:190px; }
+  .fpl-head-title em{ display:block; font-style:normal; font-weight:400; font-size:0.8rem; color:var(--text-muted); }
+  .fpl-head-key{ font-family:'IBM Plex Mono'; font-size:0.55rem; line-height:1.5; color:var(--text-muted); text-align:right; }
+  .fpl-proc{ font-family:'IBM Plex Mono'; font-size:0.63rem; color:var(--text-muted); padding:6px 16px; border-bottom:1px solid var(--hairline); }
+
+  /* Franja sombreada: uso exclusivo ATS/COM (RAC 215, 2.1) */
+  .fpl-shaded{ background:var(--panel-alt); border-bottom:1.5px solid var(--text-muted); }
+  .fpl-shaded-note{ font-family:'IBM Plex Mono'; font-size:0.58rem; color:var(--text-muted); padding:5px 16px 0; letter-spacing:0.04em; }
+
+  .fpl-row{ display:flex; flex-wrap:wrap; border-bottom:1px solid var(--hairline); }
   .fpl-row:last-child{ border-bottom:none; }
-  .fpl-row.cols-3{ grid-template-columns: 0.9fr 1fr 0.9fr; }
-  .fpl-row.cols-2{ grid-template-columns: 1.1fr 1fr; }
-  .fpl-row.cols-1{ grid-template-columns: 1fr; }
-  .fpl-row.route-row{ grid-template-columns: 110px 100px 1fr; }
-  .fpl-row.dest-row{ grid-template-columns: 1fr 0.7fr 0.7fr; }
-  .fpl-cell{ padding:10px 14px; border-right:1px solid var(--hairline); position:relative; }
-  .fpl-cell:last-child{ border-right:none; }
-  .fpl-num{ position:absolute; top:6px; right:10px; font-family:'IBM Plex Mono'; font-size:0.6rem; color:var(--text-muted); opacity:0.55; }
-  .fpl-cell label{ display:block; font-size:0.64rem; font-weight:700; letter-spacing:0.04em; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; padding-right:20px; }
-  .fpl-cell input, .fpl-cell select, .fpl-cell textarea{ width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Mono'; font-size:0.85rem; padding:7px 9px; border-radius:6px; text-transform:uppercase; }
-  .fpl-cell textarea{ min-height:50px; resize:vertical; line-height:1.4; }
-  .fpl-cell input:focus, .fpl-cell select:focus, .fpl-cell textarea:focus{ outline:none; border-color:var(--accent); box-shadow:inset 0 0 0 2px rgba(var(--accent-rgb),0.35); }
-  .fpl-hint{ font-size:0.66rem; color:var(--text-muted); margin-top:5px; text-transform:none; line-height:1.4; }
-  .fpl-section-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.1em; color:var(--accent); text-transform:uppercase; background:var(--panel-alt); padding:8px 14px; border-bottom:1px solid var(--hairline); }
+  .fpl-box{ flex:1 1 150px; min-width:0; padding:7px 11px 8px; border-right:1px solid var(--hairline); position:relative; }
+  .fpl-box:last-child{ border-right:none; }
+  .fpl-box.grow{ flex:3 1 260px; }
+  .fpl-box.wide{ flex:2 1 220px; }
+  .fpl-box.tight{ flex:0 1 130px; }
+  .fpl-box.full{ flex:1 1 100%; }
 
-  .fpl19-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
-  .fpl19-grid .fpl-cell{ border-bottom:1px solid var(--hairline); }
+  .bnum{ font-family:'IBM Plex Mono'; font-weight:600; font-size:0.72rem; color:var(--accent); margin-right:5px; }
+  .blab{ font-size:0.62rem; font-weight:700; letter-spacing:0.03em; color:var(--text); text-transform:uppercase; line-height:1.25; margin-bottom:6px; }
+  .blab em{ display:block; font-style:italic; font-weight:400; font-size:0.6rem; color:var(--text-muted); text-transform:none; letter-spacing:0; }
+  .bfield{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+  /* Cuando la fila lleva casillas tachables, el rótulo va encima de la casilla
+     y el bloque es más alto: los símbolos deben alinearse abajo, con la casilla. */
+  .bfield:has(.tboxes){ align-items:flex-end; }
+  .sym{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); white-space:nowrap; flex-shrink:0; user-select:none; padding-bottom:6px; }
+  .bfield:not(:has(.tboxes)) .sym{ padding-bottom:0; }
+  .hrmn{ display:flex; gap:30px; font-family:'IBM Plex Mono'; font-size:0.55rem; color:var(--text-muted); margin-bottom:2px; padding-left:44px; }
 
-  .tach-row{ display:flex; flex-wrap:wrap; gap:7px; margin-top:2px; }
-  .tach-chip{ font-family:'IBM Plex Mono'; font-size:0.7rem; padding:5px 12px; border-radius:20px; border:1px solid var(--hairline); background:var(--bg); color:var(--text); cursor:pointer; user-select:none; transition:all .15s; }
-  .tach-chip.crossed{ text-decoration:line-through; color:var(--text-muted); opacity:0.55; border-style:dashed; }
-  .tach-chip.help{ cursor:default; font-size:0.62rem; color:var(--text-muted); border:none; padding:5px 0; background:none; }
+  .fpl-form input, .fpl-form select, .fpl-form textarea{
+    width:100%; min-width:0; background:var(--bg); border:1px solid var(--hairline);
+    color:var(--text); font-family:'IBM Plex Mono'; font-size:0.85rem;
+    padding:6px 8px; border-radius:4px; text-transform:uppercase;
+  }
+  .fpl-form textarea{ resize:vertical; line-height:1.5; letter-spacing:0.02em; }
+  .fpl-form input:focus, .fpl-form select:focus, .fpl-form textarea:focus{
+    outline:none; border-color:var(--accent); box-shadow:inset 0 0 0 2px rgba(var(--accent-rgb),0.3);
+  }
+  /* En una fila el campo crece y los símbolos de transmisión se quedan a su lado,
+     en lugar de saltar al renglón siguiente. */
+  .bfield > input, .bfield > select, .bfield > textarea{ flex:1 1 60px; width:auto; }
+  /* flex:none evita que el ancho se interprete como alto dentro de .finput,
+     que es una columna. */
+  .fpl-form input.chr{  width:38px; flex:none; text-align:center; }
+  .fpl-form input.chr2{ width:46px; flex:none; text-align:center; }
+  .fpl-form input.chr4{ width:72px; flex:none; text-align:center; }
+  .fpl-form input.chr6{ width:92px; flex:none; }
+  .fpl-form input[readonly]{ background:var(--panel-alt); color:var(--text-muted); }
+  .bhint{ font-size:0.6rem; color:var(--text-muted); margin-top:4px; line-height:1.4; }
+
+  .fpl-supl{ background:var(--panel-alt); border-top:1.5px solid var(--text-muted); border-bottom:1px solid var(--hairline); padding:9px 16px; text-align:center; }
+  .fpl-supl b{ font-size:0.66rem; letter-spacing:0.03em; text-transform:uppercase; }
+  .fpl-supl em{ display:block; font-style:italic; font-size:0.6rem; color:var(--text-muted); }
+
+  /* Casillas de una letra que se tachan, como en el formulario de papel.
+     Cada rótulo va encima de su casilla y en el flujo normal, de modo que el
+     grupo ocupe el ancho del rótulo y nunca se solapen entre sí. */
+  .tboxes{ display:flex; gap:10px; align-items:flex-end; }
+  .tgroup{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tlab{
+    font-family:'IBM Plex Sans'; font-size:0.55rem; font-weight:700;
+    color:var(--text); text-transform:uppercase; letter-spacing:0.02em;
+    line-height:1.15; text-align:center; white-space:nowrap;
+  }
+  .tlab em{ display:block; font-style:italic; font-weight:400; font-size:0.52rem; color:var(--text-muted); text-transform:none; letter-spacing:0; }
+  .finput{ display:flex; flex-direction:column; gap:3px; }
+  .finput .tlab{ text-align:left; }
+  .tbox{
+    position:relative; width:34px; height:30px; flex-shrink:0;
+    background:var(--bg); border:1px solid var(--text-muted); border-radius:3px;
+    font-family:'IBM Plex Mono'; font-size:0.82rem; font-weight:600; color:var(--text);
+    cursor:pointer; padding:0; transition:border-color .15s;
+  }
+  .tbox:hover{ border-color:var(--accent); }
+  .tbox.x{ color:var(--text-muted); }
+  .tbox.x::after{
+    content:''; position:absolute; inset:2px;
+    background:linear-gradient(to bottom right, transparent calc(50% - 1px), var(--danger) calc(50% - 1px), var(--danger) calc(50% + 1px), transparent calc(50% + 1px));
+  }
+
+  /* Pie administrativo del formato */
+  .fpl-foot{ display:flex; flex-wrap:wrap; border-top:1.5px solid var(--text-muted); }
+  .fpl-foot .fpl-box{ border-bottom:none; }
+  .fpl-fecha{ display:flex; gap:6px; }
+  .fpl-fecha > div{ text-align:center; }
+  .fpl-fecha span{ display:block; font-family:'IBM Plex Mono'; font-size:0.53rem; color:var(--text-muted); margin-bottom:2px; }
+
+  /* Modo "detectar el error": las casillas se marcan con un clic */
+  .fpl-form.modo-marcar .fpl-box[data-cas]{ cursor:pointer; }
+  .fpl-form.modo-marcar .fpl-box[data-cas]:hover{ background:rgba(var(--accent-rgb),0.06); }
+  .fpl-form.modo-marcar .fpl-box.marcada{ background:rgba(var(--accent-rgb),0.12); box-shadow:inset 0 0 0 2px var(--accent); }
+  /* Al calificar: rojo = la casilla sí tenía error; morado = la marcaste sin tenerlo. */
+  .fpl-box.rev-bad{ background:rgba(var(--danger-rgb),0.10); box-shadow:inset 0 0 0 2px var(--danger); }
+  .fpl-box.rev-falso{ background:rgba(139,92,246,0.12); box-shadow:inset 0 0 0 2px var(--lifr); }
 
   /* ---------- FEEDBACK BLOCKS (idéntico al simulador METAR) ---------- */
   .feedback-list{ display:flex; flex-direction:column; gap:10px; margin-top:6px; }
@@ -217,12 +297,32 @@
 
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
+  /* ---------- PESTAÑAS DE MODO ---------- */
+  .mode-tabs{ display:flex; flex-wrap:wrap; gap:6px; border-bottom:1px solid var(--hairline); margin-bottom:20px; }
+  .mode-tab{
+    font-family:'IBM Plex Sans'; font-size:0.85rem; font-weight:600;
+    padding:10px 18px; border:1px solid transparent; border-bottom:none;
+    border-radius:8px 8px 0 0; background:none; color:var(--text-muted); cursor:pointer;
+    margin-bottom:-1px; transition:color .15s, background .15s, border-color .15s;
+  }
+  .mode-tab:hover{ color:var(--text); background:var(--panel); }
+  .mode-tab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); border-bottom:1px solid var(--panel); }
+  .mode-desc{ font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:18px; }
+
+  .telex-given{ background:var(--navy); border:1px solid var(--hairline); border-radius:8px; padding:16px 18px; font-family:'IBM Plex Mono'; font-size:0.88rem; color:#8FE3B8; white-space:pre-wrap; word-break:break-word; line-height:1.6; letter-spacing:0.02em; }
+  .exam-bar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:var(--panel-alt); border:1px solid var(--hairline); border-radius:10px; padding:12px 18px; margin-bottom:18px; }
+  .exam-bar .ronda{ font-family:'Archivo'; font-weight:700; font-size:1rem; }
+  .exam-bar .crono{ font-family:'IBM Plex Mono'; font-size:0.9rem; color:var(--accent); margin-left:auto; }
+
   @media (max-width:640px){
     .controls{ flex-direction:column; align-items:stretch; }
     .action-row{ justify-content:stretch; }
     .action-row .btn{ flex:1; }
-    .fpl-row.cols-3, .fpl-row.cols-2, .fpl-row.route-row, .fpl-row.dest-row, .fpl-msgbar{ grid-template-columns:1fr !important; }
-    .fpl-cell{ border-right:none !important; border-bottom:1px solid var(--hairline); }
+    .fpl-box{ flex:1 1 100% !important; border-right:none; border-bottom:1px solid var(--hairline); }
+    .fpl-row:last-child .fpl-box:last-child{ border-bottom:none; }
+    .fpl-head-title{ text-align:left; }
+    .fpl-head-key{ text-align:left; }
+    .mode-tab{ flex:1 1 45%; padding:10px 8px; font-size:0.8rem; }
   }
 
   /* ---------- MOBILE NAV DRAWER ---------- */
@@ -366,10 +466,19 @@
 <section class="hero-simple">
   <div class="eyebrow">Práctica interactiva · AIS</div>
   <h1>Simulador de Plan de Vuelo OACI</h1>
-  <p class="lead">Se te presenta una situación de vuelo en lenguaje natural. Tu trabajo es diligenciar el formulario OACI de Plan de Vuelo, casilla por casilla, siguiendo el formato del Apéndice 7 del RAC 215 / PANS-ATM Doc 4444 y las reglas específicas de Colombia (AIP ENR 1.10). El simulador evalúa cada casilla y te explica cada error.</p>
+  <p class="lead">Cuatro formas de practicar el formulario OACI de Plan de Vuelo: diligenciarlo desde una situación de vuelo, detectar errores en un plan ya presentado, decodificar el mensaje que viaja por la red AFTN y medirte en un examen cronometrado. El formulario reproduce el orden y los rótulos del formato oficial, y la evaluación sigue el Apéndice 7 del RAC 215, el Apéndice 2 del PANS-ATM Doc 4444 y las reglas colombianas del AIP ENR 1.10.</p>
 </section>
 
 <div class="wrap">
+
+  <!-- ================= PESTAÑAS DE MODO ================= -->
+  <div class="mode-tabs" id="modeTabs" role="tablist">
+    <button class="mode-tab active" data-modo="diligenciar" type="button" role="tab">Diligenciar</button>
+    <button class="mode-tab" data-modo="error" type="button" role="tab">Detectar el error</button>
+    <button class="mode-tab" data-modo="decodificar" type="button" role="tab">Decodificar telex</button>
+    <button class="mode-tab" data-modo="examen" type="button" role="tab">Examen</button>
+  </div>
+  <p class="mode-desc" id="modeDesc"></p>
 
   <!-- ================= CONTROLES ================= -->
   <div class="controls">
@@ -379,7 +488,8 @@
         <button class="pill-btn active" data-level="1" type="button">Básico · VFR</button>
         <button class="pill-btn" data-level="2" type="button">Intermedio · IFR nacional</button>
         <button class="pill-btn" data-level="3" type="button">Avanzado · IFR internacional</button>
-        <button class="pill-btn" data-level="4" type="button">Experto · Vuelos especiales</button>
+        <button class="pill-btn" data-level="4" type="button">Vuelos especiales</button>
+        <button class="pill-btn" data-level="5" type="button">Casos AIS</button>
       </div>
     </div>
     <div class="control-group">
@@ -388,6 +498,22 @@
         <button class="btn btn-outline" id="btnAyuda" type="button">Mostrar ayuda</button>
         <button class="btn btn-primary" id="btnNuevo" type="button">Nueva situación</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ================= BARRA DE EXAMEN ================= -->
+  <div class="exam-bar" id="examBar" style="display:none;">
+    <span class="ronda" id="examRonda">Plan 1 de 5</span>
+    <span style="font-size:0.85rem; color:var(--text-muted);">Sin retroalimentación hasta terminar</span>
+    <span class="crono" id="examCrono">00:00</span>
+  </div>
+
+  <!-- ================= MENSAJE A DECODIFICAR ================= -->
+  <div class="instrument" id="telexPanel" style="display:none;">
+    <div class="instrument-label">Mensaje FPL recibido — decodifícalo al formulario</div>
+    <div style="position:relative; z-index:1;">
+      <div class="telex-given" id="telexGiven">—</div>
+      <p class="bhint" style="margin-top:12px; font-size:0.8rem;">Este es el mensaje tal como viaja por la red AMHS/AFTN: casillas 3 a 18 únicamente. La casilla 19 no se transmite en un FPL, así que en este modo no se evalúa.</p>
     </div>
   </div>
 
@@ -408,49 +534,69 @@
       </div>
       <div class="help-section">
         <h4>Casilla 9 — Número / tipo / estela</h4>
-        <ul><li>Designador OACI Doc 8643 + barra + categoría de estela: <code>H</code> pesada (≥136000 kg), <code>M</code> media, <code>L</code> ligera (≤7000 kg). Ej. <code>B738/M</code>.</li></ul>
-      </div>
-      <div class="help-section">
-        <h4>Casilla 10 — Equipo COM/NAV/SUR</h4>
-        <ul><li><code>N</code> sin equipo, o <code>S</code> equipo estándar, más letras adicionales (G=GNSS, R=PBN, W=RVSM...). Luego barra y vigilancia: <code>A/C</code> Modo A/C, <code>S</code> Modo S completo, <code>B1/B2</code> ADS-B. Ej. <code>SDFGR/S</code>.</li></ul>
-      </div>
-      <div class="help-section">
-        <h4>Casilla 13 — Salida y hora (8 caracteres)</h4>
-        <ul><li>Indicador OACI de 4 letras + EOBT en 4 cifras UTC, sin espacio. Ej. <code>SKBO1030</code>.</li></ul>
-      </div>
-      <div class="help-section">
-        <h4>Casilla 15 — Ruta</h4>
         <ul>
-          <li>Velocidad (N+3 cifras nudos) y nivel (F+3 cifras, A+3 cifras, o VFR) pegados sin espacio: <code>N0450F350</code>.</li>
-          <li>Luego SID (si aplica) → puntos/aerovías separados por <code>DCT</code> cuando no hay ruta ATS → STAR.</li>
-          <li>Vuelos VFR no controlados: nivel = <code>VFR</code>, ej. <code>N0110VFR</code>.</li>
+          <li>Son <b>tres campos distintos</b>, no uno. El <b>número</b> sólo se anota si es más de una aeronave; el <b>tipo</b> es el designador del Doc OACI 8643 (o <code>ZZZZ</code>, detallando los tipos en la 18 tras <code>TYP/</code>); y la <b>estela</b> va sola después de la barra impresa.</li>
+          <li>Estela: <code>H</code> pesada (136 000 kg o más), <code>M</code> media (menos de 136 000 y más de 7 000 kg), <code>L</code> ligera (7 000 kg o menos).</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Casilla 10 — Equipo y capacidades</h4>
+        <ul>
+          <li>Antes de la barra, el equipo COM/NAV y de ayudas para la aproximación: <code>N</code> si no lleva o no funciona, <code>S</code> si lleva el normalizado, más las letras que apliquen (G=GNSS, R=PBN aprobada, W=RVSM, D=DME, F=ADF…).</li>
+          <li>Después de la barra, la vigilancia: <code>A</code>/<code>C</code> Modo A y C, <code>S</code>/<code>E</code>/<code>H</code>/<code>L</code> Modo S, <code>B1</code>/<code>B2</code> ADS-B, <code>D1</code>/<code>G1</code> ADS-C.</li>
+          <li><b>Si usas la letra R</b>, es obligatorio declarar las capacidades PBN en la casilla 18 después de <code>PBN/</code>. Si usas <code>G</code>, la aumentación GNSS va tras <code>NAV/</code>; si usas <code>Z</code>, el equipo adicional va tras <code>COM/</code>, <code>NAV/</code> o <code>DAT/</code>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Casilla 13 — Aeródromo de salida y hora</h4>
+        <ul>
+          <li>Indicador de lugar OACI de 4 letras (Doc 7910) y, en su propio campo, la hora prevista de fuera calzos con <b>4 cifras UTC</b>.</li>
+          <li><code>ZZZZ</code> si el aeródromo no tiene indicador asignado, indicando nombre y lugar en la 18 tras <code>DEP/</code>. <code>AFIL</code> si el plan se presenta desde el aire, con el indicador de la dependencia ATS en la 18 tras <code>DEP/</code>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Casilla 15 — Velocidad, nivel y ruta</h4>
+        <ul>
+          <li>Velocidad verdadera: <code>N</code>+4 cifras en nudos, <code>K</code>+4 cifras en km/h, o <code>M</code>+3 cifras si es Mach. Nivel: <code>F</code>+3 cifras, <code>A</code>+3 cifras (altitud en centenares de pies), <code>S</code>+4, <code>M</code>+4, o <code>VFR</code> en vuelos VFR no controlados.</li>
+          <li><b>En Colombia las altitudes llegan hasta A185 y el primer nivel de vuelo es FL190.</b></li>
+          <li>Si el aeródromo tiene <b>SID o STAR publicada es obligatorio</b> insertar su designador cifrado; se usa <code>DCT</code> al inicio o al final sólo cuando no hay procedimiento publicado.</li>
+          <li>Cambio de reglas: el punto, seguido de espacio y <code>VFR</code> o <code>IFR</code>. Ej. <code>BUTAL/N0140A055 VFR DCT</code>.</li>
         </ul>
       </div>
       <div class="help-section">
         <h4>Casilla 16 — Destino, EET y alternos</h4>
-        <ul><li>Destino (4 letras) + EET en 4 cifras sin espacio, luego hasta 2 alternos separados por espacio. Ej. <code>SKRG0100 SKCL</code>.</li></ul>
+        <ul>
+          <li>Destino en 4 letras y, en su propio campo, la duración total prevista con <b>4 cifras</b>. Luego hasta dos aeródromos de alternativa.</li>
+          <li>El <b>aeródromo de origen puede figurar como alternativa de destino</b>. Las aerolíneas que operan hacia Estados Unidos y aplican la excepción de alterno anotan <code>ZZZZ</code> en la 16 y <code>ALTN/NIL</code> en la 18.</li>
+        </ul>
       </div>
       <div class="help-section">
         <h4>Casilla 18 — Otros datos</h4>
-        <ul><li><code>0</code> si no hay nada más, o indicadores <code>STS/ PBN/ NAV/ COM/ DAT/ SUR/ DEP/ DEST/ DOF/ REG/ EET/ SEL/ TYP/ CODE/ DLE/ OPR/ ORGN/ PER/ ALTN/ RALT/ TALT/ RIF/ RMK/</code> según corresponda.</li></ul>
+        <ul>
+          <li><code>0</code> si no hay nada más. Si hay datos, van <b>en este orden</b>: <code>STS/ PBN/ NAV/ COM/ DAT/ SUR/ DEP/ DEST/ DOF/ REG/ EET/ SEL/ TYP/ CODE/ DLE/ OPR/ ORGN/ PER/ ALTN/ RALT/ TALT/ RIF/ RMK/</code>.</li>
+          <li><b><code>OPR/</code> es obligatorio en Colombia</b> para las empresas de servicio aéreo regular (S), transporte aéreo no regular (N) y aviación militar (M) en vuelos internacionales, <b>incluidos los vuelos ferry y de traslado</b>.</li>
+          <li>Toda aeronave que <b>sobrevuele territorio colombiano identificándose con call sign</b> debe registrar su matrícula tras <code>REG/</code> y contar con autorización de la FAC.</li>
+        </ul>
       </div>
       <div class="help-section">
         <h4>Casilla 18 — Vuelos adicionales, de traslado, ferry y escala técnica (AIP ENR 1.10)</h4>
         <ul>
-          <li><b>Adicional</b>: tipo de vuelo <code>S</code>, sin autorización, no usa el número de vuelo regular, incluir <code>RMK/FLT ADDN</code>.</li>
-          <li><b>Traslado</b>: tipo de vuelo <code>X</code>, se identifica con la matrícula, incluir <code>RMK/FLT TRASLADO</code> (internacional: agregar fecha-hora-originador de la autorización).</li>
-          <li><b>Ferry</b>: tipo de vuelo <code>X</code>, requiere autorización de la DONA, se identifica con la matrícula, incluir <code>RMK/FLT FERRY</code> + grupo fecha-hora-originador, ej. <code>122314 SKBOYAYO</code>.</li>
-          <li><b>Escala técnica</b> (por autonomía): tipo <code>N</code> o <code>G</code>, requiere autorización DONA, incluir <code>RMK/ESCALA TECNICA</code> + fecha-hora-originador. Por emergencia/motivo técnico: tipo <code>S</code>, sin autorización.</li>
+          <li><b>Adicional</b>: tipo de vuelo <code>S</code>, sin autorización, no usa el número de vuelo de la operación regular, incluir <code>RMK/FLT ADDN</code>.</li>
+          <li><b>Traslado nacional</b>: tipo <code>X</code>, <b>sin autorización</b>, se identifica con la matrícula, incluir <code>RMK/FLT TRASLADO</code>.</li>
+          <li><b>Traslado internacional</b>: tipo <code>X</code>, <b>requiere DONA</b>, incluir <code>RMK/FLT TRASLADO</code> + grupo fecha-hora-originador, ej. <code>152145 SKBOYAYO</code>.</li>
+          <li><b>Ferry</b>: tipo <code>X</code>, requiere DONA, se identifica con la matrícula, incluir <code>RMK/FLT FERRY</code> + grupo fecha-hora-originador.</li>
+          <li><b>Escala técnica por emergencia o motivo técnico</b>: aplica a empresas regulares, tipo <code>S</code>, <b>no requiere autorización</b> y se anota <code>RMK/ESCALA TECNICA</code> <b>sin</b> grupo fecha-hora.</li>
+          <li><b>Escala técnica por autonomía en aeropuertos domésticos</b>: aplica a transporte no regular y aviación general, tipo <code>N</code> o <code>G</code> según la operación autorizada, <b>requiere permiso de la DONA</b> y se anota <code>RMK/ESCALA TECNICA</code> + grupo fecha-hora-originador.</li>
         </ul>
       </div>
       <div class="help-section">
         <h4>Casilla 19 — Información suplementaria</h4>
         <ul>
-          <li><code>E/</code> autonomía HHMM · <code>P/</code> personas a bordo (o TBN solo en S/M) · <code>R/</code> radio de emergencia: táchese lo que NO se lleva (UHF 243.0 / VHF 121.5 / ELT).</li>
-          <li><code>S/</code> equipo de supervivencia: táchese lo que NO se lleva (Polar / Desértico / Marítimo / Selva).</li>
-          <li><code>J/</code> chalecos: táchese lo que NO se lleva (Luz / Fluoresceína / UHF / VHF).</li>
-          <li><code>D/</code> botes neumáticos: número, capacidad total, cubierta (tachar si no cubiertos), color.</li>
-          <li><code>A/</code> color y marcas de la aeronave · <code>N/</code> observaciones (tachar si no hay) · <code>C/</code> nombre completo del piloto al mando.</li>
+          <li>No se transmite en el mensaje FPL: el FPL lleva sólo las casillas 3 a 18. La 19 viaja en el mensaje suplementario (SPL).</li>
+          <li><code>E/</code> autonomía en 4 cifras · <code>P/</code> personas a bordo; <code>TBN</code> sólo se admite en vuelos regulares (S) y militares (M).</li>
+          <li>En <code>R/</code>, <code>S/</code>, <code>J/</code> y <code>N/</code> <b>se tacha lo que NO se lleva</b>: <code>U</code> UHF 243,0 · <code>V</code> VHF 121,5 · <code>E</code> ELT; <code>P</code> polar · <code>D</code> desértico · <code>M</code> marítimo · <code>J</code> selva; <code>L</code> luz · <code>F</code> fluoresceína · <code>U</code>/<code>V</code> radio de los chalecos; <code>N</code> si no hay observaciones.</li>
+          <li><code>D/</code> botes: táchense <code>D</code> y <code>C</code> si no se llevan; táchese sólo <code>C</code> si se llevan pero no están cubiertos.</li>
+          <li><code>A/</code> color y marcas · <code>C/</code> nombre del piloto al mando <b>y su número de licencia</b>. Al pie, quien presenta el plan también firma con su número de licencia.</li>
         </ul>
       </div>
     </div>
@@ -474,107 +620,279 @@
     <div class="instrument-label">Formulario OACI — Plan de vuelo / Flight plan</div>
     <div style="position:relative; z-index:1;">
 
-      <div class="fpl-paper">
-        <div class="fpl-msgbar">
-          <div class="fpl-cell"><label>Prioridad</label><input class="mono" value="FF" readonly></div>
-          <div class="fpl-cell"><label>Hora de depósito</label><input class="mono" id="filingTime" placeholder="1200"></div>
-          <div class="fpl-cell"><label>Destinatario(s)</label><input class="mono" id="addressee" placeholder="SKBOZTZX"></div>
-          <div class="fpl-cell"><label>Remitente / Originator</label><input class="mono" id="originator" placeholder="SKBOZPZX"></div>
-        </div>
+      <div class="fpl-form" id="fplForm">
 
-        <div class="fpl-row cols-3">
-          <div class="fpl-cell"><span class="fpl-num">3</span><label>Tipo de mensaje</label>
-            <select class="mono" id="f3"><option value="FPL" selected>FPL</option><option value="CHG">CHG</option><option value="CNL">CNL</option><option value="DLA">DLA</option></select>
+        <div class="fpl-head">
+          <div class="fpl-head-brand">
+            <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+              <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+              <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+              <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+            <div><b>SoyAeronáutico</b><span>Portal AIS · COM · MET</span></div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">7</span><label>Identificación de aeronave</label>
-            <input class="mono" id="f7" maxlength="7" placeholder="AVA123 / HK1234">
-          </div>
-          <div class="fpl-cell"><span class="fpl-num">8</span><label>Reglas de vuelo / tipo</label>
-            <input class="mono" id="f8" maxlength="2" placeholder="IS, VG, XN...">
-            <div class="fpl-hint">Letra de reglas (I/V/Y/Z) + letra de tipo (S/N/G/M/X)</div>
-          </div>
+          <div class="fpl-head-title">PLAN DE VUELO<em>Flight plan</em></div>
+          <div class="fpl-head-key">Formato según<br>RAC 215 Ap. 7 · Doc 4444 Ap. 2<br>AIP Colombia ENR 1.10</div>
         </div>
+        <div class="fpl-proc">Principio de Procedencia _ _ _ 368</div>
 
-        <div class="fpl-row cols-2">
-          <div class="fpl-cell"><span class="fpl-num">9</span><label>Número / tipo / estela turbulenta</label>
-            <input class="mono" id="f9" placeholder="B738/M">
-          </div>
-          <div class="fpl-cell"><span class="fpl-num">10</span><label>Equipo (COM/NAV / SUR)</label>
-            <input class="mono" id="f10" placeholder="SDFGR/S">
-          </div>
-        </div>
-
-        <div class="fpl-row cols-1">
-          <div class="fpl-cell"><span class="fpl-num">13</span><label>Aeródromo de salida / Hora (UTC)</label>
-            <input class="mono" id="f13" placeholder="SKBO1030" style="max-width:220px;">
-          </div>
-        </div>
-
-        <div class="fpl-row route-row">
-          <div class="fpl-cell"><span class="fpl-num">15a</span><label>Velocidad crucero</label><input class="mono" id="f15v" placeholder="N0450"></div>
-          <div class="fpl-cell"><span class="fpl-num">15b</span><label>Nivel</label><input class="mono" id="f15n" placeholder="F350"></div>
-          <div class="fpl-cell"><span class="fpl-num">15c</span><label>Ruta</label><textarea class="mono" id="f15r" placeholder="SID PUNTO AEROVÍA PUNTO/DCT STAR"></textarea></div>
-        </div>
-
-        <div class="fpl-row dest-row">
-          <div class="fpl-cell"><span class="fpl-num">16</span><label>Destino + EET total</label><input class="mono" id="f16d" placeholder="SKRG0100"></div>
-          <div class="fpl-cell"><span class="fpl-num">16</span><label>Aeródromo alterno</label><input class="mono" id="f16a1" placeholder="SKCL"></div>
-          <div class="fpl-cell"><span class="fpl-num">16</span><label>2º aeródromo alterno</label><input class="mono" id="f16a2" placeholder="SKPE"></div>
-        </div>
-
-        <div class="fpl-row cols-1">
-          <div class="fpl-cell"><span class="fpl-num">18</span><label>Otros datos</label>
-            <textarea class="mono" id="f18" placeholder="0, o STS/ PBN/ DOF/ REG/ RMK/ ..."></textarea>
-          </div>
-        </div>
-
-        <div class="fpl-section-tag">19 — Información suplementaria (no se transmite en el mensaje FPL)</div>
-        <div class="fpl19-grid">
-          <div class="fpl-cell"><span class="fpl-num">E/</span><label>Autonomía (HHMM)</label><input class="mono" id="e19" placeholder="0430"></div>
-          <div class="fpl-cell"><span class="fpl-num">P/</span><label>Personas a bordo</label><input class="mono" id="p19" placeholder="4 o TBN"></div>
-          <div class="fpl-cell"><span class="fpl-num">R/</span><label>Radio de emergencia — clic para tachar lo no disponible</label>
-            <div class="tach-row" id="r19chips">
-              <span class="tach-chip" data-val="UHF">UHF</span>
-              <span class="tach-chip" data-val="VHF">VHF</span>
-              <span class="tach-chip" data-val="ELT">ELT</span>
+        <div class="fpl-shaded">
+          <div class="fpl-shaded-note">Espacio para uso exclusivo de los servicios ATS y COM (RAC 215, 2.1)</div>
+          <div class="fpl-row">
+            <div class="fpl-box tight">
+              <div class="blab">PRIORIDAD<em>Priority</em></div>
+              <div class="bfield"><span class="sym">&lt;&lt;≡</span><input class="chr" value="FF" readonly aria-label="Prioridad"><span class="sym">→</span></div>
+            </div>
+            <div class="fpl-box grow">
+              <div class="blab">DESTINATARIO(S)<em>Addressee(s)</em></div>
+              <div class="bfield"><input id="destinatarios" placeholder="SKBOZQZX"><span class="sym">&lt;&lt;≡</span></div>
             </div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">S/</span><label>Supervivencia — clic para tachar lo no disponible</label>
-            <div class="tach-row" id="s19chips">
-              <span class="tach-chip" data-val="POLAR">Polar</span>
-              <span class="tach-chip" data-val="DESERT">Desértico</span>
-              <span class="tach-chip" data-val="MARITIME">Marítimo</span>
-              <span class="tach-chip" data-val="JUNGLE">Selva</span>
+          <div class="fpl-row">
+            <div class="fpl-box tight">
+              <div class="blab">HORA DE DEPÓSITO<em>Filing Time</em></div>
+              <div class="bfield"><input class="chr6" id="hDeposito" maxlength="6" placeholder="190836"></div>
+            </div>
+            <div class="fpl-box grow">
+              <div class="blab">REMITENTE<em>Originator</em></div>
+              <div class="bfield"><input id="remitente" placeholder="SKBOZPZX"><span class="sym">&lt;&lt;≡</span></div>
             </div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">J/</span><label>Chalecos — clic para tachar lo no disponible</label>
-            <div class="tach-row" id="j19chips">
-              <span class="tach-chip" data-val="NONE">Sin chalecos</span>
-              <span class="tach-chip" data-val="L">Luz</span>
-              <span class="tach-chip" data-val="F">Fluoresceína</span>
-              <span class="tach-chip" data-val="U">UHF</span>
-              <span class="tach-chip" data-val="V">VHF</span>
+          <div class="fpl-row">
+            <div class="fpl-box full">
+              <div class="blab">IDENTIFICACIÓN EXACTA DEL (DE LOS) DESTINATARIO(S) Y/O DEL REMITENTE<em>Specific identification of addressee(s) and/or originator</em></div>
+              <div class="bfield"><input id="identExacta"></div>
             </div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">D/</span><label>Botes — número / capacidad / color</label>
-            <div style="display:flex; gap:6px;">
-              <input class="mono" id="d19n" placeholder="Nº" style="width:44px;">
-              <input class="mono" id="d19c" placeholder="Cap." style="width:56px;">
-              <input class="mono" id="d19col" placeholder="Color" style="flex:1;">
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box" data-cas="3">
+            <div class="blab"><span class="bnum">3</span>TIPO DE MENSAJE<em>Message Type</em></div>
+            <div class="bfield"><span class="sym">&lt;&lt;≡ (</span>
+              <select id="f3"><option value="FPL" selected>FPL</option><option value="CHG">CHG</option><option value="CNL">CNL</option><option value="DLA">DLA</option></select>
             </div>
-            <div class="tach-row"><span class="tach-chip" data-val="COVER" id="d19cover">Cubierta</span></div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">A/</span><label>Color y marcas de la aeronave</label><input class="mono" id="a19" placeholder="BLANCO AZUL"></div>
-          <div class="fpl-cell"><span class="fpl-num">N/</span><label>Observaciones — clic para tachar si no hay</label>
-            <div class="tach-row" id="n19chips"><span class="tach-chip" data-val="NIL">Sin observaciones</span></div>
-            <input class="mono" id="n19txt" placeholder="Texto libre si aplica" style="margin-top:6px;">
+          <div class="fpl-box wide" data-cas="7">
+            <div class="blab"><span class="bnum">7</span>IDENTIFICACIÓN AERONAVE<em>Aircraft identification</em></div>
+            <div class="bfield"><span class="sym">—</span><input id="f7" maxlength="7" placeholder="AVA123"></div>
           </div>
-          <div class="fpl-cell"><span class="fpl-num">C/</span><label>Piloto al mando (nombre completo)</label><input class="mono" id="c19" placeholder="Nombre completo"></div>
+          <div class="fpl-box tight" data-cas="8">
+            <div class="blab"><span class="bnum">8</span>REGLAS DE VUELO<em>Flight Rules</em></div>
+            <div class="bfield"><span class="sym">—</span><input class="chr" id="f8r" maxlength="1"></div>
+          </div>
+          <div class="fpl-box tight" data-cas="8">
+            <div class="blab">TIPO DE VUELO<em>Type of flight</em></div>
+            <div class="bfield"><input class="chr" id="f8t" maxlength="1"><span class="sym">&lt;&lt;≡</span></div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box tight" data-cas="9">
+            <div class="blab"><span class="bnum">9</span>NÚMERO<em>Number</em></div>
+            <div class="bfield"><span class="sym">—</span><input class="chr2" id="f9n" maxlength="2"></div>
+          </div>
+          <div class="fpl-box tight" data-cas="9">
+            <div class="blab">TIPO DE AERONAVE<em>Type of aircraft</em></div>
+            <div class="bfield"><input class="chr4" id="f9t" maxlength="4" placeholder="A320"></div>
+          </div>
+          <div class="fpl-box tight" data-cas="9">
+            <div class="blab">CAT. DE ESTELA TURBULENTA<em>Wake turbulence cat</em></div>
+            <div class="bfield"><span class="sym">/</span><input class="chr" id="f9e" maxlength="1"><span class="sym">—</span></div>
+          </div>
+          <div class="fpl-box grow" data-cas="10">
+            <div class="blab"><span class="bnum">10</span>EQUIPO<em>Equipment</em></div>
+            <div class="bfield">
+              <input id="f10a" placeholder="SDFGR" aria-label="Equipo COM/NAV y de aproximación">
+              <span class="sym">/</span>
+              <input id="f10b" placeholder="S" aria-label="Equipo de vigilancia" style="max-width:120px;">
+              <span class="sym">&lt;&lt;≡</span>
+            </div>
+            <div class="bhint">COM/NAV y ayudas para la aproximación · barra · vigilancia</div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box wide" data-cas="13">
+            <div class="blab"><span class="bnum">13</span>AERÓDROMO DE SALIDA<em>Departure aerodrome</em></div>
+            <div class="bfield"><span class="sym">—</span><input class="chr4" id="f13a" maxlength="4" placeholder="SKBO"></div>
+          </div>
+          <div class="fpl-box" data-cas="13">
+            <div class="blab">HORA<em>Time</em></div>
+            <div class="bfield"><input class="chr4" id="f13h" maxlength="4" placeholder="1030"><span class="sym">&lt;&lt;≡</span></div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box tight" data-cas="15">
+            <div class="blab"><span class="bnum">15</span>VELOCIDAD DE CRUCERO<em>Cruising speed</em></div>
+            <div class="bfield"><span class="sym">—</span><input class="chr6" id="f15v" maxlength="5" placeholder="N0450"></div>
+          </div>
+          <div class="fpl-box tight" data-cas="15">
+            <div class="blab">NIVEL<em>Level</em></div>
+            <div class="bfield"><input class="chr6" id="f15n" maxlength="5" placeholder="F350"></div>
+          </div>
+          <div class="fpl-box grow" data-cas="15">
+            <div class="blab">RUTA<em>Route</em></div>
+            <div class="bfield"><span class="sym">▶</span><textarea id="f15r" rows="3"></textarea><span class="sym">&lt;&lt;≡</span></div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box" data-cas="16">
+            <div class="blab"><span class="bnum">16</span>AERÓDROMO DE DESTINO<em>Destination aerodrome</em></div>
+            <div class="bfield"><span class="sym">—</span><input class="chr4" id="f16d" maxlength="4" placeholder="SKRG"></div>
+          </div>
+          <div class="fpl-box" data-cas="16">
+            <div class="blab">EET TOTAL<em>Total EET</em></div>
+            <div class="hrmn"><span>HR</span><span>MN</span></div>
+            <div class="bfield"><input class="chr4" id="f16e" maxlength="4" placeholder="0100"></div>
+          </div>
+          <div class="fpl-box" data-cas="16">
+            <div class="blab">AERÓDROMO ALTN<em>ALTN Aerodrome</em></div>
+            <div class="bfield"><span class="sym">▶</span><input class="chr4" id="f16a1" maxlength="4"></div>
+          </div>
+          <div class="fpl-box" data-cas="16">
+            <div class="blab">2º AERÓDROMO ALTN<em>2nd ALTN Aerodrome</em></div>
+            <div class="bfield"><span class="sym">▶</span><input class="chr4" id="f16a2" maxlength="4"><span class="sym">&lt;&lt;≡</span></div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box full" data-cas="18">
+            <div class="blab"><span class="bnum">18</span>OTROS DATOS<em>Other information</em></div>
+            <div class="bfield"><span class="sym">—</span><textarea id="f18" rows="3" placeholder="0"></textarea><span class="sym">) &lt;&lt;≡</span></div>
+            <div class="bhint">Orden prescrito: STS/ PBN/ NAV/ COM/ DAT/ SUR/ DEP/ DEST/ DOF/ REG/ EET/ SEL/ TYP/ CODE/ DLE/ OPR/ ORGN/ PER/ ALTN/ RALT/ TALT/ RIF/ RMK/</div>
+          </div>
+        </div>
+
+        <div class="fpl-supl">
+          <b>Información suplementaria (en los mensajes FPL no hay que transmitir estos datos)</b>
+          <em>Supplementary information (Not to be transmitted in FPL messages)</em>
+        </div>
+        <div class="fpl-row">
+          <div class="fpl-box" data-cas="19E">
+            <div class="blab"><span class="bnum">19</span>AUTONOMÍA<em>Endurance</em></div>
+            <div class="hrmn"><span>HR</span><span>MN</span></div>
+            <div class="bfield"><span class="sym">— E /</span><input class="chr4" id="e19" maxlength="4" placeholder="0430"></div>
+          </div>
+          <div class="fpl-box" data-cas="19P">
+            <div class="blab">PERSONAS A BORDO<em>Persons on board</em></div>
+            <div class="bfield"><span class="sym">▶ P /</span><input class="chr4" id="p19" maxlength="3"></div>
+          </div>
+          <div class="fpl-box wide" data-cas="19R">
+            <div class="blab">EQUIPO RADIO DE EMERGENCIA<em>Emergency radio</em></div>
+            <div class="bfield"><span class="sym">▶ R /</span>
+              <div class="tboxes" id="r19">
+                <div class="tgroup"><span class="tlab">UHF</span><button class="tbox" type="button" data-val="U">U</button></div>
+                <div class="tgroup"><span class="tlab">VHF</span><button class="tbox" type="button" data-val="V">V</button></div>
+                <div class="tgroup"><span class="tlab">ELT</span><button class="tbox" type="button" data-val="E">E</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box wide" data-cas="19S">
+            <div class="blab">EQUIPO DE SUPERVIVENCIA<em>Survival Equipment</em></div>
+            <div class="bfield"><span class="sym">▶ S /</span>
+              <div class="tboxes" id="s19">
+                <div class="tgroup"><span class="tlab">POLAR<em>Polar</em></span><button class="tbox" type="button" data-val="P">P</button></div>
+                <div class="tgroup"><span class="tlab">DESÉRTICO<em>Desert</em></span><button class="tbox" type="button" data-val="D">D</button></div>
+                <div class="tgroup"><span class="tlab">MARÍTIMO<em>Maritime</em></span><button class="tbox" type="button" data-val="M">M</button></div>
+                <div class="tgroup"><span class="tlab">SELVA<em>Jungle</em></span><button class="tbox" type="button" data-val="J">J</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="fpl-box wide" data-cas="19J">
+            <div class="blab">CHALECOS<em>Jackets</em></div>
+            <div class="bfield"><span class="sym">— J /</span>
+              <div class="tboxes" id="j19">
+                <div class="tgroup"><span class="tlab">LUZ<em>Light</em></span><button class="tbox" type="button" data-val="L">L</button></div>
+                <div class="tgroup"><span class="tlab">FLÚOR<em>Fluores</em></span><button class="tbox" type="button" data-val="F">F</button></div>
+                <div class="tgroup"><span class="tlab">UHF</span><button class="tbox" type="button" data-val="U">U</button></div>
+                <div class="tgroup"><span class="tlab">VHF</span><button class="tbox" type="button" data-val="V">V</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box full" data-cas="19D">
+            <div class="blab">BOTES NEUMÁTICOS<em>Dinghies</em></div>
+            <div class="bfield">
+              <div class="tboxes" id="d19">
+                <div class="tgroup"><span class="tlab">&nbsp;</span><button class="tbox" type="button" data-val="D">D</button></div>
+              </div>
+              <span class="sym">/</span>
+              <div class="finput"><span class="tlab">NÚMERO<em>Number</em></span><input class="chr2" id="d19n" maxlength="2"></div>
+              <div class="finput"><span class="tlab">CAPACIDAD<em>Capacity</em></span><input class="chr4" id="d19c" maxlength="3"></div>
+              <div class="tboxes" id="d19cov">
+                <div class="tgroup"><span class="tlab">CUBIERTA<em>Cover</em></span><button class="tbox" type="button" data-val="C">C</button></div>
+              </div>
+              <div class="finput" style="flex:1 1 180px; max-width:340px;"><span class="tlab">COLOR<em>Colour</em></span><input id="d19col"></div>
+              <span class="sym">&lt;&lt;≡</span>
+            </div>
+            <div class="bhint">Táchense D y C si no se llevan botes · táchese C si no están cubiertos</div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box full" data-cas="19A">
+            <div class="blab">COLOR Y MARCAS DE LA AERONAVE<em>Aircraft colour and markings</em></div>
+            <div class="bfield"><span class="sym">A /</span><input id="a19" placeholder="BLANCO AZUL"></div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box full" data-cas="19N">
+            <div class="blab">OBSERVACIONES<em>Remarks</em></div>
+            <div class="bfield">
+              <div class="tboxes" id="n19" style="padding-top:0;"><button class="tbox" type="button" data-val="N">N</button></div>
+              <span class="sym">/</span><input id="n19txt"><span class="sym">&lt;&lt;≡</span>
+            </div>
+            <div class="bhint">Táchese N si no hay observaciones</div>
+          </div>
+        </div>
+
+        <div class="fpl-row">
+          <div class="fpl-box grow" data-cas="19C">
+            <div class="blab">PILOTO AL MANDO — (NOMBRE COMPLETO)<em>Pilot in command (full name)</em></div>
+            <div class="bfield"><span class="sym">C /</span><input id="c19" placeholder="NOMBRE COMPLETO"></div>
+          </div>
+          <div class="fpl-box" data-cas="19C">
+            <div class="blab">LICENCIA DEL PILOTO<em>Pilot licence</em></div>
+            <div class="bfield"><input id="c19lic"><span class="sym">) &lt;&lt;≡</span></div>
+          </div>
+        </div>
+
+        <div class="fpl-foot">
+          <div class="fpl-box grow" data-cas="PRES">
+            <div class="blab">PRESENTADO POR<em>Filed by</em></div>
+            <div class="bfield"><input id="presentadoPor"></div>
+          </div>
+          <div class="fpl-box" data-cas="PRES">
+            <div class="blab">LICENCIA<em>License</em></div>
+            <div class="bfield"><input id="licencia"></div>
+          </div>
+          <div class="fpl-box wide">
+            <div class="blab">FECHA<em>Date</em></div>
+            <div class="fpl-fecha">
+              <div><span>DÍA/day</span><input class="chr2" id="fDia" maxlength="2"></div>
+              <div><span>MES/month</span><input class="chr2" id="fMes" maxlength="2"></div>
+              <div><span>AÑO/year</span><input class="chr2" id="fAnio" maxlength="2"></div>
+            </div>
+          </div>
+          <div class="fpl-box">
+            <div class="blab">ESPACIO RESERVADO PARA REQUISITOS ADICIONALES<em>Space reserved for additional requirements</em></div>
+          </div>
         </div>
       </div>
 
       <div class="action-row" style="margin-top:16px;">
         <button class="btn btn-primary" id="btnValidar" type="button">Validar plan de vuelo</button>
+        <button class="btn btn-primary" id="btnSiguiente" type="button" style="display:none;">Siguiente plan</button>
         <button class="btn btn-outline" id="btnRespuesta" type="button">Mostrar respuesta oficial</button>
         <button class="btn btn-outline danger" id="btnLimpiar" type="button">Limpiar formulario</button>
       </div>
@@ -587,9 +905,11 @@
       <div id="scoreBanner" style="display:none;"></div>
       <div class="feedback-list" id="feedbackList"></div>
 
-      <div style="margin-top:14px;">
-        <div class="instrument-label" style="margin-bottom:6px;">Tu plan de vuelo (formato telex)</div>
+      <div id="salidaMensajes" style="margin-top:14px;">
+        <div class="instrument-label" style="margin-bottom:6px;">Tu mensaje FPL — casillas 3 a 18 (lo que realmente se transmite)</div>
         <div class="fpl-raw-box mono" id="fplUsuarioTexto">—</div>
+        <div class="instrument-label" style="margin:14px 0 6px;">Casilla 19 — información suplementaria (viaja en el SPL, no en el FPL)</div>
+        <div class="fpl-raw-box mono" id="splUsuarioTexto">—</div>
       </div>
     </div>
   </div>
@@ -669,10 +989,10 @@ btnAyuda.addEventListener('click', () => {
     {cod:'SKPE', nom:'Pereira (Matecaña)'},
     {cod:'SKAR', nom:'Armenia (El Edén)'},
     {cod:'SKPS', nom:'Pasto (Antonio Nariño)'},
-    {cod:'SKSP', nom:'Gustavo Rojas Pinilla (Sesquicentenario)'},
+    {cod:'SKSP', nom:'San Andrés (Gustavo Rojas Pinilla)'},
     {cod:'SKLT', nom:'Leticia (Alfredo Vásquez Cobo)'},
     {cod:'SKYP', nom:'Yopal (El Alcaraván)'},
-    {cod:'SKVV', nom:'Vanguardia'}
+    {cod:'SKVV', nom:'Villavicencio (Vanguardia)'}
   ];
   const INTERNACIONALES = [
     {cod:'MROC', nom:'San José (Juan Santamaría), Costa Rica'},
@@ -681,20 +1001,150 @@ btnAyuda.addEventListener('click', () => {
     {cod:'MMMX', nom:'Ciudad de México (AICM), México'},
     {cod:'KMIA', nom:'Miami Intl., Estados Unidos'}
   ];
+  // Designadores OACI de tipo de aeronave (Doc 8643) con su categoría de estela,
+  // tomados de la base del Simulador NALA de este mismo portal.
   const AERONAVES = [
-    {tipo:'C172', estela:'L', nombre:'Cessna 172', gen:true},
-    {tipo:'C182', estela:'L', nombre:'Cessna 182', gen:true},
-    {tipo:'PA34', estela:'L', nombre:'Piper PA-34 Seneca', gen:true},
-    {tipo:'B738', estela:'M', nombre:'Boeing 737-800', gen:false},
+    // Aviación general y escuela
+    {tipo:'C152', estela:'L', nombre:'Cessna 152', gen:true},
+    {tipo:'C172', estela:'L', nombre:'Cessna 172 Skyhawk', gen:true},
+    {tipo:'C182', estela:'L', nombre:'Cessna 182 Skylane', gen:true},
+    {tipo:'C208', estela:'L', nombre:'Cessna 208 Caravan', gen:true},
+    {tipo:'C310', estela:'L', nombre:'Cessna 310', gen:true},
+    {tipo:'BE20', estela:'L', nombre:'Beechcraft King Air 200', gen:true},
+    {tipo:'PC12', estela:'L', nombre:'Pilatus PC-12', gen:true},
+    {tipo:'DHC6', estela:'L', nombre:'DHC-6 Twin Otter', gen:true},
+    // Transporte comercial
+    {tipo:'AT72', estela:'M', nombre:'ATR 72', gen:false},
+    {tipo:'AT76', estela:'M', nombre:'ATR 72-600', gen:false},
+    {tipo:'DH8D', estela:'M', nombre:'Dash 8-400 (Q400)', gen:false},
+    {tipo:'E190', estela:'M', nombre:'Embraer 190', gen:false},
+    {tipo:'E195', estela:'M', nombre:'Embraer 195', gen:false},
+    {tipo:'A319', estela:'M', nombre:'Airbus A319', gen:false},
     {tipo:'A320', estela:'M', nombre:'Airbus A320', gen:false},
+    {tipo:'A20N', estela:'M', nombre:'Airbus A320neo', gen:false},
+    {tipo:'A321', estela:'M', nombre:'Airbus A321', gen:false},
     {tipo:'A21N', estela:'M', nombre:'Airbus A321neo', gen:false},
-    {tipo:'E190', estela:'M', nombre:'Embraer E190', gen:false},
-    {tipo:'B788', estela:'H', nombre:'Boeing 787-8', gen:false},
+    {tipo:'B737', estela:'M', nombre:'Boeing 737-700', gen:false},
+    {tipo:'B738', estela:'M', nombre:'Boeing 737-800', gen:false},
+    {tipo:'B38M', estela:'M', nombre:'Boeing 737 MAX 8', gen:false},
+    {tipo:'B752', estela:'M', nombre:'Boeing 757-200', gen:false},
     {tipo:'A332', estela:'H', nombre:'Airbus A330-200', gen:false},
-    {tipo:'C130', estela:'M', nombre:'C-130 Hércules (militar)', gen:false}
+    {tipo:'A333', estela:'H', nombre:'Airbus A330-300', gen:false},
+    {tipo:'B763', estela:'H', nombre:'Boeing 767-300', gen:false},
+    {tipo:'B788', estela:'H', nombre:'Boeing 787-8', gen:false},
+    {tipo:'B789', estela:'H', nombre:'Boeing 787-9', gen:false},
+    {tipo:'B77W', estela:'H', nombre:'Boeing 777-300ER', gen:false},
+    {tipo:'MD11', estela:'H', nombre:'McDonnell Douglas MD-11', gen:false},
+    // Militar
+    {tipo:'C130', estela:'M', nombre:'Lockheed C-130 Hércules', gen:false}
   ];
   const APELLIDOS = ['PEREZ','GOMEZ','MARTINEZ','LOPEZ','RAMIREZ','SUAREZ','HERNANDEZ','ROJAS','DIAZ','TORRES','CASTRO','VARGAS'];
-  const AEROLINEAS = ['AVA','LAN','ARE','SKU','ADW'];
+
+  // Designadores OACI de explotador (Doc 8585) de operadores colombianos, con el
+  // nombre que corresponde al indicador OPR/ de la casilla 18. Tomados de la base
+  // del Simulador NALA de este mismo portal.
+  const AEROLINEAS = [
+    {des:'AVA', nom:'AVIANCA'},
+    {des:'ARE', nom:'LAN COLOMBIA'},
+    {des:'RPB', nom:'AEROREPUBLICA'},
+    {des:'NSE', nom:'SATENA'},
+    {des:'TPA', nom:'TAMPA CARGO'},
+    {des:'ACL', nom:'ADA'},
+    {des:'SDK', nom:'SADELCA'},
+    {des:'ATK', nom:'AEROTACA'},
+    {des:'AVR', nom:'AVIANCA EXPRESS'}
+  ];
+
+  const NOTA_PUBLICADA = 'Ruta construida con aerovías y puntos significativos publicados en el AIP Colombia (ENR 3). Se usa con fines didácticos: no reemplaza las cartas ni el AIP vigentes.';
+  const NOTA_DCT = 'Para este vuelo no se emplea SID ni STAR, así que la ruta se expresa con DCT, tal como lo autoriza el AIP ENR 1.10 cuando el aeródromo no tiene procedimiento publicado.';
+  const NOTA_INTL = 'Ruta reproducida textualmente del ejemplo de vuelo internacional publicado en el AIP Colombia ENR 1.10-13.';
+
+  // ---------------------------------------------------------------------------
+  // RUTAS ATS
+  // Generadas a partir de las aerovías publicadas en AIP Colombia ENR 3 y de las
+  // radioayudas terminales de cada aeródromo, tomadas de la base del Simulador
+  // NALA de este mismo portal. Cada ruta usa designadores de aerovía y puntos
+  // significativos reales; ninguno es inventado. Se descartaron las combinaciones
+  // cuyo recorrido excedía la distancia directa en más de un 35 % más 40 NM, para
+  // que no aparezcan rodeos absurdos.
+  // Formato: punto de salida · aerovía · punto de destino · DCT, igual que en NALA.
+  // Los aeródromos colombianos no publican SID/STAR en texto (el AIP solo trae las
+  // cartas gráficas), por eso la ruta termina en DCT, como autoriza ENR 1.10.
+  // ---------------------------------------------------------------------------
+  const RUTAS_ATS = {
+    SKARSKBO:"AXM DCT ABL UW1 BOG DCT", SKARSKBQ:"AXM DCT DOSPU Z001 BAQ DCT",
+    SKARSKCC:"AXM DCT TORAT G431 CUC DCT", SKARSKCG:"AXM DCT AKPAM W6 CTG DCT",
+    SKARSKCL:"AXM DCT NEKEB W3 CLO DCT", SKARSKLT:"AXM DCT BODAT A301 LET DCT", SKARSKPE:"AXM W37 PEI DCT",
+    SKARSKRG:"AXM DCT ISVON W3 RNG DCT", SKARSKSP:"AXM DCT BIXOX A321 SPP DCT",
+    SKARSKVV:"AXM DCT SALGU W44 VVC DCT", SKARSKYP:"AXM DCT SUPNU W24 EYP DCT",
+    SKBOSKAR:"BOG DCT ISNOX W2 AXM DCT", SKBOSKBQ:"BOG DCT VOVLU UW3 BAQ DCT",
+    SKBOSKCC:"BOG DCT ESNUT A567 CUC DCT", SKBOSKCG:"BOG DCT UGSOL G430 CTG DCT",
+    SKBOSKCL:"BOG DCT MANGA R564 CLO DCT", SKBOSKLT:"BOG DCT BODAT A301 LET DCT",
+    SKBOSKPE:"BOG DCT MZL W14 PEI DCT", SKBOSKRG:"BOG DCT ISVAT UQ121 RNG DCT",
+    SKBOSKSP:"BOG DCT BODED B689 SPP DCT", SKBOSKYP:"BOG DCT SUPNU W24 EYP DCT",
+    SKBQSKAR:"BAQ DCT PEI W37 AXM DCT", SKBQSKBO:"BAQ DCT VULAM A567 BOG DCT",
+    SKBQSKCC:"BAQ DCT DIMIL W19 CUC DCT", SKBQSKCG:"BAQ A574 CTG DCT", SKBQSKCL:"BAQ DCT NEKEB W3 CLO DCT",
+    SKBQSKLT:"BAQ DCT BODAT A301 LET DCT", SKBQSKPE:"BAQ DCT AKSIM W37 PEI DCT",
+    SKBQSKRG:"BAQ DCT KORBA W6 RNG DCT", SKBQSKSP:"BAQ DCT TIMRO A552 SPP DCT",
+    SKBQSKVV:"BAQ DCT VIDAL A301 VVC DCT", SKBQSKYP:"BAQ DCT TITNA W34 EYP DCT",
+    SKCCSKAR:"CUC DCT ISNOX W2 AXM DCT", SKCCSKBO:"CUC DCT BUV UW1 BOG DCT",
+    SKCCSKBQ:"CUC DCT UMKIR W31 BAQ DCT", SKCCSKCG:"CUC DCT UGREB UW10 CTG DCT",
+    SKCCSKCL:"CUC DCT MANGA R564 CLO DCT", SKCCSKLT:"CUC DCT BODAT A301 LET DCT",
+    SKCCSKPE:"CUC DCT MZL W14 PEI DCT", SKCCSKRG:"CUC DCT MRN UW26 RNG DCT",
+    SKCCSKSP:"CUC DCT DAGAS G445 SPP DCT", SKCCSKVV:"CUC DCT VIDAL A301 VVC DCT",
+    SKCCSKYP:"CUC DCT PEJES W7 EYP DCT", SKCGSKAR:"CTG DCT PEI W37 AXM DCT",
+    SKCGSKBO:"CTG DCT VULAM A567 BOG DCT", SKCGSKBQ:"CTG A574 BAQ DCT", SKCGSKCC:"CTG DCT DIMIL W19 CUC DCT",
+    SKCGSKCL:"CTG DCT NEKEB W3 CLO DCT", SKCGSKLT:"CTG DCT BODAT A301 LET DCT",
+    SKCGSKPE:"CTG DCT AKSIM W37 PEI DCT", SKCGSKRG:"CTG UP778 RNG DCT", SKCGSKSP:"CTG DCT DAGAS G445 SPP DCT",
+    SKCGSKVV:"CTG DCT VIDAL A301 VVC DCT", SKCGSKYP:"CTG DCT TITNA W34 EYP DCT",
+    SKCLSKAR:"CLO DCT SIBOS W2 AXM DCT", SKCLSKBO:"CLO DCT ABL UW1 BOG DCT",
+    SKCLSKBQ:"CLO DCT UGREB W5 BAQ DCT", SKCLSKCC:"CLO DCT ESNUT A567 CUC DCT",
+    SKCLSKCG:"CLO DCT IRAXU W8 CTG DCT", SKCLSKLT:"CLO DCT MEXAS R567 LET DCT",
+    SKCLSKPE:"CLO DCT IRIGI W3 PEI DCT", SKCLSKRG:"CLO UP778 RNG DCT", SKCLSKSP:"CLO DCT BIXOX A321 SPP DCT",
+    SKCLSKVV:"CLO DCT SALGU W44 VVC DCT", SKCLSKYP:"CLO DCT ALSIK W60 EYP DCT",
+    SKLTSKAR:"LET DCT TOLIM W42 AXM DCT", SKLTSKBO:"LET DCT SOA B689 BOG DCT",
+    SKLTSKBQ:"LET DCT ISOTO A301 BAQ DCT", SKLTSKCC:"LET DCT UMPEX W7 CUC DCT",
+    SKLTSKCG:"LET DCT UGSOL G430 CTG DCT", SKLTSKCL:"LET DCT MONVI Z026 CLO DCT",
+    SKLTSKPE:"LET DCT ISNOX W14 PEI DCT", SKLTSKRG:"LET DCT RENOS A323 RNG DCT",
+    SKLTSKSP:"LET DCT BIXOX A321 SPP DCT", SKLTSKVV:"LET DCT UBRID A301 VVC DCT",
+    SKLTSKYP:"LET DCT ANGUV W34 EYP DCT", SKPESKAR:"PEI W37 AXM DCT", SKPESKBO:"PEI DCT ABL UW1 BOG DCT",
+    SKPESKBQ:"PEI DCT DOSPU Z001 BAQ DCT", SKPESKCC:"PEI DCT TORAT G431 CUC DCT",
+    SKPESKCG:"PEI DCT AKPAM W6 CTG DCT", SKPESKCL:"PEI DCT NEKEB W3 CLO DCT",
+    SKPESKLT:"PEI DCT BODAT A301 LET DCT", SKPESKRG:"PEI DCT ISVON W3 RNG DCT",
+    SKPESKSP:"PEI DCT BIXOX A321 SPP DCT", SKPESKVV:"PEI DCT SALGU W44 VVC DCT",
+    SKPESKYP:"PEI DCT SUPNU W24 EYP DCT", SKRGSKAR:"RNG DCT PEI W37 AXM DCT", SKRGSKBO:"RNG UP530 BOG DCT",
+    SKRGSKBQ:"RNG DCT DOSPU Z001 BAQ DCT", SKRGSKCC:"RNG DCT TORAT G431 CUC DCT", SKRGSKCG:"RNG UP778 CTG DCT",
+    SKRGSKCL:"RNG UP778 CLO DCT", SKRGSKLT:"RNG DCT BODAT A301 LET DCT", SKRGSKPE:"RNG DCT MATRO W3 PEI DCT",
+    SKRGSKSP:"RNG DCT BODED B689 SPP DCT", SKRGSKVV:"RNG DCT BOG UP530 VVC DCT",
+    SKRGSKYP:"RNG DCT BUV UW45 EYP DCT", SKSPSKAR:"SPP DCT PEI W37 AXM DCT",
+    SKSPSKBO:"SPP DCT MQU A323 BOG DCT", SKSPSKBQ:"SPP DCT VARON A552 BAQ DCT",
+    SKSPSKCC:"SPP DCT DIMIL W19 CUC DCT", SKSPSKCG:"SPP DCT KOVIP UL667 CTG DCT",
+    SKSPSKCL:"SPP DCT SIGIR A321 CLO DCT", SKSPSKLT:"SPP DCT BODAT A301 LET DCT",
+    SKSPSKPE:"SPP DCT AKSIM W37 PEI DCT", SKSPSKRG:"SPP DCT OPMEL B689 RNG DCT",
+    SKSPSKVV:"SPP DCT BOG UP530 VVC DCT", SKSPSKYP:"SPP DCT TITNA W34 EYP DCT",
+    SKVVSKAR:"VVC DCT TOLIM W42 AXM DCT", SKVVSKBQ:"VVC DCT ISOTO A301 BAQ DCT",
+    SKVVSKCC:"VVC DCT UMPEX W7 CUC DCT", SKVVSKCG:"VVC DCT UGSOL G430 CTG DCT",
+    SKVVSKCL:"VVC DCT MANGA R564 CLO DCT", SKVVSKLT:"VVC DCT REMEX UP525 LET DCT",
+    SKVVSKPE:"VVC DCT ISNOX W14 PEI DCT", SKVVSKRG:"VVC DCT ISVAT UQ121 RNG DCT",
+    SKVVSKSP:"VVC DCT BODED B689 SPP DCT", SKVVSKYP:"VVC DCT UBNOT W25 EYP DCT",
+    SKYPSKAR:"EYP DCT ISNOX W2 AXM DCT", SKYPSKBO:"EYP DCT ZIP UW20 BOG DCT",
+    SKYPSKBQ:"EYP DCT DARNI W12 BAQ DCT", SKYPSKCC:"EYP DCT UMPEX W7 CUC DCT",
+    SKYPSKCG:"EYP DCT UGREB UW10 CTG DCT", SKYPSKCL:"EYP DCT MANGA R564 CLO DCT",
+    SKYPSKLT:"EYP DCT BODAT A301 LET DCT", SKYPSKPE:"EYP DCT MZL W14 PEI DCT",
+    SKYPSKRG:"EYP DCT ISVAT UQ121 RNG DCT", SKYPSKSP:"EYP DCT BODED B689 SPP DCT",
+    SKYPSKVV:"EYP DCT UBNOT W47 VVC DCT"
+  };
+
+  const RUTA_INTL = {r:'OSUS4R EVRAK DCT GIKPU DCT DIBAM', src:NOTA_INTL};
+
+  // Devuelve la ruta ATS para un par de aeródromos. Si no hay ninguna publicada
+  // razonable entre ellos, se usa DCT, que es lo que autoriza ENR 1.10 cuando el
+  // aeródromo no tiene procedimiento ni aerovía de enlace.
+  function rutaPara(origenCod, destinoCod, internacional){
+    if(internacional) return RUTA_INTL;
+    const r = RUTAS_ATS[origenCod + destinoCod];
+    return r ? {r, src:NOTA_PUBLICADA} : {r:'DCT', src:NOTA_DCT};
+  }
 
   function matricula(){
     const letras='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -703,10 +1153,27 @@ btnAyuda.addEventListener('click', () => {
     return m;
   }
   function pilotoNombre(){ return `CAP ${choice(APELLIDOS)} ${choice(APELLIDOS)}`; }
+  function licencia(){ return String(randInt(100000, 999999)); }
   function distinctAirports(list, n){
     const pool=[...list]; const out=[];
     for(let i=0;i<n;i++){ const idx=randInt(0,pool.length-1); out.push(pool[idx]); pool.splice(idx,1); }
     return out;
+  }
+  function grupoAutorizacion(){
+    return `${pad2(randInt(1,28))}${pad2(randInt(0,23))}${pad2(randInt(0,59))} SKBOYAYO`;
+  }
+
+  // Plantilla común de casilla 19 y del pie del formato.
+  function base19(opts){
+    const nombre = pilotoNombre();
+    return Object.assign({
+      e19:'0000', p19:'1',
+      r19x:[], s19x:['P','D','M','J'], j19x:['L','F','U','V'],
+      d19x:['D','C'], d19n:'', d19c:'', d19col:'',
+      a19:'BLANCO AZUL', n19x:['N'], n19txt:'',
+      c19:nombre, c19lic:licencia(),
+      presentadoPor:nombre, licencia:licencia()
+    }, opts||{});
   }
 
   // ---------- Generador de situaciones por nivel ----------
@@ -714,10 +1181,12 @@ btnAyuda.addEventListener('click', () => {
     if(nivel===1) return generarBasico();
     if(nivel===2) return generarIntermedio();
     if(nivel===3) return generarAvanzado();
-    return generarExperto();
+    if(nivel===4) return generarEspecial();
+    return generarCasoAIS();
   }
 
   function baseHora(){ return pad2(randInt(10,23)) + pad2(randInt(0,59)); }
+  function horaDeposito(dia){ return pad2(dia) + pad2(randInt(0,23)) + pad2(randInt(0,59)); }
 
   function generarBasico(){
     const [origen, destino] = distinctAirports(AERODROMOS, 2);
@@ -726,255 +1195,531 @@ btnAyuda.addEventListener('click', () => {
     const hora = baseHora();
     const eetH = randInt(0,1), eetM = pad2(randInt(10,55));
     const eet = pad2(eetH)+eetM;
-    const autoH = eetH + randInt(1,2), autoM = pad2(randInt(0,55));
-    const auto = pad2(autoH)+autoM;
+    const auto = pad2(eetH + randInt(1,2)) + pad2(randInt(0,55));
     const personas = String(randInt(1,4));
     const speed = 'N0' + String(randInt(90,140)).padStart(3,'0');
-    const level = 'VFR';
-    const route = 'DCT';
-    const rNoDisp = Math.random()>0.6 ? choice(['UHF','ELT']) : null;
-    const sTach = Math.random()>0.5 ? ['POLAR','DESERT','MARITIME'] : ['POLAR','DESERT','MARITIME','JUNGLE'];
-    const jTach = ['NONE'];
-    const nTach = ['NIL'];
+
+    // Alterna entre VFR no controlado y una altitud, para practicar la regla
+    // colombiana de altitudes hasta A185 (ENR 1.10-12).
+    const usaAltitud = Math.random() > 0.5;
+    const nivel = usaAltitud ? 'A' + String(randInt(45,120)).padStart(3,'0') : 'VFR';
+    const ruta = rutaPara(origen.cod, false);
+    const eltDisponible = Math.random() > 0.35;
     const color = choice(['BLANCO AZUL','BLANCO ROJO','GRIS NARANJA','BLANCO VERDE']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const dia = randInt(1,28);
 
     return {
       nivelTag: 'NIVEL 1 · VFR',
       titulo: `Vuelo VFR de instrucción — ${origen.nom} → ${destino.nom}`,
-      narrativa: `Eres despachador de una escuela de aviación. Un alumno realizará un vuelo de instrucción VFR en un <b>${aero.nombre}</b> matrícula <b>${mat}</b>, desde <b>${origen.cod}</b> (${origen.nom}) hasta <b>${destino.cod}</b> (${destino.nom}). Hora prevista de fuera calzos: <b>${hora} UTC</b>. Duración estimada del vuelo: ${eetH}h${eetM}min. El avión lleva radio VHF y ELT, pero <b>no</b> tiene equipo de radio ${rNoDisp||'—ninguno adicional—'} a bordo. No hay botes ni chalecos. La aeronave es de color ${color.toLowerCase()}. El piloto instructor a cargo es ${pilotoNombre()}.`,
+      narrativa: `Eres despachador de una escuela de aviación. Un alumno realizará un vuelo de instrucción VFR en un <b>${aero.nombre}</b> matrícula <b>${mat}</b>, desde <b>${origen.cod}</b> (${origen.nom}) hasta <b>${destino.cod}</b> (${destino.nom}). Hora prevista de fuera calzos: <b>${hora} UTC</b>, duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min. Volará a <b>${speed}</b> ${usaAltitud?`a una altitud de <b>${Number(nivel.slice(1))*100} pies</b>`:'como <b>vuelo VFR no controlado</b>'}. La aeronave lleva equipo COM/NAV normalizado y transpondedor en Modos A y C. ${eltDisponible?'Lleva radio VHF de emergencia y ELT.':'Lleva radio VHF de emergencia pero <b>no tiene ELT</b>.'} No lleva radio UHF, ni chalecos, ni botes, ni equipo de supervivencia. Sin observaciones. Color: ${color.toLowerCase()}. A bordo van <b>${personas}</b> personas. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. El plan lo presenta el mismo piloto.`,
       keys: [
         ['Casilla 7', mat],
-        ['Casilla 8', 'VG (VFR, aviación general)'],
-        ['Casilla 9', `${aero.tipo}/${aero.estela}`],
-        ['Casilla 10', 'N (sin equipo COM/NAV/SUR adicional)'],
-        ['Casilla 13', `${origen.cod}${hora}`],
-        ['Casilla 15', `${speed}${level} DCT`],
-        ['Casilla 16', `${destino.cod}${eet}`],
-        ['Casilla 18', '0 (sin otros datos)'],
+        ['Casilla 8', 'V · G — VFR, aviación general'],
+        ['Casilla 9', `— · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10', 'S / C'],
+        ['Casilla 13', `${origen.cod} · ${hora}`],
+        ['Casilla 15', `${speed} · ${nivel} · ${ruta.r}`],
+        ['Casilla 16', `${destino.cod} · ${eet}`],
+        ['Casilla 18', '0'],
         ['Casilla 19', `E/${auto} P/${personas}`]
       ],
-      values: {
-        f7: mat, f8: 'VG', f9: `${aero.tipo}/${aero.estela}`, f10: 'N',
-        f13: `${origen.cod}${hora}`, f15v: speed, f15n: level, f15r: route,
-        f16d: `${destino.cod}${eet}`, f16a1: '', f16a2: '',
-        f18: '0',
+      fuenteRuta: ruta.src,
+      values: base19({
+        f7: mat, f8r:'V', f8t:'G',
+        f9n:'', f9t: aero.tipo, f9e: aero.estela,
+        f10a:'S', f10b:'C',
+        f13a: origen.cod, f13h: hora,
+        f15v: speed, f15n: nivel, f15r: ruta.r,
+        f16d: destino.cod, f16e: eet, f16a1:'', f16a2:'',
+        f18:'0',
         e19: auto, p19: personas,
-        r19cross: rNoDisp ? [rNoDisp] : [],
-        s19cross: sTach,
-        j19cross: jTach,
-        d19n:'', d19c:'', d19col:'', d19cover:false,
-        a19: color, n19cross: nTach, n19txt: '',
-        c19: pilotoNombre()
-      }
+        r19x: eltDisponible ? ['U'] : ['U','E'],
+        s19x: ['P','D','M','J'],
+        j19x: ['L','F','U','V'],
+        d19x: ['D','C'], d19n:'', d19c:'', d19col:'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: piloto, licencia: lic,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(randInt(1,12)), fAnio:'26'
+      })
     };
   }
 
   function generarIntermedio(){
     const [origen, destino, alterno] = distinctAirports(AERODROMOS, 3);
-    const aero = choice(AERONAVES.filter(a=>!a.gen));
-    const idnum = choice(AEROLINEAS) + String(randInt(100,999));
+    const aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+    const linea = choice(AEROLINEAS);
+    const idnum = linea.des + String(randInt(100,999));
     const hora = baseHora();
     const eetH = randInt(0,2), eetM = pad2(randInt(10,55));
     const eet = pad2(eetH)+eetM;
-    const autoH = eetH + randInt(1,3), autoM = pad2(randInt(0,55));
-    const auto = pad2(autoH)+autoM;
+    const auto = pad2(eetH + randInt(1,3)) + pad2(randInt(0,55));
     const personas = String(randInt(20,180));
     const speed = 'N0' + String(randInt(400,480));
-    const level = 'F' + String(choice([250,280,310,330,350]));
-    const sidStar = ['TOBK4R VASIL W36 DCT', 'OSUS4R KOVBU DCT ABL ABL1L', 'KATOX1A DCT LOBSA UL304'];
-    const route = choice(sidStar);
-    const equipo = choice(['SDFGR/S','SDFGHIRY/H','SDFGRW/S']);
-    const rNoDisp = Math.random()>0.7 ? 'UHF' : null;
-    const sTach = ['POLAR','DESERT','MARITIME','JUNGLE'];
-    const jTach = ['NONE'];
-    const dLleva = Math.random()>0.5;
+    const nivel = 'F' + String(choice([250,280,310,330,350]));
+    const ruta = rutaPara(origen.cod, false);
+    const eq = choice([
+      {a:'SDFGR', b:'S'},
+      {a:'SDFGHIRY', b:'H'},
+      {a:'SDFGRW', b:'S'}
+    ]);
+    const pbn = choice(['PBN/B1C1D1O1S1','PBN/A1B1C1D1S1','PBN/B2C2D2O2S1']);
+    const uhfNoDisp = Math.random() > 0.7;
+    const dLleva = Math.random() > 0.5;
     const color = choice(['BLANCO AZUL','GRIS ROJO','BLANCO NARANJA']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const despachador = pilotoNombre().replace('CAP ','DSP ');
+    const licDsp = licencia();
+    const dia = randInt(1,28);
+
+    // La letra R en la casilla 10 obliga a declarar PBN/ en la 18 (RAC 215, casilla 10
+    // nota 4) y el AIP exige OPR/ a las empresas regulares (ENR 1.10-14).
+    const f18 = `${pbn} OPR/${linea.nom}`;
 
     return {
       nivelTag: 'NIVEL 2 · IFR NACIONAL',
       titulo: `Vuelo IFR regular — ${origen.nom} → ${destino.nom}`,
-      narrativa: `Trabajas en el despacho de una aerolínea regular. El vuelo <b>${idnum}</b> operará un <b>${aero.nombre}</b> con equipo COM/NAV/vigilancia <b>${equipo}</b>, desde <b>${origen.cod}</b> hasta <b>${destino.cod}</b>, con alterno <b>${alterno.cod}</b>. EOBT: <b>${hora} UTC</b>. Velocidad de crucero prevista ${speed}, nivel ${level}. La ruta autorizada es: <b>${route}</b>. Duración estimada: ${eetH}h${eetM}min, autonomía ${autoH}h${autoM}min. Personas a bordo: ${personas}. ${dLleva? 'Lleva 2 botes neumáticos con capacidad de 25 personas cada uno, cubiertos, de color amarillo.' : 'No lleva botes neumáticos.'} No hay chalecos a bordo${rNoDisp?`, y la radio de emergencia ${rNoDisp} no está disponible`:''}. Color de la aeronave: ${color.toLowerCase()}. Piloto al mando: ${pilotoNombre()}.`,
+      narrativa: `Trabajas en el despacho de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> operará un <b>${aero.nombre}</b> desde <b>${origen.cod}</b> hasta <b>${destino.cod}</b>, con alterno <b>${alterno.cod}</b>. EOBT: <b>${hora} UTC</b>. Velocidad de crucero <b>${speed}</b>, nivel <b>${nivel}</b>, ruta autorizada <b>${ruta.r}</b>. Equipo COM/NAV y de aproximación: <b>${eq.a}</b>; equipo de vigilancia: <b>${eq.b}</b>. La aeronave está <b>aprobada PBN</b> con las capacidades <b>${pbn.replace('PBN/','')}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. ${dLleva? 'Lleva 2 botes neumáticos cubiertos, capacidad total 25 personas, de color amarillo.' : 'No lleva botes neumáticos.'} No hay chalecos ni equipo de supervivencia a bordo${uhfNoDisp?'. La radio de emergencia <b>UHF no está disponible</b>':'. Lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan el despachador ${despachador}, licencia ${licDsp}.`,
       keys: [
         ['Casilla 7', idnum],
-        ['Casilla 8', 'IS (IFR, servicio regular)'],
-        ['Casilla 9', `${aero.tipo}/${aero.estela}`],
-        ['Casilla 10', equipo],
-        ['Casilla 13', `${origen.cod}${hora}`],
-        ['Casilla 15', `${speed}${level} ${route}`],
-        ['Casilla 16', `${destino.cod}${eet} ${alterno.cod}`],
-        ['Casilla 18', '0 (sin otros datos obligatorios en este nivel)'],
-        ['Casilla 19', `E/${auto} P/${personas}` + (dLleva? ' D/2 25 (cubierto) AMARILLO':'')]
+        ['Casilla 8', 'I · S — IFR, servicio aéreo regular'],
+        ['Casilla 9', `— · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10', `${eq.a} / ${eq.b}`],
+        ['Casilla 13', `${origen.cod} · ${hora}`],
+        ['Casilla 15', `${speed} · ${nivel} · ${ruta.r}`],
+        ['Casilla 16', `${destino.cod} · ${eet} · ${alterno.cod}`],
+        ['Casilla 18', f18],
+        ['Casilla 19', `E/${auto} P/${personas}` + (dLleva?' D/2 25 C AMARILLO':'')]
       ],
-      values: {
-        f7: idnum, f8: 'IS', f9: `${aero.tipo}/${aero.estela}`, f10: equipo,
-        f13: `${origen.cod}${hora}`, f15v: speed, f15n: level, f15r: route,
-        f16d: `${destino.cod}${eet}`, f16a1: alterno.cod, f16a2: '',
-        f18: '0',
+      fuenteRuta: ruta.src,
+      values: base19({
+        f7: idnum, f8r:'I', f8t:'S',
+        f9n:'', f9t: aero.tipo, f9e: aero.estela,
+        f10a: eq.a, f10b: eq.b,
+        f13a: origen.cod, f13h: hora,
+        f15v: speed, f15n: nivel, f15r: ruta.r,
+        f16d: destino.cod, f16e: eet, f16a1: alterno.cod, f16a2:'',
+        f18,
         e19: auto, p19: personas,
-        r19cross: rNoDisp ? [rNoDisp] : [],
-        s19cross: sTach,
-        j19cross: jTach,
-        d19n: dLleva?'2':'', d19c: dLleva?'25':'', d19col: dLleva?'AMARILLO':'', d19cover: dLleva,
-        a19: color, n19cross: ['NIL'], n19txt: '',
-        c19: pilotoNombre()
-      }
+        r19x: uhfNoDisp ? ['U'] : [],
+        s19x: ['P','D','M','J'],
+        j19x: ['L','F','U','V'],
+        d19x: dLleva ? [] : ['D','C'],
+        d19n: dLleva?'2':'', d19c: dLleva?'25':'', d19col: dLleva?'AMARILLO':'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: despachador, licencia: licDsp,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(randInt(1,12)), fAnio:'26'
+      })
     };
   }
 
   function generarAvanzado(){
-    const origen = choice(AERODROMOS);
+    const origen = AERODROMOS[0]; // SKBO: es el único par con ruta publicada en el AIP
     const destino = choice(INTERNACIONALES);
     const [alterno1, alterno2] = distinctAirports(AERODROMOS.filter(a=>a.cod!==origen.cod), 2);
-    const aero = choice(AERONAVES.filter(a=>!a.gen && a.estela!=='L'));
-    const idnum = choice(AEROLINEAS) + String(randInt(100,999));
+    const aero = choice(AERONAVES.filter(a=>!a.gen && a.estela!=='L' && a.tipo!=='C130'));
+    const linea = choice(AEROLINEAS);
+    const idnum = linea.des + String(randInt(100,999));
+    const mat = matricula();
     const hora = baseHora();
     const eetH = randInt(2,6), eetM = pad2(randInt(10,55));
     const eet = pad2(eetH)+eetM;
-    const autoH = eetH + randInt(1,3), autoM = pad2(randInt(0,55));
-    const auto = pad2(autoH)+autoM;
+    const auto = pad2(eetH + randInt(1,3)) + pad2(randInt(0,55));
     const personas = String(randInt(50,280));
     const speed = 'N0' + String(randInt(440,490));
-    const level = 'F' + String(choice([330,350,370,390]));
-    const route = choice([
-      'TOBK4R VASIL UL304 DCT KIN DCT URSUS DCT MTH',
-      'OSUS4R EVRAK DCT GIKPU DCT DIBAM/N0493F370',
-      'KATOX1A DCT LOBSA DCT MAXOR DCT'
-    ]);
+    const nivel = 'F' + String(choice([330,350,370,390]));
+    const ruta = rutaPara(origen.cod, true);
     const pbn = choice(['PBN/A1B1C1D1O1S1','PBN/B1C1D1O1S1S2','PBN/A1B1C1D1S1']);
-    const dof = `DOF/26${pad2(randInt(1,12))}${pad2(randInt(1,28))}`;
-    const eqOpts = ['SDFGHIRWY/LB1D1','SDFGRWJ2/HB2','SDE1FGHIRWY/LB2D1'];
-    const equipo = choice(eqOpts);
-    const usaZZZZAlt = Math.random()>0.75; // simula excepción de alterno para EEUU
-    const sts = Math.random()>0.6 ? choice(['STS/STATE','STS/HOSP','']) : '';
-    const rNoDisp = Math.random()>0.6 ? 'UHF' : null;
+    const dia = randInt(1,28), mes = randInt(1,12);
+    const dof = `DOF/26${pad2(mes)}${pad2(dia)}`;
+    const eq = choice([
+      {a:'SDFGHIRWY', b:'LB1D1'},
+      {a:'SDFGRWJ2',  b:'HB2'},
+      {a:'SDE1FGHIRWY', b:'LB2D1'}
+    ]);
+    const excepcionEEUU = destino.cod === 'KMIA' && Math.random() > 0.4;
+    const sts = Math.random() > 0.75 ? choice(['STS/HOSP','STS/MEDEVAC']) : '';
+    const uhfNoDisp = Math.random() > 0.6;
     const color = choice(['BLANCO AZUL','BLANCO ROJO NEGRO','GRIS AZUL']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const despachador = pilotoNombre().replace('CAP ','DSP ');
+    const licDsp = licencia();
 
-    let casilla18 = pbn + ' ' + dof;
-    let casilla16 = `${destino.cod}${eet} ${alterno1.cod}${alterno2? ' '+alterno2.cod:''}`;
-    if(sts) casilla18 = sts + ' ' + casilla18;
-    if(usaZZZZAlt){
-      casilla16 = `ZZZZ${eet}`;
-      casilla18 += ' ALTN/NIL';
-    }
+    // Orden prescrito de indicadores: STS/ … PBN/ … DOF/ REG/ … OPR/ … ALTN/ …
+    let f18 = `${pbn} ${dof} REG/${mat} OPR/${linea.nom}`;
+    if(sts) f18 = `${sts} ${f18}`;
+    if(excepcionEEUU) f18 += ' ALTN/NIL';
 
     return {
       nivelTag: 'NIVEL 3 · IFR INTERNACIONAL',
       titulo: `Vuelo IFR internacional — ${origen.nom} → ${destino.nom}`,
-      narrativa: `Eres despachador de vuelos internacionales. El vuelo <b>${idnum}</b> (${aero.nombre}, equipo <b>${equipo}</b>) sale de <b>${origen.cod}</b> con destino <b>${destino.cod}</b> (${destino.nom}). EOBT: <b>${hora} UTC</b>, fecha de salida ${dof.replace('DOF/','')}. Velocidad ${speed}, nivel ${level}. Ruta: <b>${route}</b>. Capacidad de navegación: <b>${pbn}</b>. Alternos de destino: <b>${alterno1.cod}</b>${alterno2?` y <b>${alterno2.cod}</b>`:''}.${usaZZZZAlt? ' <i>Nota: la aerolínea aplicará la excepción de alterno de destino hacia Estados Unidos, por lo que la casilla 16 debe indicar ZZZZ y la 18 debe indicar ALTN/NIL.</i>':''} Duración estimada ${eetH}h${eetM}min, autonomía ${autoH}h${autoM}min, ${personas} personas a bordo.${sts? ` Estatus especial: ${sts.replace('STS/','')}.`:''} La radio de emergencia ${rNoDisp||'—todas disponibles—'}${rNoDisp?' no está disponible':''}. Color: ${color.toLowerCase()}. Piloto al mando: ${pilotoNombre()}.`,
+      narrativa: `Eres despachador de vuelos internacionales de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> se opera con un <b>${aero.nombre}</b> de matrícula <b>${mat}</b> y sale de <b>${origen.cod}</b> con destino <b>${destino.cod}</b> (${destino.nom}). EOBT <b>${hora} UTC</b> del día <b>${pad2(dia)}/${pad2(mes)}/2026</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Equipo COM/NAV <b>${eq.a}</b>, vigilancia <b>${eq.b}</b>, capacidades PBN <b>${pbn.replace('PBN/','')}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo.${sts?` El vuelo tiene estatus <b>${sts.replace('STS/','')}</b>.`:''} ${excepcionEEUU? `<b>La aerolínea aplicará la excepción de alterno de destino hacia Estados Unidos.</b>` : `Alternos de destino: <b>${alterno1.cod}</b> y <b>${alterno2.cod}</b>.`} No lleva chalecos, botes ni equipo de supervivencia${uhfNoDisp?'; la radio de emergencia <b>UHF no está disponible</b>':'; lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan ${despachador}, licencia ${licDsp}.`,
       keys: [
         ['Casilla 7', idnum],
-        ['Casilla 8', 'IS (IFR, servicio regular)'],
-        ['Casilla 9', `${aero.tipo}/${aero.estela}`],
-        ['Casilla 10', equipo],
-        ['Casilla 13', `${origen.cod}${hora}`],
-        ['Casilla 15', `${speed}${level} ${route}`],
-        ['Casilla 16', casilla16],
-        ['Casilla 18', casilla18.trim()],
+        ['Casilla 8', 'I · S'],
+        ['Casilla 9', `— · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10', `${eq.a} / ${eq.b}`],
+        ['Casilla 13', `${origen.cod} · ${hora}`],
+        ['Casilla 15', `${speed} · ${nivel} · ${ruta.r}`],
+        ['Casilla 16', excepcionEEUU ? `ZZZZ · ${eet}` : `${destino.cod} · ${eet} · ${alterno1.cod} · ${alterno2.cod}`],
+        ['Casilla 18', f18],
         ['Casilla 19', `E/${auto} P/${personas}`]
       ],
-      values: {
-        f7: idnum, f8: 'IS', f9: `${aero.tipo}/${aero.estela}`, f10: equipo,
-        f13: `${origen.cod}${hora}`, f15v: speed, f15n: level, f15r: route,
-        f16d: usaZZZZAlt? `ZZZZ${eet}` : `${destino.cod}${eet}`,
-        f16a1: usaZZZZAlt? '' : alterno1.cod, f16a2: usaZZZZAlt? '' : (alterno2?alterno2.cod:''),
-        f18: casilla18.trim(),
+      fuenteRuta: ruta.src,
+      values: base19({
+        f7: idnum, f8r:'I', f8t:'S',
+        f9n:'', f9t: aero.tipo, f9e: aero.estela,
+        f10a: eq.a, f10b: eq.b,
+        f13a: origen.cod, f13h: hora,
+        f15v: speed, f15n: nivel, f15r: ruta.r,
+        f16d: excepcionEEUU ? 'ZZZZ' : destino.cod, f16e: eet,
+        f16a1: excepcionEEUU ? '' : alterno1.cod,
+        f16a2: excepcionEEUU ? '' : alterno2.cod,
+        f18,
         e19: auto, p19: personas,
-        r19cross: rNoDisp ? [rNoDisp] : [],
-        s19cross: ['POLAR','DESERT','MARITIME','JUNGLE'],
-        j19cross: ['NONE'],
-        d19n:'', d19c:'', d19col:'', d19cover:false,
-        a19: color, n19cross: ['NIL'], n19txt: '',
-        c19: pilotoNombre()
-      }
+        r19x: uhfNoDisp ? ['U'] : [],
+        s19x: ['P','D','M','J'],
+        j19x: ['L','F','U','V'],
+        d19x: ['D','C'], d19n:'', d19c:'', d19col:'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: despachador, licencia: licDsp,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(mes), fAnio:'26'
+      })
     };
   }
 
-  function generarExperto(){
-    const tipoEspecial = choice(['ADICIONAL','TRASLADO','FERRY','ESCALA']);
-    const [origen, destino] = distinctAirports(AERODROMOS, 2);
-    const aero = choice(AERONAVES.filter(a=>!a.gen));
+  function generarEspecial(){
+    const caso = choice(['ADICIONAL','TRASLADO_NAL','TRASLADO_INTL','FERRY','ESCALA_EMERGENCIA','ESCALA_AUTONOMIA']);
+    const origen = AERODROMOS[0];
+    const destino = choice(AERODROMOS.slice(1));
+    const linea = choice(AEROLINEAS);
     const mat = matricula();
-    const idnum = choice(AEROLINEAS) + String(randInt(100,999));
     const hora = baseHora();
     const eetH = randInt(1,3), eetM = pad2(randInt(10,55));
     const eet = pad2(eetH)+eetM;
-    const autoH = eetH + randInt(1,2), autoM = pad2(randInt(0,55));
-    const auto = pad2(autoH)+autoM;
+    const auto = pad2(eetH + randInt(1,2)) + pad2(randInt(0,55));
     const speed = 'N0' + String(randInt(400,470));
-    const level = 'F' + String(choice([250,280,310]));
-    const route = choice(['TOBK4R VASIL W36 DCT', 'DCT UL304 DCT']);
-    const equipo = choice(['SDFGR/S','SDFGHIRY/H']);
-    const authDate = `${pad2(randInt(1,28))}${pad2(randInt(0,23))}${pad2(randInt(0,59))}`;
-    const authOrgn = 'SKBOYAYO';
+    const nivel = 'F' + String(choice([250,280,310]));
+    const ruta = rutaPara(origen.cod, false);
+    const pbn = 'PBN/B1C1D1O1S1';
+    const auth = grupoAutorizacion();
     const color = choice(['BLANCO AZUL','GRIS ROJO']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const dia = randInt(1,28);
 
-    let f7, f8, personas, casilla18, resumen, requiereAuth=false;
+    let f7, f8r='I', f8t, personas, f18, resumen, aero, eq, destinoFinal = destino;
 
-    if(tipoEspecial==='ADICIONAL'){
-      f7 = idnum; f8='SS'; personas=String(randInt(20,150));
-      casilla18 = 'RMK/FLT ADDN';
-      resumen = `Es un <b>vuelo adicional</b> de la empresa regular, fuera de itinerario, dentro del horario del aeródromo. No usa el número de vuelo regular ni requiere autorización especial.`;
-    } else if(tipoEspecial==='TRASLADO'){
-      f7 = mat; f8='XX'; personas='0';
-      casilla18 = 'RMK/FLT TRASLADO';
-      resumen = `Es un <b>vuelo de traslado</b>: la aeronave se desplaza entre aeródromos sin pasajeros ni carga y sin derechos de explotación comercial. Se identifica por su matrícula, no por número de vuelo.`;
-    } else if(tipoEspecial==='FERRY'){
-      f7 = mat; f8='XX'; personas='0'; requiereAuth=true;
-      casilla18 = `RMK/FLT FERRY ${authDate} ${authOrgn}`;
-      resumen = `Es un <b>vuelo ferry</b>: la aeronave no cumple la totalidad de los requisitos de aeronavegabilidad pero está en condición de volar con seguridad, sin pasajeros ni carga. Requiere autorización de la DONA, que fue emitida el día/hora <b>${authDate}</b> por <b>${authOrgn}</b>.`;
+    if(caso === 'ADICIONAL'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+      eq = {a:'SDFGR', b:'S'};
+      f7 = linea.des + String(randInt(100,999));
+      f8t = 'S';
+      personas = String(randInt(20,150));
+      f18 = `${pbn} OPR/${linea.nom} RMK/FLT ADDN`;
+      resumen = `Es un <b>vuelo adicional</b> de ${linea.nom} en una ruta ya autorizada, fuera de itinerario y dentro del horario de operación de los aeródromos. <b>No requiere autorización</b>, pero <b>no puede usar el número de vuelo de la operación regular</b>: se le asignó el número <b>${f7.slice(3)}</b>.`;
+    } else if(caso === 'TRASLADO_NAL'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+      eq = {a:'SDFGR', b:'S'};
+      f7 = mat;
+      f8t = 'X';
+      personas = String(randInt(2,4));
+      f18 = `${pbn} OPR/${linea.nom} RMK/FLT TRASLADO`;
+      resumen = `Es un <b>vuelo de traslado dentro de Colombia</b> de ${linea.nom}: la aeronave se desplaza entre aeródromos sin pasajeros ni carga y sin derechos de explotación comercial. <b>No requiere autorización</b> y se identifica con la <b>matrícula</b>, tanto en el plan de vuelo como en el distintivo de llamada.`;
+    } else if(caso === 'TRASLADO_INTL'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.estela!=='L' && a.tipo!=='C130'));
+      eq = {a:'SDFGHIRWY', b:'LB1D1'};
+      destinoFinal = choice(INTERNACIONALES);
+      f7 = mat;
+      f8t = 'X';
+      personas = String(randInt(2,4));
+      f18 = `${pbn} OPR/${linea.nom} RMK/FLT TRASLADO ${auth}`;
+      resumen = `Es un <b>vuelo de traslado con destino internacional</b> de ${linea.nom}. A diferencia del traslado nacional, este <b>sí requiere autorización de la DONA</b>, emitida con el grupo fecha-hora-originador <b>${auth}</b>. Se identifica con la matrícula.`;
+    } else if(caso === 'FERRY'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+      eq = {a:'SDFGR', b:'S'};
+      f7 = mat;
+      f8t = 'X';
+      personas = '2';
+      f18 = `${pbn} OPR/${linea.nom} RMK/FLT FERRY ${auth}`;
+      resumen = `Es un <b>vuelo ferry</b>: la aeronave no cumple la totalidad de los requisitos de aeronavegabilidad aplicables, pero está en condición de volar con seguridad, sin pasajeros ni carga. <b>Requiere autorización de la DONA</b>, emitida con el grupo fecha-hora-originador <b>${auth}</b>, y se identifica con la matrícula.`;
+    } else if(caso === 'ESCALA_EMERGENCIA'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+      eq = {a:'SDFGR', b:'S'};
+      f7 = linea.des + String(randInt(100,999));
+      f8t = 'S';
+      personas = String(randInt(20,150));
+      f18 = `${pbn} OPR/${linea.nom} RMK/ESCALA TECNICA`;
+      resumen = `Es una <b>escala técnica por motivo técnico</b> de ${linea.nom}, empresa de servicio aéreo regular. En este caso <b>no se requiere autorización</b> y <b>no se anota grupo fecha-hora</b> en la casilla 18. La aeronave no puede subir ni bajar pasajeros, tripulación ni carga.`;
     } else {
-      f7 = idnum; f8='SS'; personas=String(randInt(20,150)); requiereAuth=true;
-      casilla18 = `RMK/ESCALA TECNICA ${authDate} ${authOrgn}`;
-      resumen = `Es una <b>escala técnica por autonomía</b> en un aeródromo no internacional: la aeronave no puede subir ni bajar tripulación, pasajeros ni carga. Requiere autorización de la DONA (grupo fecha-hora-originador: <b>${authDate} ${authOrgn}</b>).`;
+      aero = choice(AERONAVES.filter(a=>a.gen));
+      eq = {a:'SDFG', b:'C'};
+      f7 = mat;
+      f8t = choice(['N','G']);
+      personas = String(randInt(2,6));
+      f18 = `OPR/${linea.nom} RMK/ESCALA TECNICA ${auth}`;
+      resumen = `Es una <b>escala técnica por autonomía de la aeronave en un aeropuerto doméstico</b>. Aplica a transporte aéreo <b>no regular</b> y a <b>aviación general</b>, y el tipo de vuelo depende de la operación autorizada para la aeronave: en este caso la operación autorizada es de tipo <b>"${f8t}"</b>. <b>Requiere permiso de la DONA</b>, con grupo fecha-hora-originador <b>${auth}</b>.`;
     }
+
+    const requierePBN = eq.a.includes('R');
 
     return {
       nivelTag: 'NIVEL 4 · VUELOS ESPECIALES',
-      titulo: `Vuelo especial (${tipoEspecial}) — ${origen.nom} → ${destino.nom}`,
-      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b> (equipo ${equipo}). Origen <b>${origen.cod}</b>, destino <b>${destino.cod}</b>. EOBT <b>${hora} UTC</b>. Velocidad ${speed}, nivel ${level}, ruta <b>${route}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${autoH}h${autoM}min. Personas a bordo: ${personas}. No lleva botes ni chalecos ni equipo de supervivencia especial. Color: ${color.toLowerCase()}. Responsable: ${pilotoNombre()}.`,
+      titulo: `${caso.replace('_',' ')} — ${origen.nom} → ${destinoFinal.nom}`,
+      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>, matrícula <b>${mat}</b>. Equipo COM/NAV <b>${eq.a}</b>, vigilancia <b>${eq.b}</b>.${requierePBN?` Capacidades PBN: <b>${pbn.replace('PBN/','')}</b>.`:''} Origen <b>${origen.cod}</b>, destino <b>${destinoFinal.cod}</b> (${destinoFinal.nom}), sin alterno. EOBT <b>${hora} UTC</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. El explotador es <b>${linea.nom}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
       keys: [
         ['Casilla 7', f7],
-        ['Casilla 8', f8 + ` (tipo de vuelo especial: ${tipoEspecial})`],
-        ['Casilla 9', `${aero.tipo}/${aero.estela}`],
-        ['Casilla 10', equipo],
-        ['Casilla 13', `${origen.cod}${hora}`],
-        ['Casilla 15', `${speed}${level} ${route}`],
-        ['Casilla 16', `${destino.cod}${eet}`],
-        ['Casilla 18', casilla18],
+        ['Casilla 8', `${f8r} · ${f8t}`],
+        ['Casilla 9', `— · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10', `${eq.a} / ${eq.b}`],
+        ['Casilla 13', `${origen.cod} · ${hora}`],
+        ['Casilla 15', `${speed} · ${nivel} · ${ruta.r}`],
+        ['Casilla 16', `${destinoFinal.cod} · ${eet}`],
+        ['Casilla 18', f18],
         ['Casilla 19', `E/${auto} P/${personas}`]
       ],
-      values: {
-        f7, f8, f9: `${aero.tipo}/${aero.estela}`, f10: equipo,
-        f13: `${origen.cod}${hora}`, f15v: speed, f15n: level, f15r: route,
-        f16d: `${destino.cod}${eet}`, f16a1: '', f16a2: '',
-        f18: casilla18,
+      fuenteRuta: ruta.src,
+      values: base19({
+        f7, f8r, f8t,
+        f9n:'', f9t: aero.tipo, f9e: aero.estela,
+        f10a: eq.a, f10b: eq.b,
+        f13a: origen.cod, f13h: hora,
+        f15v: speed, f15n: nivel, f15r: ruta.r,
+        f16d: destinoFinal.cod, f16e: eet, f16a1:'', f16a2:'',
+        f18,
         e19: auto, p19: personas,
-        r19cross: [], s19cross: ['POLAR','DESERT','MARITIME','JUNGLE'], j19cross: ['NONE'],
-        d19n:'', d19c:'', d19col:'', d19cover:false,
-        a19: color, n19cross: ['NIL'], n19txt: '',
-        c19: pilotoNombre()
-      }
+        r19x: [], s19x: ['P','D','M','J'], j19x: ['L','F','U','V'],
+        d19x: ['D','C'], d19n:'', d19c:'', d19col:'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: piloto, licencia: lic,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(randInt(1,12)), fAnio:'26'
+      })
     };
+  }
+
+  function generarCasoAIS(){
+    const caso = choice(['AFIL','ZZZZ_DEP','ZZZZ_DEST','SOBREVUELO','CAMBIO_Y','CAMBIO_Z','FORMACION']);
+    const origen = choice(AERODROMOS);
+    const destino = choice(AERODROMOS.filter(a=>a.cod!==origen.cod));
+    const mat = matricula();
+    const hora = baseHora();
+    const eetH = randInt(0,2), eetM = pad2(randInt(10,55));
+    const eet = pad2(eetH)+eetM;
+    const auto = pad2(eetH + randInt(1,2)) + pad2(randInt(0,55));
+    const personas = String(randInt(2,6));
+    const color = choice(['BLANCO AZUL','GRIS ROJO','BLANCO VERDE']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const dia = randInt(1,28);
+
+    let v = {
+      f8r:'I', f8t:'G', f9n:'', f10a:'SDFG', f10b:'C',
+      f13a: origen.cod, f13h: hora,
+      f15v:'N0' + String(randInt(140,240)), f15n:'F' + String(choice([190,210,230])),
+      f15r:'DCT', f16d: destino.cod, f16e: eet, f16a1:'', f16a2:'', f18:'0',
+      f7: mat
+    };
+    let aero = choice(AERONAVES.filter(a=>a.gen));
+    let resumen, titulo;
+
+    if(caso === 'AFIL'){
+      v.f13a = 'AFIL';
+      v.f18 = `DEP/${origen.cod}`;
+      titulo = 'Plan de vuelo presentado desde el aire (AFIL)';
+      resumen = `La tripulación no pudo presentar el plan por ninguno de los medios habituales por un problema de conectividad, así que lo transmite <b>por radio estando ya en vuelo</b>. En la casilla 13 no va el aeródromo de salida sino la palabra <b>AFIL</b>, y en la casilla 18 se indica, precedido de <b>DEP/</b>, el indicador de lugar de la dependencia ATS de la que pueden obtenerse los datos del plan suplementario: <b>${origen.cod}</b>. La hora de la casilla 13 es la hora de paso sobre el primer punto de la ruta: <b>${hora} UTC</b>.`;
+    } else if(caso === 'ZZZZ_DEP'){
+      v.f13a = 'ZZZZ';
+      v.f18 = 'DEP/BN1 CARTAGENA';
+      titulo = 'Salida desde un aeródromo sin indicador de lugar';
+      resumen = `El vuelo sale de una pista que <b>no tiene indicador de lugar OACI asignado</b>. En ese caso la casilla 13 lleva <b>ZZZZ</b> y el nombre y lugar del aeródromo se anotan en la casilla 18 precedidos de <b>DEP/</b>. Para este vuelo el aeródromo es <b>BN1 CARTAGENA</b>. Hora prevista de fuera calzos: <b>${hora} UTC</b>.`;
+    } else if(caso === 'ZZZZ_DEST'){
+      v.f16d = 'ZZZZ';
+      v.f18 = 'DEST/BN1 CARTAGENA';
+      titulo = 'Destino sin indicador de lugar';
+      resumen = `El destino es una pista <b>sin indicador de lugar OACI asignado</b>. La casilla 16 lleva <b>ZZZZ</b> seguido del EET total, y el nombre y lugar del aeródromo van en la casilla 18 precedidos de <b>DEST/</b>: <b>BN1 CARTAGENA</b>.`;
+    } else if(caso === 'SOBREVUELO'){
+      aero = choice(AERONAVES.filter(a=>!a.gen && a.tipo!=='C130'));
+      const linea = choice(AEROLINEAS);
+      v.f7 = linea.des + String(randInt(100,999));
+      v.f8t = 'N'; v.f10a = 'SDFGR'; v.f10b = 'S';
+      v.f15v = 'N0' + String(randInt(420,470)); v.f15n = 'F' + String(choice([330,350]));
+      v.f18 = `PBN/B1C1D1O1S1 REG/${mat} OPR/${linea.nom}`;
+      titulo = 'Sobrevuelo del territorio colombiano identificado con call sign';
+      resumen = `La aeronave <b>sobrevuela territorio colombiano</b> identificándose con distintivo de llamada <b>${v.f7}</b> en lugar de su matrícula. Toda aeronave en esa situación <b>debe registrar la matrícula en la casilla 18</b> (indicador <b>REG/</b>) y contar con autorización de la Fuerza Aérea Colombiana. La matrícula es <b>${mat}</b> y el explotador <b>${linea.nom}</b>. Capacidades PBN: B1C1D1O1S1.`;
+    } else if(caso === 'CAMBIO_Y'){
+      v.f8r = 'Y';
+      v.f15v = 'N0140'; v.f15n = 'A055';
+      v.f15r = 'BUTAL/N0140A055 VFR DCT';
+      titulo = 'Cambio de reglas de vuelo IFR → VFR';
+      resumen = `El vuelo <b>comienza con reglas IFR y cambia a VFR</b> en ruta, así que la casilla 8 no lleva I ni V sino la letra que corresponde a ese cambio. El punto donde se hace el cambio, con su velocidad y nivel, se indica en la casilla 15 tal como lo publica el AIP: <b>BUTAL/N0140A055 VFR DCT</b>. Velocidad de crucero inicial <b>N0140</b>, nivel inicial <b>A055</b>.`;
+    } else if(caso === 'CAMBIO_Z'){
+      v.f8r = 'Z';
+      v.f15v = 'N0230'; v.f15n = 'F190';
+      v.f15r = 'ZIPAQUIRA/N0230F190 IFR DCT';
+      titulo = 'Cambio de reglas de vuelo VFR → IFR';
+      resumen = `El vuelo <b>comienza con reglas VFR y cambia a IFR</b> en ruta. El punto de cambio, con velocidad y nivel, va en la casilla 15 como lo publica el AIP: <b>ZIPAQUIRA/N0230F190 IFR DCT</b>. Velocidad de crucero inicial <b>N0230</b>, nivel inicial <b>F190</b> — que es además el primer nivel de vuelo utilizable en Colombia.`;
+    } else {
+      aero = {tipo:'ZZZZ', estela:'M', nombre:'formación de dos C-130 Hércules'};
+      v.f7 = 'FAC' + String(randInt(1000,9999)).slice(0,4);
+      v.f8t = 'M'; v.f9n = '2'; v.f10a = 'SDFG'; v.f10b = 'C';
+      v.f18 = 'TYP/2C130';
+      titulo = 'Vuelo militar en formación';
+      resumen = `Se trata de un <b>vuelo militar en formación de dos aeronaves</b>. La casilla 9 lleva el <b>número de aeronaves</b> —que sólo se anota cuando es más de una— y, como se trata de una formación, el designador de tipo se sustituye por <b>ZZZZ</b>; los números y tipos reales se detallan en la casilla 18 precedidos de <b>TYP/</b>. La categoría de estela corresponde a la aeronave del tipo indicado.`;
+    }
+
+    return {
+      nivelTag: 'NIVEL 5 · CASOS AIS',
+      titulo,
+      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>. Origen <b>${origen.cod}</b> (${origen.nom}), destino <b>${destino.cod}</b> (${destino.nom}), sin alterno. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. Velocidad <b>${v.f15v}</b>, nivel <b>${v.f15n}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
+      keys: [
+        ['Casilla 7', v.f7],
+        ['Casilla 8', `${v.f8r} · ${v.f8t}`],
+        ['Casilla 9', `${v.f9n||'—'} · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10', `${v.f10a} / ${v.f10b}`],
+        ['Casilla 13', `${v.f13a} · ${v.f13h}`],
+        ['Casilla 15', `${v.f15v} · ${v.f15n} · ${v.f15r}`],
+        ['Casilla 16', `${v.f16d} · ${eet}`],
+        ['Casilla 18', v.f18],
+        ['Casilla 19', `E/${auto} P/${personas}`]
+      ],
+      fuenteRuta: NOTA_PUBLICADA,
+      values: base19(Object.assign({}, v, {
+        f9t: aero.tipo, f9e: aero.estela,
+        e19: auto, p19: personas,
+        r19x: [], s19x: ['P','D','M','J'], j19x: ['L','F','U','V'],
+        d19x: ['D','C'], d19n:'', d19c:'', d19col:'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: piloto, licencia: lic,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(randInt(1,12)), fAnio:'26'
+      }))
+    };
+  }
+
+  // ---------- Campos del formulario ----------
+  const TEXTOS = ['hDeposito','destinatarios','remitente','identExacta','f7','f8r','f8t',
+    'f9n','f9t','f9e','f10a','f10b','f13a','f13h','f15v','f15n','f15r',
+    'f16d','f16e','f16a1','f16a2','f18','e19','p19','d19n','d19c','d19col',
+    'a19','n19txt','c19','c19lic','presentadoPor','licencia','fDia','fMes','fAnio'];
+  const GRUPOS_X = ['r19','s19','j19','d19','d19cov','n19'];
+
+  const $ = id => document.getElementById(id);
+
+  function tachadas(grupo){
+    const cont = $(grupo);
+    if(!cont) return [];
+    return Array.from(cont.querySelectorAll('.tbox.x')).map(b => b.dataset.val);
+  }
+  function marcarTachadas(grupo, lista){
+    const cont = $(grupo);
+    if(!cont) return;
+    cont.querySelectorAll('.tbox').forEach(b => {
+      b.classList.toggle('x', (lista||[]).indexOf(b.dataset.val) !== -1);
+    });
+  }
+
+  function leerForm(){
+    const v = {};
+    TEXTOS.forEach(k => { const el = $(k); v[k] = el ? el.value : ''; });
+    v.f3 = $('f3').value;
+    v.r19x = tachadas('r19');
+    v.s19x = tachadas('s19');
+    v.j19x = tachadas('j19');
+    // La casilla D/ y su indicador C viven en dos contenedores distintos del formato
+    v.d19x = tachadas('d19').concat(tachadas('d19cov'));
+    v.n19x = tachadas('n19');
+    return v;
+  }
+
+  function escribirForm(v){
+    TEXTOS.forEach(k => { const el = $(k); if(el) el.value = v[k] != null ? v[k] : ''; });
+    $('f3').value = v.f3 || 'FPL';
+    marcarTachadas('r19', v.r19x);
+    marcarTachadas('s19', v.s19x);
+    marcarTachadas('j19', v.j19x);
+    marcarTachadas('d19', (v.d19x||[]).filter(x => x === 'D'));
+    marcarTachadas('d19cov', (v.d19x||[]).filter(x => x === 'C'));
+    marcarTachadas('n19', v.n19x);
   }
 
   // ---------- Estado ----------
   let currentLevel = 1;
   let currentSituation = null;
+  let modo = 'diligenciar';
+  let erroresInyectados = [];      // modo "detectar el error"
+  let examen = null;               // modo examen
 
-  const levelRow = document.getElementById('levelRow');
-  const levelTag = document.getElementById('levelTag');
-  const scenarioNarrative = document.getElementById('scenarioNarrative');
-  const scenarioGrid = document.getElementById('scenarioGrid');
-  const btnDatos = document.getElementById('btnDatos');
-  const btnNuevo = document.getElementById('btnNuevo');
-  const btnValidar = document.getElementById('btnValidar');
-  const btnRespuesta = document.getElementById('btnRespuesta');
-  const btnLimpiar = document.getElementById('btnLimpiar');
-  const respuestaOficial = document.getElementById('respuestaOficial');
-  const fplOficialTexto = document.getElementById('fplOficialTexto');
-  const fplUsuarioTexto = document.getElementById('fplUsuarioTexto');
-  const scoreBanner = document.getElementById('scoreBanner');
-  const feedbackList = document.getElementById('feedbackList');
+  const MODOS = {
+    diligenciar: 'Se te plantea una situación de vuelo en lenguaje natural y tú diligencias el formulario casilla por casilla. Al validar, el simulador revisa cada casilla y explica el porqué de cada error.',
+    error: 'Se te presenta un plan de vuelo <b>ya diligenciado que contiene errores</b>. Haz clic sobre las casillas que estén mal y luego califica. Marcar casillas correctas también resta, igual que en una revisión real de sala AIS/ARO.',
+    decodificar: 'Recibes el <b>mensaje FPL crudo</b> tal como viaja por la red AMHS/AFTN y debes volcarlo al formulario. Sólo se evalúan las casillas 3 a 18, que son las que el mensaje transporta.',
+    examen: 'Cinco planes seguidos, sin ver la respuesta ni la retroalimentación hasta terminar. Al final obtienes la nota, el tiempo empleado y el detalle de errores por casilla.'
+  };
+
+  const fplForm = $('fplForm');
+  const levelRow = $('levelRow');
+  const levelTag = $('levelTag');
+  const scenarioPanel = $('scenarioPanel');
+  const scenarioNarrative = $('scenarioNarrative');
+  const scenarioGrid = $('scenarioGrid');
+  const telexPanel = $('telexPanel');
+  const telexGiven = $('telexGiven');
+  const examBar = $('examBar');
+  const examRonda = $('examRonda');
+  const examCrono = $('examCrono');
+  const modeTabs = $('modeTabs');
+  const modeDesc = $('modeDesc');
+  const btnDatos = $('btnDatos');
+  const btnNuevo = $('btnNuevo');
+  const btnValidar = $('btnValidar');
+  const btnSiguiente = $('btnSiguiente');
+  const btnRespuesta = $('btnRespuesta');
+  const btnLimpiar = $('btnLimpiar');
+  const respuestaOficial = $('respuestaOficial');
+  const fplOficialTexto = $('fplOficialTexto');
+  const fplUsuarioTexto = $('fplUsuarioTexto');
+  const splUsuarioTexto = $('splUsuarioTexto');
+  const salidaMensajes = $('salidaMensajes');
+  const scoreBanner = $('scoreBanner');
+  const feedbackList = $('feedbackList');
+
+  // ---------- Cambio de modo ----------
+  modeTabs.addEventListener('click', e => {
+    const tab = e.target.closest('.mode-tab');
+    if(!tab) return;
+    modeTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    setModo(tab.dataset.modo);
+  });
+
+  function setModo(m){
+    modo = m;
+    examen = null;
+    detenerCrono();
+    modeDesc.innerHTML = MODOS[m];
+    fplForm.classList.toggle('modo-marcar', m === 'error');
+    telexPanel.style.display = m === 'decodificar' ? 'block' : 'none';
+    scenarioPanel.style.display = m === 'decodificar' ? 'none' : 'block';
+    examBar.style.display = m === 'examen' ? 'flex' : 'none';
+    btnRespuesta.style.display = m === 'examen' ? 'none' : 'inline-flex';
+    btnLimpiar.style.display = m === 'error' ? 'none' : 'inline-flex';
+    salidaMensajes.style.display = m === 'error' ? 'none' : 'block';
+    btnValidar.textContent = m === 'error' ? 'Calificar marcas' : 'Validar plan de vuelo';
+    btnNuevo.textContent = m === 'examen' ? 'Empezar examen' : 'Nueva situación';
+    nuevaSituacion();
+  }
 
   levelRow.addEventListener('click', (e) => {
     const btn = e.target.closest('.pill-btn');
@@ -988,7 +1733,8 @@ btnAyuda.addEventListener('click', () => {
   function renderSituacion(sit){
     currentSituation = sit;
     levelTag.textContent = sit.nivelTag;
-    scenarioNarrative.innerHTML = `<p><b>${sit.titulo}</b></p><p style="margin-top:6px;">${sit.narrativa}</p>`;
+    const fuente = sit.fuenteRuta ? `<p class="bhint" style="margin-top:10px;">${sit.fuenteRuta}</p>` : '';
+    scenarioNarrative.innerHTML = `<p><b>${sit.titulo}</b></p><p style="margin-top:6px;">${sit.narrativa}</p>${fuente}`;
     scenarioGrid.innerHTML = sit.keys.map(([k,v]) => `
       <div class="scenario-tile"><div class="tlabel">${k}</div><div class="tval mono">${v}</div></div>
     `).join('');
@@ -1002,291 +1748,309 @@ btnAyuda.addEventListener('click', () => {
     btnDatos.textContent = visible ? 'Mostrar datos clave' : 'Ocultar datos clave';
   });
 
-  function nuevaSituacion(){
-    renderSituacion(generarSituacion(currentLevel));
+  function limpiarResultados(){
     respuestaOficial.style.display = 'none';
     scoreBanner.style.display = 'none';
     feedbackList.innerHTML = '';
-    limpiarFormulario(false);
+    fplUsuarioTexto.textContent = '—';
+    splUsuarioTexto.textContent = '—';
+    fplForm.querySelectorAll('.fpl-box').forEach(b => b.classList.remove('marcada','rev-ok','rev-bad'));
+  }
+
+  function nuevaSituacion(){
+    limpiarResultados();
+    if(modo === 'examen'){ iniciarExamen(); return; }
+
+    const sit = generarSituacion(currentLevel);
+    renderSituacion(sit);
+
+    if(modo === 'error'){
+      const inyectado = inyectarErrores(sit);
+      erroresInyectados = inyectado.errores;
+      escribirForm(inyectado.valores);
+      bloquearFormulario(true);
+      btnSiguiente.style.display = 'none';
+    } else if(modo === 'decodificar'){
+      telexGiven.textContent = msgFPL(sit.values);
+      limpiarFormulario(false);
+      bloquearFormulario(false);
+      btnSiguiente.style.display = 'none';
+    } else {
+      limpiarFormulario(false);
+      bloquearFormulario(false);
+      btnSiguiente.style.display = 'none';
+    }
   }
   btnNuevo.addEventListener('click', nuevaSituacion);
 
-  // ---------- Chips tachables ----------
-  function wireChips(containerId, group){
-    const el = document.getElementById(containerId);
-    el.addEventListener('click', (e) => {
-      const chip = e.target.closest('.tach-chip');
-      if(!chip) return;
-      chip.classList.toggle('crossed');
+  function bloquearFormulario(bloquear){
+    fplForm.querySelectorAll('input, textarea, select').forEach(el => {
+      if(el.id === 'f3' || el.hasAttribute('readonly')) return;
+      el.disabled = bloquear;
     });
+    fplForm.querySelectorAll('.tbox').forEach(b => b.disabled = bloquear);
   }
-  wireChips('r19chips');
-  wireChips('s19chips');
-  wireChips('j19chips');
-  wireChips('n19chips');
-  document.getElementById('d19cover').addEventListener('click', (e) => {
-    e.target.classList.toggle('crossed');
+
+  // ---------- Casillas de una letra que se tachan ----------
+  GRUPOS_X.forEach(g => {
+    const cont = $(g);
+    if(!cont) return;
+    cont.addEventListener('click', e => {
+      const box = e.target.closest('.tbox');
+      if(!box || box.disabled) return;
+      box.classList.toggle('x');
+    });
   });
 
-  function getCrossed(containerId){
-    return Array.from(document.querySelectorAll(`#${containerId} .tach-chip.crossed`)).map(c=>c.dataset.val);
-  }
+  // ---------- Marcado de casillas (modo "detectar el error") ----------
+  fplForm.addEventListener('click', e => {
+    if(modo !== 'error') return;
+    const box = e.target.closest('.fpl-box[data-cas]');
+    if(!box) return;
+    const cas = box.dataset.cas;
+    const marcar = !box.classList.contains('marcada');
+    fplForm.querySelectorAll(`.fpl-box[data-cas="${cas}"]`).forEach(b => b.classList.toggle('marcada', marcar));
+  });
 
   // ---------- Limpiar formulario ----------
-  function limpiarFormulario(alsoScenario){
-    document.querySelectorAll('.fpl-paper input, .fpl-paper textarea').forEach(inp => {
-      if(inp.readOnly) return;
+  function limpiarFormulario(tambienResultados){
+    fplForm.querySelectorAll('input, textarea').forEach(inp => {
+      if(inp.hasAttribute('readonly')) return;
       inp.value = '';
     });
-    document.getElementById('f3').value = 'FPL';
-    document.querySelectorAll('.tach-chip').forEach(c => c.classList.remove('crossed'));
+    $('f3').value = 'FPL';
+    fplForm.querySelectorAll('.tbox').forEach(b => b.classList.remove('x'));
     fplUsuarioTexto.textContent = '—';
-    if(alsoScenario){
-      respuestaOficial.style.display = 'none';
-      scoreBanner.style.display = 'none';
-      feedbackList.innerHTML = '';
-    }
+    splUsuarioTexto.textContent = '—';
+    if(tambienResultados) limpiarResultados();
   }
   btnLimpiar.addEventListener('click', () => limpiarFormulario(true));
 
-  // ---------- Construir mensaje FPL en formato telex ----------
-  function buildFPLText(v){
-    const f7 = v.f7||'???????';
-    const f8 = v.f8||'??';
-    const f9 = v.f9||'????/?';
-    const f10 = v.f10||'N';
-    const f13 = v.f13||'ZZZZ0000';
-    const route = `${v.f15v||'N0000'}${v.f15n||'VFR'} ${v.f15r||'DCT'}`.trim();
-    const dest16 = [v.f16d, v.f16a1, v.f16a2].filter(Boolean).join(' ') || 'ZZZZ0000';
-    const f18 = v.f18 || '0';
-    const e = v.e19||'0000';
-    const p = v.p19||'TBN';
-    const rCarried = ['UHF','VHF','ELT'].filter(x => !(v.r19cross||[]).includes(x));
-    const r = rCarried.length? rCarried.join(' ') : 'NIL';
-    const sCarried = ['POLAR','DESERT','MARITIME','JUNGLE'].filter(x => !(v.s19cross||[]).includes(x));
-    const s = sCarried.length? sCarried.join(' ') : 'NIL';
-    const jCross = v.j19cross||[];
-    const j = jCross.includes('NONE') ? 'NIL' : ['L','F','U','V'].filter(x=>!jCross.includes(x)).join(' ') || 'NIL';
-    const d = v.d19n ? `${v.d19n} ${v.d19c||'?'} ${v.d19cover?'C':'DESCUBIERTO'} ${v.d19col||'?'}` : 'NIL';
-    const a = v.a19 || 'N/A';
-    const n = (v.n19cross||[]).includes('NIL') ? 'NIL' : (v.n19txt||'—');
-    const c = v.c19 || 'N/A';
-    return `(${document.getElementById('f3').value||'FPL'}-${f7}-${f8}\n-${f9}-${f10}\n-${f13}\n-${route}\n-${dest16}\n-${f18}\n-E/${e} P/${p} R/${r} S/${s} J/${j} D/${d} A/${a} N/${n} C/${c})`;
+  // ---------- Mensajes ATS ----------
+  // El FPL transporta únicamente las casillas 3 a 18 (AIP ENR 1.10-2 y Doc 4444,
+  // Apéndice 2, sección 3). La casilla 19 viaja aparte, en el mensaje SPL.
+  function restantes(todas, tachadas){
+    return todas.filter(x => (tachadas||[]).indexOf(x) === -1).join('');
   }
 
-  function collectFormValues(){
-    return {
-      f7: document.getElementById('f7').value,
-      f8: document.getElementById('f8').value,
-      f9: document.getElementById('f9').value,
-      f10: document.getElementById('f10').value,
-      f13: document.getElementById('f13').value,
-      f15v: document.getElementById('f15v').value,
-      f15n: document.getElementById('f15n').value,
-      f15r: document.getElementById('f15r').value,
-      f16d: document.getElementById('f16d').value,
-      f16a1: document.getElementById('f16a1').value,
-      f16a2: document.getElementById('f16a2').value,
-      f18: document.getElementById('f18').value,
-      e19: document.getElementById('e19').value,
-      p19: document.getElementById('p19').value,
-      r19cross: getCrossed('r19chips'),
-      s19cross: getCrossed('s19chips'),
-      j19cross: getCrossed('j19chips'),
-      d19n: document.getElementById('d19n').value,
-      d19c: document.getElementById('d19c').value,
-      d19col: document.getElementById('d19col').value,
-      d19cover: document.getElementById('d19cover').classList.contains('crossed') ? false : true,
-      a19: document.getElementById('a19').value,
-      n19cross: getCrossed('n19chips'),
-      n19txt: document.getElementById('n19txt').value,
-      c19: document.getElementById('c19').value
-    };
+  function msgFPL(v){
+    const casilla9 = `${v.f9n||''}${v.f9t||'????'}/${v.f9e||'?'}`;
+    const casilla16 = [`${v.f16d||'ZZZZ'}${v.f16e||'0000'}`, v.f16a1, v.f16a2].filter(Boolean).join(' ');
+    return [
+      `(${v.f3||'FPL'}-${v.f7||'???????'}-${v.f8r||'?'}${v.f8t||'?'}`,
+      `-${casilla9}-${v.f10a||'N'}/${v.f10b||'N'}`,
+      `-${v.f13a||'ZZZZ'}${v.f13h||'0000'}`,
+      `-${v.f15v||'N0000'}${v.f15n||'VFR'} ${(v.f15r||'DCT').replace(/\s+/g,' ').trim()}`,
+      `-${casilla16}`,
+      `-${v.f18||'0'})`
+    ].join('\n');
+  }
+
+  function msgSPL(v){
+    const partes = [`E/${v.e19||'0000'}`, `P/${v.p19||'TBN'}`];
+    const r = restantes(['U','V','E'], v.r19x);
+    const s = restantes(['P','D','M','J'], v.s19x);
+    const j = restantes(['L','F','U','V'], v.j19x);
+    if(r) partes.push(`R/${r}`);
+    if(s) partes.push(`S/${s}`);
+    if(j) partes.push(`J/${j}`);
+    if((v.d19x||[]).indexOf('D') === -1 && v.d19n){
+      const cubierta = (v.d19x||[]).indexOf('C') === -1 ? ' C' : '';
+      partes.push(`D/${v.d19n} ${v.d19c||''}${cubierta} ${v.d19col||''}`.replace(/\s+/g,' ').trim());
+    }
+    if(v.a19) partes.push(`A/${v.a19}`);
+    if((v.n19x||[]).indexOf('N') === -1 && v.n19txt) partes.push(`N/${v.n19txt}`);
+    partes.push(`C/${v.c19||''}${v.c19lic?' '+v.c19lic:''}`.trim());
+    const casilla16 = [`${v.f16d||'ZZZZ'}${v.f16e||'0000'}`, v.f16a1, v.f16a2].filter(Boolean).join(' ');
+    return [
+      `(SPL-${v.f7||'???????'}`,
+      `-${v.f13a||'ZZZZ'}${v.f13h||'0000'}`,
+      `-${casilla16}`,
+      `-${v.f18||'0'}`,
+      `-${partes.join(' ')})`
+    ].join('\n');
   }
 
   btnRespuesta.addEventListener('click', () => {
     if(!currentSituation) return;
-    fplOficialTexto.textContent = buildFPLText(currentSituation.values);
-    respuestaOficial.style.display = respuestaOficial.style.display==='none' ? 'block' : 'none';
+    const abierto = respuestaOficial.style.display !== 'none';
+    if(!abierto){
+      fplOficialTexto.textContent = msgFPL(currentSituation.values) + '\n\n' + msgSPL(currentSituation.values);
+    }
+    respuestaOficial.style.display = abierto ? 'none' : 'block';
   });
 
   // ---------- Validación ----------
-  function arraysEqualAsSets(a,b){
-    const A=[...new Set(a)].sort(), B=[...new Set(b)].sort();
-    return A.length===B.length && A.every((v,i)=>v===B[i]);
+  function mismoSet(a,b){
+    const A=[...new Set(a||[])].sort().join(','), B=[...new Set(b||[])].sort().join(',');
+    return A===B;
+  }
+  function igual(a,b){ return norm(a) === norm(b); }
+  function mono(t){ return `<span class="mono">${t}</span>`; }
+  function letras(lista){ return lista && lista.length ? lista.join(', ') : 'ninguna'; }
+
+  // Devuelve un bloque de retroalimentación por casilla. `soloFPL` omite la
+  // casilla 19 y el pie, que no viajan en un mensaje FPL.
+  function validarPlan(v, exp, soloFPL){
+    const B = [];
+    const add = (cas, label, ok, msg) => B.push({cas, label, ok, msg});
+
+    // --- Casilla 7 ---
+    const v7 = norm(v.f7);
+    if(!v7) add('7','Casilla 7 — Identificación de aeronave', false, 'Está vacía. Lleva el designador OACI del explotador seguido del número de vuelo, o bien la matrícula de la aeronave.');
+    else if(!/^[A-Z0-9]{1,7}$/.test(v7)) add('7','Casilla 7 — Identificación de aeronave', false, 'Máximo 7 caracteres alfanuméricos, <b>sin guiones, espacios ni símbolos</b>.');
+    else if(!igual(v7, exp.f7)) add('7','Casilla 7 — Identificación de aeronave', false, `Se esperaba ${mono(exp.f7)} según la situación planteada.`);
+    else add('7','Casilla 7 — Identificación de aeronave', true, '');
+
+    // --- Casilla 8 ---
+    const r8 = norm(v.f8r), t8 = norm(v.f8t);
+    if(!/^[IVYZ]$/.test(r8)){
+      add('8','Casilla 8 — Reglas de vuelo', false, `Las reglas de vuelo sólo admiten ${mono('I')} (todo el vuelo IFR), ${mono('V')} (todo VFR), ${mono('Y')} (IFR y después cambio) o ${mono('Z')} (VFR y después cambio). Las letras <b>S, N, G, M y X son tipos de vuelo</b>, no reglas de vuelo.`);
+    } else if(!igual(r8, exp.f8r)) add('8','Casilla 8 — Reglas de vuelo', false, `Se esperaba ${mono(exp.f8r)}.`);
+    else add('8','Casilla 8 — Reglas de vuelo', true, '');
+
+    if(!/^[SNGMX]$/.test(t8)){
+      add('8','Casilla 8 — Tipo de vuelo', false, `El tipo de vuelo admite ${mono('S')} regular, ${mono('N')} no regular, ${mono('G')} aviación general, ${mono('M')} militar o ${mono('X')} otra categoría.`);
+    } else if(!igual(t8, exp.f8t)) add('8','Casilla 8 — Tipo de vuelo', false, `Se esperaba ${mono(exp.f8t)} para este escenario.`);
+    else add('8','Casilla 8 — Tipo de vuelo', true, '');
+
+    // --- Casilla 9 ---
+    const n9 = norm(v.f9n), t9 = norm(v.f9t), e9 = norm(v.f9e);
+    if(t9.indexOf('/') !== -1){
+      add('9','Casilla 9 — Número / tipo / estela', false, 'La categoría de estela turbulenta va en su propia casilla, después de la barra que ya trae impresa el formulario. En «Tipo de aeronave» va únicamente el designador OACI del Doc 8643.');
+    } else if(!/^[A-Z0-9]{2,4}$/.test(t9)){
+      add('9','Casilla 9 — Número / tipo / estela', false, `El designador de tipo tiene entre 2 y 4 caracteres (Doc OACI 8643), o ${mono('ZZZZ')} si no hay designador asignado, detallando los tipos en la casilla 18 tras ${mono('TYP/')}.`);
+    } else if(!/^[HML]$/.test(e9)){
+      add('9','Casilla 9 — Número / tipo / estela', false, `La categoría de estela es ${mono('H')} pesada (136 000 kg o más), ${mono('M')} media (menos de 136 000 kg y más de 7 000 kg) o ${mono('L')} ligera (7 000 kg o menos).`);
+    } else if(n9 && !/^\d{1,2}$/.test(n9)){
+      add('9','Casilla 9 — Número / tipo / estela', false, 'El número de aeronaves son 1 o 2 cifras, y sólo se anota cuando se trata de más de una.');
+    } else if(!igual(n9, exp.f9n) || !igual(t9, exp.f9t) || !igual(e9, exp.f9e)){
+      add('9','Casilla 9 — Número / tipo / estela', false, `Se esperaba ${mono(`${exp.f9n||'(vacío)'} · ${exp.f9t} · /${exp.f9e}`)}.`);
+    } else add('9','Casilla 9 — Número / tipo / estela', true, '');
+
+    // --- Casilla 10 ---
+    const a10 = norm(v.f10a), b10 = norm(v.f10b);
+    if(!a10) add('10','Casilla 10 — Equipo y capacidades', false, `Falta el equipo COM/NAV y de ayudas para la aproximación. Use ${mono('N')} si no lleva equipo o no funciona, o ${mono('S')} para el equipo normalizado más las letras que correspondan.`);
+    else if(!b10) add('10','Casilla 10 — Equipo y capacidades', false, `Falta el equipo de vigilancia, que va después de la barra. Use ${mono('N')} si no lleva, o los descriptores de transpondedor, ADS-B o ADS-C.`);
+    else if(!igual(a10, exp.f10a) || !igual(b10, exp.f10b)) add('10','Casilla 10 — Equipo y capacidades', false, `Se esperaba ${mono(exp.f10a + ' / ' + exp.f10b)}.`);
+    else add('10','Casilla 10 — Equipo y capacidades', true, '');
+
+    // --- Casilla 13 ---
+    const a13 = norm(v.f13a), h13 = norm(v.f13h);
+    if(!/^[A-Z]{4}$/.test(a13)){
+      add('13','Casilla 13 — Aeródromo de salida y hora', false, `Indicador de lugar OACI de 4 letras (Doc 7910); ${mono('ZZZZ')} si no tiene indicador asignado, detallándolo en la 18 tras ${mono('DEP/')}; o ${mono('AFIL')} si el plan se presenta desde el aire.`);
+    } else if(!/^\d{4}$/.test(h13)){
+      add('13','Casilla 13 — Aeródromo de salida y hora', false, 'La hora se inserta siempre con <b>4 cifras UTC</b>.');
+    } else if(Number(h13.slice(0,2)) > 23 || Number(h13.slice(2)) > 59){
+      add('13','Casilla 13 — Aeródromo de salida y hora', false, `${mono(h13)} no es una hora UTC válida.`);
+    } else if(!igual(a13, exp.f13a) || !igual(h13, exp.f13h)){
+      add('13','Casilla 13 — Aeródromo de salida y hora', false, `Se esperaba ${mono(exp.f13a + ' · ' + exp.f13h)}.`);
+    } else add('13','Casilla 13 — Aeródromo de salida y hora', true, '');
+
+    // --- Casilla 15 ---
+    const vv = norm(v.f15v), nn = norm(v.f15n), rr = norm(v.f15r);
+    const nivelCol = /^([FA])(\d{3})$/.exec(nn);
+    if(!/^(N\d{4}|K\d{4}|M\d{3})$/.test(vv)){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, `La velocidad verdadera se expresa con ${mono('N')} + 4 cifras en nudos, ${mono('K')} + 4 cifras en km/h, o ${mono('M')} + 3 cifras si es número de Mach.`);
+    } else if(!/^(F\d{3}|S\d{4}|A\d{3}|M\d{4}|VFR)$/.test(nn)){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, `El nivel se expresa con ${mono('F')} + 3 cifras (nivel de vuelo), ${mono('A')} + 3 cifras (altitud en centenares de pies), ${mono('S')} + 4 cifras, ${mono('M')} + 4 cifras, o las letras ${mono('VFR')} en vuelos VFR no controlados.`);
+    } else if(nivelCol && nivelCol[1] === 'A' && Number(nivelCol[2]) > 185){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, 'En Colombia las altitudes llegan hasta <b>A185</b>; por encima de ese valor se usan niveles de vuelo a partir de FL190 (AIP ENR 1.10).');
+    } else if(nivelCol && nivelCol[1] === 'F' && Number(nivelCol[2]) < 190){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, 'En Colombia el <b>primer nivel de vuelo es FL190</b>; por debajo de él la altitud se expresa con A + 3 cifras (AIP ENR 1.10).');
+    } else if(!rr){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, `Falta la descripción de la ruta. Si el aeródromo tiene SID o STAR publicada es obligatorio insertar su designador cifrado; si no la tiene, se usa ${mono('DCT')} al inicio o al final según corresponda.`);
+    } else if(!igual(vv, exp.f15v) || !igual(nn, exp.f15n) || !igual(rr, exp.f15r)){
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, `Se esperaba ${mono(exp.f15v + ' · ' + exp.f15n + ' · ' + exp.f15r)}.`);
+    } else add('15','Casilla 15 — Velocidad, nivel y ruta', true, '');
+
+    // --- Casilla 16 ---
+    const d16 = norm(v.f16d), e16 = norm(v.f16e), a1 = norm(v.f16a1), a2 = norm(v.f16a2);
+    if(!/^[A-Z]{4}$/.test(d16)){
+      add('16','Casilla 16 — Destino, EET y alternos', false, `El destino es un indicador de lugar OACI de 4 letras, o ${mono('ZZZZ')} detallándolo en la 18 tras ${mono('DEST/')}.`);
+    } else if(!/^\d{4}$/.test(e16)){
+      add('16','Casilla 16 — Destino, EET y alternos', false, 'La duración total prevista se anota con <b>4 cifras</b> (horas y minutos), inmediatamente después del destino y sin dejar espacio.');
+    } else if((a1 && !/^[A-Z]{4}$/.test(a1)) || (a2 && !/^[A-Z]{4}$/.test(a2))){
+      add('16','Casilla 16 — Destino, EET y alternos', false, 'Los aeródromos de alternativa se identifican con indicadores OACI de 4 letras, máximo dos.');
+    } else if(a1 && a1 === d16){
+      add('16','Casilla 16 — Destino, EET y alternos', false, 'El aeródromo de alternativa no puede ser el mismo aeródromo de destino.');
+    } else if(!igual(d16, exp.f16d) || !igual(e16, exp.f16e) || !igual(a1, exp.f16a1) || !igual(a2, exp.f16a2)){
+      add('16','Casilla 16 — Destino, EET y alternos', false, `Se esperaba ${mono([exp.f16d + ' · ' + exp.f16e, exp.f16a1, exp.f16a2].filter(Boolean).join(' · '))}.`);
+    } else add('16','Casilla 16 — Destino, EET y alternos', true, '');
+
+    // --- Casilla 18 ---
+    const v18 = norm(v.f18);
+    if(!v18){
+      add('18','Casilla 18 — Otros datos', false, `Nunca se deja vacía: insértese ${mono('0')} si no hay otros datos.`);
+    } else if(a10.indexOf('R') !== -1 && v18.indexOf('PBN/') === -1){
+      add('18','Casilla 18 — Otros datos', false, `El equipo declarado en la casilla 10 incluye la letra ${mono('R')} (PBN aprobada) y, en ese caso, <b>es obligatorio</b> especificar las capacidades de navegación en la casilla 18 después del indicador ${mono('PBN/')}.`);
+    } else if(!igual(v18, exp.f18)){
+      add('18','Casilla 18 — Otros datos', false, `Se esperaba ${mono(exp.f18)}. Recuerda el orden prescrito de los indicadores y las reglas del AIP para vuelos especiales.`);
+    } else add('18','Casilla 18 — Otros datos', true, '');
+
+    if(soloFPL) return B;
+
+    // --- Casilla 19 ---
+    const e19v = norm(v.e19);
+    if(!/^\d{4}$/.test(e19v)) add('19E','Casilla 19 — E/ Autonomía', false, 'La autonomía de combustible se anota con 4 cifras (horas y minutos).');
+    else if(!igual(e19v, exp.e19)) add('19E','Casilla 19 — E/ Autonomía', false, `Se esperaba ${mono('E/'+exp.e19)}.`);
+    else if(/^\d{4}$/.test(norm(v.f16e)) && e19v < norm(v.f16e)) add('19E','Casilla 19 — E/ Autonomía', false, 'La autonomía no puede ser menor que la duración total prevista del vuelo.');
+    else add('19E','Casilla 19 — E/ Autonomía', true, '');
+
+    const p19v = norm(v.p19);
+    if(!p19v) add('19P','Casilla 19 — P/ Personas a bordo', false, 'Falta el número total de personas a bordo (pasajeros y tripulación).');
+    else if(p19v === 'TBN' && ['S','M'].indexOf(norm(exp.f8t)) === -1) add('19P','Casilla 19 — P/ Personas a bordo', false, `${mono('TBN')} sólo se admite en vuelos de servicio aéreo regular (S) y de aviación militar (M), según el AIP Colombia.`);
+    else if(p19v !== 'TBN' && !/^\d{1,3}$/.test(p19v)) add('19P','Casilla 19 — P/ Personas a bordo', false, `Anote el número total de personas, o ${mono('TBN')} si aún no se conoce y el tipo de vuelo lo permite.`);
+    else if(!igual(p19v, exp.p19)) add('19P','Casilla 19 — P/ Personas a bordo', false, `Se esperaba ${mono('P/'+exp.p19)}.`);
+    else add('19P','Casilla 19 — P/ Personas a bordo', true, '');
+
+    if(mismoSet(v.r19x, exp.r19x)) add('19R','Casilla 19 — R/ Radio de emergencia', true, '');
+    else add('19R','Casilla 19 — R/ Radio de emergencia', false, `Se tacha lo que <b>no</b> está disponible: ${mono('U')} si no hay UHF 243,0 MHz, ${mono('V')} si no hay VHF 121,5 MHz, ${mono('E')} si no hay ELT. Debías tachar: <b>${letras(exp.r19x)}</b>.`);
+
+    if(mismoSet(v.s19x, exp.s19x)) add('19S','Casilla 19 — S/ Equipo de supervivencia', true, '');
+    else add('19S','Casilla 19 — S/ Equipo de supervivencia', false, `Táchense todos los indicadores si no se lleva equipo de supervivencia, o sólo los que no se lleven: ${mono('P')} polar, ${mono('D')} desértico, ${mono('M')} marítimo, ${mono('J')} selva. Debías tachar: <b>${letras(exp.s19x)}</b>.`);
+
+    if(mismoSet(v.j19x, exp.j19x)) add('19J','Casilla 19 — J/ Chalecos', true, '');
+    else add('19J','Casilla 19 — J/ Chalecos', false, `Táchense todos los indicadores si no se llevan chalecos salvavidas. Debías tachar: <b>${letras(exp.j19x)}</b>.`);
+
+    const dOk = mismoSet(v.d19x, exp.d19x) && igual(v.d19n, exp.d19n) && igual(v.d19c, exp.d19c) && igual(v.d19col, exp.d19col);
+    if(dOk) add('19D','Casilla 19 — D/ Botes neumáticos', true, '');
+    else if((exp.d19x||[]).indexOf('D') !== -1) add('19D','Casilla 19 — D/ Botes neumáticos', false, `En este vuelo no se llevan botes neumáticos: deben tacharse los indicadores ${mono('D')} y ${mono('C')} y dejar en blanco número, capacidad y color.`);
+    else add('19D','Casilla 19 — D/ Botes neumáticos', false, `Se esperaba: ${mono(exp.d19n + ' botes · capacidad ' + exp.d19c + ' · ' + ((exp.d19x||[]).indexOf('C')===-1?'cubiertos':'sin cubrir') + ' · ' + exp.d19col)}. El indicador ${mono('C')} sólo se tacha si los botes <b>no</b> están cubiertos.`);
+
+    if(!norm(v.a19)) add('19A','Casilla 19 — A/ Color y marcas', false, 'Falta el color y las marcas importantes de la aeronave.');
+    else if(!igual(v.a19, exp.a19)) add('19A','Casilla 19 — A/ Color y marcas', false, `Se esperaba ${mono(exp.a19)}.`);
+    else add('19A','Casilla 19 — A/ Color y marcas', true, '');
+
+    if(mismoSet(v.n19x, exp.n19x) && igual(v.n19txt, exp.n19txt)) add('19N','Casilla 19 — N/ Observaciones', true, '');
+    else if((exp.n19x||[]).indexOf('N') !== -1) add('19N','Casilla 19 — N/ Observaciones', false, `No hay observaciones que registrar: debe tacharse el indicador ${mono('N')} y dejar el renglón vacío.`);
+    else add('19N','Casilla 19 — N/ Observaciones', false, `Se esperaba la observación ${mono(exp.n19txt)} sin tachar el indicador N.`);
+
+    if(!norm(v.c19)) add('19C','Casilla 19 — C/ Piloto al mando', false, 'Falta el nombre del piloto al mando.');
+    else if(!igual(v.c19, exp.c19)) add('19C','Casilla 19 — C/ Piloto al mando', false, `Se esperaba ${mono(exp.c19)}.`);
+    else if(!norm(v.c19lic)) add('19C','Casilla 19 — C/ Piloto al mando', false, 'El AIP Colombia exige registrar el nombre del piloto al mando <b>y su número de licencia</b>.');
+    else add('19C','Casilla 19 — C/ Piloto al mando', true, '');
+
+    if(!norm(v.presentadoPor) || !norm(v.licencia)) add('PRES','Presentado por / Licencia', false, 'Debe registrarse el nombre de quien presenta el plan de vuelo con su respectivo número de licencia (AIP Colombia ENR 1.10).');
+    else add('PRES','Presentado por / Licencia', true, '');
+
+    return B;
   }
 
   function validar(){
     if(!currentSituation) return;
-    const v = collectFormValues();
+    if(modo === 'error') return calificarMarcas();
+
+    const v = leerForm();
     const exp = currentSituation.values;
-    const blocks = [];
+    const blocks = validarPlan(v, exp, modo === 'decodificar');
 
-    function block(label, ok, msgOk, msgBad){
-      blocks.push({label, ok, msg: ok?msgOk:msgBad});
-    }
+    if(modo === 'examen') return registrarRondaExamen(blocks, v);
 
-    // Casilla 7
-    const v7 = norm(v.f7);
-    if(!v7){
-      block('Casilla 7 — Identificación', false, '', 'La identificación de aeronave está vacía. Máximo 7 caracteres, sin guiones ni espacios.');
-    } else if(v7.length>7){
-      block('Casilla 7 — Identificación', false, '', 'Excede los 7 caracteres permitidos.');
-    } else if(v7 !== norm(exp.f7)){
-      block('Casilla 7 — Identificación', false, '', `Se esperaba <span class="mono">${exp.f7}</span> según la situación planteada.`);
-    } else {
-      block('Casilla 7 — Identificación', true, 'Identificación correcta y dentro del formato (máx. 7 caracteres, sin símbolos).', '');
-    }
+    pintarResultado(blocks, v);
+  }
 
-    // Casilla 8
-    const v8 = norm(v.f8);
-    if(!/^[IVYZ][SNGMX]$/.test(v8) && !/^[IV]$/.test(v8)){
-      block('Casilla 8 — Reglas / tipo de vuelo', false, '', 'Formato inválido. Usa una letra de reglas (I/V/Y/Z) seguida de una letra de tipo (S/N/G/M/X).');
-    } else if(v8 !== norm(exp.f8.slice(0,2))){
-      block('Casilla 8 — Reglas / tipo de vuelo', false, '', `Se esperaba <span class="mono">${exp.f8.slice(0,2)}</span> para este escenario.`);
-    } else {
-      block('Casilla 8 — Reglas / tipo de vuelo', true, 'Reglas y tipo de vuelo correctos.', '');
-    }
-
-    // Casilla 9
-    const v9 = norm(v.f9);
-    if(!/\/[HML]$/.test(v9)){
-      block('Casilla 9 — Tipo / estela', false, '', 'Debe terminar en /H, /M o /L según la categoría de estela turbulenta.');
-    } else if(v9 !== norm(exp.f9)){
-      block('Casilla 9 — Tipo / estela', false, '', `Se esperaba <span class="mono">${exp.f9}</span> (Doc OACI 8643).`);
-    } else {
-      block('Casilla 9 — Tipo / estela', true, 'Designador de tipo y categoría de estela correctos.', '');
-    }
-
-    // Casilla 10
-    const v10 = norm(v.f10);
-    if(!v10){
-      block('Casilla 10 — Equipo', false, '', 'Falta el equipo COM/NAV/vigilancia. Usa N si no lleva equipo.');
-    } else if(v10 !== norm(exp.f10)){
-      block('Casilla 10 — Equipo', false, '', `Se esperaba <span class="mono">${exp.f10}</span> para esta aeronave.`);
-    } else {
-      block('Casilla 10 — Equipo', true, 'Equipo COM/NAV y de vigilancia correctos.', '');
-    }
-
-    // Casilla 13
-    const v13 = norm(v.f13);
-    if(!/^[A-Z]{4}\d{4}$/.test(v13)){
-      block('Casilla 13 — Salida / hora', false, '', 'Formato incorrecto: 4 letras (indicador OACI) + 4 dígitos UTC, sin espacio. Ej. SKBO1030.');
-    } else if(v13 !== norm(exp.f13)){
-      block('Casilla 13 — Salida / hora', false, '', `Se esperaba <span class="mono">${exp.f13}</span>.`);
-    } else {
-      block('Casilla 13 — Salida / hora', true, 'Aeródromo de salida y EOBT correctos.', '');
-    }
-
-    // Casilla 15
-    const v15 = norm(`${v.f15v}${v.f15n} ${v.f15r}`);
-    const e15 = norm(`${exp.f15v}${exp.f15n} ${exp.f15r}`);
-    if(!v.f15v || !v.f15n){
-      block('Casilla 15 — Ruta', false, '', 'Faltan velocidad y/o nivel de crucero (deben ir pegados, sin espacio, ej. N0450F350).');
-    } else if(v15 !== e15){
-      block('Casilla 15 — Ruta', false, '', `Se esperaba <span class="mono">${exp.f15v}${exp.f15n} ${exp.f15r}</span>.`);
-    } else {
-      block('Casilla 15 — Ruta', true, 'Velocidad, nivel y descripción de ruta correctos.', '');
-    }
-
-    // Casilla 16
-    const v16 = norm([v.f16d, v.f16a1, v.f16a2].filter(Boolean).join(' '));
-    const e16 = norm([exp.f16d, exp.f16a1, exp.f16a2].filter(Boolean).join(' '));
-    if(!/^[A-Z]{4}\d{4}/.test(norm(v.f16d))){
-      block('Casilla 16 — Destino / EET / alternos', false, '', 'El destino debe iniciar con 4 letras (o ZZZZ) seguido del EET en 4 cifras.');
-    } else if(v16 !== e16){
-      block('Casilla 16 — Destino / EET / alternos', false, '', `Se esperaba <span class="mono">${e16}</span>.`);
-    } else {
-      block('Casilla 16 — Destino / EET / alternos', true, 'Destino, EET y alternos correctos.', '');
-    }
-
-    // Casilla 18
-    const v18 = norm(v.f18);
-    const e18 = norm(exp.f18);
-    if(!v18){
-      block('Casilla 18 — Otros datos', false, '', 'Casilla vacía: inserta 0 si no hay más datos, o el/los indicador(es) correspondiente(s).');
-    } else if(v18 !== e18){
-      block('Casilla 18 — Otros datos', false, '', `Se esperaba <span class="mono">${exp.f18}</span> para este escenario (revisa indicadores STS/, PBN/, DOF/, RMK/ y las reglas de vuelos especiales del AIP ENR 1.10).`);
-    } else {
-      block('Casilla 18 — Otros datos', true, 'Otros datos correctos, incluidos los indicadores requeridos por el AIP.', '');
-    }
-
-    // Casilla 19 - E/P
-    const e19v = norm(v.e19), e19e = norm(exp.e19);
-    if(!/^\d{4}$/.test(e19v)){
-      block('Casilla 19 — E/ Autonomía', false, '', 'Debe ser un grupo de 4 cifras (HHMM).');
-    } else if(e19v!==e19e){
-      block('Casilla 19 — E/ Autonomía', false, '', `Se esperaba <span class="mono">E/${exp.e19}</span>.`);
-    } else {
-      block('Casilla 19 — E/ Autonomía', true, 'Autonomía correcta.', '');
-    }
-
-    const p19v = norm(v.p19), p19e = norm(exp.p19);
-    if(!p19v){
-      block('Casilla 19 — P/ Personas', false, '', 'Falta el número de personas a bordo (o TBN, solo para vuelos S/M).');
-    } else if(p19v!==p19e){
-      block('Casilla 19 — P/ Personas', false, '', `Se esperaba <span class="mono">P/${exp.p19}</span>.`);
-    } else {
-      block('Casilla 19 — P/ Personas', true, 'Número de personas a bordo correcto.', '');
-    }
-
-    // R/
-    if(arraysEqualAsSets(v.r19cross, exp.r19cross)){
-      block('Casilla 19 — R/ Radio de emergencia', true, 'Elementos tachados coinciden con el equipo realmente disponible.', '');
-    } else {
-      const esperado = exp.r19cross.length? exp.r19cross.join(', ') : 'ninguno (todo disponible)';
-      block('Casilla 19 — R/ Radio de emergencia', false, '', `Debías tachar: ${esperado}.`);
-    }
-
-    // S/
-    if(arraysEqualAsSets(v.s19cross, exp.s19cross)){
-      block('Casilla 19 — S/ Supervivencia', true, 'Equipo de supervivencia tachado correctamente.', '');
-    } else {
-      const esperado = exp.s19cross.length? exp.s19cross.join(', ') : 'ninguno (todo disponible)';
-      block('Casilla 19 — S/ Supervivencia', false, '', `Debías tachar: ${esperado}.`);
-    }
-
-    // J/
-    if(arraysEqualAsSets(v.j19cross, exp.j19cross)){
-      block('Casilla 19 — J/ Chalecos', true, 'Chalecos correctamente indicados.', '');
-    } else {
-      block('Casilla 19 — J/ Chalecos', false, '', exp.j19cross.includes('NONE') ? 'No se llevan chalecos: debías tachar "Sin chalecos" (y por tanto todos los demás).' : `Revisa qué elementos de J/ debías tachar.`);
-    }
-
-    // D/
-    const dExpLleva = !!exp.d19n;
-    const dUsrLleva = !!v.d19n;
-    if(dExpLleva !== dUsrLleva){
-      block('Casilla 19 — D/ Botes', false, '', dExpLleva? `Debías indicar botes: número ${exp.d19n}, capacidad ${exp.d19c}, color ${exp.d19col}.` : 'No se llevan botes neumáticos en este escenario; deja los campos vacíos.');
-    } else if(dExpLleva && (norm(v.d19n)!==norm(exp.d19n) || norm(v.d19c)!==norm(exp.d19c) || norm(v.d19col)!==norm(exp.d19col) || v.d19cover!==exp.d19cover)){
-      block('Casilla 19 — D/ Botes', false, '', `Revisa número, capacidad, cubierta y color. Se esperaba: ${exp.d19n} / ${exp.d19c} / ${exp.d19cover?'cubierto':'descubierto'} / ${exp.d19col}.`);
-    } else {
-      block('Casilla 19 — D/ Botes', true, 'Botes neumáticos correctamente indicados (o correctamente ausentes).', '');
-    }
-
-    // A/
-    if(norm(v.a19) !== norm(exp.a19)){
-      block('Casilla 19 — A/ Color y marcas', false, '', `Se esperaba <span class="mono">${exp.a19}</span>.`);
-    } else {
-      block('Casilla 19 — A/ Color y marcas', true, 'Color y marcas correctos.', '');
-    }
-
-    // N/
-    const nCross = arraysEqualAsSets(v.n19cross, exp.n19cross);
-    if(!nCross){
-      block('Casilla 19 — N/ Observaciones', false, '', exp.n19cross.includes('NIL') ? 'No hay observaciones: debías tachar "Sin observaciones".' : 'Revisa si debías tachar o escribir observaciones.');
-    } else {
-      block('Casilla 19 — N/ Observaciones', true, 'Observaciones correctamente indicadas.', '');
-    }
-
-    // C/
-    if(!norm(v.c19)){
-      block('Casilla 19 — C/ Piloto al mando', false, '', 'Falta el nombre completo del piloto al mando.');
-    } else {
-      block('Casilla 19 — C/ Piloto al mando', true, 'Nombre del piloto al mando registrado.', '');
-    }
-
-    // Render
+  function pintarResultado(blocks, v){
     feedbackList.innerHTML = blocks.map(b => `
       <div class="fb-block ${b.ok?'ok':'bad'}">
         <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
@@ -1296,39 +2060,201 @@ btnAyuda.addEventListener('click', () => {
 
     const correctas = blocks.filter(b=>b.ok).length;
     const total = blocks.length;
-    const score = Math.round((correctas/total)*100);
+    mostrarPuntaje(correctas, total, `Nivel: ${currentSituation.nivelTag}`);
+
+    fplUsuarioTexto.textContent = msgFPL(v);
+    splUsuarioTexto.textContent = msgSPL(v);
+    feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function mostrarPuntaje(correctas, total, detalle){
+    const score = total ? Math.round((correctas/total)*100) : 0;
     scoreBanner.style.display='flex';
     scoreBanner.innerHTML = `
       <div class="score-num">${score}</div>
-      <div class="score-text">${correctas} de ${total} casillas correctas — Nivel: ${currentSituation.nivelTag}</div>
+      <div class="score-text">${correctas} de ${total} revisiones correctas — ${detalle}</div>
       <div id="saveMsg" style="font-size:0.85rem; margin-top:6px; color:var(--text-muted); width:100%;"></div>
     `;
-
-    if (typeof guardarIntento === 'function') {
-      const saveMsgEl = document.getElementById('saveMsg');
-      if (saveMsgEl) saveMsgEl.textContent = 'Guardando tu resultado…';
-      guardarIntento('simulador-plan-vuelo', 'Simulador Plan de Vuelo', correctas, total).then(res => {
-        const el = document.getElementById('saveMsg');
-        if (!el) return;
-        if (res && res.ok) { el.textContent = '✅ Resultado guardado en tu progreso.'; el.style.color = 'var(--vfr)'; }
-        else { el.textContent = '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.'; el.style.color = 'var(--danger)'; }
-      });
-    }
-
-    fplUsuarioTexto.textContent = buildFPLText(v);
-    feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+    guardarResultado(correctas, total);
   }
+
+  function guardarResultado(correctas, total){
+    if (typeof guardarIntento !== 'function') return;
+    const saveMsgEl = document.getElementById('saveMsg');
+    if (saveMsgEl) saveMsgEl.textContent = 'Guardando tu resultado…';
+    guardarIntento('simulador-plan-vuelo', 'Simulador Plan de Vuelo', correctas, total).then(res => {
+      const el = document.getElementById('saveMsg');
+      if (!el) return;
+      if (res && res.ok) { el.textContent = '✅ Resultado guardado en tu progreso.'; el.style.color = 'var(--vfr)'; }
+      else { el.textContent = '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.'; el.style.color = 'var(--danger)'; }
+    });
+  }
+
   btnValidar.addEventListener('click', validar);
 
-  // ---------- Enter para validar ----------
-  document.querySelectorAll('.fpl-paper input, .fpl-paper textarea').forEach(inp => {
-    inp.addEventListener('keydown', (e) => {
-      if(e.key==='Enter' && inp.tagName!=='TEXTAREA'){ e.preventDefault(); validar(); }
+  // ==========================================================================
+  // MODO "DETECTAR EL ERROR"
+  // Se parte de un plan correcto y se le inyectan fallos tipificados. El
+  // estudiante marca las casillas que considera mal diligenciadas.
+  // ==========================================================================
+  const FALLOS = [
+    {cas:'8',  ap:v => { v.f8r = v.f8t; }, expl:'La casilla 8 empieza por la letra de reglas de vuelo (I, V, Y o Z). Se anotó ahí un tipo de vuelo.'},
+    {cas:'9',  ap:v => { v.f9e = v.f9e === 'M' ? 'H' : 'M'; }, expl:'La categoría de estela turbulenta no corresponde a la masa máxima certificada de despegue del tipo de aeronave.'},
+    {cas:'9',  ap:v => { v.f9t = v.f9t + '/' + v.f9e; v.f9e = ''; }, expl:'El designador de tipo y la categoría de estela se escribieron juntos: la estela va sola en su casilla, después de la barra impresa.'},
+    {cas:'13', ap:v => { v.f13h = '2465'; }, expl:'La hora no es una hora UTC válida. Siempre se anota con 4 cifras UTC.'},
+    {cas:'13', ap:v => { v.f13h = v.f13h.slice(0,3); }, expl:'La hora quedó con 3 cifras: la casilla 13 exige 4 cifras UTC.'},
+    {cas:'15', ap:v => { v.f15v = v.f15v.replace(/^[NKM]/,''); }, expl:'La velocidad de crucero perdió la letra que indica la unidad (N nudos, K km/h, M Mach).'},
+    {cas:'15', ap:v => { v.f15n = 'F150'; }, expl:'En Colombia el primer nivel de vuelo es FL190; por debajo se expresa como altitud con A + 3 cifras.'},
+    {cas:'16', ap:v => { v.f16e = v.f16e.slice(0,3); }, expl:'La duración total prevista debe anotarse con 4 cifras (horas y minutos).'},
+    {cas:'16', ap:v => { v.f16a1 = v.f16d; }, expl:'Se anotó como aeródromo de alternativa el mismo aeródromo de destino.'},
+    {cas:'18', req:v => /PBN\//.test(v.f18), ap:v => { v.f18 = v.f18.replace(/PBN\/\S+\s*/,'').trim() || '0'; }, expl:'El equipo de la casilla 10 incluye la letra R (PBN aprobada), así que es obligatorio declarar las capacidades PBN en la casilla 18.'},
+    {cas:'18', req:v => /OPR\//.test(v.f18), ap:v => { v.f18 = v.f18.replace(/OPR\/[A-Z ]+/,'').replace(/\s+/g,' ').trim(); }, expl:'Falta el indicador OPR/: el AIP Colombia exige registrar el explotador en los planes de empresas regulares, no regulares, ferry y traslado.'},
+    {cas:'7',  ap:v => { v.f7 = v.f7.slice(0,2) + '-' + v.f7.slice(2); }, expl:'La identificación de aeronave no admite guiones ni símbolos.'},
+    {cas:'19E',ap:v => { v.e19 = '0010'; }, expl:'La autonomía declarada es menor que la duración total prevista del vuelo.'},
+    {cas:'19P',req:v => ['S','M'].indexOf(v.f8t) === -1, ap:v => { v.p19 = 'TBN'; }, expl:'TBN sólo se admite en vuelos de servicio aéreo regular (S) y de aviación militar (M).'},
+    {cas:'19C',ap:v => { v.c19lic = ''; }, expl:'Falta el número de licencia del piloto al mando, que el AIP Colombia exige junto con el nombre.'}
+  ];
+
+  function inyectarErrores(sit){
+    const valores = JSON.parse(JSON.stringify(sit.values));
+    valores.f3 = 'FPL';
+    // Sólo se inyectan fallos que de verdad alteren este plan: si no aplican,
+    // quedarían como errores imposibles de encontrar.
+    const disponibles = FALLOS.filter(f => !f.req || f.req(valores));
+    const elegidos = [];
+    const pool = [...disponibles];
+    const cuantos = randInt(2,4);
+    for(let i=0; i<cuantos && pool.length; i++){
+      const idx = randInt(0, pool.length-1);
+      const f = pool[idx];
+      pool.splice(idx,1);
+      if(elegidos.some(e => e.cas === f.cas)) { i--; continue; }
+      f.ap(valores);
+      elegidos.push(f);
+    }
+    return {valores, errores: elegidos};
+  }
+
+  function calificarMarcas(){
+    const marcadas = [...new Set(
+      Array.from(fplForm.querySelectorAll('.fpl-box.marcada')).map(b => b.dataset.cas)
+    )];
+    const conError = erroresInyectados.map(e => e.cas);
+    const aciertos = marcadas.filter(c => conError.indexOf(c) !== -1);
+    const falsos   = marcadas.filter(c => conError.indexOf(c) === -1);
+    const omitidas = conError.filter(c => marcadas.indexOf(c) === -1);
+
+    fplForm.querySelectorAll('.fpl-box[data-cas]').forEach(b => {
+      const cas = b.dataset.cas;
+      b.classList.remove('marcada');
+      if(conError.indexOf(cas) !== -1) b.classList.add('rev-bad');
+      else if(marcadas.indexOf(cas) !== -1) b.classList.add('rev-falso');
     });
+
+    const bloques = erroresInyectados.map(e => ({
+      ok: aciertos.indexOf(e.cas) !== -1,
+      label: `Casilla ${e.cas.replace('19','19 ')} — ${aciertos.indexOf(e.cas)!==-1 ? 'detectado' : 'no lo detectaste'}`,
+      msg: e.expl
+    }));
+    falsos.forEach(c => bloques.push({
+      ok:false,
+      label:`Casilla ${c} — marcada sin tener error`,
+      msg:'Esta casilla estaba correctamente diligenciada. En una revisión real, devolver un plan bien hecho también cuesta tiempo al operador.'
+    }));
+
+    const leyenda = `
+      <div class="fb-block">
+        <div class="fb-body">En el formulario, <b style="color:var(--danger)">el borde rojo</b> señala las casillas que realmente tenían un error y <b style="color:var(--lifr)">el morado</b> las que marcaste estando bien diligenciadas.</div>
+      </div>`;
+    feedbackList.innerHTML = leyenda + bloques.map(b => `
+      <div class="fb-block ${b.ok?'ok':'bad'}">
+        <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
+        <div class="fb-body">${b.msg}</div>
+      </div>
+    `).join('');
+
+    const correctas = Math.max(0, aciertos.length - falsos.length);
+    mostrarPuntaje(correctas, conError.length, `${aciertos.length} detectados · ${omitidas.length} omitidos · ${falsos.length} marcados de más`);
+    bloquearFormulario(true);
+    feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // ==========================================================================
+  // MODO EXAMEN
+  // ==========================================================================
+  const RONDAS_EXAMEN = 5;
+  let cronoId = null;
+
+  function detenerCrono(){ if(cronoId){ clearInterval(cronoId); cronoId = null; } }
+
+  function iniciarExamen(){
+    examen = {ronda:0, aciertos:0, total:0, inicio:Date.now(), detalle:{}};
+    detenerCrono();
+    cronoId = setInterval(() => {
+      const s = Math.floor((Date.now() - examen.inicio)/1000);
+      examCrono.textContent = `${pad2(Math.floor(s/60))}:${pad2(s%60)}`;
+    }, 1000);
+    siguienteRondaExamen();
+  }
+
+  function siguienteRondaExamen(){
+    examen.ronda++;
+    examRonda.textContent = `Plan ${examen.ronda} de ${RONDAS_EXAMEN}`;
+    renderSituacion(generarSituacion(randInt(1,5)));
+    limpiarFormulario(false);
+    bloquearFormulario(false);
+    feedbackList.innerHTML = '';
+    scoreBanner.style.display = 'none';
+    btnValidar.style.display = 'inline-flex';
+    btnSiguiente.style.display = 'none';
+  }
+
+  function registrarRondaExamen(blocks){
+    examen.aciertos += blocks.filter(b => b.ok).length;
+    examen.total    += blocks.length;
+    blocks.filter(b => !b.ok).forEach(b => {
+      examen.detalle[b.cas] = (examen.detalle[b.cas] || 0) + 1;
+    });
+    bloquearFormulario(true);
+    btnValidar.style.display = 'none';
+    if(examen.ronda >= RONDAS_EXAMEN){ cerrarExamen(); return; }
+    btnSiguiente.style.display = 'inline-flex';
+    btnSiguiente.textContent = `Siguiente plan (${examen.ronda + 1} de ${RONDAS_EXAMEN})`;
+  }
+
+  btnSiguiente.addEventListener('click', () => { if(examen) siguienteRondaExamen(); });
+
+  function cerrarExamen(){
+    detenerCrono();
+    const seg = Math.floor((Date.now() - examen.inicio)/1000);
+    const tiempo = `${pad2(Math.floor(seg/60))}:${pad2(seg%60)}`;
+    const fallos = Object.entries(examen.detalle).sort((a,b) => b[1]-a[1]);
+    feedbackList.innerHTML = `
+      <div class="fb-block ${fallos.length?'bad':'ok'}">
+        <div class="fb-head"><span class="fb-icon">${fallos.length?'📋':'✅'}</span><span>Resumen del examen — tiempo empleado ${tiempo}</span></div>
+        <div class="fb-body">${
+          fallos.length
+            ? 'Casillas donde más te equivocaste:<ul style="margin:8px 0 0; padding-left:20px;">' +
+              fallos.map(([cas,n]) => `<li><b>Casilla ${cas.replace('19','19 ')}</b> — ${n} ${n===1?'vez':'veces'}</li>`).join('') + '</ul>'
+            : 'No fallaste ninguna casilla en los cinco planes.'
+        }</div>
+      </div>`;
+    mostrarPuntaje(examen.aciertos, examen.total, `${RONDAS_EXAMEN} planes · ${tiempo}`);
+    btnSiguiente.style.display = 'none';
+    btnValidar.style.display = 'none';
+    feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // ---------- Enter para validar ----------
+  fplForm.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON'){
+      e.preventDefault();
+      validar();
+    }
   });
 
   // ---------- Inicial ----------
-  nuevaSituacion();
+  setModo('diligenciar');
 
 })();
 </script>
