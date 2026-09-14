@@ -573,9 +573,17 @@ async function obtenerResultadosDeGrupo(grupoId) {
     total: r.total,
     porcentaje: r.porcentaje,
     fecha: r.fecha,
-    detalle: r.detalle || []
+    detalle: r.detalle || [],
+    // Marca las entregas de plan de vuelo cuya nota ajustó el profesor a mano,
+    // para poder distinguirlas de un vistazo en la tabla de intentos.
+    corregido: _tieneCorreccion(r.detalle)
   }));
   return { ok: true, resultados };
+}
+
+function _tieneCorreccion(detalle) {
+  if (!detalle || Array.isArray(detalle) || !Array.isArray(detalle.casillas)) return false;
+  return detalle.casillas.some(c => c && c.corregida);
 }
 
 async function borrarResultado(resultadoId) {
@@ -583,6 +591,31 @@ async function borrarResultado(resultadoId) {
   const { error } = await cliente.from('resultados_actividad').delete().eq('id', resultadoId);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+// ============================================================
+// MODO SEGURO DE EXAMEN — incidentes
+// ============================================================
+
+// Cuenta de cambios de pestaña por estudiante×actividad, para las
+// actividades de un grupo. Se muestra como aviso junto a sus resultados
+// en el panel (no es una alerta en vivo: aparece al entrar o refrescar
+// "Resultados", igual que el resto de este panel).
+async function obtenerIncidentesDeGrupo(grupoId) {
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('incidentes_actividad')
+    .select('actividad_id, estudiante_id, tipo, actividades!inner(grupo_id)')
+    .eq('actividades.grupo_id', grupoId);
+
+  if (error) return { ok: false, error: error.message, porEstudianteActividad: {} };
+
+  const porEstudianteActividad = {};
+  (data || []).forEach(inc => {
+    const clave = `${inc.estudiante_id}|${inc.actividad_id}`;
+    porEstudianteActividad[clave] = (porEstudianteActividad[clave] || 0) + 1;
+  });
+  return { ok: true, porEstudianteActividad };
 }
 
 // Resumen estudiante × actividad: intentos, mejor, promedio y último.
@@ -619,10 +652,14 @@ function resumirResultados(estudiantes, actividades, resultados) {
 
 // Qué preguntas está fallando más el grupo. Sale del campo "detalle"
 // que guarda calificar_actividad() con la respuesta de cada pregunta.
+// Sólo los exámenes de opción múltiple lo guardan como arreglo: una entrega
+// de plan de vuelo guarda ahí un objeto con el formulario diligenciado, y
+// hay que saltárselo o se rompe el cálculo entero.
 function estadisticaPorPregunta(resultados, banco) {
   const porPregunta = {};
   resultados.forEach(r => {
-    (r.detalle || []).forEach(d => {
+    if (!Array.isArray(r.detalle)) return;
+    r.detalle.forEach(d => {
       const acc = porPregunta[d.pregunta_id] || { respuestas: 0, aciertos: 0 };
       acc.respuestas++;
       if (d.ok) acc.aciertos++;
@@ -714,7 +751,8 @@ function exportarDetalleCSV(nombreGrupo, resultados) {
   const contenido = construirCSV(
     ['Estudiante', 'Actividad', 'Tipo', 'Fecha', 'Correctas', 'Total', 'Porcentaje'],
     resultados.map(r => [
-      r.estudiante, r.actividadTitulo, r.actividadTipo === 'examen' ? 'Examen' : 'Texto',
+      r.estudiante, r.actividadTitulo,
+      r.actividadTipo === 'examen' ? 'Examen' : r.actividadTipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Texto',
       _fechaLegible(r.fecha), r.correctas, r.total, r.porcentaje
     ])
   );
@@ -727,4 +765,106 @@ function _nombreArchivoSeguro(texto) {
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase() || 'grupo';
+}
+
+// ============================================================
+// ACTIVIDADES DE PLAN DE VUELO
+//
+// A diferencia de los exámenes de opción múltiple, estas no salen del
+// banco de preguntas: el profesor genera una situación de vuelo con el
+// motor del propio simulador, la revisa, la ajusta si quiere y la
+// publica. El enunciado y la clave de respuestas viajan a la tabla
+// actividad_plan, que sólo él puede leer.
+// ============================================================
+
+async function crearActividadPlanVuelo(datos) {
+  const sesion = await _sesionProfesor();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const validacion = _validarActividadPlan(datos);
+  if (!validacion.ok) return validacion;
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('actividades')
+    .insert({
+      profesor_id: sesion.user.id,
+      grupo_id: datos.grupoId,
+      tipo: 'plan_vuelo',
+      titulo: datos.titulo.trim(),
+      descripcion: (datos.descripcion || '').trim() || null,
+      activa: datos.activa !== false,
+      fecha_limite: datos.fechaLimite || null,
+      intentos_max: datos.intentosMax || null,
+      barajar: false
+    })
+    .select('id')
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+
+  const { error: errorPlan } = await cliente
+    .from('actividad_plan')
+    .insert({ actividad_id: data.id, enunciado: datos.enunciado, clave: datos.clave });
+
+  if (errorPlan) {
+    // La actividad sin su plan no sirve de nada y el estudiante la vería
+    // vacía en su panel, así que se deshace la inserción.
+    await cliente.from('actividades').delete().eq('id', data.id);
+    return { ok: false, error: errorPlan.message };
+  }
+
+  return { ok: true, actividadId: data.id };
+}
+
+function _validarActividadPlan(datos) {
+  if (!datos.grupoId) return { ok: false, error: 'Elige a qué grupo va dirigida la actividad.' };
+  if (!datos.titulo || !datos.titulo.trim()) return { ok: false, error: 'Ponle un título a la actividad.' };
+  if (!datos.enunciado || !datos.enunciado.narrativa || !datos.enunciado.narrativa.trim()) {
+    return { ok: false, error: 'La actividad necesita la situación de vuelo que leerá el estudiante.' };
+  }
+  if (!datos.clave || !datos.clave.f7) {
+    return { ok: false, error: 'Falta la clave de respuestas: diligencia el formulario antes de publicar.' };
+  }
+  return { ok: true };
+}
+
+// Enunciado y clave de una actividad ya publicada, para revisarla.
+async function obtenerPlanDeActividad(actividadId) {
+  const sesion = await _sesionProfesor();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('actividad_plan')
+    .select('enunciado, clave')
+    .eq('actividad_id', actividadId)
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, plan: data };
+}
+
+// ---------- CORRECCIÓN MANUAL DE UN PLAN DE VUELO ----------
+// La calificación automática compara casilla por casilla contra la clave, así
+// que una respuesta válida escrita de otra forma puede quedar marcada mal. El
+// profesor ajusta las casillas que haga falta y el servidor recalcula la nota
+// y deja constancia en el historial: corregir nunca es silencioso.
+//
+// `cambios` es [{ i: <índice de la casilla>, ok: true|false }, …].
+async function corregirPlanDeVuelo(resultadoId, cambios, motivo) {
+  const sesion = await _sesionProfesor();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+  if (!Array.isArray(cambios) || cambios.length === 0) {
+    return { ok: false, error: 'No marcaste ninguna casilla para corregir.' };
+  }
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('corregir_plan_vuelo', {
+    p_resultado_id: resultadoId,
+    p_cambios: cambios,
+    p_motivo: (motivo || '').trim() || null
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
 }

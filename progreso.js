@@ -498,3 +498,55 @@ async function calificarActividad(actividadId, respuestas) {
   if (error) return { ok: false, error: error.message };
   return { ok: true, resultado: data };
 }
+
+// ---------- MODO SEGURO DE EXAMEN: incidentes ----------
+// Registra que el estudiante cambió de pestaña (u ocultó la ventana)
+// mientras presentaba un examen asignado. Silencioso ante fallos: un
+// incidente que no se pudo guardar no debe interrumpir el examen del
+// estudiante (ver tomar-actividad.html, que ya avisa en pantalla aunque
+// esto falle).
+async function registrarIncidenteActividad(actividadId, tipo) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false };
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente.from('incidentes_actividad').insert({
+    actividad_id: actividadId,
+    estudiante_id: sesion.user.id,
+    tipo
+  });
+  if (error) { console.error('No se pudo registrar el incidente:', error.message); return { ok: false, error: error.message }; }
+  return { ok: true };
+}
+
+// ---------- ACTIVIDADES DE PLAN DE VUELO ----------
+// El estudiante entrega el formulario OACI completo y el servidor lo
+// califica casilla por casilla contra la clave del profesor, que nunca
+// llega al navegador antes de entregar (ver calificar_plan_vuelo en
+// supabase-schema.sql). La respuesta trae la clave para que el simulador
+// pueda explicar cada error, igual que hace calificarActividad() con la
+// opción correcta de cada pregunta.
+async function calificarPlanDeVuelo(actividadId, valores) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('calificar_plan_vuelo', {
+    p_actividad_id: actividadId,
+    p_valores: valores
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
+}
+
+// Trae una entrega ya calificada para verla o descargarla en PDF. Sirve
+// tanto al profesor (cualquier entrega de sus actividades) como al propio
+// estudiante (sólo las suyas); el servidor decide qué devuelve.
+async function obtenerPlanEntregado(resultadoId) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('obtener_resultado_plan', { p_resultado_id: resultadoId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, entrega: data };
+}

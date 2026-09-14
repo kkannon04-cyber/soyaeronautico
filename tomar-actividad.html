@@ -424,6 +424,15 @@
     }
 
     actividad = res.actividad;
+
+    // Un plan de vuelo no se responde con opciones: se diligencia el formulario
+    // OACI, que vive en el simulador. Si alguien llega aquí con un enlace viejo,
+    // se le manda allá sin que tenga que volver al panel.
+    if (actividad.tipo === 'plan_vuelo') {
+      location.replace('simulador-plan-vuelo.html?actividad=' + encodeURIComponent(actividadId));
+      return;
+    }
+
     preguntas = actividad.preguntas || [];
 
     const sesion = await obtenerSesionActual();

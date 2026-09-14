@@ -1162,7 +1162,7 @@
       item.className = 'module-item';
       item.innerHTML = `
         <div class="module-info">
-          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : 'Lectura'}</div>
+          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
           <span class="badge-estado ${estado}">${textoEstado}</span>
           <h4>${escaparHTML(a.titulo)}</h4>
           <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
@@ -1170,7 +1170,7 @@
         </div>
         ${a.bloqueada
           ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-          : `<a href="tomar-actividad.html?id=${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`}
+          : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`}
       `;
       contenedor.appendChild(item);
     });

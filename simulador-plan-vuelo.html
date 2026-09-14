@@ -374,6 +374,149 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---- Panel de actividad (profesor crea · estudiante resuelve · revisión) ---- */
+  .act-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; }
+  .act-field{ display:flex; flex-direction:column; gap:5px; }
+  .act-field > span{ font-family:'IBM Plex Mono'; font-size:0.66rem; letter-spacing:0.07em;
+                     text-transform:uppercase; color:var(--text-muted); }
+  .act-field input, .act-field textarea{
+    font-family:'IBM Plex Sans'; font-size:0.88rem; color:var(--text);
+    background:var(--bg); border:1px solid var(--hairline); border-radius:8px;
+    padding:9px 11px; width:100%; transition:border-color .2s;
+  }
+  .act-field textarea{ font-size:0.84rem; line-height:1.55; resize:vertical; }
+  .act-field input:focus, .act-field textarea:focus{ outline:none; border-color:var(--accent); }
+  .act-ancho{ grid-column:1 / -1; }
+  .act-aviso{ border:1px solid var(--danger); border-radius:8px; padding:12px 14px;
+              margin-bottom:14px; color:var(--danger); font-size:0.88rem; }
+  .act-info{ border:1px solid var(--hairline); background:var(--panel-alt); border-radius:8px;
+             padding:12px 14px; margin-bottom:14px; font-size:0.88rem; line-height:1.6; }
+  .act-info b{ color:var(--text); }
+  .act-estado{ margin-top:10px; font-size:0.85rem; color:var(--text-muted); min-height:1.2em; }
+  @media (max-width:520px){ .act-grid{ grid-template-columns:1fr; } }
+
+  /* ---- Corrección manual de una entrega y su historial ---- */
+  .fb-corr{ display:inline-flex; align-items:center; gap:7px; margin-top:10px;
+            font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.05em;
+            text-transform:uppercase; color:var(--text-muted); cursor:pointer;
+            border:1px solid var(--hairline); border-radius:7px; padding:5px 10px;
+            transition:border-color .2s, color .2s; }
+  .fb-corr:hover{ border-color:var(--accent); color:var(--accent); }
+  .fb-corr input{ accent-color:var(--accent); cursor:pointer; margin:0; }
+  .fb-marca{ display:inline-block; margin-left:8px; font-family:'IBM Plex Mono';
+             font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase;
+             color:var(--lifr); border:1px solid var(--lifr); border-radius:5px;
+             padding:2px 7px; vertical-align:middle; }
+  .zona-corr{ border:1px solid var(--hairline); border-radius:10px; padding:16px 18px;
+              margin-top:16px; background:var(--panel-alt); }
+  .zona-corr h4{ font-family:'Archivo'; font-size:0.95rem; margin:0 0 6px; }
+  .hist-item{ border-left:3px solid var(--lifr); padding:10px 0 10px 14px; margin-top:12px; }
+  .hist-item .hist-cab{ font-size:0.8rem; color:var(--text-muted); }
+  .hist-item .hist-cab b{ color:var(--text); }
+  .hist-item ul{ margin:7px 0 0; padding-left:18px; font-size:0.85rem; line-height:1.6; }
+  .hist-item .hist-motivo{ margin-top:7px; font-size:0.85rem; font-style:italic; }
+
+  /* ========================================================================
+     IMPRESIÓN / EXPORTAR A PDF
+     El botón "Descargar PDF" abre el diálogo de impresión del navegador, donde
+     se elige "Guardar como PDF". No se usa ninguna librería externa: el PDF
+     sale con el mismo formato OACI que se ve en pantalla.
+     ======================================================================== */
+  .print-only{ display:none; }
+  .print-head h2{ font-family:'Archivo'; font-size:1.2rem; margin:0 0 6px; }
+  .print-head .print-nombre{ font-family:'Archivo'; font-weight:700; font-size:1rem;
+                             margin:0 0 8px; letter-spacing:0.01em; }
+  .print-head .print-meta{ font-family:'IBM Plex Mono'; font-size:0.68rem; line-height:1.75; }
+  .print-head .print-meta b{ font-weight:600; }
+
+  @media print{
+    @page{ size:A4 portrait; margin:12mm 10mm; }
+
+    /* Tinta negra sobre blanco pase lo que pase con el tema elegido.
+       Va con :root y no con html porque :root tiene más especificidad que el
+       selector de tipo y, si no, la paleta de pantalla seguiría ganando. */
+    :root, :root[data-theme="dark"]{
+      --bg:#FFFFFF; --panel:#FFFFFF; --panel-alt:#FFFFFF;
+      --text:#000000; --text-muted:#3A3A3A; --hairline:#9AA3AE;
+      --accent:#000000; --on-accent:#FFFFFF;
+      --vfr:#000000; --danger:#000000; --lifr:#000000;
+      --shadow-instrument:none; --shadow-card:none;
+      background:#FFFFFF !important;
+    }
+    body{ background:#FFFFFF !important; color:#000 !important; }
+
+    /* Fuera todo lo que no forma parte del plan entregado */
+    .topbar, .mobile-nav, .mobile-nav-backdrop, .hero-simple, .mode-tabs,
+    #actCrear, #actAviso, #actInfo, #zonaCorreccion, .fb-corr,
+    .mode-desc, .controls, .exam-bar, .help-panel, #telexPanel,
+    .action-row, #respuestaOficial, #scenarioGrid, #saveMsg,
+    footer{ display:none !important; }
+
+    .print-only{ display:block !important; }
+
+    .wrap{ max-width:none; padding:0; margin:0; }
+    .instrument{
+      border:none !important; box-shadow:none !important;
+      background:none !important; padding:0 !important; margin:0 0 10px !important;
+    }
+    .instrument::before, .instrument::after{ display:none !important; }
+    .instrument-label{
+      font-family:'IBM Plex Mono'; font-size:0.62rem; letter-spacing:0.08em;
+      text-transform:uppercase; color:#333 !important; margin-bottom:4px;
+      border:none !important; background:none !important; padding:0 !important;
+    }
+    .instrument-label .exam-progress{ border:none !important; background:none !important; color:#333 !important; }
+
+    /* La situación planteada se imprime: da contexto a quien reciba el plan */
+    #scenarioPanel{ page-break-inside:avoid; }
+    .scenario-narrative{ font-size:0.72rem; line-height:1.55; color:#000 !important; }
+
+    /* El formato, en tinta y sin efectos de pantalla */
+    .fpl-form{
+      border:1.2px solid #000 !important; box-shadow:none !important;
+      background:#fff !important; page-break-inside:auto;
+    }
+    .fpl-form .fpl-box{ box-shadow:none !important; background:#fff !important; }
+    .fpl-form .fpl-box.marcada, .fpl-form .fpl-box.rev-ok,
+    .fpl-form .fpl-box.rev-bad, .fpl-form .fpl-box.rev-falso{
+      box-shadow:inset 0 0 0 1.5px #000 !important;
+    }
+    .fpl-form input, .fpl-form textarea{
+      color:#000 !important; background:#fff !important; border-color:#666 !important;
+      -webkit-text-fill-color:#000 !important; opacity:1 !important;
+    }
+    .fpl-form .tbox{ color:#000 !important; background:#fff !important; }
+    /* Los ejemplos de ayuda (placeholder) no se imprimen: en papel se leerían
+       como si fueran datos del plan, y un formato vacío parecería diligenciado. */
+    .fpl-form input::placeholder, .fpl-form textarea::placeholder{
+      color:transparent !important; opacity:0 !important;
+    }
+
+    /* Puntaje, retroalimentación y mensajes ATS */
+    #scoreBanner{
+      border:1px solid #000 !important; background:#fff !important;
+      color:#000 !important; page-break-inside:avoid;
+    }
+    #scoreBanner .score-num, #scoreBanner .score-text{ color:#000 !important; }
+    .feedback-list .fb-block{
+      border:1px solid #777 !important; background:#fff !important;
+      page-break-inside:avoid;
+    }
+    .fpl-raw-box{
+      border:1px solid #000 !important; background:#fff !important;
+      color:#000 !important; page-break-inside:avoid; white-space:pre-wrap;
+    }
+
+    /* Pie con el crédito de autoría, sólo en el papel */
+    .print-pie{
+      display:block !important; margin-top:14px; padding-top:8px;
+      border-top:1px solid #000; font-family:'IBM Plex Mono';
+      font-size:0.6rem; line-height:1.6; color:#333;
+    }
+
+    a[href]::after{ content:none !important; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
@@ -471,6 +614,38 @@
 
 <div class="wrap">
 
+  <!-- ================= ACTIVIDAD (según los parámetros de la URL) =================
+       ?crear=<grupoId>  el profesor arma y publica una actividad de plan de vuelo
+       ?actividad=<id>   el estudiante resuelve la actividad que le asignaron
+       ?resultado=<id>   revisión de un plan ya entregado
+       Sin ninguno de los tres, este panel no aparece y el simulador funciona
+       exactamente como siempre. -->
+  <div class="instrument" id="actPanel" style="display:none;">
+    <div class="instrument-label"><span id="actLabel">Actividad</span></div>
+    <div style="position:relative; z-index:1;">
+      <div id="actAviso" class="act-aviso" style="display:none;"></div>
+      <div id="actInfo" class="act-info" style="display:none;"></div>
+
+      <div id="actCrear" style="display:none;">
+        <p class="bhint" style="margin-bottom:14px;">Genera una situación de vuelo con el motor del simulador, cámbiala si quieres y publícala para tu grupo. <b>El formulario de abajo queda como clave de respuestas</b>: revísalo antes de publicar, porque es contra él que se calificará a tus estudiantes.</p>
+        <div class="act-grid">
+          <label class="act-field"><span>Título de la actividad</span><input id="actTitulo" maxlength="120" placeholder="Parcial 1 — Plan de vuelo IFR"></label>
+          <label class="act-field"><span>Fecha límite (opcional)</span><input id="actLimite" type="datetime-local"></label>
+          <label class="act-field"><span>Intentos máximos (opcional)</span><input id="actIntentos" type="number" min="1" max="20" placeholder="Sin límite"></label>
+          <label class="act-field act-ancho"><span>Instrucciones para el grupo (opcional)</span><textarea id="actDesc" rows="2" maxlength="500"></textarea></label>
+          <label class="act-field act-ancho"><span>Situación de vuelo que leerá el estudiante</span><textarea id="actNarrativa" rows="8"></textarea></label>
+        </div>
+        <p class="bhint" style="margin-top:8px;">Puedes editar el texto libremente. Para resaltar un dato enciérralo entre <code>&lt;b&gt;</code> y <code>&lt;/b&gt;</code>; cualquier otra etiqueta se mostrará como texto normal.</p>
+        <div class="action-row" style="margin-top:14px;">
+          <button class="btn btn-outline" id="actRegenerar" type="button">Generar otra situación</button>
+          <button class="btn btn-primary" id="actPublicar" type="button">Publicar actividad</button>
+          <a class="btn btn-outline" href="panel-profesor.html">Volver al panel</a>
+        </div>
+        <div id="actEstado" class="act-estado"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= PESTAÑAS DE MODO ================= -->
   <div class="mode-tabs" id="modeTabs" role="tablist">
     <button class="mode-tab active" data-modo="diligenciar" type="button" role="tab">Diligenciar</button>
@@ -490,6 +665,7 @@
         <button class="pill-btn" data-level="3" type="button">Avanzado · IFR internacional</button>
         <button class="pill-btn" data-level="4" type="button">Vuelos especiales</button>
         <button class="pill-btn" data-level="5" type="button">Casos AIS</button>
+        <button class="pill-btn" data-level="6" type="button">Equipo y casilla 18</button>
       </div>
     </div>
     <div class="control-group">
@@ -540,11 +716,33 @@
         </ul>
       </div>
       <div class="help-section">
-        <h4>Casilla 10 — Equipo y capacidades</h4>
+        <h4>Casilla 10a — Equipo COM/NAV y ayudas para la aproximación</h4>
         <ul>
-          <li>Antes de la barra, el equipo COM/NAV y de ayudas para la aproximación: <code>N</code> si no lleva o no funciona, <code>S</code> si lleva el normalizado, más las letras que apliquen (G=GNSS, R=PBN aprobada, W=RVSM, D=DME, F=ADF…).</li>
-          <li>Después de la barra, la vigilancia: <code>A</code>/<code>C</code> Modo A y C, <code>S</code>/<code>E</code>/<code>H</code>/<code>L</code> Modo S, <code>B1</code>/<code>B2</code> ADS-B, <code>D1</code>/<code>G1</code> ADS-C.</li>
-          <li><b>Si usas la letra R</b>, es obligatorio declarar las capacidades PBN en la casilla 18 después de <code>PBN/</code>. Si usas <code>G</code>, la aumentación GNSS va tras <code>NAV/</code>; si usas <code>Z</code>, el equipo adicional va tras <code>COM/</code>, <code>NAV/</code> o <code>DAT/</code>.</li>
+          <li><b>La letra <code>S</code> ya significa el equipo normalizado: VHF, VOR e ILS.</b> Si la anotas, <b>no</b> vuelvas a escribir <code>V</code>, <code>O</code> ni <code>L</code>. <code>N</code> significa que no se lleva equipo para la ruta o que está fuera de servicio, y va sola.</li>
+          <li>Ayudas: <code>A</code> GBAS · <code>B</code> LPV con SBAS · <code>C</code> LORAN C · <code>D</code> DME · <code>F</code> ADF · <code>G</code> GNSS · <code>I</code> inercial · <code>K</code> MLS · <code>L</code> ILS · <code>O</code> VOR · <code>T</code> TACAN.</li>
+          <li>Comunicaciones: <code>H</code> HF · <code>U</code> UHF · <code>V</code> VHF · <code>Y</code> VHF de 8,33 kHz · <code>M1</code>/<code>M2</code>/<code>M3</code> voz ATC por SATCOM.</li>
+          <li>Enlace de datos: <code>E1</code> FMC WPR ACARS · <code>E2</code> D-FIS ACARS · <code>E3</code> PDC ACARS · <code>J1</code> CPDLC ATN VDL Modo 2 · <code>J2</code>…<code>J7</code> CPDLC FANS 1/A.</li>
+          <li>Capacidades (no son equipo): <code>R</code> aprobada PBN · <code>W</code> aprobada RVSM · <code>X</code> NAT HLA · <code>Z</code> otro equipo, que se detalla en la 18.</li>
+          <li>Las letras se anotan en <b>orden alfanumérico</b>, con la <code>S</code> encabezando el grupo: <code>SDE3FGHIRWY</code>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Casilla 10b — Equipo de vigilancia</h4>
+        <ul>
+          <li>Se elige <b>un solo descriptor de transpondedor</b>: o el de Modo A/C o el de Modo S, nunca los dos.</li>
+          <li>Modo A/C: <code>A</code> Modo A de 4 cifras sin altitud · <code>C</code> Modo A y Modo C.</li>
+          <li>Modo S: <code>S</code> altitud + identificación · <code>E</code> identificación, altitud y squitter ampliado · <code>H</code> identificación, altitud y vigilancia mejorada · <code>L</code> las cuatro cosas · <code>I</code> identificación sin altitud · <code>P</code> altitud sin identificación · <code>X</code> ni una ni otra.</li>
+          <li>A ese descriptor sí se le suman ADS-B (<code>B1</code>/<code>B2</code> en 1090 MHz, <code>U1</code>/<code>U2</code> UAT, <code>V1</code>/<code>V2</code> VDL Modo 4) y ADS-C (<code>D1</code> FANS 1/A, <code>G1</code> ATN). <code>N</code> si no lleva vigilancia, y va sola.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h4>Lo que el equipo de la casilla 10 obliga a declarar en la 18</h4>
+        <ul>
+          <li><code>R</code> → <b>obligatorio</b> <code>PBN/</code> con las especificaciones aprobadas. Máximo 8 especificaciones y 16 caracteres.</li>
+          <li><code>Z</code> → <code>COM/</code>, <code>NAV/</code> o <code>DAT/</code> según sea equipo de comunicaciones, de navegación o de enlace de datos.</li>
+          <li>Vigilancia que no cabe en la 10b → <code>SUR/</code>.</li>
+          <li><b>Cada especificación PBN exige su sensor en la casilla 10</b>: las terminadas en GNSS (<code>B2</code>, <code>C2</code>, <code>D2</code>, <code>O2</code>, <code>S1</code>, <code>S2</code>, <code>L1</code>) piden <code>G</code>; las DME/DME (<code>B3</code>, <code>C3</code>, <code>D3</code>, <code>O3</code>) piden <code>D</code>; las DME/DME/IRU (<code>C4</code>, <code>D4</code>, <code>O4</code>) piden <code>D</code> e <code>I</code>; <code>B5</code> (INS o IRS) pide <code>I</code>.</li>
+          <li>Si la aeronave <b>no</b> está aprobada RVSM pero volará en espacio aéreo RVSM: no se anota <code>W</code> y se declara <code>STS/NONRVSM</code>.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -590,6 +788,18 @@
         </ul>
       </div>
       <div class="help-section">
+        <h4>Casilla 18 — Otros indicadores de uso frecuente</h4>
+        <ul>
+          <li><code>DOF/</code> fecha del vuelo en <code>AAMMDD</code> · <code>REG/</code> matrícula · <code>OPR/</code> explotador · <code>TYP/</code> tipos de aeronave cuando la 9 lleva <code>ZZZZ</code>.</li>
+          <li><code>EET/</code> tiempo transcurrido acumulado <b>desde el despegue</b> hasta el límite de una FIR o un punto significativo: designador + 4 cifras, p. ej. <code>EET/SPIM0145</code>.</li>
+          <li><code>SEL/</code> código SELCAL de 4 letras · <code>CODE/</code> dirección de aeronave en Modo S, 6 caracteres hexadecimales · <code>ORGN/</code> dirección AFTN del originador.</li>
+          <li><code>PER/</code> categoría de aeronave para aproximación según la velocidad de umbral Vat (Doc 8168): <code>A</code> menos de 91 kt · <code>B</code> 91–120 · <code>C</code> 121–140 · <code>D</code> 141–165 · <code>E</code> 166–210 · <code>H</code> helicópteros.</li>
+          <li><code>DLE/</code> demora o espera programada en ruta: punto + 4 cifras de duración · <code>RIF/</code> ruta hasta un destino revisado.</li>
+          <li>Alternativas: <code>ALTN/</code> el nombre del alterno cuando la 16 lleva <code>ZZZZ</code> · <code>RALT/</code> alterno <b>en ruta</b> · <code>TALT/</code> alterno <b>de despegue</b>. No son intercambiables.</li>
+          <li><code>STS/</code> motivos de tratamiento especial: <code>ALTRV</code>, <code>ATFMX</code>, <code>FFR</code>, <code>FLTCK</code>, <code>HAZMAT</code>, <code>HEAD</code>, <code>HOSP</code>, <code>HUM</code>, <code>MARSA</code>, <code>MEDEVAC</code>, <code>NONRVSM</code>, <code>SAR</code>, <code>STATE</code>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
         <h4>Casilla 19 — Información suplementaria</h4>
         <ul>
           <li>No se transmite en el mensaje FPL: el FPL lleva sólo las casillas 3 a 18. La 19 viaja en el mensaje suplementario (SPL).</li>
@@ -601,6 +811,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Encabezado que sólo aparece en el PDF / impresión -->
+  <div class="print-only print-head" id="printHead"></div>
 
   <!-- ================= ESCENARIO ================= -->
   <div class="instrument" id="scenarioPanel">
@@ -894,6 +1107,7 @@
         <button class="btn btn-primary" id="btnValidar" type="button">Validar plan de vuelo</button>
         <button class="btn btn-primary" id="btnSiguiente" type="button" style="display:none;">Siguiente plan</button>
         <button class="btn btn-outline" id="btnRespuesta" type="button">Mostrar respuesta oficial</button>
+        <button class="btn btn-outline" id="btnPDF" type="button" style="display:none;">Descargar PDF</button>
         <button class="btn btn-outline danger" id="btnLimpiar" type="button">Limpiar formulario</button>
       </div>
 
@@ -902,14 +1116,37 @@
         <div class="fpl-raw-box mono" id="fplOficialTexto">—</div>
       </div>
 
-      <div id="scoreBanner" style="display:none;"></div>
+      <div class="score-banner" id="scoreBanner" style="display:none;"></div>
       <div class="feedback-list" id="feedbackList"></div>
+
+      <!-- Sólo en la revisión de una entrega y sólo para el profesor -->
+      <div class="zona-corr" id="zonaCorreccion" style="display:none;">
+        <h4>Corregir la calificación</h4>
+        <p class="bhint" id="corrAyuda">Marca o desmarca arriba las casillas que el servidor calificó mal —por ejemplo, una respuesta válida escrita de otra forma— y guarda el cambio. La nota se recalcula y queda registrado en el historial.</p>
+        <label class="act-field act-ancho" style="margin-top:12px;">
+          <span>Motivo de la corrección (opcional, queda en el historial)</span>
+          <textarea id="corrMotivo" rows="2" maxlength="500" placeholder="Ej.: la ruta indicada es igualmente válida según el AIP."></textarea>
+        </label>
+        <div class="action-row" style="margin-top:12px;">
+          <button class="btn btn-primary" id="corrGuardar" type="button">Guardar corrección</button>
+          <button class="btn btn-outline" id="corrDeshacer" type="button">Descartar cambios</button>
+        </div>
+        <div id="corrEstado" class="act-estado"></div>
+      </div>
+
+      <div id="zonaHistorial" style="display:none; margin-top:16px;"></div>
 
       <div id="salidaMensajes" style="margin-top:14px;">
         <div class="instrument-label" style="margin-bottom:6px;">Tu mensaje FPL — casillas 3 a 18 (lo que realmente se transmite)</div>
         <div class="fpl-raw-box mono" id="fplUsuarioTexto">—</div>
         <div class="instrument-label" style="margin:14px 0 6px;">Casilla 19 — información suplementaria (viaja en el SPL, no en el FPL)</div>
         <div class="fpl-raw-box mono" id="splUsuarioTexto">—</div>
+      </div>
+
+      <div class="print-only print-pie">
+        Documento generado desde el Simulador de Plan de Vuelo de SoyAeronáutico · Formato según RAC 215 Apéndice 7, PANS-ATM Doc 4444 Apéndice 2 y AIP Colombia ENR 1.10.<br>
+        Material con fines educativos: no reemplaza las fuentes oficiales AIP/OACI ni constituye un plan de vuelo presentado ante la dependencia ATS.<br>
+        Creado por Cristian Arcila · &copy; 2026 — Todos los derechos reservados.
       </div>
     </div>
   </div>
@@ -1059,6 +1296,376 @@ btnAyuda.addEventListener('click', () => {
   const NOTA_DCT = 'Para este vuelo no se emplea SID ni STAR, así que la ruta se expresa con DCT, tal como lo autoriza el AIP ENR 1.10 cuando el aeródromo no tiene procedimiento publicado.';
   const NOTA_INTL = 'Ruta reproducida textualmente del ejemplo de vuelo internacional publicado en el AIP Colombia ENR 1.10-13.';
 
+  // ===========================================================================
+  // CASILLA 10 — EQUIPO Y CAPACIDADES
+  // Descriptores del PANS-ATM (Doc 4444), Apéndice 2, casilla 10, reproducidos
+  // también en el Apéndice 7 del RAC 215. De cada uno se guarda la letra y la
+  // forma en que un despachador lo oye o lo lee en lenguaje corriente, que es
+  // justamente lo que el alumno debe traducir al código.
+  //
+  // Importante: la letra S ya cubre el equipo NORMALIZADO —VHF, VOR e ILS—, así
+  // que esas tres ayudas no se anotan por separado. Las letras se insertan en
+  // orden alfanumérico.
+  // ===========================================================================
+  const CAP10A = [
+    {l:'A',  prosa:'sistema de aterrizaje GBAS'},
+    {l:'B',  prosa:'aproximación LPV con aumentación SBAS'},
+    {l:'C',  prosa:'LORAN C'},
+    {l:'D',  prosa:'DME'},
+    {l:'E1', prosa:'FMC WPR ACARS'},
+    {l:'E2', prosa:'D-FIS ACARS'},
+    {l:'E3', prosa:'PDC ACARS'},
+    {l:'F',  prosa:'ADF'},
+    {l:'G',  prosa:'GNSS'},
+    {l:'H',  prosa:'radiotelefonía en HF'},
+    {l:'I',  prosa:'navegación inercial'},
+    {l:'J1', prosa:'CPDLC por ATN VDL Modo 2'},
+    {l:'J2', prosa:'CPDLC FANS 1/A por HFDL'},
+    {l:'J3', prosa:'CPDLC FANS 1/A por VDL Modo A'},
+    {l:'J4', prosa:'CPDLC FANS 1/A por VDL Modo 2'},
+    {l:'J5', prosa:'CPDLC FANS 1/A por SATCOM (INMARSAT)'},
+    {l:'J6', prosa:'CPDLC FANS 1/A por SATCOM (MTSAT)'},
+    {l:'J7', prosa:'CPDLC FANS 1/A por SATCOM (Iridium)'},
+    {l:'K',  prosa:'MLS'},
+    {l:'L',  prosa:'ILS'},
+    {l:'M1', prosa:'radiotelefonía ATC por SATCOM (INMARSAT)'},
+    {l:'M2', prosa:'radiotelefonía ATC por SATCOM (MTSAT)'},
+    {l:'M3', prosa:'radiotelefonía ATC por SATCOM (Iridium)'},
+    {l:'N',  prosa:'sin equipo COM/NAV para la ruta, o fuera de servicio'},
+    {l:'O',  prosa:'VOR'},
+    {l:'S',  prosa:'equipo COM/NAV normalizado —VHF, VOR e ILS— completo y en servicio'},
+    {l:'P1', prosa:'CPDLC con RCP 400'},
+    {l:'P2', prosa:'CPDLC con RCP 240'},
+    {l:'P3', prosa:'voz por satélite con RCP 400'},
+    {l:'T',  prosa:'TACAN'},
+    {l:'U',  prosa:'radiotelefonía en UHF'},
+    {l:'V',  prosa:'radiotelefonía en VHF'},
+    {l:'W',  prosa:'aprobada RVSM'},
+    {l:'X',  prosa:'aprobada para el espacio aéreo NAT HLA'},
+    {l:'Y',  prosa:'VHF con separación de canales de 8,33 kHz'},
+    {l:'R',  prosa:'aprobada PBN'},
+    {l:'Z',  prosa:'otro equipo o capacidades a bordo'}
+  ];
+  const MAPA10A = {};
+  CAP10A.forEach(c => { MAPA10A[c.l] = c.prosa; });
+
+  // Las tres ayudas que la letra S ya incluye. Si el alumno las anota aparte,
+  // el simulador lo señala: es el error más común de esta casilla.
+  const INCLUIDAS_EN_S = {V:'radiotelefonía en VHF', O:'VOR', L:'ILS'};
+
+  // Vigilancia (casilla 10b). Sólo se elige UN descriptor del grupo SSR —o el de
+  // Modo A/C o el de Modo S—, al que pueden sumarse los de ADS-B y ADS-C.
+  const CAP10B = [
+    {c:'A',  grupo:'ssr',  prosa:'transpondedor en Modo A de 4 cifras (4096 códigos), sin altitud de presión'},
+    {c:'C',  grupo:'ssr',  prosa:'transpondedor en Modo A de 4 cifras y Modo C'},
+    {c:'E',  grupo:'ssr',  prosa:'transpondedor en Modo S con identificación de aeronave, altitud de presión y squitter ampliado (ADS-B)'},
+    {c:'H',  grupo:'ssr',  prosa:'transpondedor en Modo S con identificación de aeronave, altitud de presión y capacidad de vigilancia mejorada'},
+    {c:'I',  grupo:'ssr',  prosa:'transpondedor en Modo S con identificación de aeronave, pero sin altitud de presión'},
+    {c:'L',  grupo:'ssr',  prosa:'transpondedor en Modo S con identificación de aeronave, altitud de presión, squitter ampliado (ADS-B) y vigilancia mejorada'},
+    {c:'P',  grupo:'ssr',  prosa:'transpondedor en Modo S con altitud de presión, pero sin identificación de aeronave'},
+    {c:'S',  grupo:'ssr',  prosa:'transpondedor en Modo S con altitud de presión e identificación de aeronave'},
+    {c:'X',  grupo:'ssr',  prosa:'transpondedor en Modo S sin identificación de aeronave ni altitud de presión'},
+    {c:'B1', grupo:'adsb', prosa:'ADS-B «out» exclusivo en 1090 MHz'},
+    {c:'B2', grupo:'adsb', prosa:'ADS-B «out» e «in» exclusivo en 1090 MHz'},
+    {c:'U1', grupo:'adsb', prosa:'ADS-B «out» por UAT'},
+    {c:'U2', grupo:'adsb', prosa:'ADS-B «out» e «in» por UAT'},
+    {c:'V1', grupo:'adsb', prosa:'ADS-B «out» por VDL Modo 4'},
+    {c:'V2', grupo:'adsb', prosa:'ADS-B «out» e «in» por VDL Modo 4'},
+    {c:'D1', grupo:'adsc', prosa:'ADS-C con capacidad FANS 1/A'},
+    {c:'G1', grupo:'adsc', prosa:'ADS-C con capacidad ATN'}
+  ];
+  const ORDEN_10B = CAP10B.map(c => c.c);
+  const MAPA10B = {};
+  CAP10B.forEach(c => { MAPA10B[c.c] = c; });
+
+  // Especificaciones PBN del Doc 9613, tal como se codifican tras PBN/ en la
+  // casilla 18. `req` son las letras de la casilla 10a que el sensor exige: es
+  // la comprobación cruzada que más se falla en una sala AIS.
+  const PBN_CODES = [
+    {c:'A1', desc:'RNAV 10 (RNP 10)',                          req:[]},
+    {c:'B1', desc:'RNAV 5 con todos los sensores permitidos',  req:[]},
+    {c:'B2', desc:'RNAV 5 GNSS',                               req:['G']},
+    {c:'B3', desc:'RNAV 5 DME/DME',                            req:['D']},
+    {c:'B4', desc:'RNAV 5 VOR/DME',                            req:['D']},
+    {c:'B5', desc:'RNAV 5 INS o IRS',                          req:['I']},
+    {c:'C1', desc:'RNAV 2 con todos los sensores permitidos',  req:[]},
+    {c:'C2', desc:'RNAV 2 GNSS',                               req:['G']},
+    {c:'C3', desc:'RNAV 2 DME/DME',                            req:['D']},
+    {c:'C4', desc:'RNAV 2 DME/DME/IRU',                        req:['D','I']},
+    {c:'D1', desc:'RNAV 1 con todos los sensores permitidos',  req:[]},
+    {c:'D2', desc:'RNAV 1 GNSS',                               req:['G']},
+    {c:'D3', desc:'RNAV 1 DME/DME',                            req:['D']},
+    {c:'D4', desc:'RNAV 1 DME/DME/IRU',                        req:['D','I']},
+    {c:'L1', desc:'RNP 4',                                     req:['G']},
+    {c:'O1', desc:'RNP 1 básica con todos los sensores permitidos', req:[]},
+    {c:'O2', desc:'RNP 1 básica GNSS',                         req:['G']},
+    {c:'O3', desc:'RNP 1 básica DME/DME',                      req:['D']},
+    {c:'O4', desc:'RNP 1 básica DME/DME/IRU',                  req:['D','I']},
+    {c:'S1', desc:'RNP APCH',                                  req:['G']},
+    {c:'S2', desc:'RNP APCH con BARO-VNAV',                    req:['G']},
+    {c:'T1', desc:'RNP AR APCH con RF',                        req:['G']},
+    {c:'T2', desc:'RNP AR APCH sin RF',                        req:['G']}
+  ];
+  const MAPA_PBN = {};
+  PBN_CODES.forEach(p => { MAPA_PBN[p.c] = p; });
+
+  // ===========================================================================
+  // CASILLA 18 — ORDEN PRESCRITO DE LOS INDICADORES
+  // Doc 4444, Apéndice 2, casilla 18: los indicadores se anotan siempre en este
+  // orden. Anotarlos desordenados es un error de formato, no de contenido, pero
+  // en la red AFTN un plan desordenado puede ser rechazado.
+  // ===========================================================================
+  const ORDEN_18 = ['STS','PBN','NAV','COM','DAT','SUR','DEP','DEST','DOF','REG',
+                    'EET','SEL','TYP','CODE','DLE','OPR','ORGN','PER','ALTN',
+                    'RALT','TALT','RIF','RMK'];
+
+  // Construye la casilla 18 a partir de un objeto {IND: 'valor'} respetando el
+  // orden prescrito. Devuelve '0' si no hay ningún dato, como exige el formato.
+  function construir18(datos){
+    const partes = [];
+    ORDEN_18.forEach(ind => {
+      const val = datos[ind];
+      if(val === undefined || val === null || val === '') return;
+      partes.push(ind + '/' + val);
+    });
+    return partes.length ? partes.join(' ') : '0';
+  }
+
+  // Extrae los indicadores presentes en un texto de casilla 18, en el orden en
+  // que aparecen escritos. Sirve tanto para validar el orden como el contenido.
+  function indicadores18(texto){
+    const out = [];
+    const re = /\b([A-Z]{3,4})\//g;
+    let m;
+    while((m = re.exec(texto||'')) !== null){
+      if(ORDEN_18.indexOf(m[1]) !== -1) out.push({ind:m[1], pos:m.index});
+    }
+    return out;
+  }
+
+
+  // ---------- De código a prosa ----------
+  // Permite que los niveles 2 y 3, que hasta ahora regalaban el código de la
+  // casilla 10, alternen entre entregarlo y describir el equipo en palabras.
+  function trocear10a(code){
+    const out = [];
+    const t = norm(code);
+    for(let i=0; i<t.length; i++){
+      if(/[0-9]/.test(t[i+1]||'')){ out.push(t.substr(i,2)); i++; }
+      else out.push(t[i]);
+    }
+    return out;
+  }
+  function trocear10b(code){
+    const out = [];
+    const t = norm(code);
+    for(let i=0; i<t.length; i++){
+      const dos = t.substr(i,2);
+      if(ORDEN_10B.indexOf(dos) !== -1 && /[0-9]/.test(dos[1])){ out.push(dos); i++; }
+      else out.push(t[i]);
+    }
+    return out;
+  }
+  function prosa10a(code){
+    return trocear10a(code).map(l => {
+      if(l === 'S') return 'el equipo COM/NAV normalizado —VHF, VOR e ILS— completo y en servicio';
+      if(l === 'R') return 'aprobación PBN';
+      return MAPA10A[l] || l;
+    }).join(', ');
+  }
+  function prosa10b(code){
+    return trocear10b(code).map(c => (MAPA10B[c] ? MAPA10B[c].prosa : c)).join(', ');
+  }
+  function prosaPBNde(pbn){
+    const t = norm(pbn).replace('PBN/','');
+    const out = [];
+    for(let i=0; i+1<t.length; i+=2){
+      const c = t.substr(i,2);
+      out.push(MAPA_PBN[c] ? `<b>${MAPA_PBN[c].desc}</b>` : c);
+    }
+    return out.join(', ');
+  }
+
+  // Frase de equipo para los niveles 2 y 3: la mitad de las veces entrega el
+  // código ya cifrado y la otra mitad obliga a deducirlo de la ficha técnica.
+  function frasEquipo(eq, pbn){
+    if(Math.random() > 0.5){
+      return `Equipo COM/NAV y de aproximación: <b>${eq.a}</b>; equipo de vigilancia: <b>${eq.b}</b>. La aeronave está <b>aprobada PBN</b> con las capacidades <b>${norm(pbn).replace('PBN/','')}</b>.`;
+    }
+    return `<b>Ficha de equipo</b> (esta vez sin cifrar, dedúcela tú): la aeronave lleva ${prosa10a(eq.a)}. Equipo de vigilancia: ${prosa10b(eq.b)}. Está <b>aprobada para navegación basada en la performance</b> con las especificaciones ${prosaPBNde(pbn)}.`;
+  }
+
+  // ---------- Generadores de datos que el alumno debe codificar ----------
+
+  // Código SELCAL: cuatro letras del conjunto A–S excluyendo I, N y O, sin
+  // repetir ninguna, y cada par en orden alfabético (Anexo 10, Vol. III).
+  function codigoSelcal(){
+    const pool = 'ABCDEFGHJKLMPQRS'.split('');
+    const elegidas = [];
+    for(let i=0;i<4;i++){
+      const idx = randInt(0, pool.length-1);
+      elegidas.push(pool[idx]);
+      pool.splice(idx,1);
+    }
+    const p1 = elegidas.slice(0,2).sort();
+    const p2 = elegidas.slice(2,4).sort();
+    return p1.join('') + p2.join('');
+  }
+
+  // Dirección de aeronave en Modo S: seis caracteres hexadecimales.
+  function direccionModoS(){
+    const hex = '0123456789ABCDEF';
+    let s = '';
+    for(let i=0;i<6;i++) s += hex.charAt(randInt(0,15));
+    return s;
+  }
+
+  // Categoría de estela de turbulencia de aproximación (PER/) según la velocidad
+  // de umbral Vat, Doc 8168 Vol. I, Parte I, Sección 4, Capítulo 1.
+  const CAT_PER = [
+    {cat:'A', min:0,   max:90,  txt:'menos de 91 kt'},
+    {cat:'B', min:91,  max:120, txt:'de 91 a 120 kt'},
+    {cat:'C', min:121, max:140, txt:'de 121 a 140 kt'},
+    {cat:'D', min:141, max:165, txt:'de 141 a 165 kt'},
+    {cat:'E', min:166, max:210, txt:'de 166 a 210 kt'}
+  ];
+  function categoriaPER(vat){
+    const c = CAT_PER.find(x => vat >= x.min && vat <= x.max);
+    return c ? c.cat : 'E';
+  }
+  // Vat representativa por categoría de estela, para que el escenario sea
+  // coherente con el tipo de aeronave que se sortea.
+  function vatDe(estela){
+    if(estela === 'L') return randInt(70, 118);
+    if(estela === 'M') return randInt(125, 145);
+    return randInt(140, 162);
+  }
+
+  // Regiones de información de vuelo de los países de destino usados en el
+  // simulador, para el indicador EET/. El escenario siempre dice a qué hora de
+  // vuelo se cruza el límite: lo que se practica es el formato y la ubicación
+  // del dato, no la geografía de la ruta.
+  const FIR_DESTINO = {
+    MROC:{fir:'MHTG', nom:'FIR Centroamérica (CENAMER)'},
+    SPJC:{fir:'SPIM', nom:'FIR Lima'},
+    SVMI:{fir:'SVZM', nom:'FIR Maiquetía'},
+    MMMX:{fir:'MMFR', nom:'FIR México'},
+    KMIA:{fir:'KZMA', nom:'FIR Miami Oceanic'}
+  };
+
+  // Sortea un juego coherente de equipo de casilla 10 y devuelve, además del
+  // código esperado, la descripción en prosa y lo que ese equipo obliga a
+  // declarar en la casilla 18.
+  function sortearEquipo(opts){
+    opts = opts || {};
+    const avanzado = !!opts.avanzado;
+
+    // Equipo normalizado: siempre presente salvo que se pida lo contrario.
+    const letras = ['S'];
+    const prosaItems = ['el equipo COM/NAV normalizado —VHF, VOR e ILS— completo y en servicio'];
+    const extra18 = {};
+
+    // Ayudas de navegación convencionales.
+    const basicas = avanzado ? ['D','F','G','I'] : choice([['D','F','G'], ['D','G'], ['F','G'], ['D','F']]);
+    basicas.forEach(l => { letras.push(l); prosaItems.push(MAPA10A[l]); });
+
+    if(avanzado){
+      // Comunicaciones de largo alcance y enlace de datos.
+      letras.push('H'); prosaItems.push(MAPA10A['H']);
+      const j = choice(['J1','J4','J5','J7']);
+      letras.push(j); prosaItems.push(MAPA10A[j]);
+      const e = choice(['E1','E2','E3']);
+      letras.push(e); prosaItems.push(MAPA10A[e]);
+      if(Math.random() > 0.5){ letras.push('M1'); prosaItems.push(MAPA10A['M1']); }
+    }
+    if(Math.random() > 0.4){ letras.push('Y'); prosaItems.push(MAPA10A['Y']); }
+
+    // RVSM: capacidad, no equipo. Si no está aprobada y el vuelo va a espacio
+    // aéreo RVSM, hay que declarar STS/NONRVSM en la casilla 18.
+    const rvsm = avanzado ? Math.random() > 0.25 : Math.random() > 0.6;
+    if(rvsm){ letras.push('W'); prosaItems.push('aprobada RVSM'); }
+
+    // PBN: la letra R obliga a declarar las especificaciones tras PBN/, y cada
+    // especificación exige tener a bordo el sensor que la soporta.
+    const disponibles = PBN_CODES.filter(p => p.req.every(r => letras.indexOf(r) !== -1));
+    const cuantas = avanzado ? randInt(3,5) : randInt(2,3);
+    const pbnSel = [];
+    const pool = [...disponibles];
+    while(pbnSel.length < cuantas && pool.length){
+      const idx = randInt(0, pool.length-1);
+      const cand = pool[idx];
+      pool.splice(idx,1);
+      // Máximo 8 especificaciones y 16 caracteres tras PBN/ (Doc 4444).
+      if((pbnSel.map(p=>p.c).join('') + cand.c).length > 16) continue;
+      pbnSel.push(cand);
+    }
+    pbnSel.sort((a,b) => a.c.localeCompare(b.c));
+    if(pbnSel.length){
+      letras.push('R');
+      extra18.PBN = pbnSel.map(p => p.c).join('');
+    }
+
+    // Otro equipo (letra Z): lo que no tiene letra propia se detalla en la
+    // casilla 18 tras COM/, NAV/ o DAT/, según de qué se trate.
+    const otro = Math.random() > (avanzado ? 0.5 : 0.75);
+    let prosaZ = '';
+    if(otro){
+      const cual = choice([
+        {ind:'NAV', val:'RNVD1E2A1', txt:'una unidad de navegación de área adicional cuyo código el fabricante identifica como <b>RNVD1E2A1</b>'},
+        {ind:'NAV', val:'GBAS SBAS', txt:'aumentación <b>GBAS y SBAS</b> del GNSS, que no tiene letra propia en la casilla 10'},
+        {ind:'COM', val:'SATVOICE', txt:'un sistema de <b>voz por satélite (SATVOICE)</b> adicional al equipo declarado'},
+        {ind:'DAT', val:'SVM', txt:'aplicaciones de enlace de datos de <b>vigilancia, voz y mensajería (SVM)</b> no cubiertas por las demás letras'}
+      ]);
+      letras.push('Z');
+      extra18[cual.ind] = cual.val;
+      prosaZ = cual.txt;
+    }
+
+    // Vigilancia.
+    const ssr = avanzado
+      ? choice(['E','H','L','S'])
+      : choice(['A','C','C','S','E']);
+    const vig = [ssr];
+    const prosaVig = [MAPA10B[ssr].prosa];
+    if(avanzado || Math.random() > 0.65){
+      const adsb = choice(['B1','B2']);
+      vig.push(adsb); prosaVig.push(MAPA10B[adsb].prosa);
+    }
+    if(avanzado && Math.random() > 0.45){
+      const adsc = choice(['D1','G1']);
+      vig.push(adsc); prosaVig.push(MAPA10B[adsc].prosa);
+      // Las aplicaciones de vigilancia que no caben en la casilla 10b se
+      // detallan tras SUR/ (Doc 4444, casilla 18).
+      if(Math.random() > 0.5) extra18.SUR = choice(['RSP180','260B','RSP400']);
+    }
+
+    letras.sort(ordenAlfanumerico);
+    vig.sort((a,b) => ORDEN_10B.indexOf(a) - ORDEN_10B.indexOf(b));
+
+    return {
+      f10a: letras.join(''),
+      f10b: vig.join(''),
+      pbnSel,
+      rvsm,
+      extra18,
+      prosaNav: prosaItems,
+      prosaZ,
+      prosaVig: prosaVig.join(', '),
+      prosaPBN: pbnSel.map(p => `<b>${p.desc}</b>`).join(', ')
+    };
+  }
+
+  // Las letras de la casilla 10a van en orden alfanumérico —primero la letra y,
+  // si dos comparten letra (E1/E2/E3, J1/J4…), después la cifra— salvo la S del
+  // equipo normalizado, que encabeza siempre el grupo: así aparecen los ejemplos
+  // del Doc 4444 (SDE3FGHIRWY, SAFR) y así lo reproduce el AIP Colombia.
+  function ordenAlfanumerico(a,b){
+    if(a === 'S') return -1;
+    if(b === 'S') return 1;
+    if(a[0] !== b[0]) return a[0] < b[0] ? -1 : 1;
+    return (a[1]||'') < (b[1]||'') ? -1 : ((a[1]||'') > (b[1]||'') ? 1 : 0);
+  }
+
   // ---------------------------------------------------------------------------
   // RUTAS ATS
   // Generadas a partir de las aerovías publicadas en AIP Colombia ENR 3 y de las
@@ -1182,7 +1789,8 @@ btnAyuda.addEventListener('click', () => {
     if(nivel===2) return generarIntermedio();
     if(nivel===3) return generarAvanzado();
     if(nivel===4) return generarEspecial();
-    return generarCasoAIS();
+    if(nivel===5) return generarCasoAIS();
+    return generarEquipoCasilla18();
   }
 
   function baseHora(){ return pad2(randInt(10,23)) + pad2(randInt(0,59)); }
@@ -1203,7 +1811,7 @@ btnAyuda.addEventListener('click', () => {
     // colombiana de altitudes hasta A185 (ENR 1.10-12).
     const usaAltitud = Math.random() > 0.5;
     const nivel = usaAltitud ? 'A' + String(randInt(45,120)).padStart(3,'0') : 'VFR';
-    const ruta = rutaPara(origen.cod, false);
+    const ruta = rutaPara(origen.cod, destino.cod, false);
     const eltDisponible = Math.random() > 0.35;
     const color = choice(['BLANCO AZUL','BLANCO ROJO','GRIS NARANJA','BLANCO VERDE']);
     const piloto = pilotoNombre();
@@ -1260,7 +1868,7 @@ btnAyuda.addEventListener('click', () => {
     const personas = String(randInt(20,180));
     const speed = 'N0' + String(randInt(400,480));
     const nivel = 'F' + String(choice([250,280,310,330,350]));
-    const ruta = rutaPara(origen.cod, false);
+    const ruta = rutaPara(origen.cod, destino.cod, false);
     const eq = choice([
       {a:'SDFGR', b:'S'},
       {a:'SDFGHIRY', b:'H'},
@@ -1283,7 +1891,7 @@ btnAyuda.addEventListener('click', () => {
     return {
       nivelTag: 'NIVEL 2 · IFR NACIONAL',
       titulo: `Vuelo IFR regular — ${origen.nom} → ${destino.nom}`,
-      narrativa: `Trabajas en el despacho de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> operará un <b>${aero.nombre}</b> desde <b>${origen.cod}</b> hasta <b>${destino.cod}</b>, con alterno <b>${alterno.cod}</b>. EOBT: <b>${hora} UTC</b>. Velocidad de crucero <b>${speed}</b>, nivel <b>${nivel}</b>, ruta autorizada <b>${ruta.r}</b>. Equipo COM/NAV y de aproximación: <b>${eq.a}</b>; equipo de vigilancia: <b>${eq.b}</b>. La aeronave está <b>aprobada PBN</b> con las capacidades <b>${pbn.replace('PBN/','')}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. ${dLleva? 'Lleva 2 botes neumáticos cubiertos, capacidad total 25 personas, de color amarillo.' : 'No lleva botes neumáticos.'} No hay chalecos ni equipo de supervivencia a bordo${uhfNoDisp?'. La radio de emergencia <b>UHF no está disponible</b>':'. Lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan el despachador ${despachador}, licencia ${licDsp}.`,
+      narrativa: `Trabajas en el despacho de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> operará un <b>${aero.nombre}</b> desde <b>${origen.cod}</b> hasta <b>${destino.cod}</b>, con alterno <b>${alterno.cod}</b>. EOBT: <b>${hora} UTC</b>. Velocidad de crucero <b>${speed}</b>, nivel <b>${nivel}</b>, ruta autorizada <b>${ruta.r}</b>. ${frasEquipo(eq, pbn)} Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. ${dLleva? 'Lleva 2 botes neumáticos cubiertos, capacidad total 25 personas, de color amarillo.' : 'No lleva botes neumáticos.'} No hay chalecos ni equipo de supervivencia a bordo${uhfNoDisp?'. La radio de emergencia <b>UHF no está disponible</b>':'. Lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan el despachador ${despachador}, licencia ${licDsp}.`,
       keys: [
         ['Casilla 7', idnum],
         ['Casilla 8', 'I · S — IFR, servicio aéreo regular'],
@@ -1334,7 +1942,7 @@ btnAyuda.addEventListener('click', () => {
     const personas = String(randInt(50,280));
     const speed = 'N0' + String(randInt(440,490));
     const nivel = 'F' + String(choice([330,350,370,390]));
-    const ruta = rutaPara(origen.cod, true);
+    const ruta = rutaPara(origen.cod, destino.cod, true);
     const pbn = choice(['PBN/A1B1C1D1O1S1','PBN/B1C1D1O1S1S2','PBN/A1B1C1D1S1']);
     const dia = randInt(1,28), mes = randInt(1,12);
     const dof = `DOF/26${pad2(mes)}${pad2(dia)}`;
@@ -1360,7 +1968,7 @@ btnAyuda.addEventListener('click', () => {
     return {
       nivelTag: 'NIVEL 3 · IFR INTERNACIONAL',
       titulo: `Vuelo IFR internacional — ${origen.nom} → ${destino.nom}`,
-      narrativa: `Eres despachador de vuelos internacionales de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> se opera con un <b>${aero.nombre}</b> de matrícula <b>${mat}</b> y sale de <b>${origen.cod}</b> con destino <b>${destino.cod}</b> (${destino.nom}). EOBT <b>${hora} UTC</b> del día <b>${pad2(dia)}/${pad2(mes)}/2026</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Equipo COM/NAV <b>${eq.a}</b>, vigilancia <b>${eq.b}</b>, capacidades PBN <b>${pbn.replace('PBN/','')}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo.${sts?` El vuelo tiene estatus <b>${sts.replace('STS/','')}</b>.`:''} ${excepcionEEUU? `<b>La aerolínea aplicará la excepción de alterno de destino hacia Estados Unidos.</b>` : `Alternos de destino: <b>${alterno1.cod}</b> y <b>${alterno2.cod}</b>.`} No lleva chalecos, botes ni equipo de supervivencia${uhfNoDisp?'; la radio de emergencia <b>UHF no está disponible</b>':'; lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan ${despachador}, licencia ${licDsp}.`,
+      narrativa: `Eres despachador de vuelos internacionales de <b>${linea.nom}</b>. El vuelo <b>${idnum}</b> se opera con un <b>${aero.nombre}</b> de matrícula <b>${mat}</b> y sale de <b>${origen.cod}</b> con destino <b>${destino.cod}</b> (${destino.nom}). EOBT <b>${hora} UTC</b> del día <b>${pad2(dia)}/${pad2(mes)}/2026</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. ${frasEquipo(eq, pbn)} Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo.${sts?` El vuelo tiene estatus <b>${sts.replace('STS/','')}</b>.`:''} ${excepcionEEUU? `<b>La aerolínea aplicará la excepción de alterno de destino hacia Estados Unidos.</b>` : `Alternos de destino: <b>${alterno1.cod}</b> y <b>${alterno2.cod}</b>.`} No lleva chalecos, botes ni equipo de supervivencia${uhfNoDisp?'; la radio de emergencia <b>UHF no está disponible</b>':'; lleva UHF, VHF y ELT'}. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan ${despachador}, licencia ${licDsp}.`,
       keys: [
         ['Casilla 7', idnum],
         ['Casilla 8', 'I · S'],
@@ -1409,7 +2017,6 @@ btnAyuda.addEventListener('click', () => {
     const auto = pad2(eetH + randInt(1,2)) + pad2(randInt(0,55));
     const speed = 'N0' + String(randInt(400,470));
     const nivel = 'F' + String(choice([250,280,310]));
-    const ruta = rutaPara(origen.cod, false);
     const pbn = 'PBN/B1C1D1O1S1';
     const auth = grupoAutorizacion();
     const color = choice(['BLANCO AZUL','GRIS ROJO']);
@@ -1471,6 +2078,9 @@ btnAyuda.addEventListener('click', () => {
     }
 
     const requierePBN = eq.a.includes('R');
+    // La ruta se resuelve aquí y no antes porque el destino sólo queda fijado
+    // dentro del caso: el traslado internacional cambia el aeródromo de destino.
+    const ruta = rutaPara(origen.cod, destinoFinal.cod, INTERNACIONALES.indexOf(destinoFinal) !== -1);
 
     return {
       nivelTag: 'NIVEL 4 · VUELOS ESPECIALES',
@@ -1523,11 +2133,14 @@ btnAyuda.addEventListener('click', () => {
     const lic = licencia();
     const dia = randInt(1,28);
 
+    const rutaAIS = rutaPara(origen.cod, destino.cod, false);
+    let fuenteRutaAIS = rutaAIS.src;
+
     let v = {
       f8r:'I', f8t:'G', f9n:'', f10a:'SDFG', f10b:'C',
       f13a: origen.cod, f13h: hora,
       f15v:'N0' + String(randInt(140,240)), f15n:'F' + String(choice([190,210,230])),
-      f15r:'DCT', f16d: destino.cod, f16e: eet, f16a1:'', f16a2:'', f18:'0',
+      f15r: rutaAIS.r, f16d: destino.cod, f16e: eet, f16a1:'', f16a2:'', f18:'0',
       f7: mat
     };
     let aero = choice(AERONAVES.filter(a=>a.gen));
@@ -1561,12 +2174,14 @@ btnAyuda.addEventListener('click', () => {
       v.f8r = 'Y';
       v.f15v = 'N0140'; v.f15n = 'A055';
       v.f15r = 'BUTAL/N0140A055 VFR DCT';
+      fuenteRutaAIS = NOTA_PUBLICADA;
       titulo = 'Cambio de reglas de vuelo IFR → VFR';
       resumen = `El vuelo <b>comienza con reglas IFR y cambia a VFR</b> en ruta, así que la casilla 8 no lleva I ni V sino la letra que corresponde a ese cambio. El punto donde se hace el cambio, con su velocidad y nivel, se indica en la casilla 15 tal como lo publica el AIP: <b>BUTAL/N0140A055 VFR DCT</b>. Velocidad de crucero inicial <b>N0140</b>, nivel inicial <b>A055</b>.`;
     } else if(caso === 'CAMBIO_Z'){
       v.f8r = 'Z';
       v.f15v = 'N0230'; v.f15n = 'F190';
       v.f15r = 'ZIPAQUIRA/N0230F190 IFR DCT';
+      fuenteRutaAIS = NOTA_PUBLICADA;
       titulo = 'Cambio de reglas de vuelo VFR → IFR';
       resumen = `El vuelo <b>comienza con reglas VFR y cambia a IFR</b> en ruta. El punto de cambio, con velocidad y nivel, va en la casilla 15 como lo publica el AIP: <b>ZIPAQUIRA/N0230F190 IFR DCT</b>. Velocidad de crucero inicial <b>N0230</b>, nivel inicial <b>F190</b> — que es además el primer nivel de vuelo utilizable en Colombia.`;
     } else {
@@ -1593,7 +2208,7 @@ btnAyuda.addEventListener('click', () => {
         ['Casilla 18', v.f18],
         ['Casilla 19', `E/${auto} P/${personas}`]
       ],
-      fuenteRuta: NOTA_PUBLICADA,
+      fuenteRuta: fuenteRutaAIS,
       values: base19(Object.assign({}, v, {
         f9t: aero.tipo, f9e: aero.estela,
         e19: auto, p19: personas,
@@ -1605,6 +2220,144 @@ btnAyuda.addEventListener('click', () => {
         hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
         fDia: pad2(dia), fMes: pad2(randInt(1,12)), fAnio:'26'
       }))
+    };
+  }
+
+
+  // ===========================================================================
+  // NIVEL 6 — EQUIPO (CASILLA 10) Y OTROS DATOS (CASILLA 18)
+  // A diferencia de los niveles anteriores, aquí la situación NO entrega el
+  // código de la casilla 10: describe el equipo que lleva la aeronave en
+  // lenguaje corriente y el alumno tiene que traducirlo a los descriptores del
+  // Doc 4444, deducir qué obliga a declarar en la casilla 18 y anotar los
+  // indicadores en el orden prescrito.
+  // ===========================================================================
+  function generarEquipoCasilla18(){
+    const complicacion = choice(['NACIONAL','INTERNACIONAL','NONRVSM','DEMORA','ALTERNO_DESPEGUE','SOLO_EQUIPO']);
+    const internacional = complicacion === 'INTERNACIONAL';
+    const avanzado = internacional || Math.random() > 0.5;
+
+    const origen = internacional ? AERODROMOS[0] : choice(AERODROMOS);
+    const destino = internacional ? choice(INTERNACIONALES) : choice(AERODROMOS.filter(a => a.cod !== origen.cod));
+    const alterno = choice(AERODROMOS.filter(a => a.cod !== origen.cod && a.cod !== destino.cod));
+    const aero = choice(AERONAVES.filter(a => !a.gen && a.tipo !== 'C130' && (!avanzado || a.estela !== 'L')));
+    const linea = choice(AEROLINEAS);
+    const idnum = linea.des + String(randInt(100,999));
+    const mat = matricula();
+    const hora = baseHora();
+    const eetH = internacional ? randInt(2,6) : randInt(1,3);
+    const eetM = pad2(randInt(10,55));
+    const eet = pad2(eetH) + eetM;
+    const auto = pad2(eetH + randInt(1,3)) + pad2(randInt(0,55));
+    const personas = String(randInt(40,250));
+    const speed = 'N0' + String(randInt(420,490));
+    const nivel = 'F' + String(choice([290,310,330,350,370]));
+    const ruta = rutaPara(origen.cod, destino.cod, internacional);
+    const dia = randInt(1,28), mes = randInt(1,12);
+    const color = choice(['BLANCO AZUL','BLANCO ROJO','GRIS AZUL','BLANCO VERDE']);
+    const piloto = pilotoNombre();
+    const lic = licencia();
+    const despachador = pilotoNombre().replace('CAP ','DSP ');
+    const licDsp = licencia();
+
+    const eq = sortearEquipo({avanzado});
+    const d18 = Object.assign({}, eq.extra18);
+
+    // Datos que siempre acompañan a un plan de empresa en Colombia.
+    d18.DOF = '26' + pad2(mes) + pad2(dia);
+    d18.REG = mat;
+    d18.OPR = linea.nom;
+
+    // Cada complicación añade sus propios indicadores y su propia regla.
+    const vat = vatDe(aero.estela);
+    const per = categoriaPER(vat);
+    let regla = '';
+    let extraNarrativa = '';
+
+    if(complicacion === 'NONRVSM' && !eq.rvsm){
+      d18.STS = 'NONRVSM';
+      regla = `La aeronave <b>no está aprobada RVSM</b> pero el vuelo se planea dentro de espacio aéreo con separación vertical mínima reducida. En ese caso no se anota la letra <code>W</code> en la casilla 10 y hay que declarar el estado del vuelo al principio de la casilla 18.`;
+    } else if(complicacion === 'NONRVSM'){
+      // Si el sorteo dio aeronave aprobada RVSM, la complicación se reduce a la
+      // categoría de aproximación, que sí depende de la aeronave.
+      d18.PER = per;
+      regla = `El aeródromo de destino exige declarar la <b>categoría de aeronave</b> para los procedimientos de aproximación. La velocidad de umbral (Vat) de este ${aero.nombre} en configuración de aterrizaje con masa máxima es de <b>${vat} kt</b>.`;
+    } else if(complicacion === 'INTERNACIONAL'){
+      const fir = FIR_DESTINO[destino.cod];
+      const cruceH = Math.max(0, eetH - 1), cruceM = pad2(randInt(5,55));
+      d18.EET = `${fir.fir}${pad2(cruceH)}${cruceM}`;
+      d18.SEL = codigoSelcal();
+      d18.CODE = direccionModoS();
+      d18.PER = per;
+      d18.RALT = alterno.cod;
+      regla = `Por ser un vuelo internacional hay que declarar: el <b>tiempo transcurrido acumulado desde el despegue hasta el límite de la ${fir.nom}</b>, que el despacho calculó en <b>${cruceH}h${cruceM}min</b>; el <b>código SELCAL</b> asignado a la aeronave, <b>${d18.SEL}</b>; la <b>dirección de aeronave en Modo S</b> <b>${d18.CODE}</b>; la <b>categoría de aeronave</b> para aproximación, sabiendo que su velocidad de umbral Vat es de <b>${vat} kt</b>; y el <b>aeródromo de alternativa en ruta</b> seleccionado, <b>${alterno.cod}</b>.`;
+    } else if(complicacion === 'DEMORA'){
+      const punto = (ruta.r.split(/\s+/)[0] || 'DCT').replace(/[^A-Z0-9]/g,'');
+      const dle = pad2(0) + pad2(choice([20,25,30,40,45]));
+      d18.DLE = `${punto}${dle}`;
+      d18.PER = per;
+      regla = `El vuelo tiene previsto un <b>retraso o espera programada en ruta</b> de <b>${Number(dle.slice(2))} minutos</b> sobre el punto significativo <b>${punto}</b>, y debe declararse en la casilla 18. También se exige la <b>categoría de aeronave</b> para aproximación: su velocidad de umbral Vat es de <b>${vat} kt</b>.`;
+    } else if(complicacion === 'ALTERNO_DESPEGUE'){
+      const talt = choice(AERODROMOS.filter(a => a.cod !== origen.cod && a.cod !== destino.cod && a.cod !== alterno.cod));
+      d18.TALT = talt.cod;
+      d18.PER = per;
+      regla = `El aeródromo de salida está con condiciones meteorológicas por debajo de mínimos de aterrizaje, así que se designó un <b>aeródromo de alternativa de despegue</b>: <b>${talt.cod}</b> (${talt.nom}). Ese dato va en la casilla 18 con su propio indicador, distinto del de alternativa en ruta. Además debe declararse la <b>categoría de aeronave</b> para aproximación: velocidad de umbral Vat <b>${vat} kt</b>.`;
+    } else if(complicacion === 'SOLO_EQUIPO'){
+      regla = `No hay condiciones especiales: en la casilla 18 sólo van la <b>fecha del vuelo</b>, la <b>matrícula</b>, el <b>explotador</b> y lo que el propio equipo declarado en la casilla 10 obligue a especificar.`;
+    } else {
+      d18.PER = per;
+      regla = `El destino exige declarar la <b>categoría de aeronave</b> para los procedimientos de aproximación: la velocidad de umbral (Vat) de este ${aero.nombre} es de <b>${vat} kt</b>.`;
+    }
+
+    if(eq.pbnSel.length){
+      extraNarrativa += ` La aeronave está <b>aprobada para navegación basada en la performance</b> con las especificaciones ${eq.prosaPBN}.`;
+    }
+    if(eq.prosaZ){
+      extraNarrativa += ` Lleva además ${eq.prosaZ}.`;
+    }
+
+    const f18 = construir18(d18);
+
+    return {
+      nivelTag: 'NIVEL 6 · EQUIPO Y CASILLA 18',
+      titulo: `Análisis de equipo y otros datos — ${origen.nom} → ${destino.nom}`,
+      narrativa: `Eres despachador de <b>${linea.nom}</b> y esta vez <b>nadie te entrega el código de la casilla 10</b>: tienes la ficha de equipamiento de la aeronave y debes codificarla tú.<br><br>`
+        + `El vuelo <b>${idnum}</b> se opera con un <b>${aero.nombre}</b>, matrícula <b>${mat}</b>, de <b>${origen.cod}</b> (${origen.nom}) a <b>${destino.cod}</b> (${destino.nom})${internacional?'':`, con alterno de destino <b>${alterno.cod}</b>`}. EOBT <b>${hora} UTC</b> del <b>${pad2(dia)}/${pad2(mes)}/2026</b>. Velocidad de crucero <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo.<br><br>`
+        + `<b>Ficha de equipo COM/NAV y ayudas para la aproximación:</b> la aeronave lleva ${eq.prosaNav.join(', ')}.${extraNarrativa}<br><br>`
+        + `<b>Ficha de equipo de vigilancia:</b> ${eq.prosaVig}.<br><br>`
+        + `<b>Condición particular de este vuelo:</b> ${regla}<br><br>`
+        + `No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}. Presenta el plan ${despachador}, licencia ${licDsp}.`,
+      keys: [
+        ['Casilla 7', idnum],
+        ['Casilla 8', 'I · S'],
+        ['Casilla 9', `— · ${aero.tipo} · /${aero.estela}`],
+        ['Casilla 10a', eq.f10a],
+        ['Casilla 10b', eq.f10b],
+        ['Casilla 13', `${origen.cod} · ${hora}`],
+        ['Casilla 15', `${speed} · ${nivel} · ${ruta.r}`],
+        ['Casilla 16', internacional ? `${destino.cod} · ${eet}` : `${destino.cod} · ${eet} · ${alterno.cod}`],
+        ['Casilla 18', f18],
+        ['Casilla 19', `E/${auto} P/${personas}`]
+      ],
+      fuenteRuta: ruta.src,
+      values: base19({
+        f7: idnum, f8r:'I', f8t:'S',
+        f9n:'', f9t: aero.tipo, f9e: aero.estela,
+        f10a: eq.f10a, f10b: eq.f10b,
+        f13a: origen.cod, f13h: hora,
+        f15v: speed, f15n: nivel, f15r: ruta.r,
+        f16d: destino.cod, f16e: eet,
+        f16a1: internacional ? '' : alterno.cod, f16a2:'',
+        f18,
+        e19: auto, p19: personas,
+        r19x: [], s19x: ['P','D','M','J'], j19x: ['L','F','U','V'],
+        d19x: ['D','C'], d19n:'', d19c:'', d19col:'',
+        a19: color, n19x:['N'], n19txt:'',
+        c19: piloto, c19lic: lic,
+        presentadoPor: despachador, licencia: licDsp,
+        hDeposito: horaDeposito(dia), destinatarios:'SKBOZQZX', remitente:'SKBOZPZX', identExacta:'',
+        fDia: pad2(dia), fMes: pad2(mes), fAnio:'26'
+      })
     };
   }
 
@@ -1687,6 +2440,8 @@ btnAyuda.addEventListener('click', () => {
   const btnSiguiente = $('btnSiguiente');
   const btnRespuesta = $('btnRespuesta');
   const btnLimpiar = $('btnLimpiar');
+  const btnPDF = $('btnPDF');
+  const printHead = $('printHead');
   const respuestaOficial = $('respuestaOficial');
   const fplOficialTexto = $('fplOficialTexto');
   const fplUsuarioTexto = $('fplUsuarioTexto');
@@ -1751,6 +2506,8 @@ btnAyuda.addEventListener('click', () => {
   function limpiarResultados(){
     respuestaOficial.style.display = 'none';
     scoreBanner.style.display = 'none';
+    btnPDF.style.display = 'none';
+    datosUltimoResultado = null;
     feedbackList.innerHTML = '';
     fplUsuarioTexto.textContent = '—';
     splUsuarioTexto.textContent = '—';
@@ -1758,6 +2515,9 @@ btnAyuda.addEventListener('click', () => {
   }
 
   function nuevaSituacion(){
+    // En el modo del profesor, cambiar de nivel regenera la situación pero
+    // conserva el formulario visible como clave de respuestas.
+    if(modoActividad === 'crear') return regenerarParaProfesor();
     limpiarResultados();
     if(modo === 'examen'){ iniciarExamen(); return; }
 
@@ -1889,6 +2649,67 @@ btnAyuda.addEventListener('click', () => {
   function mono(t){ return `<span class="mono">${t}</span>`; }
   function letras(lista){ return lista && lista.length ? lista.join(', ') : 'ninguna'; }
 
+
+  // Compara lo que el alumno declaró con lo esperado y lo dice en palabras:
+  // decirle "falta G (GNSS)" enseña mucho más que mostrarle la cadena correcta.
+  function diffDescriptores(dados, esperados, prosaDe){
+    const falta = esperados.filter(t => dados.indexOf(t) === -1);
+    const sobra = dados.filter(t => esperados.indexOf(t) === -1);
+    const partes = [];
+    if(falta.length) partes.push(`falta ${falta.map(t => mono(t) + (prosaDe(t) ? ' — ' + prosaDe(t) : '')).join(', ')}`);
+    if(sobra.length) partes.push(`sobra ${sobra.map(t => mono(t) + (prosaDe(t) ? ' — ' + prosaDe(t) : '')).join(', ')}`);
+    if(!partes.length) partes.push('los descriptores son los correctos pero están en otro orden');
+    return partes.join('; ');
+  }
+
+  // Descompone una casilla 18 en { INDICADOR: 'valor' } respetando que el valor
+  // de cada indicador llega hasta donde empieza el siguiente.
+  function mapa18(texto){
+    const inds = indicadores18(texto);
+    const m = {};
+    inds.forEach((x, i) => {
+      const fin = (i + 1 < inds.length) ? inds[i+1].pos : texto.length;
+      m[x.ind] = texto.slice(x.pos + x.ind.length + 1, fin).trim();
+    });
+    return m;
+  }
+
+  // Primer par de indicadores que rompe el orden prescrito, o null.
+  function primerDesorden18(inds){
+    for(let i = 1; i < inds.length; i++){
+      if(ORDEN_18.indexOf(inds[i].ind) < ORDEN_18.indexOf(inds[i-1].ind)){
+        return {antes: inds[i-1].ind, despues: inds[i].ind};
+      }
+    }
+    return null;
+  }
+
+  // Especificaciones PBN declaradas cuyo sensor no figura en la casilla 10a.
+  function pbnSinSoporte(cadena, tok10a){
+    const out = [];
+    for(let i = 0; i + 1 < cadena.length; i += 2){
+      const c = cadena.substr(i, 2);
+      const def = MAPA_PBN[c];
+      if(!def) continue;
+      const falta = def.req.filter(r => tok10a.indexOf(r) === -1);
+      if(falta.length) out.push({c, desc: def.desc, falta});
+    }
+    return out;
+  }
+
+  // Diferencias entre la casilla 18 escrita y la esperada, indicador a indicador.
+  function diff18(dada, esperada){
+    const A = mapa18(dada), B = mapa18(esperada);
+    const falta = Object.keys(B).filter(k => A[k] === undefined);
+    const sobra = Object.keys(A).filter(k => B[k] === undefined);
+    const distinto = Object.keys(B).filter(k => A[k] !== undefined && A[k] !== B[k]);
+    const partes = [];
+    if(falta.length) partes.push(`Falta ${falta.map(k => mono(k + '/' + B[k])).join(', ')}`);
+    if(sobra.length) partes.push(`Sobra ${sobra.map(k => mono(k + '/' + A[k])).join(', ')}`);
+    if(distinto.length) partes.push(`Valor distinto en ${distinto.map(k => `${mono(k+'/')} (escribiste ${mono(A[k] || '(vacío)')}, se esperaba ${mono(B[k])})`).join(', ')}`);
+    return partes.join('. ') + (partes.length ? '.' : '');
+  }
+
   // Devuelve un bloque de retroalimentación por casilla. `soloFPL` omite la
   // casilla 19 y el pie, que no viajan en un mensaje FPL.
   function validarPlan(v, exp, soloFPL){
@@ -1928,12 +2749,49 @@ btnAyuda.addEventListener('click', () => {
       add('9','Casilla 9 — Número / tipo / estela', false, `Se esperaba ${mono(`${exp.f9n||'(vacío)'} · ${exp.f9t} · /${exp.f9e}`)}.`);
     } else add('9','Casilla 9 — Número / tipo / estela', true, '');
 
-    // --- Casilla 10 ---
+    // --- Casilla 10a — Equipo COM/NAV y ayudas para la aproximación ---
     const a10 = norm(v.f10a), b10 = norm(v.f10b);
-    if(!a10) add('10','Casilla 10 — Equipo y capacidades', false, `Falta el equipo COM/NAV y de ayudas para la aproximación. Use ${mono('N')} si no lleva equipo o no funciona, o ${mono('S')} para el equipo normalizado más las letras que correspondan.`);
-    else if(!b10) add('10','Casilla 10 — Equipo y capacidades', false, `Falta el equipo de vigilancia, que va después de la barra. Use ${mono('N')} si no lleva, o los descriptores de transpondedor, ADS-B o ADS-C.`);
-    else if(!igual(a10, exp.f10a) || !igual(b10, exp.f10b)) add('10','Casilla 10 — Equipo y capacidades', false, `Se esperaba ${mono(exp.f10a + ' / ' + exp.f10b)}.`);
-    else add('10','Casilla 10 — Equipo y capacidades', true, '');
+    const tok10a = a10 ? trocear10a(a10) : [];
+    const espTok10a = trocear10a(norm(exp.f10a));
+    const desconocidas10a = tok10a.filter(t => !MAPA10A[t]);
+    const dup10a = tok10a.filter((t,i) => tok10a.indexOf(t) !== i);
+    const declaradasEnS = tok10a.indexOf('S') !== -1
+      ? tok10a.filter(t => INCLUIDAS_EN_S[t])
+      : [];
+
+    if(!a10){
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `Está vacía. Use ${mono('N')} si no lleva equipo o no funciona, o ${mono('S')} para el equipo normalizado más las letras que correspondan.`);
+    } else if(desconocidas10a.length){
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `${desconocidas10a.map(mono).join(', ')} no ${desconocidas10a.length>1?'son descriptores válidos':'es un descriptor válido'} de la casilla 10 (Doc 4444, Apéndice 2). Revisa que no hayas mezclado letras de vigilancia, que van después de la barra.`);
+    } else if(dup10a.length){
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `Cada descriptor se anota una sola vez, y ${dup10a.map(mono).join(', ')} está repetido.`);
+    } else if(tok10a.indexOf('N') !== -1 && tok10a.length > 1){
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `${mono('N')} significa que <b>no</b> se lleva equipo COM/NAV para la ruta, o que está fuera de servicio: va sola, nunca acompañada de otras letras.`);
+    } else if(declaradasEnS.length){
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `La letra ${mono('S')} ya significa <b>equipo normalizado</b>, que es VHF, VOR e ILS. No hay que volver a anotar ${declaradasEnS.map(t => mono(t)+' ('+INCLUIDAS_EN_S[t]+')').join(', ')}: es el error más frecuente de esta casilla.`);
+    } else if(!igual(a10, exp.f10a)){
+      const dif = diffDescriptores(tok10a, espTok10a, t => MAPA10A[t]);
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `Se esperaba ${mono(exp.f10a)}${dif ? ': ' + dif : ''}. Recuerda que las letras van en orden alfanumérico y que la ${mono('S')} encabeza el grupo.`);
+    } else add('10','Casilla 10a — Equipo COM/NAV y de aproximación', true, '');
+
+    // --- Casilla 10b — Equipo de vigilancia ---
+    const tok10b = b10 ? trocear10b(b10) : [];
+    const espTok10b = trocear10b(norm(exp.f10b));
+    const desconocidas10b = tok10b.filter(t => t !== 'N' && !MAPA10B[t]);
+    const ssrDeclarados = tok10b.filter(t => MAPA10B[t] && MAPA10B[t].grupo === 'ssr');
+
+    if(!b10){
+      add('10','Casilla 10b — Equipo de vigilancia', false, `Falta el equipo de vigilancia, que va después de la barra. Use ${mono('N')} si no lleva, o los descriptores de transpondedor, ADS-B y ADS-C.`);
+    } else if(desconocidas10b.length){
+      add('10','Casilla 10b — Equipo de vigilancia', false, `${desconocidas10b.map(mono).join(', ')} no ${desconocidas10b.length>1?'son descriptores válidos':'es un descriptor válido'} de vigilancia. Los de ADS-B y ADS-C llevan siempre una cifra: ${mono('B1')}, ${mono('B2')}, ${mono('U1')}, ${mono('U2')}, ${mono('V1')}, ${mono('V2')}, ${mono('D1')}, ${mono('G1')}.`);
+    } else if(tok10b.indexOf('N') !== -1 && tok10b.length > 1){
+      add('10','Casilla 10b — Equipo de vigilancia', false, `${mono('N')} significa que no se lleva equipo de vigilancia: va sola.`);
+    } else if(ssrDeclarados.length > 1){
+      add('10','Casilla 10b — Equipo de vigilancia', false, `Se anotó más de un descriptor de transpondedor (${ssrDeclarados.map(mono).join(', ')}). Sólo se elige <b>uno</b>: el de Modo A/C (${mono('A')} o ${mono('C')}) o el de Modo S (${mono('E')}, ${mono('H')}, ${mono('I')}, ${mono('L')}, ${mono('P')}, ${mono('S')} o ${mono('X')}), al que sí pueden sumarse los de ADS-B y ADS-C.`);
+    } else if(!igual(b10, exp.f10b)){
+      const dif = diffDescriptores(tok10b, espTok10b, t => (MAPA10B[t] ? MAPA10B[t].prosa : ''));
+      add('10','Casilla 10b — Equipo de vigilancia', false, `Se esperaba ${mono(exp.f10b)}${dif ? ': ' + dif : ''}.`);
+    } else add('10','Casilla 10b — Equipo de vigilancia', true, '');
 
     // --- Casilla 13 ---
     const a13 = norm(v.f13a), h13 = norm(v.f13h);
@@ -1980,12 +2838,33 @@ btnAyuda.addEventListener('click', () => {
 
     // --- Casilla 18 ---
     const v18 = norm(v.f18);
+    const inds18 = indicadores18(v18);
+    const desconocidos18 = (v18.match(/\b[A-Z]{2,5}\//g) || [])
+      .map(t => t.slice(0,-1))
+      .filter(t => ORDEN_18.indexOf(t) === -1);
+    const desorden = primerDesorden18(inds18);
+    const mPBN = /PBN\/([A-Z0-9]+)/.exec(v18);
+    const pbnSinSensor = mPBN ? pbnSinSoporte(mPBN[1], tok10a) : [];
+
     if(!v18){
       add('18','Casilla 18 — Otros datos', false, `Nunca se deja vacía: insértese ${mono('0')} si no hay otros datos.`);
-    } else if(a10.indexOf('R') !== -1 && v18.indexOf('PBN/') === -1){
+    } else if(desconocidos18.length){
+      add('18','Casilla 18 — Otros datos', false, `${[...new Set(desconocidos18)].map(t => mono(t+'/')).join(', ')} no ${desconocidos18.length>1?'son indicadores':'es un indicador'} de la casilla 18. Los admitidos son, en este orden: ${mono(ORDEN_18.map(i=>i+'/').join(' '))}.`);
+    } else if(tok10a.indexOf('R') !== -1 && !mPBN){
       add('18','Casilla 18 — Otros datos', false, `El equipo declarado en la casilla 10 incluye la letra ${mono('R')} (PBN aprobada) y, en ese caso, <b>es obligatorio</b> especificar las capacidades de navegación en la casilla 18 después del indicador ${mono('PBN/')}.`);
+    } else if(mPBN && tok10a.indexOf('R') === -1){
+      add('18','Casilla 18 — Otros datos', false, `Se declararon capacidades tras ${mono('PBN/')} pero la casilla 10 no lleva la letra ${mono('R')}. Las dos van siempre juntas: la ${mono('R')} anuncia la aprobación PBN y la casilla 18 dice de qué especificaciones se trata.`);
+    } else if(mPBN && mPBN[1].length > 16){
+      add('18','Casilla 18 — Otros datos', false, `Después de ${mono('PBN/')} caben como máximo <b>8 especificaciones y 16 caracteres</b> (Doc 4444). Se anotaron ${mPBN[1].length}.`);
+    } else if(pbnSinSensor.length){
+      add('18','Casilla 18 — Otros datos', false, `Hay especificaciones PBN que la casilla 10 no soporta: ${pbnSinSensor.map(x => `${mono(x.c)} (${x.desc}) exige ${x.falta.map(f => mono(f)+' — '+MAPA10A[f]).join(' y ')}`).join('; ')}. Una especificación PBN sólo puede declararse si el sensor que la sustenta figura en la casilla 10.`);
+    } else if(tok10a.indexOf('Z') !== -1 && !/\b(COM|NAV|DAT)\//.test(v18)){
+      add('18','Casilla 18 — Otros datos', false, `La casilla 10 lleva la letra ${mono('Z')} (otro equipo o capacidades), así que ese equipo debe detallarse en la casilla 18 tras ${mono('COM/')}, ${mono('NAV/')} o ${mono('DAT/')}, según sea de comunicaciones, de navegación o de enlace de datos.`);
+    } else if(desorden){
+      add('18','Casilla 18 — Otros datos', false, `Los indicadores están desordenados: ${mono(desorden.antes+'/')} no puede ir antes de ${mono(desorden.despues+'/')}. El orden prescrito es ${mono(ORDEN_18.map(i=>i+'/').join(' '))}.`);
     } else if(!igual(v18, exp.f18)){
-      add('18','Casilla 18 — Otros datos', false, `Se esperaba ${mono(exp.f18)}. Recuerda el orden prescrito de los indicadores y las reglas del AIP para vuelos especiales.`);
+      const dif = diff18(v18, norm(exp.f18));
+      add('18','Casilla 18 — Otros datos', false, `Se esperaba ${mono(exp.f18)}${dif ? '. ' + dif : '.'}`);
     } else add('18','Casilla 18 — Otros datos', true, '');
 
     if(soloFPL) return B;
@@ -2039,6 +2918,9 @@ btnAyuda.addEventListener('click', () => {
 
   function validar(){
     if(!currentSituation) return;
+    if(modoActividad === 'crear') return revisarClave();
+    if(modoActividad === 'resolver') return entregarActividad();
+    if(modoActividad === 'revisar') return;
     if(modo === 'error') return calificarMarcas();
 
     const v = leerForm();
@@ -2067,7 +2949,11 @@ btnAyuda.addEventListener('click', () => {
     feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
-  function mostrarPuntaje(correctas, total, detalle){
+  // `opciones.guardar === false` evita registrar el intento en el progreso
+  // libre: las entregas de una actividad asignada ya quedan guardadas en
+  // resultados_actividad y contarlas dos veces distorsionaría el promedio.
+  function mostrarPuntaje(correctas, total, detalle, opciones){
+    opciones = opciones || {};
     const score = total ? Math.round((correctas/total)*100) : 0;
     scoreBanner.style.display='flex';
     scoreBanner.innerHTML = `
@@ -2075,8 +2961,106 @@ btnAyuda.addEventListener('click', () => {
       <div class="score-text">${correctas} de ${total} revisiones correctas — ${detalle}</div>
       <div id="saveMsg" style="font-size:0.85rem; margin-top:6px; color:var(--text-muted); width:100%;"></div>
     `;
-    guardarResultado(correctas, total);
+    if(opciones.guardar !== false) guardarResultado(correctas, total);
+    mostrarBotonPDF({
+      titulo: currentSituation ? currentSituation.titulo : '',
+      nivel: currentSituation ? currentSituation.nivelTag : '',
+      modo: modoActividad === 'resolver' ? 'Actividad asignada — entrega calificada'
+          : modoActividad === 'revisar'  ? 'Actividad asignada — revisión de la entrega'
+          : (NOMBRE_MODO[modo] || modo),
+      modoId: modoActividad || modo,
+      estudiante: opciones.estudiante || null,
+      entrega: opciones.entrega || null,
+      puntaje: score, correctas, total
+    });
   }
+
+  // ==========================================================================
+  // EXPORTAR EL PLAN A PDF
+  // Se usa el diálogo de impresión del navegador ("Guardar como PDF"), no una
+  // librería externa: así el PDF conserva exactamente el formato OACI de la
+  // pantalla y la página no carga ninguna dependencia de terceros.
+  // ==========================================================================
+  let datosUltimoResultado = null;
+
+  const NOMBRE_MODO = {
+    diligenciar: 'Diligenciar desde la situación de vuelo',
+    error: 'Detectar el error',
+    decodificar: 'Decodificar el mensaje FPL',
+    examen: 'Examen cronometrado'
+  };
+
+  function esc(t){
+    return String(t == null ? '' : t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function mostrarBotonPDF(meta){
+    datosUltimoResultado = meta;
+    btnPDF.style.display = 'inline-flex';
+  }
+
+  // El nombre sale del perfil del estudiante cuando hay sesión; sin sesión el
+  // PDF se genera igual, identificado como invitado.
+  async function nombreParaElPDF(){
+    try{
+      if(typeof obtenerSesionActual !== 'function') return 'Invitado (sin sesión iniciada)';
+      const sesion = await obtenerSesionActual();
+      if(!sesion) return 'Invitado (sin sesión iniciada)';
+      const perfil = await obtenerPerfilEstudiante();
+      return (perfil && perfil.nombreCompleto) ? perfil.nombreCompleto : 'Estudiante';
+    }catch(e){
+      return 'Invitado (sin sesión iniciada)';
+    }
+  }
+
+  async function prepararEncabezadoImpresion(){
+    const m = datosUltimoResultado || {};
+    // En la revisión de una entrega, el nombre que va en el PDF es el del
+    // estudiante que la presentó, no el de quien está mirando la pantalla.
+    const quien = m.estudiante || await nombreParaElPDF();
+    const ahora = new Date();
+    const fecha = `${pad2(ahora.getUTCDate())}/${pad2(ahora.getUTCMonth()+1)}/${ahora.getUTCFullYear()} ${pad2(ahora.getUTCHours())}:${pad2(ahora.getUTCMinutes())} UTC`;
+    const nota = m.modoId === 'examen'
+      ? '<br><b>Nota:</b> el formulario reproduce el último plan resuelto del examen; la calificación corresponde a los cinco planes.'
+      : '';
+    // Una entrega de un estudiante lleva su nombre como cabecera del documento:
+    // es lo primero que necesita ver quien archive o revise el PDF.
+    const e = m.entrega;
+    if(e){
+      const corr = (e.correcciones || [])[0];
+      printHead.innerHTML = `
+        <h2>${esc(e.actividad_titulo)}</h2>
+        <div class="print-nombre">${esc(e.estudiante)}</div>
+        <div class="print-meta">
+          <b>Plan de vuelo entregado:</b> ${esc(fechaLegible(e.fecha))}<br>
+          <b>Calificación:</b> ${e.correctas} de ${e.total} revisiones correctas &nbsp;·&nbsp; ${e.porcentaje} / 100<br>
+          ${corr ? `<b>Nota ajustada por ${esc(corr.profesor)}</b> el ${esc(fechaLegible(corr.fecha))}: de ${corr.porcentaje_antes}% a ${corr.porcentaje_despues}%${(e.correcciones || []).length > 1 ? ` (${e.correcciones.length} correcciones en total)` : ''}<br>` : ''}
+          <b>PDF generado:</b> ${fecha}
+        </div>`;
+      return;
+    }
+
+    printHead.innerHTML = `
+      <h2>Plan de vuelo diligenciado — ejercicio de práctica</h2>
+      <div class="print-meta">
+        <b>Estudiante:</b> ${esc(quien)}<br>
+        <b>Ejercicio:</b> ${esc(m.titulo || '—')}<br>
+        <b>Nivel:</b> ${esc(m.nivel || '—')} &nbsp;·&nbsp; <b>Modo:</b> ${esc(m.modo || '—')}<br>
+        ${m.puntaje != null ? `<b>Calificación:</b> ${m.puntaje} / 100 &nbsp;·&nbsp; ${m.correctas} de ${m.total} revisiones correctas<br>` : ''}
+        <b>Generado:</b> ${fecha}${nota}
+      </div>`;
+  }
+
+  btnPDF.addEventListener('click', async () => {
+    btnPDF.disabled = true;
+    try{
+      await prepararEncabezadoImpresion();
+      window.print();
+    } finally {
+      btnPDF.disabled = false;
+    }
+  });
 
   function guardarResultado(correctas, total){
     if (typeof guardarIntento !== 'function') return;
@@ -2112,7 +3096,35 @@ btnAyuda.addEventListener('click', () => {
     {cas:'7',  ap:v => { v.f7 = v.f7.slice(0,2) + '-' + v.f7.slice(2); }, expl:'La identificación de aeronave no admite guiones ni símbolos.'},
     {cas:'19E',ap:v => { v.e19 = '0010'; }, expl:'La autonomía declarada es menor que la duración total prevista del vuelo.'},
     {cas:'19P',req:v => ['S','M'].indexOf(v.f8t) === -1, ap:v => { v.p19 = 'TBN'; }, expl:'TBN sólo se admite en vuelos de servicio aéreo regular (S) y de aviación militar (M).'},
-    {cas:'19C',ap:v => { v.c19lic = ''; }, expl:'Falta el número de licencia del piloto al mando, que el AIP Colombia exige junto con el nombre.'}
+    {cas:'19C',ap:v => { v.c19lic = ''; }, expl:'Falta el número de licencia del piloto al mando, que el AIP Colombia exige junto con el nombre.'},
+
+    // --- Fallos de equipo (casilla 10) y de otros datos (casilla 18) ---
+    {cas:'10', req:v => trocear10a(v.f10a).indexOf('S') !== -1 && trocear10a(v.f10a).indexOf('O') === -1,
+     ap:v => { v.f10a = v.f10a + 'VOL'; },
+     expl:'La letra S ya significa <b>equipo normalizado</b>, que es VHF, VOR e ILS. Volver a anotar V, O y L por separado sobra: es el error más frecuente de la casilla 10.'},
+    {cas:'10', req:v => trocear10b(v.f10b).filter(x => MAPA10B[x] && MAPA10B[x].grupo === 'ssr').length === 1,
+     ap:v => {
+       const ssr = trocear10b(v.f10b).find(x => MAPA10B[x] && MAPA10B[x].grupo === 'ssr');
+       v.f10b = (ssr === 'C' ? 'S' : 'C') + v.f10b;
+     },
+     expl:'En la casilla 10b sólo se elige <b>un</b> descriptor de transpondedor: o el de Modo A/C (A, C) o el de Modo S (E, H, I, L, P, S, X), nunca los dos. A ese único descriptor sí pueden sumarse los de ADS-B y ADS-C.'},
+    {cas:'10', req:v => trocear10a(v.f10a).indexOf('R') !== -1,
+     ap:v => { v.f10a = trocear10a(v.f10a).filter(x => x !== 'R').join(''); },
+     expl:'La casilla 18 declara capacidades PBN, así que la casilla 10 tiene que llevar la letra <b>R</b>, que es la que anuncia esa aprobación. Las dos van siempre juntas.'},
+    {cas:'18', req:v => indicadores18(v.f18).length >= 2,
+     ap:v => {
+       const m = mapa18(v.f18);
+       const ks = Object.keys(m);
+       const invertido = [ks[ks.length-1]].concat(ks.slice(0, -1));
+       v.f18 = invertido.map(k => k + '/' + m[k]).join(' ').trim();
+     },
+     expl:'Los indicadores de la casilla 18 van siempre en el orden prescrito por el Doc 4444 (STS/ PBN/ NAV/ COM/ DAT/ SUR/ DEP/ DEST/ DOF/ REG/ EET/ SEL/ TYP/ CODE/ DLE/ OPR/ ORGN/ PER/ ALTN/ RALT/ TALT/ RIF/ RMK/). Aquí están desordenados.'},
+    {cas:'18', req:v => /PBN\//.test(v.f18) && trocear10a(v.f10a).indexOf('I') === -1,
+     ap:v => { v.f18 = v.f18.replace(/PBN\/[A-Z0-9]+/, 'PBN/B5'); },
+     expl:'Se declaró <b>B5 — RNAV 5 con INS o IRS</b>, pero la casilla 10 no incluye la letra <b>I</b> (navegación inercial). Ninguna especificación PBN puede declararse sin el sensor que la sustenta.'},
+    {cas:'18', req:v => v.f18 && v.f18 !== '0',
+     ap:v => { v.f18 = 'INFO/REVISAR ' + v.f18; },
+     expl:'<b>INFO/</b> no existe como indicador de la casilla 18. Sólo se admiten los del Doc 4444, y cualquier dato que no tenga indicador propio va al final tras <b>RMK/</b>.'}
   ];
 
   function inyectarErrores(sit){
@@ -2200,7 +3212,7 @@ btnAyuda.addEventListener('click', () => {
   function siguienteRondaExamen(){
     examen.ronda++;
     examRonda.textContent = `Plan ${examen.ronda} de ${RONDAS_EXAMEN}`;
-    renderSituacion(generarSituacion(randInt(1,5)));
+    renderSituacion(generarSituacion(randInt(1,6)));
     limpiarFormulario(false);
     bloquearFormulario(false);
     feedbackList.innerHTML = '';
@@ -2246,15 +3258,521 @@ btnAyuda.addEventListener('click', () => {
   }
 
   // ---------- Enter para validar ----------
+  // En una actividad asignada, Enter NO entrega: el estudiante tiene intentos
+  // contados y pulsarlo al pasar de casilla habría mandado el plan a medias.
   fplForm.addEventListener('keydown', (e) => {
     if(e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON'){
       e.preventDefault();
+      if(modoActividad === 'resolver' || modoActividad === 'revisar') return;
       validar();
     }
   });
 
-  // ---------- Inicial ----------
-  setModo('diligenciar');
+  // ==========================================================================
+  // MODOS LIGADOS A LA URL — SISTEMA DE PROFESORES
+  //
+  //   ?crear=<grupoId>   el profesor arma una situación con este mismo motor,
+  //                      la ajusta y la publica como actividad del grupo.
+  //   ?actividad=<id>    el estudiante resuelve la actividad asignada. La
+  //                      calificación la hace el servidor contra la clave que
+  //                      guardó el profesor (calificar_plan_vuelo), así que el
+  //                      navegador nunca ve las respuestas antes de entregar.
+  //   ?resultado=<id>    revisión de un plan ya entregado, en sólo lectura.
+  //                      El profesor ve la clave y la explicación completa; el
+  //                      estudiante, sólo qué casillas acertó.
+  //
+  // Sin ninguno de los tres parámetros el simulador funciona como siempre.
+  // ==========================================================================
+  const paramsURL = new URLSearchParams(location.search);
+  const grupoCrear   = paramsURL.get('crear');
+  const actividadId  = paramsURL.get('actividad');
+  const resultadoId  = paramsURL.get('resultado');
+
+  let modoActividad = null;   // 'crear' | 'resolver' | 'revisar' | null
+
+  const actPanel     = $('actPanel');
+  const actLabel     = $('actLabel');
+  const actAviso     = $('actAviso');
+  const actInfo      = $('actInfo');
+  const actCrear     = $('actCrear');
+  const actTitulo    = $('actTitulo');
+  const actLimite    = $('actLimite');
+  const actIntentos  = $('actIntentos');
+  const actDesc      = $('actDesc');
+  const actNarrativa = $('actNarrativa');
+  const actRegenerar = $('actRegenerar');
+  const actPublicar  = $('actPublicar');
+  const actEstado    = $('actEstado');
+  const modeTabsEl   = document.querySelector('.mode-tabs');
+
+  function avisar(texto){
+    actAviso.innerHTML = esc(texto);
+    actAviso.style.display = texto ? 'block' : 'none';
+  }
+  function informar(html){
+    actInfo.innerHTML = html;
+    actInfo.style.display = html ? 'block' : 'none';
+  }
+
+  // La narrativa que escribe el profesor se guarda tal cual, pero al pintarla
+  // sólo se respetan las etiquetas de énfasis: cualquier otra cosa se escapa,
+  // para que un enunciado no pueda inyectar marcado en la página del alumno.
+  function sanitizarNarrativa(txt){
+    // script y style no son legítimos nunca en un enunciado: se descartan
+    // enteros, con su contenido, en vez de quedar a la vista como texto
+    // escapado. Todo lo demás se escapa abajo, así que nada más se pierde.
+    const sinScripts = String(txt || '')
+      .replace(/<\s*script\b[\s\S]*?<\s*\/\s*script\s*>/gi, '')
+      .replace(/<\s*style\b[\s\S]*?<\s*\/\s*style\s*>/gi, '')
+      .replace(/<\s*\/?\s*(script|style)\b[^>]*>/gi, '');
+    const seguro = esc(sinScripts);
+    return seguro
+      .replace(/&lt;(\/?)(b|i|u|em|strong|code|br)\s*\/?&gt;/gi, (m, cierre, tag) =>
+        `<${cierre}${tag.toLowerCase()}>`)
+      .replace(/\n/g, '<br>');
+  }
+
+  // Deja sólo lo que tiene sentido cuando el plan viene de una actividad. La
+  // ayuda de reglas sí se conserva: es material de consulta, como el AIP en una
+  // sala real, y no revela ninguna respuesta.
+  function soloFormulario(){
+    if(modeTabsEl) modeTabsEl.style.display = 'none';
+    modeDesc.style.display = 'none';
+    if(levelRow && levelRow.parentElement) levelRow.parentElement.style.display = 'none';
+    btnNuevo.style.display = 'none';
+    btnRespuesta.style.display = 'none';
+    btnLimpiar.style.display = 'none';
+    btnSiguiente.style.display = 'none';
+    btnDatos.style.display = 'none';
+    telexPanel.style.display = 'none';
+    examBar.style.display = 'none';
+    scenarioPanel.style.display = 'block';
+  }
+
+  // ---------- Profesor: crear la actividad ----------
+  function regenerarParaProfesor(){
+    limpiarResultados();
+    feedbackList.innerHTML = '';
+    const sit = generarSituacion(currentLevel);
+    renderSituacion(sit);
+    escribirForm(sit.values);
+    bloquearFormulario(false);
+    actNarrativa.value = sit.narrativa;
+    if(!actTitulo.value.trim()) actTitulo.value = sit.titulo;
+    actEstado.textContent = '';
+  }
+
+  function iniciarModoCrear(){
+    modoActividad = 'crear';
+    modo = 'diligenciar';
+    actPanel.style.display = 'block';
+    actCrear.style.display = 'block';
+    actLabel.textContent = 'Nueva actividad de plan de vuelo';
+    if(modeTabsEl) modeTabsEl.style.display = 'none';
+    modeDesc.style.display = 'none';
+    btnNuevo.style.display = 'none';
+    btnValidar.style.display = 'inline-flex';
+    btnValidar.textContent = 'Revisar la clave';
+    btnRespuesta.style.display = 'none';
+    btnLimpiar.style.display = 'none';
+    btnSiguiente.style.display = 'none';
+    btnDatos.style.display = 'none';
+    btnPDF.style.display = 'none';
+    regenerarParaProfesor();
+  }
+
+  // Comprueba la clave contra sí misma: las comparaciones con "lo esperado"
+  // se cumplen por definición, pero siguen aplicándose todas las reglas de
+  // formato y las comprobaciones cruzadas del Doc 4444 (letra R sin PBN/,
+  // especificaciones PBN sin su sensor, indicadores de la 18 desordenados,
+  // altitudes por encima de A185…). Así el profesor no publica una clave
+  // incoherente si editó el formulario a mano.
+  function revisarClave(){
+    const v = leerForm();
+    const blocks = validarPlan(v, v, false);
+    feedbackList.innerHTML = blocks.filter(b => !b.ok).map(b => `
+      <div class="fb-block bad">
+        <div class="fb-head"><span class="fb-icon">❌</span><span>${b.label}</span></div>
+        ${b.msg ? `<div class="fb-body">${b.msg}</div>` : ''}
+      </div>
+    `).join('');
+    const malas = blocks.filter(b => !b.ok).length;
+    actEstado.innerHTML = malas
+      ? `⚠️ La clave tiene ${malas} ${malas === 1 ? 'problema' : 'problemas'} de formato o de coherencia entre casillas. Revísalos abajo antes de publicar.`
+      : '✅ La clave no tiene errores de formato ni incoherencias entre casillas.';
+    if(malas) feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  if(actRegenerar) actRegenerar.addEventListener('click', regenerarParaProfesor);
+
+  if(actPublicar) actPublicar.addEventListener('click', async () => {
+    if(typeof crearActividadPlanVuelo !== 'function'){
+      actEstado.textContent = 'No se pudo cargar el módulo de profesores. Recarga la página.';
+      return;
+    }
+    const narrativa = actNarrativa.value.trim();
+    const titulo = actTitulo.value.trim();
+    if(!titulo){ actEstado.textContent = 'Ponle un título a la actividad.'; return; }
+    if(!narrativa){ actEstado.textContent = 'La actividad necesita la situación de vuelo.'; return; }
+
+    let fechaLimite = null;
+    if(actLimite.value){
+      const d = new Date(actLimite.value);
+      if(isNaN(d.getTime())){ actEstado.textContent = 'La fecha límite no es válida.'; return; }
+      fechaLimite = d.toISOString();
+    }
+
+    actPublicar.disabled = true;
+    actEstado.textContent = 'Publicando…';
+    const res = await crearActividadPlanVuelo({
+      grupoId: grupoCrear,
+      titulo,
+      descripcion: actDesc.value.trim(),
+      fechaLimite,
+      intentosMax: actIntentos.value ? parseInt(actIntentos.value, 10) : null,
+      activa: true,
+      enunciado: {
+        titulo,
+        narrativa,
+        nivelTag: currentSituation ? currentSituation.nivelTag : '',
+        fuenteRuta: currentSituation ? currentSituation.fuenteRuta : ''
+      },
+      clave: leerForm()
+    });
+    actPublicar.disabled = false;
+
+    if(!res.ok){ actEstado.textContent = 'No se pudo publicar: ' + res.error; return; }
+    actEstado.innerHTML = '✅ Actividad publicada. Ya aparece en el panel de tu grupo. '
+      + '<a href="panel-profesor.html">Volver al panel</a>.';
+  });
+
+  // ---------- Estudiante: resolver la actividad asignada ----------
+  let actividadActual = null;
+
+  async function iniciarModoResolver(){
+    modoActividad = 'resolver';
+    modo = 'diligenciar';
+    actPanel.style.display = 'block';
+    actLabel.textContent = 'Actividad asignada';
+    soloFormulario();
+    informar('Cargando la actividad…');
+
+    if(typeof obtenerActividadParaResolver !== 'function'){
+      informar('');
+      avisar('No se pudo cargar el módulo de actividades. Recarga la página.');
+      return;
+    }
+
+    const r = await obtenerActividadParaResolver(actividadId);
+    if(!r.ok){
+      informar('');
+      avisar(r.error);
+      bloquearFormulario(true);
+      btnValidar.style.display = 'none';
+      return;
+    }
+
+    const a = r.actividad;
+    // Una actividad de opción múltiple se resuelve en su propia página.
+    if(a.tipo !== 'plan_vuelo'){
+      location.replace('tomar-actividad.html?id=' + encodeURIComponent(actividadId));
+      return;
+    }
+    actividadActual = a;
+
+    const plan = a.plan || {};
+    renderSituacion({
+      titulo: plan.titulo || a.titulo,
+      narrativa: sanitizarNarrativa(plan.narrativa),
+      nivelTag: plan.nivelTag || 'ACTIVIDAD ASIGNADA',
+      fuenteRuta: plan.fuenteRuta || '',
+      keys: [],
+      values: null
+    });
+
+    const detalles = [];
+    detalles.push(`<b>${esc(a.titulo)}</b>`);
+    if(a.descripcion) detalles.push(esc(a.descripcion));
+    if(a.fecha_limite) detalles.push(`Fecha límite: <b>${new Date(a.fecha_limite).toLocaleString()}</b>`);
+    detalles.push(a.intentos_max
+      ? `Intentos: <b>${a.intentos_usados} de ${a.intentos_max}</b>`
+      : `Intentos: <b>sin límite</b> (llevas ${a.intentos_usados})`);
+    informar(detalles.join('<br>'));
+
+    if(a.cerrada || a.sin_intentos){
+      avisar(a.cerrada
+        ? 'La fecha límite de esta actividad ya pasó, así que no puedes entregarla.'
+        : 'Ya usaste todos los intentos permitidos para esta actividad.');
+      bloquearFormulario(true);
+      btnValidar.style.display = 'none';
+      return;
+    }
+
+    limpiarFormulario(false);
+    bloquearFormulario(false);
+    btnValidar.style.display = 'inline-flex';
+    btnValidar.textContent = 'Entregar plan de vuelo';
+  }
+
+  async function entregarActividad(){
+    const restantes = actividadActual && actividadActual.intentos_max
+      ? actividadActual.intentos_max - actividadActual.intentos_usados
+      : null;
+    const cola = restantes !== null
+      ? `Después de entregar no podrás cambiarlo. Te ${restantes === 1 ? 'queda 1 intento' : 'quedan ' + restantes + ' intentos'}, este incluido.`
+      : 'Después de entregar no podrás cambiar esta entrega.';
+    if(!confirm('¿Entregar el plan de vuelo?\n\n' + cola)) return;
+
+    const v = leerForm();
+    avisar('');
+    btnValidar.disabled = true;
+    btnValidar.textContent = 'Enviando…';
+    const r = await calificarPlanDeVuelo(actividadId, v);
+    btnValidar.disabled = false;
+    btnValidar.textContent = 'Entregar plan de vuelo';
+
+    if(!r.ok){ avisar('No se pudo entregar: ' + r.error); return; }
+
+    const res = r.resultado;
+    // La clave llega con la calificación, así que ahora sí se puede explicar
+    // casilla por casilla. El puntaje que se muestra es el del servidor.
+    const blocks = validarPlan(v, res.clave || {}, false);
+    feedbackList.innerHTML = blocks.map(b => `
+      <div class="fb-block ${b.ok?'ok':'bad'}">
+        <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
+        ${b.msg ? `<div class="fb-body">${b.msg}</div>` : ''}
+      </div>
+    `).join('');
+    fplUsuarioTexto.textContent = msgFPL(v);
+    splUsuarioTexto.textContent = msgSPL(v);
+
+    // No se registra además en el progreso libre: la entrega ya quedó
+    // guardada en resultados_actividad y contarla dos veces distorsionaría
+    // el promedio del simulador en el panel del estudiante.
+    mostrarPuntaje(res.correctas, res.total,
+      `Entrega calificada por el servidor · ${esc(actividadActual ? actividadActual.titulo : '')}`,
+      {guardar:false});
+
+    bloquearFormulario(true);
+    btnValidar.style.display = 'none';
+    informar(`Entrega registrada. Tu profesor ya puede verla en su panel.`);
+    feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // ---------- Revisión de un plan entregado ----------
+  //
+  // La verdad de la calificación es lo que guardó el servidor en `casillas`,
+  // no lo que recalcule el navegador: si el profesor corrigió una casilla a
+  // mano, recalcular la borraría. Por eso se pintan los aciertos del servidor
+  // y se usa validarPlan() sólo para acompañar cada casilla con su
+  // explicación, que el servidor no guarda.
+  let entregaActual = null;
+  let explicacionesRevision = [];
+
+  const zonaCorreccion = $('zonaCorreccion');
+  const zonaHistorial  = $('zonaHistorial');
+  const corrMotivo     = $('corrMotivo');
+  const corrGuardar    = $('corrGuardar');
+  const corrDeshacer   = $('corrDeshacer');
+  const corrEstado     = $('corrEstado');
+  const corrAyuda      = $('corrAyuda');
+
+  // Fechas siempre en UTC y con formato fijo: el resto del portal trabaja en
+  // hora Zulu y un "a. m./p. m." del navegador no dice nada en un documento
+  // aeronáutico.
+  function fechaLegible(iso){
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return String(iso || '—');
+    return `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth()+1)}/${d.getUTCFullYear()} `
+         + `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())} UTC`;
+  }
+
+  function pintarRevisionCasillas(){
+    const casillas = entregaActual.casillas || [];
+    const puedeCorregir = !!entregaActual.es_profesor;
+
+    feedbackList.innerHTML = casillas.map((c, i) => {
+      const expl = explicacionesRevision[i];
+      // Sólo se acompaña la explicación si de verdad corresponde a esta casilla.
+      const msg = (expl && expl.label === c.label && expl.msg) ? expl.msg : '';
+      const marca = c.corregida
+        ? `<span class="fb-marca">corregida · el servidor la dio por ${c.ok_auto ? 'correcta' : 'incorrecta'}</span>`
+        : '';
+      const control = puedeCorregir
+        ? `<label class="fb-corr"><input type="checkbox" data-casilla="${i}" ${c.ok ? 'checked' : ''}> Casilla correcta</label>`
+        : '';
+      return `
+        <div class="fb-block ${c.ok ? 'ok' : 'bad'}">
+          <div class="fb-head"><span class="fb-icon">${c.ok ? '✅' : '❌'}</span><span>${esc(c.label)}</span>${marca}</div>
+          ${msg ? `<div class="fb-body">${msg}</div>` : ''}
+          ${control}
+        </div>`;
+    }).join('');
+  }
+
+  function pintarHistorial(){
+    const hist = entregaActual.correcciones || [];
+    if(!hist.length){ zonaHistorial.style.display = 'none'; zonaHistorial.innerHTML = ''; return; }
+    zonaHistorial.style.display = 'block';
+    zonaHistorial.innerHTML = `
+      <div class="instrument-label" style="margin-bottom:6px;">Historial de correcciones</div>
+      ${hist.map(h => `
+        <div class="hist-item">
+          <div class="hist-cab">
+            <b>${esc(h.profesor)}</b> · ${esc(fechaLegible(h.fecha))} ·
+            nota <b>${h.correctas_antes}/${entregaActual.total} (${h.porcentaje_antes}%)</b>
+            → <b>${h.correctas_despues}/${entregaActual.total} (${h.porcentaje_despues}%)</b>
+          </div>
+          <ul>${(h.cambios || []).map(c =>
+            `<li>${esc(c.label || ('Casilla ' + c.i))}: ${c.antes ? 'correcta' : 'incorrecta'} → <b>${c.despues ? 'correcta' : 'incorrecta'}</b></li>`
+          ).join('')}</ul>
+          ${h.motivo ? `<div class="hist-motivo">“${esc(h.motivo)}”</div>` : ''}
+        </div>`).join('')}`;
+  }
+
+  function pintarPuntajeRevision(){
+    const e = entregaActual;
+    const hubo = (e.correcciones || []).length > 0;
+    mostrarPuntaje(e.correctas, e.total,
+      `Entrega de ${esc(e.estudiante)} · ${esc(e.actividad_titulo)}${hubo ? ' · nota ajustada por el profesor' : ''}`,
+      {guardar:false, estudiante: e.estudiante, entrega: e});
+  }
+
+  function sincronizarCasillasDesdeFormulario(){
+    // Devuelve sólo las casillas cuyo estado cambió respecto de lo guardado.
+    const cambios = [];
+    feedbackList.querySelectorAll('input[data-casilla]').forEach(chk => {
+      const i = parseInt(chk.dataset.casilla, 10);
+      const actual = (entregaActual.casillas || [])[i];
+      if(actual && !!actual.ok !== chk.checked) cambios.push({i, ok: chk.checked});
+    });
+    return cambios;
+  }
+
+  async function iniciarModoRevisar(){
+    modoActividad = 'revisar';
+    modo = 'diligenciar';
+    actPanel.style.display = 'block';
+    actLabel.textContent = 'Plan de vuelo entregado';
+    soloFormulario();
+    btnValidar.style.display = 'none';
+    informar('Cargando la entrega…');
+
+    if(typeof obtenerPlanEntregado !== 'function'){
+      informar('');
+      avisar('No se pudo cargar el módulo de actividades. Recarga la página.');
+      return;
+    }
+
+    const r = await obtenerPlanEntregado(resultadoId);
+    if(!r.ok){ informar(''); avisar(r.error); return; }
+
+    entregaActual = r.entrega;
+    const e = entregaActual;
+    const plan = e.enunciado || {};
+
+    renderSituacion({
+      titulo: plan.titulo || e.actividad_titulo,
+      narrativa: sanitizarNarrativa(plan.narrativa),
+      nivelTag: plan.nivelTag || 'ACTIVIDAD ASIGNADA',
+      fuenteRuta: plan.fuenteRuta || '',
+      keys: [],
+      values: null
+    });
+
+    escribirForm(e.valores || {});
+    bloquearFormulario(true);
+
+    // El nombre del estudiante encabeza también la pestaña, que es lo que el
+    // navegador propone como nombre del archivo al guardar el PDF.
+    document.title = `Plan de vuelo — ${e.estudiante} — ${e.actividad_titulo}`;
+
+    informar(`<b>${esc(e.actividad_titulo)}</b><br>Estudiante: <b>${esc(e.estudiante)}</b><br>`
+      + `Entregado: <b>${esc(fechaLegible(e.fecha))}</b>`
+      + (e.es_profesor && !e.actividad_cerrada
+          ? '<br><span style="color:var(--text-muted);">Esta actividad sigue abierta: tus estudiantes todavía pueden entregar.</span>'
+          : ''));
+
+    // La explicación de cada casilla sólo puede calcularse con la clave, que
+    // el servidor entrega únicamente al profesor.
+    explicacionesRevision = e.clave ? validarPlan(e.valores || {}, e.clave, false) : [];
+
+    pintarRevisionCasillas();
+    pintarHistorial();
+
+    fplUsuarioTexto.textContent = msgFPL(e.valores || {});
+    splUsuarioTexto.textContent = msgSPL(e.valores || {});
+    pintarPuntajeRevision();
+
+    if(e.es_profesor) cargarModuloProfesor(() => { zonaCorreccion.style.display = 'block'; });
+  }
+
+  if(corrDeshacer) corrDeshacer.addEventListener('click', () => {
+    corrMotivo.value = '';
+    corrEstado.textContent = '';
+    pintarRevisionCasillas();
+  });
+
+  if(corrGuardar) corrGuardar.addEventListener('click', async () => {
+    if(typeof corregirPlanDeVuelo !== 'function'){
+      corrEstado.textContent = 'No se pudo cargar el módulo de profesores. Recarga la página.';
+      return;
+    }
+    const cambios = sincronizarCasillasDesdeFormulario();
+    if(!cambios.length){
+      corrEstado.textContent = 'No cambiaste ninguna casilla todavía.';
+      return;
+    }
+    const resumen = cambios.map(c => {
+      const cas = entregaActual.casillas[c.i];
+      return `· ${cas.label}: ${c.ok ? 'correcta' : 'incorrecta'}`;
+    }).join('\n');
+    if(!confirm('¿Guardar la corrección?\n\n' + resumen
+        + '\n\nLa nota del estudiante se recalcula y el cambio queda en el historial.')) return;
+
+    corrGuardar.disabled = true;
+    corrEstado.textContent = 'Guardando…';
+    const res = await corregirPlanDeVuelo(resultadoId, cambios, corrMotivo.value);
+    corrGuardar.disabled = false;
+
+    if(!res.ok){ corrEstado.textContent = 'No se pudo corregir: ' + res.error; return; }
+
+    // Se recarga la entrega para traer el historial recién escrito por el
+    // servidor, en vez de reconstruirlo a mano en el navegador.
+    const recarga = await obtenerPlanEntregado(resultadoId);
+    if(recarga.ok){
+      entregaActual = recarga.entrega;
+    } else {
+      entregaActual.casillas = res.resultado.casillas;
+      entregaActual.correctas = res.resultado.correctas;
+      entregaActual.porcentaje = res.resultado.porcentaje;
+    }
+    pintarRevisionCasillas();
+    pintarHistorial();
+    pintarPuntajeRevision();
+    corrMotivo.value = '';
+    corrEstado.innerHTML = `✅ Corrección guardada. La nota quedó en <b>${entregaActual.correctas}/${entregaActual.total} (${entregaActual.porcentaje}%)</b>.`;
+  });
+
+  // ---------- Arranque ----------
+  // profesor.js sólo hace falta para publicar una actividad, así que se carga
+  // bajo demanda: al estudiante no le añade peso esta página.
+  function cargarModuloProfesor(despues){
+    if(typeof crearActividadPlanVuelo === 'function') return despues();
+    const sc = document.createElement('script');
+    sc.src = 'profesor.js';
+    sc.onload = despues;
+    sc.onerror = () => {
+      actPanel.style.display = 'block';
+      avisar('No se pudo cargar el módulo de profesores. Revisa tu conexión y recarga la página.');
+    };
+    document.head.appendChild(sc);
+  }
+
+  if(grupoCrear)        cargarModuloProfesor(iniciarModoCrear);
+  else if(actividadId)  iniciarModoResolver();
+  else if(resultadoId)  iniciarModoRevisar();
+  else                  setModo('diligenciar');
 
 })();
 </script>

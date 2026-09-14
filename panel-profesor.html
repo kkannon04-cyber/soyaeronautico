@@ -481,7 +481,23 @@
     <section class="seccion" id="seccion-actividades">
       <div class="seccion-head">
         <h2>Actividades</h2>
-        <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión.</p>
+        <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión. Un <strong>plan de vuelo</strong> es una situación que el estudiante resuelve diligenciando el formulario OACI completo.</p>
+      </div>
+
+      <!-- El plan de vuelo no sale del banco de preguntas: se arma en el
+           propio simulador, que es donde está el formulario OACI. -->
+      <div class="panel-card">
+        <h3>Actividad de plan de vuelo</h3>
+        <p class="card-sub">El simulador genera la situación de vuelo, tú la revisas y la ajustas, y el formulario que dejes diligenciado queda como clave de respuestas. La calificación la hace el servidor, casilla por casilla.</p>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="pvGrupo">Grupo</label>
+            <select id="pvGrupo"></select>
+          </div>
+          <div class="campo" style="display:flex;align-items:flex-end;">
+            <button class="btn btn-primario" id="btnCrearPlanVuelo" type="button">Armar la situación en el simulador</button>
+          </div>
+        </div>
       </div>
 
       <div class="panel-card">
@@ -860,14 +876,23 @@ document.getElementById('btnCrearGrupo').addEventListener('click', async (e) => 
 
 function renderSelectoresDeGrupo() {
   const opciones = estado.grupos.map(g => `<option value="${esc(g.id)}">${esc(g.nombre)}</option>`).join('');
-  const selA = document.getElementById('aGrupo');
-  const selR = document.getElementById('rGrupo');
-  const valorA = selA.value, valorR = selR.value;
-  selA.innerHTML = opciones || '<option value="">Crea un grupo primero</option>';
-  selR.innerHTML = opciones || '<option value="">Crea un grupo primero</option>';
-  if (valorA) selA.value = valorA;
-  if (valorR) selR.value = valorR;
+  const vacio = '<option value="">Crea un grupo primero</option>';
+  ['aGrupo', 'rGrupo', 'pvGrupo'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const valor = sel.value;
+    sel.innerHTML = opciones || vacio;
+    if (valor) sel.value = valor;
+  });
 }
+
+// La actividad de plan de vuelo se arma en el simulador, que es donde vive el
+// formulario OACI: aquí sólo se elige el grupo y se salta allá.
+document.getElementById('btnCrearPlanVuelo').addEventListener('click', () => {
+  const grupoId = document.getElementById('pvGrupo').value;
+  if (!grupoId) { aviso('Crea un grupo antes de asignarle una actividad.', 'error'); return; }
+  location.href = 'simulador-plan-vuelo.html?crear=' + encodeURIComponent(grupoId);
+});
 
 // ============================================================
 // BANCOS DE PREGUNTAS
@@ -1456,11 +1481,13 @@ function renderActividades() {
     item.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:240px;">
-          <span class="module-badge">${a.tipo === 'examen' ? 'Examen' : 'Lectura'}</span>
+          <span class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</span>
           <span class="badge-estado ${a.activa ? 'publicada' : 'borrador'}">${a.activa ? 'Publicada' : 'Sin publicar'}</span>
           <h4 style="margin-top:8px;">${esc(a.titulo)}</h4>
           <p>
-            ${esc(a.grupoNombre)} · ${a.numPreguntas} pregunta${a.numPreguntas === 1 ? '' : 's'}
+            ${esc(a.grupoNombre)}${a.tipo === 'plan_vuelo'
+              ? ' · formulario OACI completo (20 revisiones)'
+              : ` · ${a.numPreguntas} pregunta${a.numPreguntas === 1 ? '' : 's'}`}
             ${a.intentosMax ? ` · máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}` : ' · intentos ilimitados'}
             ${a.fechaLimite ? ` · ${vencida ? 'cerró' : 'cierra'} el ${fechaCorta(a.fechaLimite)}` : ''}
             ${a.barajar ? ' · orden aleatorio' : ''}
@@ -1469,9 +1496,10 @@ function renderActividades() {
       </div>
       <div class="acciones" style="margin-top:14px;">
         <button class="btn btn-secundario btn-mini" data-publicar>${a.activa ? 'Despublicar' : 'Publicar'}</button>
+        ${a.tipo === 'plan_vuelo' ? '' : `
         <button class="btn btn-secundario btn-mini" data-editar>Editar</button>
         <button class="btn btn-secundario btn-mini" data-previa>Vista previa</button>
-        <button class="btn btn-secundario btn-mini" data-duplicar>Duplicar</button>
+        <button class="btn btn-secundario btn-mini" data-duplicar>Duplicar</button>`}
         <button class="btn btn-peligro btn-mini" data-borrar>Eliminar</button>
       </div>
       <div data-zona="previa" style="display:none;margin-top:16px;"></div>`;
@@ -1482,6 +1510,7 @@ function renderActividades() {
       aviso(a.activa ? 'Actividad despublicada: ya no la ven tus estudiantes.' : 'Actividad publicada: ya la ven tus estudiantes.', 'ok');
       cargarActividades();
     });
+    if (a.tipo !== 'plan_vuelo') {
     item.querySelector('[data-editar]').addEventListener('click', () => editarActividad(a));
     item.querySelector('[data-duplicar]').addEventListener('click', async () => {
       const destino = estado.grupos.length > 1
@@ -1493,13 +1522,6 @@ function renderActividades() {
       const r = await duplicarActividad(a.id, grupo.id);
       if (!r.ok) { aviso(r.error, 'error'); return; }
       aviso('Actividad duplicada (sin publicar, para que la revises).', 'ok');
-      cargarActividades();
-    });
-    item.querySelector('[data-borrar]').addEventListener('click', async () => {
-      if (!confirm(`¿Eliminar "${a.titulo}"?\n\nSe borran también los resultados que tus estudiantes ya tengan de esta actividad. Esto no se puede deshacer.`)) return;
-      const r = await borrarActividad(a.id);
-      if (!r.ok) { aviso(r.error, 'error'); return; }
-      aviso('Actividad eliminada.', 'ok');
       cargarActividades();
     });
     item.querySelector('[data-previa]').addEventListener('click', async (e) => {
@@ -1522,6 +1544,15 @@ function renderActividades() {
             </ul>
           </div>`).join('') || '<div class="vacio">Esta actividad todavía no tiene preguntas.</div>'}
         <p style="font-size:0.78rem;color:var(--text-muted);">La marca ✓ solo la ves tú: tus estudiantes nunca reciben la respuesta correcta antes de responder.</p>`;
+    });
+    }
+
+    item.querySelector('[data-borrar]').addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar "${a.titulo}"?\n\nSe borran también los resultados que tus estudiantes ya tengan de esta actividad. Esto no se puede deshacer.`)) return;
+      const r = await borrarActividad(a.id);
+      if (!r.ok) { aviso(r.error, 'error'); return; }
+      aviso('Actividad eliminada.', 'ok');
+      cargarActividades();
     });
 
     lista.appendChild(item);
@@ -1628,8 +1659,11 @@ async function cargarResultados() {
                 <td>${fechaCorta(r.fecha)}</td>
                 <td>${r.actividadTipo === 'texto'
                   ? '<span class="badge-estado publicada">✓ Leído</span>'
-                  : `<span class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</span>`}</td>
-                <td><button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
+                  : `<span class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</span>`}${
+                  r.corregido ? ' <span class="badge-estado borrador" title="La nota fue ajustada a mano; el detalle está en el historial de la entrega.">corregida</span>' : ''}</td>
+                <td>${r.actividadTipo === 'plan_vuelo'
+                  ? `<a class="btn btn-secundario btn-mini" href="simulador-plan-vuelo.html?resultado=${encodeURIComponent(r.id)}">Ver plan / PDF</a> `
+                  : ''}<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
               </tr>`).join('')}
             </tbody></table></div>`}
     </div>`;

@@ -864,3 +864,646 @@ alter table public.modulos_completados add constraint modulos_completados_pagina
     'navegacion-altimetria', 'navegacion-radioayudas', 'navegacion-viento-unidades',
     'notam-fundamentos', 'notam-formato', 'notam-codigo-q', 'notam-especiales'
   ));
+
+-- ============================================================
+-- MIGRACIÓN — ACTIVIDADES DE PLAN DE VUELO (2026-09-14)
+--
+-- Hasta ahora una actividad sólo podía ser de opción múltiple
+-- ('examen') o de lectura con una pregunta de comprensión ('texto').
+-- Se agrega un tercer tipo, 'plan_vuelo': el profesor publica una
+-- situación de vuelo y el estudiante la resuelve diligenciando el
+-- formulario OACI completo en simulador-plan-vuelo.html.
+--
+-- Decisión importante de seguridad: la clave de respuestas NO puede
+-- vivir en una columna de public.actividades, porque la policy "El
+-- estudiante ve las actividades publicadas de su grupo" le da al
+-- estudiante SELECT sobre toda la fila. Va en una tabla aparte,
+-- actividad_plan, legible sólo por el profesor dueño — el mismo
+-- patrón que ya usa actividad_preguntas. El estudiante recibe
+-- únicamente el enunciado, a través de obtener_actividad().
+--
+-- La calificación ocurre en el servidor (calificar_plan_vuelo), igual
+-- que en los exámenes: el navegador nunca ve la clave antes de
+-- entregar y el puntaje no se puede falsificar.
+-- ============================================================
+
+-- 1) El nuevo tipo de actividad -------------------------------------------
+
+alter table public.actividades drop constraint if exists actividades_tipo_check;
+alter table public.actividades add constraint actividades_tipo_check
+  check (tipo in ('examen', 'texto', 'plan_vuelo'));
+
+-- La restricción anterior exigía texto_lectura para todo lo que no fuera
+-- 'examen', así que un 'plan_vuelo' la habría incumplido siempre.
+alter table public.actividades drop constraint if exists actividades_texto_requiere_lectura;
+alter table public.actividades add constraint actividades_texto_requiere_lectura
+  check (tipo <> 'texto' or length(trim(coalesce(texto_lectura, ''))) > 0);
+
+-- 2) Enunciado y clave de cada actividad de plan de vuelo ------------------
+
+-- enunciado: { titulo, narrativa, nivelTag, fuenteRuta } — lo que ve el alumno.
+-- clave:     los valores esperados del formulario, casilla por casilla.
+create table if not exists public.actividad_plan (
+  actividad_id uuid primary key references public.actividades(id) on delete cascade,
+  enunciado jsonb not null,
+  clave jsonb not null,
+  creado_en timestamptz not null default now()
+);
+alter table public.actividad_plan enable row level security;
+
+-- Sólo el profesor dueño de la actividad. El estudiante nunca lee esta
+-- tabla: vería la clave de respuestas.
+drop policy if exists "El profesor gestiona el plan de sus actividades" on public.actividad_plan;
+create policy "El profesor gestiona el plan de sus actividades"
+  on public.actividad_plan for all
+  using (exists (
+    select 1 from public.actividades a
+    where a.id = actividad_id and a.profesor_id = auth.uid()
+  ))
+  with check (exists (
+    select 1 from public.actividades a
+    where a.id = actividad_id and a.profesor_id = auth.uid()
+  ));
+
+-- 3) obtener_actividad(): devolver el enunciado, nunca la clave ------------
+
+create or replace function public.obtener_actividad(p_actividad_id uuid)
+returns jsonb
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+declare
+  v_act public.actividades%rowtype;
+  v_preguntas jsonb;
+  v_plan jsonb;
+  v_intentos integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select a.* into v_act
+  from public.actividades a
+  join public.inscripciones i on i.grupo_id = a.grupo_id
+  where a.id = p_actividad_id and i.estudiante_id = auth.uid() and a.activa;
+
+  if not found then
+    raise exception 'Esta actividad no está disponible para tu cuenta.';
+  end if;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = p_actividad_id and estudiante_id = auth.uid();
+
+  select coalesce(jsonb_agg(
+           jsonb_build_object('id', p.id, 'enunciado', p.enunciado, 'opciones', p.opciones)
+           order by ap.orden, p.creado_en
+         ), '[]'::jsonb)
+    into v_preguntas
+  from public.actividad_preguntas ap
+  join public.preguntas p on p.id = ap.pregunta_id
+  where ap.actividad_id = p_actividad_id;
+
+  -- Sólo el enunciado. La columna "clave" se queda en el servidor.
+  if v_act.tipo = 'plan_vuelo' then
+    select ap.enunciado into v_plan
+    from public.actividad_plan ap
+    where ap.actividad_id = p_actividad_id;
+  end if;
+
+  return jsonb_build_object(
+    'id', v_act.id,
+    'titulo', v_act.titulo,
+    'descripcion', v_act.descripcion,
+    'tipo', v_act.tipo,
+    'texto_lectura', v_act.texto_lectura,
+    'barajar', v_act.barajar,
+    'fecha_limite', v_act.fecha_limite,
+    'intentos_max', v_act.intentos_max,
+    'intentos_usados', v_intentos,
+    'cerrada', (v_act.fecha_limite is not null and now() > v_act.fecha_limite),
+    'sin_intentos', (v_act.intentos_max is not null and v_intentos >= v_act.intentos_max),
+    'preguntas', v_preguntas,
+    'plan', v_plan
+  );
+end;
+$$;
+
+grant execute on function public.obtener_actividad(uuid) to authenticated;
+
+-- 4) Calificación del plan de vuelo en el servidor -------------------------
+
+-- Normaliza un campo del formulario igual que lo hace el simulador en el
+-- navegador: mayúsculas, sin espacios sobrantes.
+create or replace function public.fpl_norm(p_valor jsonb)
+returns text language sql immutable set search_path = public as $$
+  select upper(regexp_replace(trim(coalesce(p_valor #>> '{}', '')), '\s+', ' ', 'g'));
+$$;
+
+-- Compara dos conjuntos de letras tachadas (las casillas R/, S/, J/, D/ y N/
+-- de la casilla 19) sin que importe el orden ni los repetidos.
+create or replace function public.fpl_mismo_set(a jsonb, b jsonb)
+returns boolean language sql immutable set search_path = public as $$
+  select coalesce((
+    select array_agg(distinct upper(x) order by upper(x))
+    from jsonb_array_elements_text(case when jsonb_typeof(a) = 'array' then a else '[]'::jsonb end) x
+  ), '{}') is not distinct from coalesce((
+    select array_agg(distinct upper(y) order by upper(y))
+    from jsonb_array_elements_text(case when jsonb_typeof(b) = 'array' then b else '[]'::jsonb end) y
+  ), '{}');
+$$;
+
+-- Califica el formulario entregado contra la clave guardada y registra el
+-- resultado. Las 20 revisiones son exactamente las mismas que muestra el
+-- simulador en pantalla, para que la nota del servidor y la
+-- retroalimentación del navegador nunca se contradigan.
+create or replace function public.calificar_plan_vuelo(p_actividad_id uuid, p_valores jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_act public.actividades%rowtype;
+  v_clave jsonb;
+  v_intentos integer;
+  v_total integer := 0;
+  v_correctas integer := 0;
+  v_detalle jsonb := '[]'::jsonb;
+  v_porcentaje integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select a.* into v_act
+  from public.actividades a
+  join public.inscripciones i on i.grupo_id = a.grupo_id
+  where a.id = p_actividad_id and i.estudiante_id = auth.uid() and a.activa;
+
+  if not found then
+    raise exception 'Esta actividad no está disponible para tu cuenta.';
+  end if;
+
+  if v_act.tipo <> 'plan_vuelo' then
+    raise exception 'Esta actividad no es de plan de vuelo.';
+  end if;
+
+  if v_act.fecha_limite is not null and now() > v_act.fecha_limite then
+    raise exception 'La fecha límite de esta actividad ya pasó.';
+  end if;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = p_actividad_id and estudiante_id = auth.uid();
+
+  if v_act.intentos_max is not null and v_intentos >= v_act.intentos_max then
+    raise exception 'Ya usaste todos los intentos permitidos para esta actividad.';
+  end if;
+
+  select ap.clave into v_clave
+  from public.actividad_plan ap
+  where ap.actividad_id = p_actividad_id;
+
+  if v_clave is null then
+    raise exception 'Esta actividad todavía no tiene su plan de vuelo cargado.';
+  end if;
+
+  -- Las 20 revisiones, en el mismo orden que el simulador.
+  with revisiones(n, cas, etiqueta, ok) as (
+    values
+      (1, '7',   'Casilla 7 — Identificación de aeronave',
+              fpl_norm(p_valores->'f7') = fpl_norm(v_clave->'f7')),
+      (2, '8',   'Casilla 8 — Reglas de vuelo',
+              fpl_norm(p_valores->'f8r') = fpl_norm(v_clave->'f8r')),
+      (3, '8',   'Casilla 8 — Tipo de vuelo',
+              fpl_norm(p_valores->'f8t') = fpl_norm(v_clave->'f8t')),
+      (4, '9',   'Casilla 9 — Número / tipo / estela',
+              fpl_norm(p_valores->'f9n') = fpl_norm(v_clave->'f9n')
+              and fpl_norm(p_valores->'f9t') = fpl_norm(v_clave->'f9t')
+              and fpl_norm(p_valores->'f9e') = fpl_norm(v_clave->'f9e')),
+      (5, '10',  'Casilla 10a — Equipo COM/NAV y de aproximación',
+              fpl_norm(p_valores->'f10a') = fpl_norm(v_clave->'f10a')),
+      (6, '10',  'Casilla 10b — Equipo de vigilancia',
+              fpl_norm(p_valores->'f10b') = fpl_norm(v_clave->'f10b')),
+      (7, '13',  'Casilla 13 — Aeródromo de salida y hora',
+              fpl_norm(p_valores->'f13a') = fpl_norm(v_clave->'f13a')
+              and fpl_norm(p_valores->'f13h') = fpl_norm(v_clave->'f13h')),
+      (8, '15',  'Casilla 15 — Velocidad, nivel y ruta',
+              fpl_norm(p_valores->'f15v') = fpl_norm(v_clave->'f15v')
+              and fpl_norm(p_valores->'f15n') = fpl_norm(v_clave->'f15n')
+              and fpl_norm(p_valores->'f15r') = fpl_norm(v_clave->'f15r')),
+      (9, '16',  'Casilla 16 — Destino, EET y alternos',
+              fpl_norm(p_valores->'f16d') = fpl_norm(v_clave->'f16d')
+              and fpl_norm(p_valores->'f16e') = fpl_norm(v_clave->'f16e')
+              and fpl_norm(p_valores->'f16a1') = fpl_norm(v_clave->'f16a1')
+              and fpl_norm(p_valores->'f16a2') = fpl_norm(v_clave->'f16a2')),
+      (10, '18',  'Casilla 18 — Otros datos',
+              fpl_norm(p_valores->'f18') = fpl_norm(v_clave->'f18')),
+      (11, '19E', 'Casilla 19 — E/ Autonomía',
+              fpl_norm(p_valores->'e19') = fpl_norm(v_clave->'e19')),
+      (12, '19P', 'Casilla 19 — P/ Personas a bordo',
+              fpl_norm(p_valores->'p19') = fpl_norm(v_clave->'p19')),
+      (13, '19R', 'Casilla 19 — R/ Radio de emergencia',
+              fpl_mismo_set(p_valores->'r19x', v_clave->'r19x')),
+      (14, '19S', 'Casilla 19 — S/ Equipo de supervivencia',
+              fpl_mismo_set(p_valores->'s19x', v_clave->'s19x')),
+      (15, '19J', 'Casilla 19 — J/ Chalecos',
+              fpl_mismo_set(p_valores->'j19x', v_clave->'j19x')),
+      (16, '19D', 'Casilla 19 — D/ Botes neumáticos',
+              fpl_mismo_set(p_valores->'d19x', v_clave->'d19x')
+              and fpl_norm(p_valores->'d19n') = fpl_norm(v_clave->'d19n')
+              and fpl_norm(p_valores->'d19c') = fpl_norm(v_clave->'d19c')
+              and fpl_norm(p_valores->'d19col') = fpl_norm(v_clave->'d19col')),
+      (17, '19A', 'Casilla 19 — A/ Color y marcas',
+              fpl_norm(p_valores->'a19') = fpl_norm(v_clave->'a19')),
+      (18, '19N', 'Casilla 19 — N/ Observaciones',
+              fpl_mismo_set(p_valores->'n19x', v_clave->'n19x')
+              and fpl_norm(p_valores->'n19txt') = fpl_norm(v_clave->'n19txt')),
+      (19, '19C', 'Casilla 19 — C/ Piloto al mando',
+              fpl_norm(p_valores->'c19') = fpl_norm(v_clave->'c19')
+              and fpl_norm(p_valores->'c19lic') <> ''),
+      (20, 'PRES','Presentado por / Licencia',
+              fpl_norm(p_valores->'presentadoPor') <> ''
+              and fpl_norm(p_valores->'licencia') <> '')
+  )
+  select count(*)::integer,
+         count(*) filter (where ok)::integer,
+         coalesce(jsonb_agg(jsonb_build_object('cas', cas, 'label', etiqueta, 'ok', ok) order by n), '[]'::jsonb)
+    into v_total, v_correctas, v_detalle
+  from revisiones;
+
+  v_porcentaje := round(v_correctas * 100.0 / v_total);
+
+  insert into public.resultados_actividad
+    (actividad_id, estudiante_id, correctas, total, porcentaje, leido, detalle)
+  values
+    (p_actividad_id, auth.uid(), v_correctas, v_total, v_porcentaje, true,
+     jsonb_build_object('tipo', 'plan_vuelo', 'valores', p_valores, 'casillas', v_detalle));
+
+  -- Se devuelve la clave para que el simulador pueda explicar casilla por
+  -- casilla qué estuvo mal, igual que hace calificar_actividad() con la
+  -- respuesta correcta de cada pregunta.
+  return jsonb_build_object(
+    'correctas', v_correctas,
+    'total', v_total,
+    'porcentaje', v_porcentaje,
+    'casillas', v_detalle,
+    'clave', v_clave
+  );
+end;
+$$;
+
+grant execute on function public.calificar_plan_vuelo(uuid, jsonb) to authenticated;
+revoke execute on function public.calificar_plan_vuelo(uuid, jsonb) from public, anon;
+revoke execute on function public.fpl_norm(jsonb) from public, anon;
+revoke execute on function public.fpl_mismo_set(jsonb, jsonb) from public, anon;
+
+-- 5) Leer un plan de vuelo ya entregado ------------------------------------
+
+-- La usan dos pantallas: el profesor que abre la entrega de un estudiante
+-- para revisarla o descargarla en PDF, y el propio estudiante que repasa lo
+-- que entregó. Es security definer porque necesita cruzar tablas con RLS
+-- distinta (resultados, actividades, perfiles y actividad_plan), pero sólo
+-- devuelve la fila si quien pregunta es el estudiante dueño o el profesor de
+-- la actividad, y la clave de respuestas sólo se entrega al profesor.
+create or replace function public.obtener_resultado_plan(p_resultado_id uuid)
+returns jsonb
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_enunciado jsonb;
+  v_clave jsonb;
+  v_nombre text;
+  v_es_profesor boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  v_es_profesor := (v_act.profesor_id = auth.uid());
+
+  if not v_es_profesor and v_res.estudiante_id <> auth.uid() then
+    raise exception 'Esta entrega no está disponible para tu cuenta.';
+  end if;
+
+  if v_act.tipo <> 'plan_vuelo' then
+    raise exception 'Esa entrega no es de un plan de vuelo.';
+  end if;
+
+  select ap.enunciado, ap.clave into v_enunciado, v_clave
+  from public.actividad_plan ap
+  where ap.actividad_id = v_res.actividad_id;
+
+  select nullif(trim(coalesce(p.nombre, '') || ' ' || coalesce(p.apellido, '')), '')
+    into v_nombre
+  from public.perfiles p
+  where p.id = v_res.estudiante_id;
+
+  return jsonb_build_object(
+    'id', v_res.id,
+    'actividad_id', v_res.actividad_id,
+    'actividad_titulo', v_act.titulo,
+    'estudiante', coalesce(v_nombre, 'Estudiante'),
+    'correctas', v_res.correctas,
+    'total', v_res.total,
+    'porcentaje', v_res.porcentaje,
+    'fecha', v_res.fecha,
+    'valores', v_res.detalle -> 'valores',
+    'casillas', v_res.detalle -> 'casillas',
+    'enunciado', v_enunciado,
+    'es_profesor', v_es_profesor,
+    -- Sólo el profesor recibe la clave: el estudiante podría tener intentos
+    -- pendientes en esta misma actividad.
+    'clave', case when v_es_profesor then v_clave else null end
+  );
+end;
+$$;
+
+grant execute on function public.obtener_resultado_plan(uuid) to authenticated;
+revoke execute on function public.obtener_resultado_plan(uuid) from public, anon;
+
+-- ============================================================
+-- MIGRACIÓN — CORRECCIÓN MANUAL DE PLANES DE VUELO (2026-09-14)
+--
+-- La calificación automática compara casilla por casilla contra la clave,
+-- así que una respuesta válida pero escrita de otra forma —o una clave con
+-- una errata— puede quedar marcada como incorrecta. El profesor necesita
+-- poder corregirlo sin que eso abra la puerta a cambiar notas en silencio:
+-- toda corrección queda registrada en correcciones_resultado, con lo que
+-- había antes, lo que quedó después y el motivo.
+--
+-- El estudiante también puede leer ese historial: si su nota cambia, debe
+-- poder ver por qué y quién lo hizo.
+-- ============================================================
+
+create table if not exists public.correcciones_resultado (
+  id uuid primary key default gen_random_uuid(),
+  resultado_id uuid not null references public.resultados_actividad(id) on delete cascade,
+  profesor_id uuid not null references public.perfiles(id) on delete cascade,
+  -- Una fila por corrección, con todas las casillas que cambiaron en ella:
+  -- [{ i, label, antes, despues }, …]
+  cambios jsonb not null,
+  motivo text,
+  correctas_antes integer not null,
+  correctas_despues integer not null,
+  porcentaje_antes integer not null,
+  porcentaje_despues integer not null,
+  fecha timestamptz not null default now()
+);
+alter table public.correcciones_resultado enable row level security;
+create index if not exists correcciones_resultado_resultado_id_idx
+  on public.correcciones_resultado (resultado_id);
+
+-- Sin policy de INSERT/UPDATE/DELETE a propósito: las correcciones sólo
+-- entran por corregir_plan_vuelo(), que valida quién es el profesor y
+-- escribe la nota y el historial en la misma transacción. Y no se borran:
+-- un historial que se puede borrar no es un historial.
+drop policy if exists "El profesor ve las correcciones de sus actividades" on public.correcciones_resultado;
+create policy "El profesor ve las correcciones de sus actividades"
+  on public.correcciones_resultado for select
+  using (exists (
+    select 1
+    from public.resultados_actividad r
+    join public.actividades a on a.id = r.actividad_id
+    where r.id = resultado_id and a.profesor_id = auth.uid()
+  ));
+
+drop policy if exists "El estudiante ve las correcciones de sus entregas" on public.correcciones_resultado;
+create policy "El estudiante ve las correcciones de sus entregas"
+  on public.correcciones_resultado for select
+  using (exists (
+    select 1 from public.resultados_actividad r
+    where r.id = resultado_id and r.estudiante_id = auth.uid()
+  ));
+
+-- ------------------------------------------------------------
+-- Aplicar una corrección
+--
+-- p_cambios es [{ "i": <índice de la casilla>, "ok": true|false }, …].
+-- Se guarda además, en cada casilla tocada, la calificación automática
+-- original (ok_auto), para que siempre se pueda distinguir lo que puso el
+-- servidor de lo que ajustó el profesor.
+-- ------------------------------------------------------------
+create or replace function public.corregir_plan_vuelo(
+  p_resultado_id uuid,
+  p_cambios jsonb,
+  p_motivo text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_casillas jsonb;
+  v_cambio jsonb;
+  v_actual jsonb;
+  v_i integer;
+  v_ok boolean;
+  v_ok_auto boolean;
+  v_registro jsonb := '[]'::jsonb;
+  v_correctas integer;
+  v_porcentaje integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  if v_act.profesor_id is distinct from auth.uid() then
+    raise exception 'Sólo el profesor de la actividad puede corregir esta entrega.';
+  end if;
+  if v_act.tipo <> 'plan_vuelo' then
+    raise exception 'Esa entrega no es de un plan de vuelo.';
+  end if;
+
+  v_casillas := coalesce(v_res.detalle -> 'casillas', '[]'::jsonb);
+  if jsonb_array_length(v_casillas) = 0 then
+    raise exception 'Esta entrega no tiene el detalle por casilla, así que no se puede corregir.';
+  end if;
+
+  if jsonb_typeof(p_cambios) <> 'array' or jsonb_array_length(p_cambios) = 0 then
+    raise exception 'No indicaste ninguna casilla que corregir.';
+  end if;
+
+  for v_cambio in select * from jsonb_array_elements(p_cambios)
+  loop
+    v_i  := (v_cambio ->> 'i')::integer;
+    v_ok := (v_cambio ->> 'ok')::boolean;
+
+    if v_i is null or v_ok is null or v_i < 0 or v_i >= jsonb_array_length(v_casillas) then
+      raise exception 'Una de las casillas indicadas no existe en esta entrega.';
+    end if;
+
+    v_actual := v_casillas -> v_i;
+
+    -- Sólo se registra lo que de verdad cambia de valor.
+    if (v_actual ->> 'ok')::boolean is distinct from v_ok then
+      v_ok_auto := coalesce((v_actual ->> 'ok_auto')::boolean, (v_actual ->> 'ok')::boolean);
+      v_casillas := jsonb_set(v_casillas, array[v_i::text, 'ok'], to_jsonb(v_ok));
+      v_casillas := jsonb_set(v_casillas, array[v_i::text, 'ok_auto'], to_jsonb(v_ok_auto));
+      -- Deja de estar "corregida" si el profesor la devuelve a su valor automático.
+      v_casillas := jsonb_set(v_casillas, array[v_i::text, 'corregida'],
+                              to_jsonb(v_ok is distinct from v_ok_auto));
+      v_registro := v_registro || jsonb_build_array(jsonb_build_object(
+        'i', v_i,
+        'label', v_actual ->> 'label',
+        'antes', (v_actual ->> 'ok')::boolean,
+        'despues', v_ok
+      ));
+    end if;
+  end loop;
+
+  if jsonb_array_length(v_registro) = 0 then
+    raise exception 'Las casillas que enviaste ya estaban calificadas así.';
+  end if;
+
+  select count(*)::integer into v_correctas
+  from jsonb_array_elements(v_casillas) c
+  where (c ->> 'ok')::boolean;
+
+  v_porcentaje := round(v_correctas * 100.0 / v_res.total);
+
+  update public.resultados_actividad
+     set correctas  = v_correctas,
+         porcentaje = v_porcentaje,
+         detalle    = jsonb_set(coalesce(v_res.detalle, '{}'::jsonb), '{casillas}', v_casillas)
+   where id = p_resultado_id;
+
+  insert into public.correcciones_resultado
+    (resultado_id, profesor_id, cambios, motivo,
+     correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+  values
+    (p_resultado_id, auth.uid(), v_registro, nullif(trim(coalesce(p_motivo, '')), ''),
+     v_res.correctas, v_correctas, v_res.porcentaje, v_porcentaje);
+
+  return jsonb_build_object(
+    'correctas',  v_correctas,
+    'total',      v_res.total,
+    'porcentaje', v_porcentaje,
+    'casillas',   v_casillas,
+    'cambios',    v_registro
+  );
+end;
+$$;
+
+grant execute on function public.corregir_plan_vuelo(uuid, jsonb, text) to authenticated;
+revoke execute on function public.corregir_plan_vuelo(uuid, jsonb, text) from public, anon;
+
+-- ------------------------------------------------------------
+-- obtener_resultado_plan(): añadir el historial de correcciones y el
+-- estado de la actividad, que el panel necesita para avisar si todavía
+-- está abierta a entregas.
+-- ------------------------------------------------------------
+create or replace function public.obtener_resultado_plan(p_resultado_id uuid)
+returns jsonb
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_enunciado jsonb;
+  v_clave jsonb;
+  v_nombre text;
+  v_correcciones jsonb;
+  v_es_profesor boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  v_es_profesor := (v_act.profesor_id = auth.uid());
+
+  if not v_es_profesor and v_res.estudiante_id <> auth.uid() then
+    raise exception 'Esta entrega no está disponible para tu cuenta.';
+  end if;
+
+  if v_act.tipo <> 'plan_vuelo' then
+    raise exception 'Esa entrega no es de un plan de vuelo.';
+  end if;
+
+  select ap.enunciado, ap.clave into v_enunciado, v_clave
+  from public.actividad_plan ap
+  where ap.actividad_id = v_res.actividad_id;
+
+  select nullif(trim(coalesce(p.nombre, '') || ' ' || coalesce(p.apellido, '')), '')
+    into v_nombre
+  from public.perfiles p
+  where p.id = v_res.estudiante_id;
+
+  -- Historial de correcciones, de la más reciente a la más antigua.
+  select coalesce(jsonb_agg(
+           jsonb_build_object(
+             'id', c.id,
+             'fecha', c.fecha,
+             'motivo', c.motivo,
+             'cambios', c.cambios,
+             'correctas_antes', c.correctas_antes,
+             'correctas_despues', c.correctas_despues,
+             'porcentaje_antes', c.porcentaje_antes,
+             'porcentaje_despues', c.porcentaje_despues,
+             'profesor', coalesce(nullif(trim(coalesce(pr.nombre, '') || ' ' || coalesce(pr.apellido, '')), ''), 'El profesor')
+           ) order by c.fecha desc
+         ), '[]'::jsonb)
+    into v_correcciones
+  from public.correcciones_resultado c
+  left join public.perfiles pr on pr.id = c.profesor_id
+  where c.resultado_id = p_resultado_id;
+
+  return jsonb_build_object(
+    'id', v_res.id,
+    'actividad_id', v_res.actividad_id,
+    'actividad_titulo', v_act.titulo,
+    'actividad_activa', v_act.activa,
+    'actividad_fecha_limite', v_act.fecha_limite,
+    'actividad_cerrada', (not v_act.activa)
+                         or (v_act.fecha_limite is not null and now() > v_act.fecha_limite),
+    'estudiante', coalesce(v_nombre, 'Estudiante'),
+    'correctas', v_res.correctas,
+    'total', v_res.total,
+    'porcentaje', v_res.porcentaje,
+    'fecha', v_res.fecha,
+    'valores', v_res.detalle -> 'valores',
+    'casillas', v_res.detalle -> 'casillas',
+    'correcciones', v_correcciones,
+    'enunciado', v_enunciado,
+    'es_profesor', v_es_profesor,
+    -- Sólo el profesor recibe la clave: el estudiante podría tener intentos
+    -- pendientes en esta misma actividad.
+    'clave', case when v_es_profesor then v_clave else null end
+  );
+end;
+$$;
+
+grant execute on function public.obtener_resultado_plan(uuid) to authenticated;
+revoke execute on function public.obtener_resultado_plan(uuid) from public, anon;
