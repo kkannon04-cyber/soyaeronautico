@@ -1107,7 +1107,7 @@
         <button class="btn btn-primary" id="btnValidar" type="button">Validar plan de vuelo</button>
         <button class="btn btn-primary" id="btnSiguiente" type="button" style="display:none;">Siguiente plan</button>
         <button class="btn btn-outline" id="btnRespuesta" type="button">Mostrar respuesta oficial</button>
-        <button class="btn btn-outline" id="btnPDF" type="button" style="display:none;">Descargar PDF</button>
+        <button class="btn btn-outline" id="btnPDF" type="button">Descargar PDF</button>
         <button class="btn btn-outline danger" id="btnLimpiar" type="button">Limpiar formulario</button>
       </div>
 
@@ -2506,7 +2506,8 @@ btnAyuda.addEventListener('click', () => {
   function limpiarResultados(){
     respuestaOficial.style.display = 'none';
     scoreBanner.style.display = 'none';
-    btnPDF.style.display = 'none';
+    // El botón de PDF NO se oculta aquí: el plan se puede exportar aunque
+    // todavía no se haya validado. Sólo se olvida la calificación anterior.
     datosUltimoResultado = null;
     feedbackList.innerHTML = '';
     fplUsuarioTexto.textContent = '—';
@@ -3041,13 +3042,25 @@ btnAyuda.addEventListener('click', () => {
       return;
     }
 
+    // El plan se puede exportar antes de validarlo, así que cuando todavía no
+    // hay calificación los datos del ejercicio salen de la situación en
+    // pantalla y el documento avisa que no lleva nota.
+    const sit = currentSituation || {};
+    const titulo = m.titulo || sit.titulo || '—';
+    const nivel  = m.nivel  || sit.nivelTag || '—';
+    const modoTexto = m.modo
+      || (modoActividad === 'resolver' ? 'Actividad asignada — todavía sin entregar'
+          : (NOMBRE_MODO[modo] || modo));
+
     printHead.innerHTML = `
       <h2>Plan de vuelo diligenciado — ejercicio de práctica</h2>
+      <div class="print-nombre">${esc(quien)}</div>
       <div class="print-meta">
-        <b>Estudiante:</b> ${esc(quien)}<br>
-        <b>Ejercicio:</b> ${esc(m.titulo || '—')}<br>
-        <b>Nivel:</b> ${esc(m.nivel || '—')} &nbsp;·&nbsp; <b>Modo:</b> ${esc(m.modo || '—')}<br>
-        ${m.puntaje != null ? `<b>Calificación:</b> ${m.puntaje} / 100 &nbsp;·&nbsp; ${m.correctas} de ${m.total} revisiones correctas<br>` : ''}
+        <b>Ejercicio:</b> ${esc(titulo)}<br>
+        <b>Nivel:</b> ${esc(nivel)} &nbsp;·&nbsp; <b>Modo:</b> ${esc(modoTexto)}<br>
+        ${m.puntaje != null
+          ? `<b>Calificación:</b> ${m.puntaje} / 100 &nbsp;·&nbsp; ${m.correctas} de ${m.total} revisiones correctas<br>`
+          : '<b>Calificación:</b> sin validar — este documento recoge el plan tal como se diligenció, sin nota.<br>'}
         <b>Generado:</b> ${fecha}${nota}
       </div>`;
   }
@@ -3455,6 +3468,7 @@ btnAyuda.addEventListener('click', () => {
     actPanel.style.display = 'block';
     actLabel.textContent = 'Actividad asignada';
     soloFormulario();
+    btnPDF.style.display = 'none';
     informar('Cargando la actividad…');
 
     if(typeof obtenerActividadParaResolver !== 'function'){
@@ -3512,6 +3526,8 @@ btnAyuda.addEventListener('click', () => {
     bloquearFormulario(false);
     btnValidar.style.display = 'inline-flex';
     btnValidar.textContent = 'Entregar plan de vuelo';
+    // Puede exportar su plan antes de entregarlo; el PDF avisa que no lleva nota.
+    btnPDF.style.display = 'inline-flex';
   }
 
   async function entregarActividad(){
@@ -3656,6 +3672,7 @@ btnAyuda.addEventListener('click', () => {
     actLabel.textContent = 'Plan de vuelo entregado';
     soloFormulario();
     btnValidar.style.display = 'none';
+    btnPDF.style.display = 'none';
     informar('Cargando la entrega…');
 
     if(typeof obtenerPlanEntregado !== 'function'){
