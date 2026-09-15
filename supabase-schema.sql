@@ -1918,3 +1918,228 @@ $$;
 
 grant execute on function public.obtener_resultado_examen(uuid) to authenticated;
 revoke execute on function public.obtener_resultado_examen(uuid) from public, anon;
+
+
+-- ============================================================================
+-- 2026-09-15 · Aviso automático al asignar el rol de profesor
+-- ============================================================================
+-- Aplicado en producción como tres migraciones:
+--   habilitar_pg_net
+--   aviso_automatico_rol_profesor
+--   endurecer_update_perfiles_anon
+--
+-- Hasta ahora el rol se asignaba a mano con un update en el SQL editor y no
+-- pasaba nada más: el usuario no se enteraba de que tenía un panel nuevo.
+-- A partir de aquí, la primera vez que una cuenta pasa a rol 'teacher' se le
+-- envía el correo de bienvenida al panel, una sola vez en la vida de la cuenta.
+--
+-- Decisiones importantes:
+--  * SOLO LA PRIMERA VEZ. `avisos_rol_profesor` tiene el usuario como clave
+--    primaria: el propio insert es la garantía. Quitar y volver a poner el rol
+--    no reenvía nada.
+--  * SOLO A CORREOS CONFIRMADOS. Escribir a una dirección sin confirmar puede
+--    significar escribir a un tercero que no pidió nada (una errata al
+--    registrarse). Si no está confirmada, queda en estado 'pendiente' y se
+--    suelta después con enviar_avisos_pendientes().
+--  * CON INTERRUPTOR. `avisos_config.activo = false` corta los envíos sin
+--    tener que borrar el trigger.
+--  * NO BLOQUEA. Si el envío falla, el update del rol se completa igual: el
+--    aviso es un efecto secundario, no parte de la operación.
+--
+-- El secreto del header x-avisar-secreto NO se guarda aquí: vive cifrado en
+-- Vault bajo el nombre 'avisar_profesores_secreto'. Para rotarlo hay que
+-- cambiarlo en Vault Y en la variable AVISAR_PROFESORES_SECRET de Netlify.
+
+create extension if not exists pg_net;
+
+-- ------------------------------------------------------------
+-- Interruptor general
+-- ------------------------------------------------------------
+create table if not exists public.avisos_config (
+  id             boolean primary key default true constraint avisos_config_una_fila check (id),
+  activo         boolean not null default true,
+  url_funcion    text    not null default 'https://soyaeronautico.com/.netlify/functions/avisar-profesores',
+  nombre_secreto text    not null default 'avisar_profesores_secreto',
+  actualizado_en timestamptz not null default now()
+);
+
+insert into public.avisos_config (id) values (true) on conflict (id) do nothing;
+
+alter table public.avisos_config enable row level security;
+-- Sin políticas: nadie llega a esta tabla desde el navegador. Sólo la tocan
+-- las funciones security definer y quien entre por el SQL editor.
+
+-- ------------------------------------------------------------
+-- Registro de avisos enviados
+-- ------------------------------------------------------------
+create table if not exists public.avisos_rol_profesor (
+  usuario_id   uuid primary key references auth.users(id) on delete cascade,
+  email        text not null,
+  estado       text not null default 'enviado'
+               check (estado in ('enviado', 'pendiente', 'error', 'omitido')),
+  request_id   bigint,          -- id de la petición pg_net, para poder auditarla
+  detalle      text,
+  creado_en    timestamptz not null default now(),
+  actualizado_en timestamptz not null default now()
+);
+
+comment on table public.avisos_rol_profesor is
+  'Una fila por cuenta que alguna vez recibió el rol de profesor. La clave '
+  'primaria es lo que garantiza que el aviso se envíe UNA SOLA VEZ.';
+
+alter table public.avisos_rol_profesor enable row level security;
+-- Sin políticas a propósito: es bitácora interna, no se expone al cliente.
+
+-- ------------------------------------------------------------
+-- Envío de un aviso concreto
+-- ------------------------------------------------------------
+create or replace function public.enviar_aviso_profesor(p_usuario_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  v_cfg     public.avisos_config%rowtype;
+  v_email   text;
+  v_conf    timestamptz;
+  v_nombre  text;
+  v_secreto text;
+  v_req     bigint;
+begin
+  select * into v_cfg from public.avisos_config where id;
+  if not found or not v_cfg.activo then
+    return 'desactivado';
+  end if;
+
+  -- El propio insert es el candado: si ya hay fila, no se vuelve a enviar.
+  if exists (select 1 from public.avisos_rol_profesor where usuario_id = p_usuario_id) then
+    return 'ya_avisado';
+  end if;
+
+  select u.email, u.email_confirmed_at into v_email, v_conf
+  from auth.users u where u.id = p_usuario_id;
+
+  if v_email is null then
+    return 'sin_correo';
+  end if;
+
+  select nullif(trim(coalesce(p.nombre,'') || ' ' || coalesce(p.apellido,'')), '')
+    into v_nombre
+  from public.perfiles p where p.id = p_usuario_id;
+
+  -- Nunca escribir a una dirección que su dueño no ha confirmado.
+  if v_conf is null then
+    insert into public.avisos_rol_profesor (usuario_id, email, estado, detalle)
+    values (p_usuario_id, v_email, 'pendiente', 'El correo aún no estaba confirmado.');
+    return 'pendiente';
+  end if;
+
+  select decrypted_secret into v_secreto
+  from vault.decrypted_secrets where name = v_cfg.nombre_secreto;
+
+  if v_secreto is null then
+    insert into public.avisos_rol_profesor (usuario_id, email, estado, detalle)
+    values (p_usuario_id, v_email, 'error', 'No se encontró el secreto en Vault.');
+    return 'sin_secreto';
+  end if;
+
+  select net.http_post(
+           url     := v_cfg.url_funcion,
+           headers := jsonb_build_object(
+                        'Content-Type', 'application/json',
+                        'x-avisar-secreto', v_secreto
+                      ),
+           body    := jsonb_build_object(
+                        'enviar', true,
+                        'destinatarios', jsonb_build_array(
+                          jsonb_build_object('email', v_email, 'nombre', v_nombre)
+                        )
+                      )
+         ) into v_req;
+
+  insert into public.avisos_rol_profesor (usuario_id, email, estado, request_id)
+  values (p_usuario_id, v_email, 'enviado', v_req);
+
+  return 'enviado';
+end;
+$$;
+
+-- ------------------------------------------------------------
+-- Disparador sobre el cambio de rol
+-- ------------------------------------------------------------
+create or replace function public.trg_aviso_rol_profesor()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  -- Sólo al ENTRAR en el rol de profesor, no en cada actualización del perfil.
+  if new.rol = 'teacher'
+     and (tg_op = 'INSERT' or old.rol is distinct from 'teacher') then
+    begin
+      perform public.enviar_aviso_profesor(new.id);
+    exception when others then
+      -- El aviso es un efecto secundario: que falle no puede tumbar el cambio
+      -- de rol, que es la operación que de verdad importa.
+      raise warning 'No se pudo enviar el aviso de profesor a %: %', new.id, sqlerrm;
+    end;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists aviso_rol_profesor on public.perfiles;
+create trigger aviso_rol_profesor
+  after insert or update of rol on public.perfiles
+  for each row
+  execute function public.trg_aviso_rol_profesor();
+
+-- ------------------------------------------------------------
+-- Reintento de los que quedaron pendientes de confirmar el correo
+-- ------------------------------------------------------------
+create or replace function public.enviar_avisos_pendientes()
+returns table (usuario_id uuid, email text, resultado text)
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare r record;
+begin
+  for r in
+    select a.usuario_id, a.email
+    from public.avisos_rol_profesor a
+    join auth.users u on u.id = a.usuario_id
+    where a.estado = 'pendiente' and u.email_confirmed_at is not null
+  loop
+    -- Se borra la fila para que enviar_aviso_profesor pueda volver a intentarlo.
+    delete from public.avisos_rol_profesor where avisos_rol_profesor.usuario_id = r.usuario_id;
+    usuario_id := r.usuario_id;
+    email      := r.email;
+    resultado  := public.enviar_aviso_profesor(r.usuario_id);
+    return next;
+  end loop;
+end;
+$$;
+
+-- Ninguna de estas funciones se llama desde el navegador.
+revoke execute on function public.enviar_aviso_profesor(uuid)  from public, anon, authenticated;
+revoke execute on function public.enviar_avisos_pendientes()   from public, anon, authenticated;
+revoke execute on function public.trg_aviso_rol_profesor()     from public, anon, authenticated;
+
+
+-- ------------------------------------------------------------
+-- Endurecimiento: quitar a `anon` el UPDATE sobre perfiles
+-- ------------------------------------------------------------
+-- Hallazgo al revisar el disparador: `anon` conservaba UPDATE sobre TODAS las
+-- columnas de `perfiles`, incluida `rol`, mientras que `authenticated` sí
+-- estaba limitado a (nombre, apellido).
+--
+-- NO era explotable: la política de UPDATE es `auth.uid() = id`, y para anon
+-- auth.uid() es NULL, así que la comparación nunca es verdadera y no alcanza
+-- ninguna fila. Se revoca por defensa en profundidad: ahora que entrar en el
+-- rol de profesor dispara un correo automático, el margen de error de esa
+-- columna es más caro.
+
+revoke update on public.perfiles from anon;
