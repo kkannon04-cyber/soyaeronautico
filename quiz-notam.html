@@ -183,6 +183,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 </head>
 <body>
@@ -343,6 +344,7 @@
   // selección): asunto (2ª/3ª letras), condición (4ª/5ª letras) y alcance.
   const questions = [
     {
+      tema: 'notam-fundamentos',
       q: "¿Cuál es el propósito básico de un NOTAM?",
       options: [
         "Reemplazar por completo al AIP",
@@ -354,30 +356,35 @@
       explain: "El NOTAM distribuye información antes del hecho, excepto en casos imprevisibles como fallas súbitas, actividad volcánica o liberación de material radiactivo."
     },
     {
+      tema: 'notam-fundamentos',
       q: "Una restricción temporal de espacio aéreo va a durar 4 meses y necesita un mapa detallado del área. ¿Qué canal de publicación es el correcto?",
       options: ["Un NOTAM normal", "Un Suplemento AIP (AIP SUP)", "No se publica hasta la próxima AMDT AIP anual", "Un ASHTAM"],
       correct: 1,
       explain: "Por su duración larga y la necesidad de gráficos, corresponde a un Suplemento AIP, no a un NOTAM."
     },
     {
+      tema: 'notam-fundamentos',
       q: "En Colombia (AIP GEN 3.1), ¿qué serie de NOTAM contiene cierres de pista, cierres de aeródromo, trabajos en progreso en pista y cambios de horario del aeródromo?",
       options: ["Serie A", "Serie B", "Serie C", "Serie D"],
       correct: 3,
       explain: "La Serie D del AIP Colombia está dedicada específicamente a cierres de pista/aeródromo, trabajos en progreso y cambios de horario."
     },
     {
+      tema: 'notam-fundamentos',
       q: "¿Qué número le corresponde al primer NOTAM de cualquier serie que se publica el 1 de enero?",
       options: ["Continúa la numeración del año anterior", "0000", "0001", "Empieza en 1000 por convención"],
       correct: 2,
       explain: "Cada serie reinicia su numeración consecutiva en 0001 el 1 de enero de cada año — pero un NOTAM ya emitido nunca se renumera."
     },
     {
+      tema: 'notam-fundamentos',
       q: "Un NOTAMR (A0140/26 NOTAMR A0138/26) y el NOTAM A0138/26 que reemplaza, ¿en qué serie deben publicarse?",
       options: ["Pueden estar en series distintas si el asunto cambió", "Siempre en la misma serie", "El NOTAMR siempre pasa a la serie más alta disponible", "No importa la serie, solo el número"],
       correct: 1,
       explain: "El NOTAMR (y el NOTAMC) se publican siempre en la misma serie del NOTAM al que reemplazan o cancelan."
     },
     {
+      tema: 'notam-formato',
       q: "Un NOTAM tiene como fecha de fin (Casilla C) '2611202359EST'. ¿Qué obligación trae ese 'EST'?",
       options: [
         "Ninguna, puede quedar vigente indefinidamente",
@@ -389,12 +396,14 @@
       explain: "EST indica una fecha de fin aproximada; ese NOTAM debe cancelarse o reemplazarse antes de la fecha-hora indicada — dejarlo así se considera un error de gestión, no un uso válido de 'indefinido' (UFN no está permitido)."
     },
     {
+      tema: 'notam-formato',
       q: "Una actividad ocurre todos los días, durante el día completo, entre el 10 y el 20 de un mes. En la Casilla D), ¿qué abreviatura evita repetir el horario cada día?",
       options: ["UFN", "EST", "H24", "WEF"],
       correct: 2,
       explain: "H24 se inserta después de las fechas cuando la actividad cubre el día completo, evitando repetir 0000-2359 cada vez."
     },
     {
+      tema: 'notam-codigo-q',
       q: "El Checklist de NOTAM usa el código dedicado QKKKK y el calificador 'K' en tránsito, propósito y alcance. ¿Para qué sirve específicamente ese calificador 'K' repetido?",
       options: [
         "Para que el checklist tenga prioridad urgente de transmisión",
@@ -406,6 +415,7 @@
       explain: "El código QKKKK junto con 'K' como tránsito/propósito/alcance permite que los sistemas filtren el checklist y lo excluyan del PIB automáticamente."
     },
     {
+      tema: 'notam-codigo-q',
       q: "NOTAM: \"Q) EACC/QMNLC/IV/BO/A/000/999  A) EADD  E) APRON CLSD DUE TO WIP\". ¿Qué significan las letras \"MN\" y \"LC\" del código?",
       options: [
         "MN = Pista, LC = Limitado",
@@ -417,54 +427,63 @@
       explain: "MN es el asunto \"Plataforma\" (apron) dentro de AGA-Área de movimiento, y LC es la condición \"Cerrado\", coherente con el texto en lenguaje claro \"APRON CLSD\"."
     },
     {
+      tema: 'notam-codigo-q',
       q: "Se necesita codificar: \"El radiofaro no direccional (NDB) no está disponible.\" ¿Cuál es el código Q correcto?",
       options: ["QNBAU", "QNBAS", "QNVAS", "QNDAS"],
       correct: 1,
       explain: "NB = Radiofaro no direccional (NDB); AS = No utilizable (U/S). \"No disponible con razón\" sería AU, pero la fraseología estándar para un NDB \"fuera de servicio\" es AS (U/S), la más usada en los ejemplos oficiales de Doc 8126."
     },
     {
+      tema: 'notam-codigo-q',
       q: "NOTAM: \"Q) EACC/QICAS/IV/BO/A/000/999  A) EADD  E) ILS RWY 11 U/S\". ¿A qué instalación se refiere el asunto \"IC\"?",
       options: ["Al indicador de trayectoria de aproximación de precisión (PAPI)", "Al sistema de aterrizaje por instrumentos (ILS)", "Al radar de aproximación de precisión (PAR)", "A la torre de control"],
       correct: 1,
       explain: "IC es el asunto \"Sistema de aterrizaje por instrumentos (ILS)\", dentro de la familia CNS. Combinado con la condición AS (U/S), da \"ILS U/S\"."
     },
     {
+      tema: 'notam-codigo-q',
       q: "¿Qué código NOTAM corresponde a un obstáculo recién erigido cerca de un aeródromo?",
       options: ["QOBAS", "QOLCE", "QOBCE", "QOBLC"],
       correct: 2,
       explain: "OB = Obstáculo; CE = Erigido/Montado (\"Erected\"). QOBCE es exactamente el código que usa el propio ejemplo del Doc 8126 para un obstáculo nuevo."
     },
     {
+      tema: 'notam-codigo-q',
       q: "En la Casilla Q), ¿qué campo indica si un NOTAM es relevante para IFR, VFR, o ambos?",
       options: ["El calificador Alcance", "El calificador Tránsito", "El calificador Propósito", "El campo de coordenadas"],
       correct: 1,
       explain: "El calificador Tránsito usa I (IFR), V (VFR), IV (ambos) o K (checklist)."
     },
     {
+      tema: 'notam-codigo-q',
       q: "Un NOTAM sobre el cierre de una plataforma (apron) de un aeródromo, sin afectar el tránsito en ruta, ¿qué valor de Alcance (Scope) debería llevar en la Casilla Q)?",
       options: ["A (Aeródromo)", "E (En ruta)", "W (Aviso de navegación)", "AE (Aeródromo y en ruta)"],
       correct: 0,
       explain: "Una plataforma es una instalación exclusivamente de aeródromo (Scope A); no afecta al tránsito en ruta como sí lo haría, por ejemplo, un VOR."
     },
     {
+      tema: 'notam-codigo-q',
       q: "Por convención (Tabla III-6-1 del Doc 8126), ¿qué radio estándar se usa en la Casilla Q) para un NOTAM sobre un obstáculo (código QOB...)?",
       options: ["001 NM", "005 NM", "025 NM", "999 NM"],
       correct: 0,
       explain: "El radio estándar para obstáculos (QOB...) es 001 NM — el más pequeño de la tabla, coherente con que es un peligro muy puntual."
     },
     {
+      tema: 'notam-formato',
       q: "En las Casillas F) y G), ¿cómo se escribe correctamente un límite de 6.500 pies sobre el nivel del mar?",
       options: ["6500 FT AMSL", "6500FT AMSL", "6500FTAMSL", "6.500FT-AMSL"],
       correct: 1,
       explain: "El valor y la unidad van pegados sin espacio (6500FT); la referencia (AMSL) va después, separada por un espacio."
     },
     {
+      tema: 'notam-formato',
       q: "¿Qué valor NUNCA se usa en la Casilla F) (límite inferior), y qué se usa en su lugar cuando el límite es la superficie?",
       options: ["000; se usa SFC o GND", "999; se usa UNL", "001; se usa MSL", "No hay ninguna restricción de valores"],
       correct: 0,
       explain: "El valor 000 no se usa en F) — para expresar que el límite es la superficie se usan las abreviaturas SFC o GND."
     },
     {
+      tema: 'notam-formato',
       q: "En la Casilla E), ¿por qué se escribe \"SOUTHWEST\" completo en vez de \"SW\" cuando el texto se refiere a calles de rodaje?",
       options: [
         "\"SW\" no es una abreviatura reconocida por la OACI en ningún contexto",
@@ -476,42 +495,49 @@
       explain: "Las direcciones cardinales/ordinales se escriben completas cuando se combinan con elementos como calles de rodaje, para evitar ambigüedad con designadores abreviados."
     },
     {
+      tema: 'notam-formato',
       q: "Un área circular en la Casilla E) se describe con las palabras clave:",
       options: ["\"AREA OF\" + coordenadas", "\"RADIUS\" + valor + \"CENTRE\" + coordenadas", "\"WITHIN\" + coordenadas + \"LIMIT\"", "Solo con las coordenadas, sin palabras clave"],
       correct: 1,
       explain: "La regla de redacción para un área circular es: la palabra RADIUS, el valor del radio, la palabra CENTRE, y las coordenadas del centro."
     },
     {
+      tema: 'notam-codigo-q',
       q: "En un ejemplo del Doc 8126, un NOTAM amplía el significado del código escribiendo \"VOZ 116,30 MHZ VOR U/S\" en la Casilla E). ¿Dónde se ubica la ampliación del ASUNTO (identificación y frecuencia del VOR) respecto al significado del código?",
       options: ["Después del significado del código", "Antes del significado del código", "No se puede ampliar el asunto, solo la condición", "En una casilla aparte, nunca en E)"],
       correct: 1,
       explain: "La ampliación relativa al asunto (2ª/3ª letras) precede al significado del código; la ampliación de la condición (4ª/5ª letras) lo sigue."
     },
     {
+      tema: 'notam-especiales',
       q: "En un Trigger NOTAM, la Casilla Q) siempre lleva un valor fijo en la 4ª y 5ª letra del código, sin importar el asunto elegido. ¿Cuál es?",
       options: ["XX", "AK", "TT", "KK"],
       correct: 2,
       explain: "El Trigger NOTAM usa siempre \"TT\" como condición (4ª/5ª letras), lo que permite filtrarlo específicamente en cualquier oficina AIS."
     },
     {
+      tema: 'notam-especiales',
       q: "Un AMDT AIP AIRAC tiene fecha de entrada en vigor (WEF) el 26 de marzo. ¿Con cuántos días mínimos de anticipación debe emitirse el Trigger NOTAM correspondiente, y hasta cuántos días después de la fecha efectiva permanece válido?",
       options: ["7 días antes, válido 7 días después", "14 días antes, válido 28 días después", "28 días antes, válido 14 días después", "No hay un plazo mínimo definido"],
       correct: 2,
       explain: "El Trigger NOTAM debe emitirse con al menos 28 días de anticipación a la fecha efectiva, y permanece válido 14 días después de esa fecha."
     },
     {
+      tema: 'notam-especiales',
       q: "Una pista amaneció con una capa de nieve compacta y hay que reportar su condición real de superficie y fricción. ¿Qué mensaje corresponde?",
       options: ["ASHTAM", "SNOWTAM", "Trigger NOTAM", "Checklist de NOTAM"],
       correct: 1,
       explain: "El SNOWTAM reporta el Informe de Condición de Pista (RCR): nieve, hielo, aguanieve o agua sobre el área de movimiento."
     },
     {
+      tema: 'notam-especiales',
       q: "¿Cuál es el período máximo de validez de un ASHTAM?",
       options: ["8 horas", "24 horas", "72 horas", "14 días"],
       correct: 1,
       explain: "El ASHTAM tiene una validez máxima de 24 horas; se emite uno nuevo cada vez que cambia el nivel de alerta volcánica."
     },
     {
+      tema: 'notam-especiales',
       q: "Según el AIP Colombia (GEN 3.1), una oficina NOTAM internacional en Francia que envía un SNOWTAM hacia Colombia usaría, como dirección AFTN/AMHS, el prefijo:",
       options: ["SKZZNA + nacionalidad", "SKZZSA + nacionalidad", "SKZZVA + nacionalidad", "SKZZAA + nacionalidad"],
       correct: 1,
@@ -521,6 +547,8 @@
 
   // ---------- ESTADO ----------
   let answered = new Array(questions.length).fill(false);
+  // Acierto por pregunta, para poder decirle al panel QUE se falló.
+  let aciertos = new Array(questions.length).fill(null);
   let correctAnswers = 0;
   let totalAnswered = 0;
 
@@ -576,6 +604,7 @@
     const isCorrect = optIdx === q.correct;
 
     answered[qIdx] = true;
+    aciertos[qIdx] = isCorrect;
     totalAnswered++;
     if(isCorrect) correctAnswers++;
 
@@ -619,7 +648,7 @@
         };
         finishMsg.textContent = 'Guardando tu resultado…';
         finishNote.classList.add('show');
-        guardarIntento('quiz-notam', 'NOTAM', correctAnswers, total).then(res => {
+        guardarIntento('quiz-notam', 'NOTAM', correctAnswers, total, typeof construirDetalleIntento === 'function' ? construirDetalleIntento('quiz-notam', questions.map((q, i) => ({ ok: aciertos[i], pregunta: q }))) : null).then(res => {
           finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
         });
       } else {
@@ -635,6 +664,7 @@
 
   function resetQuiz(){
     answered = new Array(questions.length).fill(false);
+    aciertos = new Array(questions.length).fill(null);
     correctAnswers = 0;
     totalAnswered = 0;
     intentoGuardado = false;

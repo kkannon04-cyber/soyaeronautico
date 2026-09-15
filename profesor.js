@@ -582,7 +582,11 @@ async function obtenerResultadosDeGrupo(grupoId) {
 }
 
 function _tieneCorreccion(detalle) {
-  if (!detalle || Array.isArray(detalle) || !Array.isArray(detalle.casillas)) return false;
+  if (!detalle) return false;
+  // Examen: el detalle ES el array de respuestas y la corrección marca cada
+  // elemento in situ. Plan de vuelo: las casillas cuelgan de detalle.casillas.
+  if (Array.isArray(detalle)) return detalle.some(d => d && d.corregida);
+  if (!Array.isArray(detalle.casillas)) return false;
   return detalle.casillas.some(c => c && c.corregida);
 }
 
@@ -852,6 +856,49 @@ async function obtenerPlanDeActividad(actividadId) {
 // y deja constancia en el historial: corregir nunca es silencioso.
 //
 // `cambios` es [{ i: <índice de la casilla>, ok: true|false }, …].
+// Corrección general de una entrega, en tres modos excluyentes:
+//   - comentario: sólo texto para el estudiante, no cambia la nota.
+//   - puntos:     { cambios: [{i, ok}] } marca preguntas o casillas concretas.
+//   - nota:       { correctas: N } ajuste global de la calificación.
+// El servidor valida la autoría, recalcula y deja constancia inmutable en
+// `correcciones_resultado`. Sirve para examen, lectura y plan de vuelo.
+async function corregirResultado(resultadoId, opciones) {
+  const sesion = await _sesionProfesor();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const o = opciones || {};
+  const cambios = Array.isArray(o.cambios) ? o.cambios : [];
+  const motivo = (o.motivo || '').trim() || null;
+  const correctas = (o.correctas === undefined || o.correctas === null || o.correctas === '')
+    ? null : Number(o.correctas);
+
+  if (cambios.length > 0 && correctas !== null) {
+    return { ok: false, error: 'Elige una cosa u otra: marcar preguntas, o poner una nota global.' };
+  }
+  if (cambios.length === 0 && correctas === null && !motivo) {
+    return { ok: false, error: 'Escribe un comentario para el estudiante.' };
+  }
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('corregir_resultado', {
+    p_resultado_id: resultadoId,
+    p_cambios: cambios,
+    p_motivo: motivo,
+    p_correctas: correctas
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
+}
+
+// Lee una entrega de examen o lectura con sus enunciados. El RPC oculta la
+// respuesta correcta al estudiante mientras la actividad siga abierta.
+async function obtenerResultadoExamen(resultadoId) {
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('obtener_resultado_examen', { p_resultado_id: resultadoId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
+}
+
 async function corregirPlanDeVuelo(resultadoId, cambios, motivo) {
   const sesion = await _sesionProfesor();
   if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };

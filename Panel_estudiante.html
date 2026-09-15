@@ -216,6 +216,69 @@
   .btn-launch { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
   .btn-launch:hover{ background-color: var(--primary-hover); }
   .btn-launch:active{ transform:translateY(1px); }
+  .btn-launch.secundario { background-color: transparent; color: var(--primary); border: 1px solid var(--border-color); }
+  .btn-launch.secundario:hover { background-color: var(--bg-color); border-color: var(--primary); }
+  .module-acciones { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+  .repaso-chip { display: inline-block; background-color: #fef2f2; color: var(--danger); font-family: var(--font-mono);
+    font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; }
+  [data-theme="dark"] .repaso-chip { background-color: rgba(239,68,68,0.15); }
+  .repaso-ok { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+  /* Centro de notificaciones */
+  .notif-wrap { position: relative; }
+  .notif-btn {
+    background: none; border: 1px solid var(--border-color); border-radius: 8px;
+    width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer;
+    color: var(--text-main); position: relative; transition: 0.2s;
+  }
+  .notif-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .notif-badge {
+    position: absolute; top: -5px; right: -5px; min-width: 17px; height: 17px;
+    padding: 0 4px; border-radius: 9px; background: var(--danger); color: #fff;
+    font-size: 0.65rem; font-weight: 700; display: grid; place-items: center;
+    font-family: var(--font-mono);
+  }
+  .notif-panel {
+    position: absolute; top: calc(100% + 8px); right: 0; width: min(340px, calc(100vw - 32px));
+    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+    box-shadow: 0 12px 30px -10px rgba(15,23,42,0.22); z-index: 60; overflow: hidden;
+  }
+  [data-theme="dark"] .notif-panel { box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6); }
+  .notif-cabecera {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;
+  }
+  .notif-marcar {
+    background: none; border: 0; color: var(--primary); font-size: 0.76rem;
+    font-weight: 600; cursor: pointer; padding: 0;
+  }
+  .notif-lista { max-height: 340px; overflow-y: auto; }
+  .notif-item { display: block; padding: 11px 14px; border-bottom: 1px solid var(--border-color);
+    text-decoration: none; color: inherit; transition: background 0.15s; }
+  .notif-item:last-child { border-bottom: 0; }
+  .notif-item:hover { background: var(--bg-color); }
+  .notif-item.nueva { background: rgba(59,130,246,0.06); }
+  .notif-item h5 { margin: 0 0 3px; font-size: 0.85rem; font-family: var(--font-heading); font-weight: 700; }
+  .notif-item p { margin: 0; font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; }
+  .notif-cuando { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 4px; display: block; }
+  .notif-vacio { padding: 22px 14px; text-align: center; font-size: 0.83rem; color: var(--text-muted); }
+
+  /* Próximos vencimientos */
+  .venc-item { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--border-color); }
+  .venc-item:last-child { border-bottom: 0; }
+  .venc-item h5 { margin: 0 0 2px; font-size: 0.85rem; font-family: var(--font-heading); font-weight: 600; }
+  .venc-item p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+  .venc-chip { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .venc-hoy    { background: #fef2f2; color: var(--danger); }
+  .venc-pronto { background: #fffbeb; color: var(--warning); }
+  .venc-lejos  { background: #eff6ff; color: var(--primary); }
+  [data-theme="dark"] .venc-hoy    { background: rgba(239,68,68,0.15); }
+  [data-theme="dark"] .venc-pronto { background: rgba(245,158,11,0.15); }
+  [data-theme="dark"] .venc-lejos  { background: rgba(59,130,246,0.15); }
+  @media (max-width: 520px) { .module-acciones { flex-direction: row; flex-wrap: wrap; width: 100%; } .module-acciones > a { flex: 1 1 auto; } .module-acciones .btn-launch { width: 100%; } }
 
   /* Historial */
   .history-wrapper { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 20px; }
@@ -328,6 +391,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 </head>
 <body>
@@ -405,6 +469,22 @@
       </div>
 
       <div class="user-profile">
+        <div class="notif-wrap" id="notifWrap" style="display:none;">
+          <button class="notif-btn" id="notifBtn" type="button" aria-label="Notificaciones" aria-expanded="false">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+          </button>
+          <div class="notif-panel" id="notifPanel" hidden>
+            <div class="notif-cabecera">
+              <span>Novedades</span>
+              <button class="notif-marcar" id="notifMarcar" type="button">Marcar todo como visto</button>
+            </div>
+            <div class="notif-lista" id="notifLista"></div>
+          </div>
+        </div>
         <button class="theme-toggle-btn" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
           <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
           <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
@@ -484,6 +564,19 @@
             </div></div>
           </div>
 
+          <!-- Temas con más fallos, derivados del detalle de los intentos.
+               Se oculta si todavía no hay intentos con detalle (todo el
+               histórico anterior a 2026-09-14 no lo tiene). -->
+          <div class="panel-card" id="repasarCard" style="display:none;">
+            <button type="button" class="panel-header acordeon-toggle" data-acordeon="que-repasar" aria-expanded="true">
+              <span>Qué repasar</span>
+              <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="panel-body-wrap"><div class="panel-body">
+              <div id="repasarContainer"></div>
+            </div></div>
+          </div>
+
           <div class="panel-card">
             <button type="button" class="panel-header acordeon-toggle" data-acordeon="modulos-aprendizaje" aria-expanded="true">
               <span>Módulos de aprendizaje</span>
@@ -522,6 +615,14 @@
             <div class="history-wrapper">
               <ul class="attempt-list" id="historialContainer" aria-live="polite"></ul>
             </div>
+          </div>
+
+          <!-- Actividades con fecha límite cercana. Oculta si no hay ninguna:
+               las fechas ya salen dentro de cada actividad, esta tarjeta sólo
+               existe para que no se le pase ninguna por alto. -->
+          <div class="panel-card" id="vencimientosCard" style="display:none;">
+            <div class="panel-header">Próximos vencimientos</div>
+            <div id="vencimientosContainer"></div>
           </div>
 
           <!-- Vínculo con un profesor mediante código de grupo -->
@@ -737,16 +838,10 @@
   });
 
   // ---------- MÓDULOS DE QUIZ CON PROGRESO ----------
-  const MODULOS = [
-    { id: 'quiz-ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', url: 'quiz-ats.html', badge: '50 preguntas' },
-    { id: 'quiz-fpl', nombre: 'Plan de Vuelo', url: 'quiz-fpl.html', badge: '25 preguntas' },
-    { id: 'quiz-designadores', nombre: 'Designadores de Aeródromos', url: 'quiz-designadores.html', badge: 'Modo examen · 20 preguntas' },
-    { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html', badge: '50 preguntas' },
-    { id: 'simulador-metar', nombre: 'Simulador METAR', url: 'simulador-metar.html', badge: 'Modo examen · 20 reportes' },
-    { id: 'navegacion-quiz-tiempo-altimetria', nombre: 'Navegación · Quiz I — Tiempo y Altimetría', url: 'quiz-navegacion-tiempo-altimetria.html', badge: 'Nivel avanzado · 25 preguntas' },
-    { id: 'navegacion-quiz-radioayudas-viento', nombre: 'Navegación · Quiz II — Radioayudas y Viento', url: 'quiz-navegacion-radioayudas-viento.html', badge: 'Nivel avanzado · 25 preguntas' },
-    { id: 'quiz-notam', nombre: 'NOTAM', url: 'quiz-notam.html', badge: '25 preguntas' }
-  ];
+  // Derivados del catálogo único (modulos.js). La sección es explícita en el
+  // catálogo, no deducida del tipo: simulador-metar vive históricamente aquí
+  // entre los quizzes, y el logro "Políglota AIS" depende de esta lista.
+  const MODULOS = MODULOS_CATALOGO.filter(m => m.seccion === 'modulos');
 
   // ---------- MÓDULOS DE APRENDIZAJE (contenido teórico, no quiz) ----------
   const MODULOS_APRENDIZAJE = [
@@ -768,16 +863,25 @@
       const total = m.paginas.length;
       const hechas = m.paginas.filter(p => paginasCompletadas.has(p)).length;
       const pct = Math.round((hechas / total) * 100);
+
+      // Continuar donde quedó: la primera página que aún no ha completado.
+      // El id de cada página ES su archivo (misma convención que los temas),
+      // así que no hace falta ninguna tabla de equivalencias.
+      const pendiente = m.paginas.find(p => !paginasCompletadas.has(p));
+      const destino = (hechas > 0 && hechas < total && pendiente) ? pendiente + '.html' : m.url;
+      const etiquetaPendiente = (hechas > 0 && hechas < total && pendiente && typeof nombreDeTema === 'function')
+        ? nombreDeTema(pendiente) : null;
       const item = document.createElement('div');
       item.className = 'module-item';
       item.innerHTML = `
         <div class="module-info">
           <div class="module-badge">${total} página${total === 1 ? '' : 's'}</div>
           <h4>${m.nombre}</h4>
-          <p>${hechas} de ${total} página${total === 1 ? '' : 's'} completada${hechas === 1 ? '' : 's'}</p>
+          <p>${hechas} de ${total} página${total === 1 ? '' : 's'} completada${hechas === 1 ? '' : 's'}${
+            etiquetaPendiente ? ` · sigue en <b>${escaparHTML(etiquetaPendiente)}</b>` : ''}</p>
           <div class="module-progress"><div class="module-progress-fill ${hechas === total ? 'ok' : ''}" style="width:${pct}%"></div></div>
         </div>
-        <a href="${m.url}"><button class="btn-launch">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'}</button></a>
+        <a href="${destino}"><button class="btn-launch">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'}</button></a>
       `;
       contenedor.appendChild(item);
     });
@@ -785,11 +889,9 @@
     return paginasCompletadas;
   }
 
-  const SIMULADORES = [
-    { id: 'simulador-plan-vuelo', nombre: 'Simulador Plan de Vuelo', desc: 'Llenado de FPL campo por campo con validación.', url: 'simulador-plan-vuelo.html' },
-    { id: 'simulador-fraseologia', nombre: 'Fraseología — Simulador ATC', desc: 'Practica por voz con mapa de ruta en vivo.', url: 'simulador-fraseologia.html' },
-    { id: null, nombre: 'Simulador NALA — CWP', desc: 'Plan de vuelo, AFTN y radar en un puesto de trabajo real.', url: 'Simulador-NALA.html' }
-  ];
+  // Derivados del catálogo único (modulos.js). Simulador NALA ya tiene id
+  // real, así que por fin muestra su progreso como los demás.
+  const SIMULADORES = MODULOS_CATALOGO.filter(m => m.seccion === 'simuladores');
 
   // ---------- ANILLO DE PROGRESO ----------
   const RING_RADIO = 62;
@@ -889,6 +991,272 @@
 
     return { actual, mejor };
   }
+
+  // ---------- QUÉ REPASAR ----------
+  // Agrega los fallos por tema a partir de `intentos.detalle`. Se calcula en
+  // el navegador a propósito: los intentos ya vienen descargados para el
+  // resto del panel, así que un RPC de agregación sería una lectura de red
+  // extra para procesar unas decenas de filas.
+  const REPASO_DIAS = 90;        // ventana de análisis
+  const REPASO_MIN_RESPUESTAS = 5; // por debajo de esto no hay señal, solo ruido
+  const REPASO_UMBRAL = 70;      // % de acierto por debajo del cual se sugiere repasar
+  const REPASO_MAX = 3;          // cuántos temas mostrar
+
+  function calcularTemasFlojos(intentos){
+    const desde = Date.now() - REPASO_DIAS * 24 * 60 * 60 * 1000;
+    const porTema = {};
+
+    intentos.forEach(i => {
+      const d = i.detalle;
+      if (!d || d.v !== 1 || !Array.isArray(d.preguntas)) return;
+      if (new Date(i.fecha).getTime() < desde) return;
+
+      d.preguntas.forEach(pr => {
+        if (!pr || !pr.tema) return;
+        const acc = porTema[pr.tema] || { respondidas: 0, fallos: 0, modulo: i.modulo };
+        acc.respondidas++;
+        if (!pr.ok) acc.fallos++;
+        porTema[pr.tema] = acc;
+      });
+    });
+
+    const temas = Object.keys(porTema).map(id => {
+      const t = porTema[id];
+      return {
+        id,
+        respondidas: t.respondidas,
+        fallos: t.fallos,
+        modulo: t.modulo,
+        acierto: Math.round(((t.respondidas - t.fallos) / t.respondidas) * 100)
+      };
+    });
+
+    return {
+      // hayDatos distingue "aún no hay información" de "vas bien en todo",
+      // que son dos mensajes muy distintos para el estudiante.
+      hayDatos: temas.length > 0,
+      flojos: temas
+        .filter(t => t.respondidas >= REPASO_MIN_RESPUESTAS && t.acierto < REPASO_UMBRAL)
+        .sort((a, b) => a.acierto - b.acierto)
+        .slice(0, REPASO_MAX)
+    };
+  }
+
+  function renderQueRepasar(intentos){
+    const card = document.getElementById('repasarCard');
+    const contenedor = document.getElementById('repasarContainer');
+    const { hayDatos, flojos } = calcularTemasFlojos(intentos);
+
+    // Sin datos no se muestra una tarjeta vacía: todo el histórico anterior a
+    // esta función no guardaba el detalle de las respuestas.
+    if (!hayDatos) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+
+    if (flojos.length === 0) {
+      contenedor.innerHTML = '<p class="repaso-ok">Vas bien en todos los temas que has practicado. Cuando falles varias preguntas de un mismo tema, aparecerá aquí con un enlace directo a la teoría.</p>';
+      return;
+    }
+
+    contenedor.innerHTML = '';
+    flojos.forEach(t => {
+      const nombre = typeof nombreDeTema === 'function' ? nombreDeTema(t.id) : t.id;
+      const urlTeoria = typeof urlDeTema === 'function' ? urlDeTema(t.id) : null;
+      const mod = typeof moduloPorId === 'function' ? moduloPorId(t.modulo) : null;
+
+      const item = document.createElement('div');
+      item.className = 'module-item';
+      item.innerHTML = `
+        <div class="module-info">
+          <div class="repaso-chip">${t.fallos} de ${t.respondidas} falladas</div>
+          <h4>${escaparHTML(nombre)}</h4>
+          <p>${t.acierto}% de acierto en los últimos ${REPASO_DIAS} días.</p>
+          <div class="module-progress"><div class="module-progress-fill" style="width:${t.acierto}%"></div></div>
+        </div>
+        <div class="module-acciones">
+          ${urlTeoria ? `<a href="${urlTeoria}"><button class="btn-launch">Repasar la teoría</button></a>` : ''}
+          ${mod ? `<a href="${mod.url}"><button class="btn-launch secundario">Volver al quiz</button></a>` : ''}
+        </div>
+      `;
+      contenedor.appendChild(item);
+    });
+  }
+
+  // ---------- PRÓXIMOS VENCIMIENTOS ----------
+  const VENC_DIAS = 14;  // sólo miramos las próximas dos semanas
+
+  function diasHasta(iso){
+    const ms = new Date(iso).getTime() - Date.now();
+    return Math.ceil(ms / 86400000);
+  }
+
+  function textoPlazo(dias){
+    if (dias < 0) return 'Vencida';
+    if (dias === 0) return 'Hoy';
+    if (dias === 1) return 'Mañana';
+    return `En ${dias} días`;
+  }
+
+  function clasePlazo(dias){
+    if (dias <= 1) return 'venc-hoy';
+    if (dias <= 3) return 'venc-pronto';
+    return 'venc-lejos';
+  }
+
+  // Sólo lo que el estudiante todavía puede y debe hacer: con fecha límite,
+  // no vencida, no bloqueada y aún sin presentar.
+  function vencimientosPendientes(actividades){
+    return actividades
+      .filter(a => a.fechaLimite && !a.vencida && !a.bloqueada && !a.completada)
+      .map(a => ({ ...a, dias: diasHasta(a.fechaLimite) }))
+      .filter(a => a.dias <= VENC_DIAS)
+      .sort((x, y) => x.dias - y.dias);
+  }
+
+  function renderVencimientos(actividades){
+    const card = document.getElementById('vencimientosCard');
+    const cont = document.getElementById('vencimientosContainer');
+    const lista = vencimientosPendientes(actividades);
+
+    if (lista.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+
+    cont.innerHTML = lista.map(a => `
+      <div class="venc-item">
+        <div>
+          <h5>${escaparHTML(a.titulo)}</h5>
+          <p>${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'} · cierra el ${formatFecha(a.fechaLimite)}</p>
+        </div>
+        <span class="venc-chip ${clasePlazo(a.dias)}">${textoPlazo(a.dias)}</span>
+      </div>`).join('');
+  }
+
+  // ---------- CENTRO DE NOTIFICACIONES ----------
+  // No hay Realtime en el proyecto, así que las novedades se derivan de datos
+  // que el panel ya descarga. Lo "visto" se guarda por usuario en este
+  // navegador: no es estado compartido, es una conveniencia local.
+  const NOTIF_VENCE_DIAS = 3;
+  let _notifClaveVistas = 'aisNotifVistas_invitado';
+
+  function leerVistas(){
+    try {
+      const v = JSON.parse(localStorage.getItem(_notifClaveVistas));
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+
+  function guardarVistas(ids){
+    try { localStorage.setItem(_notifClaveVistas, JSON.stringify(ids.slice(0, 200))); } catch (e) {}
+  }
+
+  function construirNotificaciones(actividades, correcciones){
+    const out = [];
+
+    actividades.forEach(a => {
+      // Actividad publicada que todavía no ha presentado.
+      if (!a.completada && !a.vencida && !a.bloqueada) {
+        out.push({
+          id: 'act-' + a.id,
+          titulo: 'Actividad pendiente',
+          texto: `${escaparHTML(a.titulo)} — tu profesor la publicó y aún no la has presentado.`,
+          fecha: a.fechaLimite || null,
+          url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+        });
+      }
+      // Y si además está a punto de cerrarse, un aviso aparte y más urgente.
+      if (a.fechaLimite && !a.vencida && !a.bloqueada && !a.completada) {
+        const d = diasHasta(a.fechaLimite);
+        if (d <= NOTIF_VENCE_DIAS) {
+          out.push({
+            id: 'venc-' + a.id + '-' + a.fechaLimite,
+            titulo: d <= 0 ? 'Cierra hoy' : (d === 1 ? 'Cierra mañana' : `Cierra en ${d} días`),
+            texto: `${escaparHTML(a.titulo)} deja de admitir entregas el ${formatFecha(a.fechaLimite)}.`,
+            fecha: a.fechaLimite,
+            url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+          });
+        }
+      }
+    });
+
+    // Correcciones y comentarios del profesor.
+    correcciones.forEach(c => {
+      const act = actividades.find(a => a.id === c.actividadId);
+      const nombre = act ? escaparHTML(act.titulo) : 'una de tus entregas';
+      const detalle = c.cambioNota
+        ? `Tu nota pasó de ${c.porcentajeAntes}% a ${c.porcentajeDespues}%.`
+        : 'Te dejó un comentario.';
+      out.push({
+        id: 'corr-' + c.id,
+        titulo: 'Tu profesor revisó tu entrega',
+        texto: `${nombre}. ${detalle}`,
+        fecha: c.fecha,
+        url: act && act.tipo === 'plan_vuelo'
+          ? 'simulador-plan-vuelo.html?resultado=' + encodeURIComponent(c.resultadoId)
+          : 'revision-actividad.html?resultado=' + encodeURIComponent(c.resultadoId)
+      });
+    });
+
+    // Las más urgentes o recientes primero; sin fecha, al final.
+    return out.sort((a, b) => {
+      if (!a.fecha && !b.fecha) return 0;
+      if (!a.fecha) return 1;
+      if (!b.fecha) return -1;
+      return new Date(a.fecha) - new Date(b.fecha);
+    });
+  }
+
+  async function renderNotificaciones(actividades, correcciones){
+    const wrap  = document.getElementById('notifWrap');
+    const lista = document.getElementById('notifLista');
+    const badge = document.getElementById('notifBadge');
+
+    const items = construirNotificaciones(actividades, correcciones);
+    if (items.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+
+    const vistas = leerVistas();
+    const sinVer = items.filter(i => vistas.indexOf(i.id) === -1);
+
+    badge.textContent = sinVer.length > 9 ? '9+' : String(sinVer.length);
+    badge.style.display = sinVer.length ? '' : 'none';
+
+    lista.innerHTML = items.map(i => `
+      <a class="notif-item ${vistas.indexOf(i.id) === -1 ? 'nueva' : ''}" href="${i.url}">
+        <h5>${i.titulo}</h5>
+        <p>${i.texto}</p>
+        ${i.fecha ? `<span class="notif-cuando">${formatFecha(i.fecha)}</span>` : ''}
+      </a>`).join('');
+
+    document.getElementById('notifMarcar').onclick = () => {
+      guardarVistas(items.map(i => i.id));
+      badge.style.display = 'none';
+      lista.querySelectorAll('.notif-item').forEach(el => el.classList.remove('nueva'));
+    };
+  }
+
+  (function iniciarCampana(){
+    const btn   = document.getElementById('notifBtn');
+    const panel = document.getElementById('notifPanel');
+    if (!btn || !panel) return;
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const abierto = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', abierto ? 'false' : 'true');
+      panel.hidden = abierto;
+    });
+    document.addEventListener('click', e => {
+      if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) {
+        panel.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !panel.hidden) {
+        panel.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
 
   // ---------- LOGROS / INSIGNIAS ----------
   const SIMULADORES_CON_PROGRESO = ['simulador-metar', 'simulador-plan-vuelo', 'simulador-fraseologia'];
@@ -1131,21 +1499,33 @@
     return g;
   }
 
+  // Enlace del estudiante a su propia entrega ya calificada (y corregida por
+  // el profesor si fue el caso). El permiso ya existia en la base de datos;
+  // lo que faltaba era la puerta de entrada desde el panel.
+  function verEntregaHTML(a){
+    if (!a.completada || !a.ultimoResultadoId) return '';
+    const destino = a.tipo === 'plan_vuelo'
+      ? 'simulador-plan-vuelo.html?resultado='
+      : (a.tipo === 'examen' || a.tipo === 'texto') ? 'revision-actividad.html?resultado=' : null;
+    if (!destino) return '';
+    return `<a href="${destino}${encodeURIComponent(a.ultimoResultadoId)}"><button class="btn-launch secundario">Ver mi entrega</button></a>`;
+  }
+
   async function renderActividadesAsignadas(){
     const card = document.getElementById('actividadesCard');
     const contenedor = document.getElementById('actividadesContainer');
     const sesion = await obtenerSesionActual();
-    if (!sesion) { card.style.display = 'none'; return; }
+    if (!sesion) { card.style.display = 'none'; return []; }
 
     const grupo = await obtenerMiGrupo();
-    if (!grupo.ok || !grupo.grupo) { card.style.display = 'none'; return; }
+    if (!grupo.ok || !grupo.grupo) { card.style.display = 'none'; return []; }
 
     const actividades = await obtenerActividadesAsignadas();
     card.style.display = 'block';
 
     if (actividades.length === 0) {
       contenedor.innerHTML = `<div class="empty-state">Tu profesor todavía no ha publicado actividades para este grupo. Cuando lo haga, aparecerán aquí.</div>`;
-      return;
+      return actividades;
     }
 
     contenedor.innerHTML = '';
@@ -1168,12 +1548,17 @@
           <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
           ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
         </div>
-        ${a.bloqueada
-          ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-          : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`}
+        <div class="module-acciones">
+          ${a.bloqueada
+            ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
+            : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`}
+          ${verEntregaHTML(a)}
+        </div>
       `;
       contenedor.appendChild(item);
     });
+
+    return actividades;
   }
 
   // ---------- ARRANQUE ----------
@@ -1186,9 +1571,18 @@
     const paginasCompletadas = await renderModulosAprendizaje();
     const racha = await renderRacha();
     await renderLogros(racha, paginasCompletadas);
+    renderQueRepasar(await obtenerIntentos());
     await renderNavProfesor(sesion);
     await renderMiGrupo();
-    await renderActividadesAsignadas();
+    const actividades = await renderActividadesAsignadas();
+
+    // Vencimientos y novedades se derivan de las actividades que acabamos de
+    // cargar, para no volver a pedirlas a la red.
+    if (sesion) _notifClaveVistas = 'aisNotifVistas_' + sesion.user.id;
+    const lista = actividades || [];
+    renderVencimientos(lista);
+    const correcciones = sesion ? await obtenerMisCorrecciones() : [];
+    await renderNotificaciones(lista, correcciones);
   })();
   </script>
 

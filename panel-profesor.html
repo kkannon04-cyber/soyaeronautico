@@ -151,6 +151,11 @@
   .btn-peligro { background: none; border: 1px solid var(--danger); color: var(--danger); }
   .btn-peligro:hover { background: rgba(239,68,68,0.08); }
   .btn-mini { padding: 7px 13px; font-size: 0.78rem; }
+  .fila-correccion > td { background: var(--bg-color); padding: 18px; }
+  .lista-correccion { margin: 8px 0 0 0; padding-left: 20px; }
+  .lista-correccion li { margin-bottom: 12px; font-size: 0.85rem; }
+  .lista-correccion label { display: flex; gap: 8px; align-items: flex-start; font-weight: 500; cursor: pointer; }
+  .lista-correccion input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
   .acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
   /* === LISTAS === */
@@ -248,6 +253,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 <script src="profesor.js"></script>
 </head>
@@ -1564,6 +1570,86 @@ function renderActividades() {
 // ============================================================
 document.getElementById('rGrupo').addEventListener('change', cargarResultados);
 
+// ---------- CORRECCIÓN DE EXÁMENES Y LECTURAS ----------
+// Se despliega en línea bajo la fila, como el resto del panel: no hay modales
+// en esta interfaz y no vale la pena introducir uno para esto.
+async function abrirCorreccion(resultadoId, tipo) {
+  const fila = document.getElementById('correccion-' + resultadoId);
+  if (!fila) return;
+  const celda = fila.querySelector('td');
+
+  // Segundo clic: cerrar.
+  if (fila.style.display !== 'none') { fila.style.display = 'none'; celda.innerHTML = ''; return; }
+
+  fila.style.display = '';
+  celda.innerHTML = '<div class="vacio">Cargando la entrega…</div>';
+
+  const res = await obtenerResultadoExamen(resultadoId);
+  if (!res.ok) { celda.innerHTML = `<div class="vacio">${esc(res.error)}</div>`; return; }
+  const r = res.resultado;
+  const preguntas = Array.isArray(r.preguntas) ? r.preguntas : [];
+
+  const historial = (r.correcciones || []).map(c => `
+    <li><b>${fechaCorta(c.fecha)}</b> — ${c.correctas_antes}/${r.total} → ${c.correctas_despues}/${r.total}${
+      c.motivo ? `. <i>${esc(c.motivo)}</i>` : ''}</li>`).join('');
+
+  celda.innerHTML = `
+    <div class="campo">
+      <label>Entrega de ${esc(r.actividad_titulo)} — ${r.correctas}/${r.total} · ${r.porcentaje}%</label>
+      ${tipo === 'examen' && preguntas.length ? `
+        <p class="ayuda">Marca la casilla de las preguntas que quieras dar por <b>correctas</b>. El servidor recalcula la nota y deja constancia en el historial.</p>
+        <ol class="lista-correccion">
+          ${preguntas.map(q => `
+            <li>
+              <label>
+                <input type="checkbox" data-pregunta="${q.i}" ${q.ok ? 'checked' : ''}>
+                <span>${esc(q.enunciado || '(pregunta borrada del banco)')}</span>
+              </label>
+              <div class="ayuda">Respondió: <b>${q.elegida !== null && q.opciones ? esc(q.opciones[q.elegida]) : '—'}</b>${
+                q.correcta !== null && q.opciones ? ` · Correcta: <b>${esc(q.opciones[q.correcta])}</b>` : ''}${
+                q.corregida ? ' · <i>corregida a mano</i>' : ''}</div>
+            </li>`).join('')}
+        </ol>` : ''}
+    </div>
+    <div class="campo">
+      <label for="motivo-${esc(resultadoId)}">Comentario para el estudiante</label>
+      <textarea id="motivo-${esc(resultadoId)}" rows="3" placeholder="Lo que quieras que lea junto a su nota."></textarea>
+      <div class="ayuda">Obligatorio si sólo dejas comentario o si ajustas la nota global. El estudiante lo verá en su panel.</div>
+    </div>
+    <div class="campo">
+      <label for="nota-${esc(resultadoId)}">Nota global (opcional)</label>
+      <input type="number" id="nota-${esc(resultadoId)}" min="0" max="${r.total}" placeholder="respuestas correctas de ${r.total}">
+      <div class="ayuda">Úsalo sólo si prefieres fijar la nota de una vez en vez de marcar pregunta por pregunta. No se pueden hacer las dos cosas a la vez.</div>
+    </div>
+    ${historial ? `<div class="campo"><label>Historial de correcciones</label><ul class="ayuda">${historial}</ul></div>` : ''}
+    <button class="btn btn-mini" data-guardar-correccion="${esc(resultadoId)}">Guardar corrección</button>
+  `;
+
+  celda.querySelector('[data-guardar-correccion]').addEventListener('click', async (ev) => {
+    const boton = ev.currentTarget;
+    boton.disabled = true;
+
+    // Sólo se envían las preguntas cuyo valor cambió respecto a lo calificado.
+    const cambios = [];
+    celda.querySelectorAll('[data-pregunta]').forEach(chk => {
+      const i = Number(chk.dataset.pregunta);
+      const original = preguntas.find(q => q.i === i);
+      if (original && !!original.ok !== chk.checked) cambios.push({ i, ok: chk.checked });
+    });
+
+    const motivo = document.getElementById('motivo-' + resultadoId).value;
+    const notaCampo = document.getElementById('nota-' + resultadoId).value;
+
+    const out = await corregirResultado(resultadoId, { cambios, motivo, correctas: notaCampo });
+    boton.disabled = false;
+    if (!out.ok) { aviso(out.error, 'error'); return; }
+    aviso('Corrección guardada. El estudiante ya puede verla.', 'ok');
+    fila.style.display = 'none';
+    celda.innerHTML = '';
+    cargarResultados();
+  });
+}
+
 async function cargarResultados() {
   const grupoId = document.getElementById('rGrupo').value;
   const cont = document.getElementById('contenidoResultados');
@@ -1663,8 +1749,10 @@ async function cargarResultados() {
                   r.corregido ? ' <span class="badge-estado borrador" title="La nota fue ajustada a mano; el detalle está en el historial de la entrega.">corregida</span>' : ''}</td>
                 <td>${r.actividadTipo === 'plan_vuelo'
                   ? `<a class="btn btn-secundario btn-mini" href="simulador-plan-vuelo.html?resultado=${encodeURIComponent(r.id)}">Ver plan / PDF</a> `
-                  : ''}<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
-              </tr>`).join('')}
+                  : `<button class="btn btn-secundario btn-mini" data-corregir="${esc(r.id)}" data-tipo="${esc(r.actividadTipo)}">Corregir / comentar</button> `
+                  }<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
+              </tr>
+              <tr class="fila-correccion" id="correccion-${esc(r.id)}" style="display:none;"><td colspan="5"></td></tr>`).join('')}
             </tbody></table></div>`}
     </div>`;
 
@@ -1678,6 +1766,10 @@ async function cargarResultados() {
     exportarDetalleCSV(grupo ? grupo.nombre : 'grupo', resultadosRes.resultados);
     aviso('Archivo descargado. Ábrelo con Excel.', 'ok');
   });
+  cont.querySelectorAll('[data-corregir]').forEach(btn => {
+    btn.addEventListener('click', () => abrirCorreccion(btn.dataset.corregir, btn.dataset.tipo));
+  });
+
   cont.querySelectorAll('[data-borrar-resultado]').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('¿Borrar este intento? El estudiante ya no lo verá en su historial.')) return;

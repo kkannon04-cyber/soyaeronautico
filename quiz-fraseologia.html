@@ -248,6 +248,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 </head>
 <body>
@@ -641,6 +642,8 @@
 
   // ---------- ESTADO ----------
   let answered = new Array(questions.length).fill(false);
+  // Acierto por pregunta, para poder decirle al panel QUE se falló.
+  let aciertos = new Array(questions.length).fill(null);
   let correctAnswers = 0;
   let totalAnswered = 0;
 
@@ -715,6 +718,7 @@
     const isCorrect = optIdx === correct;
 
     answered[qIdx] = true;
+    aciertos[qIdx] = isCorrect;
     totalAnswered++;
     if (isCorrect) correctAnswers++;
 
@@ -761,7 +765,7 @@
         };
         finishMsg.textContent = 'Guardando tu resultado…';
         finishNote.classList.add('show');
-        guardarIntento('quiz-fraseologia', 'Fraseología Aeronáutica', correctAnswers, total).then(res => {
+        guardarIntento('quiz-fraseologia', 'Fraseología Aeronáutica', correctAnswers, total, typeof construirDetalleIntento === 'function' ? construirDetalleIntento('quiz-fraseologia', questions.map((q, i) => ({ ok: aciertos[i], pregunta: q }))) : null).then(res => {
           finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
         });
       } else {
@@ -777,6 +781,7 @@
   function resetQuiz() {
     if('speechSynthesis' in window) window.speechSynthesis.cancel();
     answered = new Array(questions.length).fill(false);
+    aciertos = new Array(questions.length).fill(null);
     correctAnswers = 0;
     totalAnswered = 0;
     intentoGuardado = false;

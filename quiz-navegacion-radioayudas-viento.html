@@ -182,6 +182,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 </head>
 <body>
@@ -344,150 +345,175 @@
   // probadas en navegacion-radioayudas.html y navegacion-viento-unidades.html.
   const questions = [
     {
+      tema: 'navegacion-radioayudas',
       q: "Un avión está en el radial 300 de un VOR, con el OBS puesto en 300°. ¿Qué indicación TO/FROM mostrará el CDI, si está centrado?",
       options: ["FROM", "TO", "Ambigua (bandera NAV)", "No se puede determinar sin saber la distancia"],
       correct: 0,
       explain: "El ángulo entre el radial (300) y el OBS (300) es 0°, dentro de los ±90° de la zona FROM: el avión ya sobrepasó la estación en ese rumbo."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Un avión está en el radial 120 de un VOR y selecciona en el OBS el curso 300° (el recíproco, que apunta hacia la estación). ¿Qué mostrará el CDI?",
       options: ["FROM, centrado", "TO, centrado", "TO, desviado a la derecha", "Bandera NAV (ambigüedad)"],
       correct: 1,
       explain: "300° es el recíproco exacto de 120° (120+180=300). Al estar exactamente sobre ese eje volando hacia la estación, la bandera es TO y la aguja queda centrada."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Si estás en el radial 045 de una estación VOR, ¿en qué dirección cardinal aproximada te encuentras respecto a ella?",
       options: ["Al suroeste (SW) del VOR", "Al noroeste (NW) del VOR", "Al noreste (NE) del VOR", "Justo al norte del VOR"],
       correct: 2,
       explain: "El radial se mide desde la estación hacia el avión. Una marcación de 045° corresponde a la dirección noreste."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Con el OBS puesto en 060° y el CDI indicando TO con la aguja centrada, ¿en qué radial se encuentra el avión?",
       options: ["Radial 060", "Radial 120", "Radial 300", "Radial 240"],
       correct: 3,
       explain: "Para que el CDI marque TO centrado con OBS=060, el avión debe estar sobre el radial recíproco: 060+180=240."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Con el CDI centrado, bandera TO y curso seleccionado 150°, el piloto vuela ese rumbo. Al sobrevolar la estación y continuar el mismo rumbo, ¿qué ocurrirá con la indicación?",
       options: ["La bandera permanecerá en TO indefinidamente", "El OBS cambiará automáticamente a 330°", "La bandera cambiará de TO a FROM", "El CDI se apagará permanentemente"],
       correct: 2,
       explain: "Al cruzar la vertical de la estación (y pasar por el cono de silencio), la aeronave queda del otro lado: ahora se aleja siguiendo ese mismo curso, así que la bandera pasa a FROM."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Un avión está en el radial 200 y tiene el OBS puesto en 020° (el recíproco, curso hacia la estación). ¿Cómo estará la aguja del CDI?",
       options: ["Centrada, bandera TO", "Desviada a la derecha, bandera TO", "Desviada a la izquierda, bandera FROM", "Bandera NAV (ambigüedad)"],
       correct: 0,
       explain: "020 es el recíproco de 200 (200−180=20). El avión está exactamente sobre el eje del curso seleccionado volando hacia la estación: TO, centrada."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Con el OBS en 090° y el avión ubicado en el radial 084 (6° al norte del radial 090, en zona FROM), ¿hacia qué lado se desvía la aguja y cuántos puntos (2°=1 punto)?",
       options: ["A la izquierda, 3 puntos", "A la derecha, 3 puntos", "A la izquierda, 6 puntos", "Centrada, 0 puntos"],
       correct: 1,
       explain: "6° de desviación ÷ 2° por punto = 3 puntos. Estando al norte del curso en zona FROM, la aguja se desvía a la derecha (se vuela hacia la aguja para corregir)."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Un avión está exactamente a 90° de diferencia entre su radial real y el curso OBS seleccionado. ¿Qué mostrará el instrumento?",
       options: ["TO con la aguja centrada", "FROM con la aguja centrada", "La aguja se centra lentamente en unos segundos", "Bandera de ambigüedad (NAV), con la aguja a fondo de escala"],
       correct: 3,
       explain: "A exactamente 90° el equipo no puede decidir entre TO y FROM: aparece la bandera NAV y la aguja queda a fondo de escala, sin información útil de curso."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Con el OBS en 210° y el avión sobre el radial 205 (5° de diferencia, en zona FROM), ¿qué bandera y desviación de aguja se observan?",
       options: ["FROM, aguja a la derecha", "FROM, aguja a la izquierda", "TO, aguja a la derecha", "TO, aguja a la izquierda"],
       correct: 0,
       explain: "205 está 5° por debajo de 210, dentro de la zona FROM (±90°). Estar del lado \"menor\" del curso desvía la aguja hacia la derecha."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "A 40 NM de una estación VOR, la aguja del CDI muestra una desviación de 2 puntos (4°, ya que cada punto equivale a 2°). Usando la aproximación distancia×tan(ángulo), ¿a cuántas millas náuticas aproximadamente está desviada la aeronave del curso?",
       options: ["1.4 NM", "2.0 NM", "2.8 NM", "5.6 NM"],
       correct: 2,
       explain: "Error ≈ 40 × tan(4°) = 40 × 0,0699 ≈ 2,8 NM."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "El QDR de una estación es 275°. ¿Cuál es su QDM (el recíproco)?",
       options: ["085°", "095°", "275°", "355°"],
       correct: 1,
       explain: "QDM y QDR son siempre recíprocos, separados por 180°: 275+180=455, que módulo 360 es 095°."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Si el QDM hacia una estación es 030°, ¿en qué radial (QDR) se encuentra la aeronave?",
       options: ["030°", "120°", "300°", "210°"],
       correct: 3,
       explain: "El radial (QDR) es el recíproco del QDM: 030+180=210°."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Según la normativa, dos estaciones VOR de Ruta que comparten la misma frecuencia deben estar separadas al menos:",
       options: ["500 NM", "300 NM", "150 NM", "90 NM"],
       correct: 0,
       explain: "La separación mínima entre estaciones VOR que comparten frecuencia es de 500 NM, para evitar interferencias entre señales."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Un avión vuela directo hacia una estación DME. Hace 6 minutos el DME indicaba 45 NM; ahora indica 27 NM. ¿Cuál es su velocidad de tierra (GS) aproximada?",
       options: ["120 kt", "150 kt", "270 kt", "180 kt"],
       correct: 3,
       explain: "Distancia recorrida: 45−27=18 NM en 6 minutos (0,1 h). GS = 18 ÷ 0,1 = 180 kt."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Con una GS de 240 kt y el DME marcando 60 NM directos a la estación (la ruta pasa exactamente sobre ella), ¿en cuántos minutos la sobrevolará?",
       options: ["10 min", "20 min", "15 min", "12 min"],
       correct: 2,
       explain: "Tiempo = distancia/velocidad = 60/240 h = 0,25 h = 15 minutos."
     },
     {
+      tema: 'navegacion-radioayudas',
       q: "Un DME tiene un alcance nominal de 200 NM. Volando a FL350, con línea de vista disponible mucho más allá de esa distancia, ¿por qué el equipo puede seguir sin recibir la señal más allá de las 200 NM?",
       options: ["El DME nunca supera 100 NM en la práctica", "El alcance nominal es un límite de diseño/potencia del equipo, independiente de la línea de vista", "A FL350 el DME deja de transmitir por completo", "El alcance del DME depende exclusivamente del tipo de aeronave"],
       correct: 1,
       explain: "El alcance nominal (200 NM) es una limitación de la potencia y diseño del equipo transmisor/receptor, no solo de la línea de vista geométrica que da la altitud."
     },
     {
+      tema: 'navegacion-velocidad',
       q: "Un avión recorre 90 NM en 24 minutos con velocidad constante. ¿Cuál es su GS?",
       options: ["225 kt", "216 kt", "200 kt", "180 kt"],
       correct: 0,
       explain: "GS = 90 NM ÷ (24/60 h) = 90 ÷ 0,4 = 225 kt."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Pista 09 (090°). Viento reportado 120°/20 KT. Usando sen(30°)=0,5, ¿cuál es la componente cruzada aproximada?",
       options: ["14 kt", "17 kt", "10 kt", "20 kt"],
       correct: 2,
       explain: "Ángulo relativo = 120−90 = 30°. Componente cruzada = 20 × sen(30°) = 20 × 0,5 = 10 kt."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Pista 27 (270°). Viento 300°/30 KT. Usando cos(30°)≈0,87, ¿cuál es la componente frontal (de frente) aproximada?",
       options: ["15 kt", "26 kt", "20 kt", "30 kt"],
       correct: 1,
       explain: "Ángulo relativo = 300−270 = 30°. Componente frontal = 30 × cos(30°) = 30 × 0,866 ≈ 26 kt."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Pista 18 (180°). Viento 230°/25 KT. ¿Cuál es el ángulo relativo viento-pista y qué componente predomina?",
       options: ["50°, predomina la componente frontal", "130°, predomina la componente de cola", "50°, ambas son iguales", "50°, predomina la componente cruzada"],
       correct: 3,
       explain: "Ángulo = 230−180 = 50°. Como sen(50°)>cos(50°), la componente cruzada (≈19 kt) es mayor que la frontal (≈16 kt): predomina la cruzada."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Pista 05 (050°). Viento del 230° (viento de cola directo, recíproco exacto de la pista) a 12 KT. ¿Qué componente resulta y de qué magnitud?",
       options: ["12 kt de cola", "12 kt de frente", "6 kt cruzados", "0 kt, viento en calma"],
       correct: 0,
       explain: "230° es el recíproco exacto de 050° (diferencia de 180°): todo el viento es longitudinal, y al venir desde atrás de la pista, es viento de cola puro de 12 kt."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Convierte 138 NM a millas terrestres (SM), usando el factor NM→SM ×1,15.",
       options: ["138 SM", "159 SM", "120 SM", "175 SM"],
       correct: 1,
       explain: "138 × 1,15 = 158,7 ≈ 159 SM."
     },
     {
+      tema: 'navegacion-viento-unidades',
       q: "Convierte 92 SM a millas náuticas (NM), usando el factor SM→NM ×0,87.",
       options: ["92 NM", "106 NM", "80 NM", "71 NM"],
       correct: 2,
       explain: "92 × 0,87 = 80,04 ≈ 80 NM."
     },
     {
+      tema: 'navegacion-velocidad',
       q: "Un avión vuela a Mach 0,82 a FL390 (39.000 ft). Usando la regla del módulo (velocidad del sonido ≈660−2,3×altitud/1.000 kt), ¿cuál es su TAS aproximada?",
       options: ["541 kt", "495 kt", "570 kt", "468 kt"],
       correct: 3,
       explain: "Velocidad del sonido a FL390: 660−2,3×39=660−89,7=570,3 kt. TAS=0,82×570,3≈468 kt."
     },
     {
+      tema: 'navegacion-velocidad',
       q: "Una aeronave vuela con TAS de 456 kt a FL310 (31.000 ft). Calcula su número Mach (velocidad del sonido ≈660−2,3×altitud/1.000).",
       options: ["0.70", "0.77", "0.82", "0.90"],
       correct: 1,
@@ -497,6 +523,8 @@
 
   // ---------- ESTADO ----------
   let answered = new Array(questions.length).fill(false);
+  // Acierto por pregunta, para poder decirle al panel QUE se falló.
+  let aciertos = new Array(questions.length).fill(null);
   let correctAnswers = 0;
   let totalAnswered = 0;
 
@@ -552,6 +580,7 @@
     const isCorrect = optIdx === q.correct;
 
     answered[qIdx] = true;
+    aciertos[qIdx] = isCorrect;
     totalAnswered++;
     if(isCorrect) correctAnswers++;
 
@@ -595,7 +624,7 @@
         };
         finishMsg.textContent = 'Guardando tu resultado…';
         finishNote.classList.add('show');
-        guardarIntento('navegacion-quiz-radioayudas-viento', 'Navegación · Quiz II — Radioayudas y Viento', correctAnswers, total).then(res => {
+        guardarIntento('navegacion-quiz-radioayudas-viento', 'Navegación · Quiz II — Radioayudas y Viento', correctAnswers, total, typeof construirDetalleIntento === 'function' ? construirDetalleIntento('navegacion-quiz-radioayudas-viento', questions.map((q, i) => ({ ok: aciertos[i], pregunta: q }))) : null).then(res => {
           finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
         });
       } else {
@@ -611,6 +640,7 @@
 
   function resetQuiz(){
     answered = new Array(questions.length).fill(false);
+    aciertos = new Array(questions.length).fill(null);
     correctAnswers = 0;
     totalAnswered = 0;
     intentoGuardado = false;

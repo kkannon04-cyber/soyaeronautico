@@ -569,9 +569,47 @@
 
     a[href]::after{ content:none !important; }
   }
+    /* ---------- Errores frecuentes ---------- */
+    .errores-panel { border:1px solid var(--hairline); border-radius:12px; margin:0 0 18px; background:var(--panel); overflow:hidden; }
+    .errores-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
+      background:none; border:0; padding:13px 16px; cursor:pointer; color:var(--text);
+      font-family:'Archivo',sans-serif; font-weight:700; font-size:0.95rem; text-align:left; }
+    .errores-toggle:hover { color:var(--accent); }
+    .errores-chevron { transition:transform .2s; font-size:0.8rem; }
+    .errores-toggle[aria-expanded="true"] .errores-chevron { transform:rotate(180deg); }
+    .errores-body { padding:0 16px 16px; }
+    .errores-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .errores-tab { background:none; border:1px solid var(--hairline); border-radius:20px; padding:6px 14px;
+      font-size:0.8rem; font-weight:600; color:var(--text-muted); cursor:pointer; }
+    .errores-tab.active { border-color:var(--accent); color:var(--accent); background:rgba(var(--accent-rgb),0.08); }
+    .err-grupo { margin-bottom:16px; }
+    .err-grupo h4 { font-size:0.85rem; margin:0 0 8px; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
+    .err-item { border-top:1px solid var(--hairline); padding:11px 0; display:flex; gap:12px;
+      align-items:flex-start; justify-content:space-between; flex-wrap:wrap; }
+    .err-item p { margin:0; font-size:0.86rem; line-height:1.5; flex:1 1 320px; }
+    .err-practicar { background:none; border:1px solid var(--hairline); border-radius:8px; padding:6px 12px;
+      font-size:0.76rem; font-weight:600; color:var(--accent); cursor:pointer; white-space:nowrap; }
+    .err-practicar:hover { border-color:var(--accent); background:rgba(var(--accent-rgb),0.08); }
+    .err-barra { height:6px; border-radius:4px; background:var(--hairline); overflow:hidden; margin-top:6px; max-width:280px; }
+    .err-barra span { display:block; height:100%; background:var(--danger); border-radius:4px; }
+    .err-vacio { font-size:0.86rem; color:var(--text-muted); margin:0; }
+    /* ---------- Importar un FPL ---------- */
+    .importar-panel { border:1px solid var(--hairline); border-radius:12px; background:var(--panel);
+      padding:16px; margin:0 0 18px; }
+    .importar-panel h3 { font-size:1rem; margin:0 0 6px; }
+    .importar-panel textarea { width:100%; margin-top:10px; padding:11px 13px; border-radius:10px;
+      border:1px solid var(--hairline); background:var(--bg); color:var(--text);
+      font-family:'IBM Plex Mono',monospace; font-size:0.85rem; resize:vertical; }
+    .importar-acciones { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .importar-no-entendido { margin-top:12px; border-left:3px solid var(--danger);
+      background:rgba(214,69,69,0.08); border-radius:8px; padding:11px 14px; font-size:0.85rem; }
+    .importar-no-entendido ul { margin:6px 0 0; padding-left:20px; }
+    .importar-ok { margin-top:12px; border-left:3px solid var(--vfr);
+      background:rgba(46,158,109,0.10); border-radius:8px; padding:11px 14px; font-size:0.85rem; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script src="progreso.js"></script>
 </head>
 <body>
@@ -707,6 +745,22 @@
   </div>
   <p class="mode-desc" id="modeDesc"></p>
 
+  <!-- ================= ERRORES FRECUENTES ================= -->
+  <div class="errores-panel" id="erroresPanel">
+    <button class="errores-toggle" id="erroresToggle" type="button" aria-expanded="false">
+      <span>Errores frecuentes</span>
+      <span class="errores-chevron" aria-hidden="true">&#9662;</span>
+    </button>
+    <div class="errores-body" id="erroresBody" hidden>
+      <div class="errores-tabs">
+        <button class="errores-tab active" data-vista="catalogo" type="button">Cat&aacute;logo de errores</button>
+        <button class="errores-tab" data-vista="mias" type="button">Mis casillas flojas</button>
+      </div>
+      <div id="erroresCatalogo"></div>
+      <div id="erroresMias" style="display:none;"></div>
+    </div>
+  </div>
+
   <!-- ================= CONTROLES ================= -->
   <div class="controls">
     <div class="control-group">
@@ -724,6 +778,7 @@
       <div class="glabel">&nbsp;</div>
       <div class="action-row">
         <button class="btn btn-outline" id="btnAyuda" type="button">Mostrar ayuda</button>
+        <button class="btn btn-outline" id="btnImportar" type="button">Importar un FPL</button>
         <button class="btn btn-primary" id="btnNuevo" type="button">Nueva situación</button>
       </div>
     </div>
@@ -734,6 +789,18 @@
     <span class="ronda" id="examRonda">Plan 1 de 5</span>
     <span style="font-size:0.85rem; color:var(--text-muted);">Sin retroalimentación hasta terminar</span>
     <span class="crono" id="examCrono">00:00</span>
+  </div>
+
+  <!-- ================= IMPORTAR UN FPL ================= -->
+  <div class="importar-panel" id="importarPanel" style="display:none;">
+    <h3>Pegar un mensaje de plan de vuelo</h3>
+    <p class="bhint">Pega aqu&iacute; un FPL completo, tal cual sale del telex. Se rellenan las casillas que se reconozcan y se deja intacto lo dem&aacute;s; lo que no se entienda aparece listado abajo, nunca se descarta en silencio.</p>
+    <textarea id="importarTexto" rows="6" placeholder="(FPL-AVA123-IS&#10;-A320/M-SDE2E3FGHIRWY/LB1D1&#10;-SKBO1430&#10;-N0450F350 DCT UPN DCT&#10;-SKCL0115 SKPE&#10;-PBN/A1B1 DOF/260315 REG/HK1234)"></textarea>
+    <div class="importar-acciones">
+      <button class="btn btn-primary" id="btnImportarAplicar" type="button">Rellenar el formulario</button>
+      <button class="btn btn-outline" id="btnImportarCerrar" type="button">Cancelar</button>
+    </div>
+    <div id="importarAviso"></div>
   </div>
 
   <!-- ================= MENSAJE A DECODIFICAR ================= -->
@@ -2525,6 +2592,7 @@ btnAyuda.addEventListener('click', () => {
     salidaMensajes.style.display = m === 'error' ? 'none' : 'block';
     btnValidar.textContent = m === 'error' ? 'Calificar marcas' : 'Validar plan de vuelo';
     btnNuevo.textContent = m === 'examen' ? 'Empezar examen' : 'Nueva situación';
+    refrescarBotonImportar();
     nuevaSituacion();
   }
 
@@ -2637,7 +2705,123 @@ btnAyuda.addEventListener('click', () => {
     splUsuarioTexto.textContent = '—';
     if(tambienResultados) limpiarResultados();
   }
-  btnLimpiar.addEventListener('click', () => limpiarFormulario(true));
+  btnLimpiar.addEventListener('click', () => { limpiarFormulario(true); borrarBorrador(); });
+
+  // ==========================================================================
+  // BORRADOR AUTOMÁTICO
+  // ==========================================================================
+  // Antes, recargar la página perdía el formulario entero. Se guarda en
+  // localStorage con el mismo patrón que ya usa tomar-actividad.html.
+  //
+  // Qué modos SÍ se persisten y por qué el resto no:
+  //   diligenciar / decodificar → caso principal, formularios largos.
+  //   ?actividad= (resolver)    → donde más duele perderlo; el formulario sólo
+  //                               contiene respuestas del alumno.
+  //   ?crear= (profesor)        → NO: ahí el formulario ES LA CLAVE. Guardarla
+  //                               la dejaría en el disco de un PC compartido.
+  //   ?resultado= (revisar)     → NO: es sólo lectura, guardar contaminaría la
+  //                               entrega ya calificada.
+  //   examen / error            → NO: la situación se regenera por ronda y un
+  //                               borrador rehidratado descuadraría la partida.
+  const BORRADOR_HORAS = 24;
+
+  // Se decide una sola vez, leyendo la URL directamente: es lo que impide que
+  // un modo contamine a otro.
+  const _urlBorrador = new URLSearchParams(location.search);
+  const _esCrear   = !!_urlBorrador.get('crear');
+  const _esRevisar = !!_urlBorrador.get('resultado');
+  const _actParaBorrador = _urlBorrador.get('actividad');
+
+  // Se resuelve al arrancar; hasta entonces el borrador es de "invitado",
+  // igual que hace tomar-actividad.html con su propia clave.
+  let _uidBorrador = 'invitado';
+
+  function claveBorrador(){
+    if(_esCrear || _esRevisar) return null;
+    const uid = _uidBorrador;
+    if(_actParaBorrador) return `aisFplBorrador_act_${_actParaBorrador}_${uid}`;
+    if(modo === 'examen' || modo === 'error') return null;
+    return `aisFplBorrador_${modo}_${uid}`;
+  }
+
+  function guardarBorrador(){
+    const clave = claveBorrador();
+    if(!clave) return;
+    try {
+      localStorage.setItem(clave, JSON.stringify({
+        v: 1,
+        modo: modo,
+        // La situación se sortea al azar: sin ella el formulario restaurado no
+        // se podría validar contra nada.
+        situacion: currentSituation,
+        valores: leerForm(),
+        ts: Date.now()
+      }));
+    } catch(e){
+      // Cuota llena o almacenamiento bloqueado: el simulador sigue funcionando.
+      console.warn('No se pudo guardar el borrador del plan:', e);
+    }
+  }
+
+  function leerBorrador(){
+    const clave = claveBorrador();
+    if(!clave) return null;
+    try {
+      const crudo = localStorage.getItem(clave);
+      if(!crudo) return null;
+      const b = JSON.parse(crudo);
+      if(!b || b.v !== 1 || !b.valores) return null;
+      if(Date.now() - (b.ts || 0) > BORRADOR_HORAS * 3600 * 1000){ borrarBorrador(); return null; }
+      return b;
+    } catch(e){ return null; }
+  }
+
+  function borrarBorrador(){
+    const clave = claveBorrador();
+    if(!clave) return;
+    try { localStorage.removeItem(clave); } catch(e){}
+  }
+
+  let _tmrBorrador = null;
+  fplForm.addEventListener('input', () => {
+    clearTimeout(_tmrBorrador);
+    _tmrBorrador = setTimeout(guardarBorrador, 800);
+  });
+  document.addEventListener('visibilitychange', () => { if(document.hidden) guardarBorrador(); });
+
+  // Nunca se restaura en silencio: el usuario decide.
+  function ofrecerBorrador(){
+    const b = leerBorrador();
+    if(!b) return false;
+
+    const cuando = new Date(b.ts).toLocaleString('es-CO', {
+      day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
+    });
+
+    const aviso = document.createElement('div');
+    aviso.className = 'fb-block';
+    aviso.style.marginBottom = '14px';
+    aviso.innerHTML = `
+      <div class="fb-head"><span class="fb-icon">💾</span><span>Tienes un borrador sin terminar (${cuando})</span></div>
+      <div class="fb-body">
+        <p style="margin-bottom:10px;">Recuperamos lo que habías escrito en este formulario. ¿Quieres seguir donde quedaste?</p>
+        <button type="button" class="btn btn-primary" id="btnRestaurarBorrador">Restaurar el borrador</button>
+        <button type="button" class="btn btn-outline" id="btnDescartarBorrador">Empezar de cero</button>
+      </div>`;
+    fplForm.parentNode.insertBefore(aviso, fplForm);
+
+    aviso.querySelector('#btnRestaurarBorrador').addEventListener('click', () => {
+      if(b.situacion){ renderSituacion(b.situacion); }
+      escribirForm(b.valores);
+      aviso.remove();
+    });
+    aviso.querySelector('#btnDescartarBorrador').addEventListener('click', () => {
+      borrarBorrador();
+      aviso.remove();
+    });
+    return true;
+  }
+
 
   // ---------- Mensajes ATS ----------
   // El FPL transporta únicamente las casillas 3 a 18 (AIP ENR 1.10-2 y Doc 4444,
@@ -2658,6 +2842,192 @@ btnAyuda.addEventListener('click', () => {
       `-${v.f18||'0'})`
     ].join('\n');
   }
+
+  // ==========================================================================
+  // IMPORTAR UN FPL CRUDO
+  // ==========================================================================
+  // El parser es el inverso exacto de msgFPL(), lo que da una prueba trivial:
+  // parseFPL(msgFPL(v)) debe devolver v para cualquier situación generada.
+  //
+  // Nunca lanza: devuelve lo que entendió y una lista de lo que no, para que
+  // nada se descarte en silencio.
+  function parseFPL(texto){
+    const noEntendido = [];
+    const valores = {};
+    const crudo = String(texto || '').trim();
+
+    if(!crudo) return { ok:false, valores, noEntendido:[{campo:'(todo)', texto:'', motivo:'No pegaste ningún mensaje.'}] };
+
+    // Se quitan los paréntesis exteriores y se une el mensaje en una sola línea.
+    let cuerpo = crudo.replace(/^\s*\(/, '').replace(/\)\s*$/, '');
+    cuerpo = cuerpo.replace(/[\r\n]+/g, ' ').trim();
+
+    // Los campos van separados por guiones a nivel superior. Se parte por
+    // guiones que estén precedidos de espacio o al principio, para no romper
+    // valores que contengan guiones dentro.
+    const partes = cuerpo.split(/\s*-\s*/).map(p => p.trim()).filter(Boolean);
+    if(partes.length < 2){
+      return { ok:false, valores, noEntendido:[{campo:'(formato)', texto:crudo.slice(0,60),
+        motivo:'No parece un FPL: los campos van separados por guiones, como (FPL-AVA123-IS-…).'}] };
+    }
+
+    // --- Campo 3: tipo de mensaje + identificación
+    const tipos = ['FPL','CHG','CNL','DLA','DEP','ARR','CPL','EST','SPL'];
+    let i = 0;
+    if(tipos.indexOf(partes[0].toUpperCase()) !== -1){
+      valores.f3 = partes[0].toUpperCase();
+      i = 1;
+    } else {
+      valores.f3 = 'FPL';
+      noEntendido.push({campo:'Casilla 3', texto:partes[0],
+        motivo:'No se reconoció el tipo de mensaje; se asumió FPL.'});
+      i = 1;
+    }
+
+    // --- Casilla 7
+    if(partes[i]){
+      const id = partes[i].toUpperCase();
+      if(/^[A-Z0-9]{1,7}$/.test(id)) valores.f7 = id;
+      else noEntendido.push({campo:'Casilla 7', texto:partes[i], motivo:'La identificación son de 1 a 7 caracteres alfanuméricos.'});
+      i++;
+    }
+
+    // --- Casilla 8: reglas + tipo de vuelo
+    if(partes[i]){
+      const m = /^([IVYZ])([SNGMX])$/.exec(partes[i].toUpperCase());
+      if(m){ valores.f8r = m[1]; valores.f8t = m[2]; }
+      else noEntendido.push({campo:'Casilla 8', texto:partes[i], motivo:'Se esperaban dos letras: reglas de vuelo (I V Y Z) y tipo de vuelo (S N G M X).'});
+      i++;
+    }
+
+    // --- Casilla 9: [n]TIPO/ESTELA
+    if(partes[i]){
+      const m = /^(\d{1,2})?([A-Z0-9]{2,4})\/([HML])$/.exec(partes[i].toUpperCase());
+      if(m){
+        valores.f9n = m[1] || '';
+        valores.f9t = m[2];
+        valores.f9e = m[3];
+      } else noEntendido.push({campo:'Casilla 9', texto:partes[i], motivo:'Se esperaba el formato [número]TIPO/ESTELA, por ejemplo 2C130/M.'});
+      i++;
+    }
+
+    // --- Casilla 10: equipo/vigilancia
+    if(partes[i]){
+      const m = /^([A-Z0-9]+)\/([A-Z0-9]+)$/.exec(partes[i].toUpperCase());
+      if(m){ valores.f10a = m[1]; valores.f10b = m[2]; }
+      else noEntendido.push({campo:'Casilla 10', texto:partes[i], motivo:'Se esperaban los dos grupos separados por barra, por ejemplo SDE2E3FGHIRWY/LB1D1.'});
+      i++;
+    }
+
+    // --- Casilla 13: salida + hora
+    if(partes[i]){
+      const m = /^([A-Z]{4})(\d{4})$/.exec(partes[i].toUpperCase());
+      if(m){ valores.f13a = m[1]; valores.f13h = m[2]; }
+      else noEntendido.push({campo:'Casilla 13', texto:partes[i], motivo:'Se esperaban 4 letras del aeródromo seguidas de 4 cifras de hora, sin espacio.'});
+      i++;
+    }
+
+    // --- Casilla 15: velocidad + nivel + ruta
+    if(partes[i]){
+      const t = partes[i].toUpperCase();
+      const m = /^(N\d{4}|K\d{4}|M\d{3})(F\d{3}|S\d{4}|A\d{3}|M\d{4}|VFR)\s*(.*)$/.exec(t);
+      if(m){
+        valores.f15v = m[1];
+        valores.f15n = m[2];
+        valores.f15r = (m[3] || '').trim() || 'DCT';
+      } else noEntendido.push({campo:'Casilla 15', texto:partes[i], motivo:'Se esperaba velocidad y nivel pegados y luego la ruta, por ejemplo N0450F350 DCT UPN.'});
+      i++;
+    }
+
+    // --- Casilla 16: destino + EET + alternos
+    if(partes[i]){
+      const trozos = partes[i].toUpperCase().split(/\s+/).filter(Boolean);
+      const m = /^([A-Z]{4})(\d{4})$/.exec(trozos[0] || '');
+      if(m){
+        valores.f16d = m[1];
+        valores.f16e = m[2];
+        if(trozos[1]) valores.f16a1 = trozos[1];
+        if(trozos[2]) valores.f16a2 = trozos[2];
+      } else noEntendido.push({campo:'Casilla 16', texto:partes[i], motivo:'Se esperaba el destino y el EET pegados, por ejemplo SKCL0115, y después los alternos.'});
+      i++;
+    }
+
+    // --- Casilla 18: todo lo que quede
+    if(partes[i] !== undefined){
+      valores.f18 = partes.slice(i).join(' ').toUpperCase().trim() || '0';
+    }
+
+    return { ok: Object.keys(valores).length > 1, valores, noEntendido };
+  }
+
+  // ---------- Interfaz ----------
+  // Sólo se habilita donde importar no es hacer trampa: en "decodificar" la
+  // tarea ES traducir el telex al formulario, y en examen/error/resolver/
+  // revisar tampoco tiene sentido.
+  function puedeImportar(){
+    return (modo === 'diligenciar' && !modoActividadEsAlumno()) || modoActividad === 'crear';
+  }
+  function modoActividadEsAlumno(){
+    return modoActividad === 'resolver' || modoActividad === 'revisar';
+  }
+
+  function refrescarBotonImportar(){
+    const b = $('btnImportar');
+    if(!b) return;
+    b.style.display = puedeImportar() ? '' : 'none';
+    if(!puedeImportar()) $('importarPanel').style.display = 'none';
+  }
+
+  $('btnImportar').addEventListener('click', () => {
+    const p = $('importarPanel');
+    p.style.display = p.style.display === 'none' ? '' : 'none';
+    if(p.style.display !== 'none') $('importarTexto').focus();
+  });
+  $('btnImportarCerrar').addEventListener('click', () => {
+    $('importarPanel').style.display = 'none';
+    $('importarAviso').innerHTML = '';
+  });
+
+  $('btnImportarAplicar').addEventListener('click', () => {
+    const aviso = $('importarAviso');
+    const r = parseFPL($('importarTexto').value);
+
+    if(!r.ok){
+      aviso.innerHTML = `<div class="importar-no-entendido"><b>No se pudo interpretar el mensaje.</b><ul>${
+        r.noEntendido.map(n => `<li>${esc(n.campo)}: ${esc(n.motivo)}</li>`).join('')}</ul></div>`;
+      return;
+    }
+
+    // Si ya hay algo escrito, el usuario decide qué hacer con ello.
+    const actuales = leerForm();
+    const hayDatos = TEXTOS.some(k => (actuales[k] || '').trim() !== '');
+    let mezcla = r.valores;
+
+    if(hayDatos){
+      const reemplazar = confirm(
+        'El formulario ya tiene datos.\n\n' +
+        'Aceptar = reemplazar todo con lo importado.\n' +
+        'Cancelar = rellenar sólo las casillas vacías.'
+      );
+      if(!reemplazar){
+        mezcla = Object.assign({}, r.valores);
+        Object.keys(mezcla).forEach(k => {
+          if((actuales[k] || '').trim() !== '') mezcla[k] = actuales[k];
+        });
+      }
+    }
+
+    escribirForm(Object.assign({}, actuales, mezcla));
+
+    const reconocidas = Object.keys(r.valores).length;
+    aviso.innerHTML =
+      `<div class="importar-ok">Se rellenaron <b>${reconocidas}</b> campos a partir del mensaje.</div>` +
+      (r.noEntendido.length
+        ? `<div class="importar-no-entendido"><b>No se interpretó:</b><ul>${
+            r.noEntendido.map(n => `<li><b>${esc(n.campo)}</b> — <span class="mono">${esc(n.texto)}</span>: ${esc(n.motivo)}</li>`).join('')
+          }</ul></div>`
+        : '');
+  });
 
   function msgSPL(v){
     const partes = [`E/${v.e19||'0000'}`, `P/${v.p19||'TBN'}`];
@@ -2698,6 +3068,121 @@ btnAyuda.addEventListener('click', () => {
     const A=[...new Set(a||[])].sort().join(','), B=[...new Set(b||[])].sort().join(',');
     return A===B;
   }
+  // ---------- Coherencia velocidad / nivel / tipo de aeronave ----------
+  // AVISO IMPORTANTE: esto NO es una regla OACI. Ningún documento prohíbe
+  // declarar N0480 en un C172; el formato sería válido. Es una comprobacion
+  // de PLAUSIBILIDAD pensada para que el alumno note cuando ha copiado mal la
+  // velocidad o el nivel de la narrativa. Los rangos son aproximados y salen
+  // de las dos únicas propiedades que el catálogo AERONAVES ya tiene
+  // (`gen` = aviación general y `estela` = categoría de estela turbulenta),
+  // no de datos de performance por modelo, que el simulador no maneja.
+  // Por eso el mensaje se muestra siempre etiquetado como coherencia.
+  const PERFIL_AERONAVE = {
+    // categoría -> { vMin, vMax (TAS en nudos), nivelMax (centenas de pies), mach }
+    ligera:  { vMin: 60,  vMax: 300, nivelMax: 310, mach: false, etiqueta: 'una aeronave ligera de aviación general' },
+    media:   { vMin: 150, vMax: 520, nivelMax: 430, mach: true,  etiqueta: 'una aeronave de categoría media' },
+    pesada:  { vMin: 200, vMax: 580, nivelMax: 450, mach: true,  etiqueta: 'una aeronave de categoría pesada' }
+  };
+
+  function perfilDeAeronave(tipo){
+    const a = AERONAVES.find(x => x.tipo === norm(tipo));
+    if(!a) return null;                       // tipo no catalogado: no opinamos
+    if(a.gen || a.estela === 'L') return PERFIL_AERONAVE.ligera;
+    if(a.estela === 'H') return PERFIL_AERONAVE.pesada;
+    return PERFIL_AERONAVE.media;
+  }
+
+  // Devuelve un aviso de coherencia, o '' si todo es plausible.
+  function avisoCoherencia15(tipo, vv, nn){
+    const p = perfilDeAeronave(tipo);
+    if(!p) return '';
+    const a = AERONAVES.find(x => x.tipo === norm(tipo));
+    const nombre = a ? a.nombre : norm(tipo);
+
+    const mN = /^N(\d{4})$/.exec(vv);
+    const mK = /^K(\d{4})$/.exec(vv);
+    const mM = /^M(\d{3})$/.exec(vv);
+
+    if(mM && !p.mach){
+      return `Un <b>${nombre}</b> no vuela en régimen de número de Mach: la velocidad de ${p.etiqueta} se declara en nudos con ${mono('N')} + 4 cifras.`;
+    }
+    if(mM){
+      const mach = Number(mM[1]) / 100;
+      if(mach < 0.50 || mach > 0.95){
+        return `${mono('M' + mM[1])} equivale a Mach ${mach.toFixed(2)}, fuera del régimen de crucero habitual de ${p.etiqueta} (aprox. M0.50 a M0.95).`;
+      }
+    }
+    let kt = null;
+    if(mN) kt = Number(mN[1]);
+    else if(mK) kt = Math.round(Number(mK[1]) / 1.852);
+
+    if(kt !== null && (kt < p.vMin || kt > p.vMax)){
+      return `Una velocidad verdadera de <b>${kt} kt</b> no es coherente con un <b>${nombre}</b>: ${p.etiqueta} suele volar entre ${p.vMin} y ${p.vMax} kt.`;
+    }
+
+    const mF = /^F(\d{3})$/.exec(nn);
+    const mA = /^A(\d{3})$/.exec(nn);
+    const centenas = mF ? Number(mF[1]) : (mA ? Number(mA[1]) : null);
+    if(centenas !== null && centenas > p.nivelMax){
+      return `El nivel <b>${nn}</b> supera el techo operativo razonable de un <b>${nombre}</b> (${p.etiqueta} no suele pasar de ${p.nivelMax === 310 ? 'FL310' : 'FL' + p.nivelMax}).`;
+    }
+    return '';
+  }
+
+  // ---------- Formato de los valores de la casilla 18 (Doc 4444 Ap. 2) ----------
+  // Alfabeto SELCAL (ARINC 596): A-S excluyendo I, N y O.
+  const SELCAL_ALFABETO = 'ABCDEFGHJKLMPQRS';
+
+  // Devuelve el primer problema de formato encontrado, o '' si todo va bien.
+  // Solo se comprueban los indicadores cuyo formato el Doc 4444 fija de forma
+  // inequívoca; los de texto libre (RMK/, OPR/, NAV/, COM/...) no se tocan.
+  function problemaFormato18(v18){
+    const m = {};
+    const re = /\b([A-Z]{2,5})\/([^\s]*)/g;
+    let x;
+    while((x = re.exec(v18)) !== null){ if(!(x[1] in m)) m[x[1]] = x[2]; }
+
+    if('DOF' in m && !/^\d{6}$/.test(m.DOF)){
+      return `${mono('DOF/')} lleva la fecha de salida con <b>6 cifras</b> en el orden ${mono('AAMMDD')} (año, mes, día). Se anotó ${mono(m.DOF || '(vacío)')}.`;
+    }
+    if('DOF' in m && /^\d{6}$/.test(m.DOF)){
+      const mes = Number(m.DOF.slice(2,4)), dia = Number(m.DOF.slice(4,6));
+      if(mes < 1 || mes > 12 || dia < 1 || dia > 31){
+        return `${mono('DOF/' + m.DOF)} no es una fecha válida: el mes debe ir de 01 a 12 y el día de 01 a 31, en el orden ${mono('AAMMDD')}.`;
+      }
+    }
+    if('SEL' in m){
+      const sel = m.SEL;
+      const fuera = sel.split('').filter(c => SELCAL_ALFABETO.indexOf(c) === -1);
+      if(sel.length !== 4 || fuera.length){
+        return `${mono('SEL/')} lleva el código SELCAL de <b>4 letras</b> tomadas del alfabeto ${mono(SELCAL_ALFABETO)} (se excluyen I, N y O). Se anotó ${mono(sel || '(vacío)')}.`;
+      }
+      if(new Set(sel.split('')).size !== 4){
+        return `${mono('SEL/' + sel)} repite una letra: en un código SELCAL las cuatro letras son distintas.`;
+      }
+    }
+    if('CODE' in m && !/^[0-9A-F]{6}$/.test(m.CODE)){
+      return `${mono('CODE/')} lleva la dirección de aeronave como <b>6 caracteres hexadecimales</b> (cifras 0-9 y letras A-F). Se anotó ${mono(m.CODE || '(vacío)')}.`;
+    }
+    if('PER' in m && !/^[A-E]$/.test(m.PER)){
+      return `${mono('PER/')} lleva <b>una sola letra</b> de la A a la E, la categoría de performance de la aeronave (Doc 8168). Se anotó ${mono(m.PER || '(vacío)')}.`;
+    }
+    if('EET' in m){
+      // EET/ admite varios pares "designador + 4 cifras" separados por espacio.
+      const mEET = /\bEET\/((?:[A-Z]{2,5}\d{4}\s*)+)/.exec(v18);
+      if(!mEET){
+        return `${mono('EET/')} se compone de uno o varios designadores de punto o límite de FIR seguidos <b>sin espacio</b> de 4 cifras (horas y minutos), por ejemplo ${mono('EET/MHTG0045')}.`;
+      }
+    }
+    return '';
+  }
+
+  // ---------- ZZZZ y AFIL exigen su indicador en la casilla 18 ----------
+  // Doc 4444 Apéndice 2: cuando se usa ZZZZ hay que detallar en la 18 el dato
+  // que sustituye, y cuando la salida es AFIL hay que indicar con DEP/ la
+  // dependencia ATS de la que pueden obtenerse los datos del plan de vuelo.
+  function tiene18(v18, ind){ return new RegExp('\\b' + ind + '\\/').test(v18); }
+
   function igual(a,b){ return norm(a) === norm(b); }
   function mono(t){ return `<span class="mono">${t}</span>`; }
   function letras(lista){ return lista && lista.length ? lista.join(', ') : 'ninguna'; }
@@ -2798,6 +3283,8 @@ btnAyuda.addEventListener('click', () => {
       add('9','Casilla 9 — Número / tipo / estela', false, `La categoría de estela es ${mono('H')} pesada (136 000 kg o más), ${mono('M')} media (menos de 136 000 kg y más de 7 000 kg) o ${mono('L')} ligera (7 000 kg o menos).`);
     } else if(n9 && !/^\d{1,2}$/.test(n9)){
       add('9','Casilla 9 — Número / tipo / estela', false, 'El número de aeronaves son 1 o 2 cifras, y sólo se anota cuando se trata de más de una.');
+    } else if(t9 === 'ZZZZ' && !tiene18(norm(v.f18), 'TYP')){
+      add('9','Casilla 9 — Número / tipo / estela', false, `Se usó ${mono('ZZZZ')} como tipo de aeronave, así que el tipo real debe detallarse en la casilla 18 después de ${mono('TYP/')} (Doc 4444, Apéndice 2).`);
     } else if(!igual(n9, exp.f9n) || !igual(t9, exp.f9t) || !igual(e9, exp.f9e)){
       add('9','Casilla 9 — Número / tipo / estela', false, `Se esperaba ${mono(`${exp.f9n||'(vacío)'} · ${exp.f9t} · /${exp.f9e}`)}.`);
     } else add('9','Casilla 9 — Número / tipo / estela', true, '');
@@ -2854,6 +3341,10 @@ btnAyuda.addEventListener('click', () => {
       add('13','Casilla 13 — Aeródromo de salida y hora', false, 'La hora se inserta siempre con <b>4 cifras UTC</b>.');
     } else if(Number(h13.slice(0,2)) > 23 || Number(h13.slice(2)) > 59){
       add('13','Casilla 13 — Aeródromo de salida y hora', false, `${mono(h13)} no es una hora UTC válida.`);
+    } else if((a13 === 'ZZZZ' || a13 === 'AFIL') && !tiene18(norm(v.f18), 'DEP')){
+      add('13','Casilla 13 — Aeródromo de salida y hora', false, a13 === 'AFIL'
+        ? `Con ${mono('AFIL')} el plan se presenta en vuelo, así que la casilla 18 debe llevar ${mono('DEP/')} con la dependencia ATS de la que pueden obtenerse los datos del plan (Doc 4444, Apéndice 2).`
+        : `Se usó ${mono('ZZZZ')} como aeródromo de salida, así que el lugar real debe detallarse en la casilla 18 después de ${mono('DEP/')} (Doc 4444, Apéndice 2).`);
     } else if(!igual(a13, exp.f13a) || !igual(h13, exp.f13h)){
       add('13','Casilla 13 — Aeródromo de salida y hora', false, `Se esperaba ${mono(exp.f13a + ' · ' + exp.f13h)}.`);
     } else add('13','Casilla 13 — Aeródromo de salida y hora', true, '');
@@ -2871,6 +3362,10 @@ btnAyuda.addEventListener('click', () => {
       add('15','Casilla 15 — Velocidad, nivel y ruta', false, 'En Colombia el <b>primer nivel de vuelo es FL190</b>; por debajo de él la altitud se expresa con A + 3 cifras (AIP ENR 1.10).');
     } else if(!rr){
       add('15','Casilla 15 — Velocidad, nivel y ruta', false, `Falta la descripción de la ruta. Si el aeródromo tiene SID o STAR publicada es obligatorio insertar su designador cifrado; si no la tiene, se usa ${mono('DCT')} al inicio o al final según corresponda.`);
+    } else if((!igual(vv, exp.f15v) || !igual(nn, exp.f15n)) && avisoCoherencia15(v.f9t, vv, nn)){
+      // Solo se evalúa cuando el alumno difiere de la clave: así una respuesta
+      // correcta nunca puede quedar marcada por un umbral aproximado.
+      add('15','Casilla 15 — Velocidad, nivel y ruta', false, `${avisoCoherencia15(v.f9t, vv, nn)} <i>(comprobación de coherencia, no es una regla OACI: el formato en sí sería válido.)</i> Se esperaba ${mono(exp.f15v + ' · ' + exp.f15n)}.`);
     } else if(!igual(vv, exp.f15v) || !igual(nn, exp.f15n) || !igual(rr, exp.f15r)){
       add('15','Casilla 15 — Velocidad, nivel y ruta', false, `Se esperaba ${mono(exp.f15v + ' · ' + exp.f15n + ' · ' + exp.f15r)}.`);
     } else add('15','Casilla 15 — Velocidad, nivel y ruta', true, '');
@@ -2883,6 +3378,13 @@ btnAyuda.addEventListener('click', () => {
       add('16','Casilla 16 — Destino, EET y alternos', false, 'La duración total prevista se anota con <b>4 cifras</b> (horas y minutos), inmediatamente después del destino y sin dejar espacio.');
     } else if((a1 && !/^[A-Z]{4}$/.test(a1)) || (a2 && !/^[A-Z]{4}$/.test(a2))){
       add('16','Casilla 16 — Destino, EET y alternos', false, 'Los aeródromos de alternativa se identifican con indicadores OACI de 4 letras, máximo dos.');
+    } else if(d16 === 'ZZZZ' && !tiene18(norm(v.f18), 'DEST') && !/ALTN\/NIL/.test(norm(v.f18))){
+      // La excepción de alterno hacia EE. UU. que genera el nivel 3 codifica el
+      // caso como ZZZZ + ALTN/NIL, sin DEST/. Se respeta ese modelo existente
+      // para no marcar como error la propia clave del ejercicio.
+      add('16','Casilla 16 — Destino, EET y alternos', false, `Se usó ${mono('ZZZZ')} como destino, así que el aeródromo real debe detallarse en la casilla 18 después de ${mono('DEST/')} (Doc 4444, Apéndice 2).`);
+    } else if((a1 === 'ZZZZ' || a2 === 'ZZZZ') && !tiene18(norm(v.f18), 'ALTN')){
+      add('16','Casilla 16 — Destino, EET y alternos', false, `Se usó ${mono('ZZZZ')} como aeródromo de alternativa, así que debe detallarse en la casilla 18 después de ${mono('ALTN/')} (Doc 4444, Apéndice 2).`);
     } else if(a1 && a1 === d16){
       add('16','Casilla 16 — Destino, EET y alternos', false, 'El aeródromo de alternativa no puede ser el mismo aeródromo de destino.');
     } else if(!igual(d16, exp.f16d) || !igual(e16, exp.f16e) || !igual(a1, exp.f16a1) || !igual(a2, exp.f16a2)){
@@ -2913,6 +3415,8 @@ btnAyuda.addEventListener('click', () => {
       add('18','Casilla 18 — Otros datos', false, `Hay especificaciones PBN que la casilla 10 no soporta: ${pbnSinSensor.map(x => `${mono(x.c)} (${x.desc}) exige ${x.falta.map(f => mono(f)+' — '+MAPA10A[f]).join(' y ')}`).join('; ')}. Una especificación PBN sólo puede declararse si el sensor que la sustenta figura en la casilla 10.`);
     } else if(tok10a.indexOf('Z') !== -1 && !/\b(COM|NAV|DAT)\//.test(v18)){
       add('18','Casilla 18 — Otros datos', false, `La casilla 10 lleva la letra ${mono('Z')} (otro equipo o capacidades), así que ese equipo debe detallarse en la casilla 18 tras ${mono('COM/')}, ${mono('NAV/')} o ${mono('DAT/')}, según sea de comunicaciones, de navegación o de enlace de datos.`);
+    } else if(problemaFormato18(v18)){
+      add('18','Casilla 18 — Otros datos', false, problemaFormato18(v18));
     } else if(desorden){
       add('18','Casilla 18 — Otros datos', false, `Los indicadores están desordenados: ${mono(desorden.antes+'/')} no puede ir antes de ${mono(desorden.despues+'/')}. El orden prescrito es ${mono(ORDEN_18.map(i=>i+'/').join(' '))}.`);
     } else if(!igual(v18, exp.f18)){
@@ -2986,6 +3490,10 @@ btnAyuda.addEventListener('click', () => {
   }
 
   function pintarResultado(blocks, v){
+    // Alimenta la estadistica por casilla desde CUALQUIER modo, no solo desde
+    // el examen: antes este dato se calculaba y se perdia.
+    registrarStatsFpl(blocks);
+
     feedbackList.innerHTML = blocks.map(b => `
       <div class="fb-block ${b.ok?'ok':'bad'}">
         <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
@@ -3209,6 +3717,140 @@ btnAyuda.addEventListener('click', () => {
      expl:'<b>INFO/</b> no existe como indicador de la casilla 18. Sólo se admiten los del Doc 4444, y cualquier dato que no tenga indicador propio va al final tras <b>RMK/</b>.'}
   ];
 
+  // ==========================================================================
+  // BIBLIOTECA DE ERRORES FRECUENTES Y ESTADÍSTICA POR CASILLA
+  // ==========================================================================
+  // Los 21 fallos de FALLOS ya traían su explicación escrita, pero no eran
+  // navegables: sólo aparecían si el azar los inyectaba. Y el resumen del modo
+  // examen se calculaba y se tiraba al cerrar.
+  //
+  // Se les pone un id estable (casilla + ordinal dentro de esa casilla) para
+  // poder referirlos desde la estadística sin depender de su posición global.
+  (function ponerIdsAFallos(){
+    const cuenta = {};
+    FALLOS.forEach(f => {
+      cuenta[f.cas] = (cuenta[f.cas] || 0) + 1;
+      if(!f.id) f.id = 'f' + f.cas + '-' + cuenta[f.cas];
+    });
+  })();
+
+  // Estadística local por casilla. Es el camino del invitado y además permite
+  // alimentarla desde TODOS los modos, no sólo desde el examen.
+  const FPL_STATS_KEY = 'aisFplStats';
+
+  function leerStatsFpl(){
+    try {
+      const b = JSON.parse(localStorage.getItem(FPL_STATS_KEY));
+      if(b && b.v === 1 && b.porCasilla) return b;
+    } catch(e){}
+    return { v:1, porCasilla:{}, actualizado:null };
+  }
+
+  function registrarStatsFpl(blocks){
+    if(!Array.isArray(blocks) || !blocks.length) return;
+    const st = leerStatsFpl();
+    blocks.forEach(b => {
+      if(!b || !b.cas) return;
+      const c = st.porCasilla[b.cas] || { revisiones:0, fallos:0 };
+      c.revisiones++;
+      if(!b.ok) c.fallos++;
+      st.porCasilla[b.cas] = c;
+    });
+    st.actualizado = new Date().toISOString();
+    try { localStorage.setItem(FPL_STATS_KEY, JSON.stringify(st)); } catch(e){}
+  }
+
+  // ---------- Practicar un error concreto ----------
+  // Hasta ahora la inyección era 100 % aleatoria. Poder elegir el fallo
+  // convierte el catálogo en un ejercicio dirigido.
+  let falloForzado = null;
+
+  function practicarFallo(id){
+    const f = FALLOS.find(x => x.id === id);
+    if(!f) return;
+    falloForzado = id;
+    // Cambiar de modo dispara nuevaSituacion(), que ya consulta falloForzado.
+    if(modo !== 'error') setModo('error');
+    else nuevaSituacion();
+    document.getElementById('erroresBody').hidden = true;
+    document.getElementById('erroresToggle').setAttribute('aria-expanded','false');
+    fplForm.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // ---------- Panel ----------
+  function pintarCatalogoErrores(){
+    const cont = document.getElementById('erroresCatalogo');
+    const porCasilla = {};
+    FALLOS.forEach(f => { (porCasilla[f.cas] = porCasilla[f.cas] || []).push(f); });
+
+    cont.innerHTML = Object.keys(porCasilla).sort((a,b) => {
+      const na = parseInt(a,10), nb = parseInt(b,10);
+      return na === nb ? a.localeCompare(b) : na - nb;
+    }).map(cas => `
+      <div class="err-grupo">
+        <h4>Casilla ${cas.replace('19','19 ')}</h4>
+        ${porCasilla[cas].map(f => `
+          <div class="err-item">
+            <p>${f.expl}</p>
+            <button class="err-practicar" type="button" data-practicar="${f.id}">Practicar este error</button>
+          </div>`).join('')}
+      </div>`).join('');
+
+    cont.querySelectorAll('[data-practicar]').forEach(b => {
+      b.addEventListener('click', () => practicarFallo(b.dataset.practicar));
+    });
+  }
+
+  function pintarMisCasillas(){
+    const cont = document.getElementById('erroresMias');
+    const st = leerStatsFpl();
+    const filas = Object.keys(st.porCasilla)
+      .map(cas => {
+        const c = st.porCasilla[cas];
+        return { cas, revisiones:c.revisiones, fallos:c.fallos,
+                 tasa: c.revisiones ? Math.round(c.fallos * 100 / c.revisiones) : 0 };
+      })
+      .filter(f => f.fallos > 0)
+      .sort((a,b) => b.tasa - a.tasa);
+
+    if(filas.length === 0){
+      cont.innerHTML = '<p class="err-vacio">Todavía no hay datos. Valida algunos planes y aquí aparecerán las casillas que más se te resisten.</p>';
+      return;
+    }
+
+    cont.innerHTML = filas.map(f => `
+      <div class="err-item">
+        <p><b>Casilla ${f.cas.replace('19','19 ')}</b> — fallada ${f.fallos} de ${f.revisiones} ${f.revisiones===1?'vez':'veces'} (${f.tasa}%)
+          <span class="err-barra"><span style="width:${f.tasa}%"></span></span>
+        </p>
+        <a class="err-practicar" href="plan-de-vuelo.html">Repasar la teoría</a>
+      </div>`).join('');
+  }
+
+  (function iniciarPanelErrores(){
+    const toggle = document.getElementById('erroresToggle');
+    const body   = document.getElementById('erroresBody');
+    if(!toggle || !body) return;
+
+    toggle.addEventListener('click', () => {
+      const abierto = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', abierto ? 'false' : 'true');
+      body.hidden = abierto;
+      if(!abierto){ pintarCatalogoErrores(); pintarMisCasillas(); }
+    });
+
+    document.querySelectorAll('.errores-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.errores-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const esCatalogo = tab.dataset.vista === 'catalogo';
+        document.getElementById('erroresCatalogo').style.display = esCatalogo ? '' : 'none';
+        document.getElementById('erroresMias').style.display = esCatalogo ? 'none' : '';
+        if(!esCatalogo) pintarMisCasillas();
+      });
+    });
+  })();
+
   function inyectarErrores(sit){
     const valores = JSON.parse(JSON.stringify(sit.values));
     valores.f3 = 'FPL';
@@ -3218,6 +3860,19 @@ btnAyuda.addEventListener('click', () => {
     const elegidos = [];
     const pool = [...disponibles];
     const cuantos = randInt(2,4);
+
+    // Si el alumno pidió practicar un error concreto desde el catálogo, ese va
+    // primero y garantizado; el resto sigue siendo aleatorio.
+    if(falloForzado){
+      const idx = pool.findIndex(f => f.id === falloForzado);
+      if(idx !== -1){
+        const f = pool[idx];
+        pool.splice(idx,1);
+        f.ap(valores);
+        elegidos.push(f);
+      }
+      falloForzado = null;
+    }
     for(let i=0; i<cuantos && pool.length; i++){
       const idx = randInt(0, pool.length-1);
       const f = pool[idx];
@@ -3618,6 +4273,9 @@ btnAyuda.addEventListener('click', () => {
 
     if(!r.ok){ avisar('No se pudo entregar: ' + r.error); return; }
 
+    // Entrega aceptada: el borrador ya no hace falta.
+    borrarBorrador();
+
     const res = r.resultado;
     // La clave llega con la calificación, así que ahora sí se puede explicar
     // casilla por casilla. El puntaje que se muestra es el del servidor.
@@ -3858,7 +4516,18 @@ btnAyuda.addEventListener('click', () => {
   if(grupoCrear)        cargarModuloProfesor(iniciarModoCrear);
   else if(actividadId)  iniciarModoResolver();
   else if(resultadoId)  iniciarModoRevisar();
-  else                  setModo('diligenciar');
+  else {
+    setModo('diligenciar');
+    // Se espera a saber quién es el usuario antes de buscar su borrador, para
+    // no ofrecerle el de "invitado" a alguien con sesión iniciada.
+    (async () => {
+      try {
+        const ses = await obtenerSesionActual();
+        if(ses && ses.user) _uidBorrador = ses.user.id;
+      } catch(e){}
+      ofrecerBorrador();
+    })();
+  }
 
 })();
 </script>

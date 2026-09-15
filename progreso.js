@@ -100,24 +100,71 @@ function obtenerIntentosLocal() {
 // mostrar un mensaje honesto en vez de asumir siempre éxito (ver bug real
 // del 2026-08-29: los 2 quizzes de Navegación mostraban "guardado" mientras
 // el insert fallaba en silencio por un constraint desactualizado).
-async function guardarIntento(modulo, nombreModulo, correctas, total) {
+// El 5º parámetro `detalle` es opcional y retrocompatible: las llamadas que
+// solo pasan 4 argumentos siguen funcionando igual. Cuando viene, guarda qué
+// preguntas se fallaron para que el panel pueda decir QUÉ repasar.
+// Forma esperada: { v:1, preguntas:[{i, ok, tema}] } (usa construirDetalleIntento).
+const AIS_DETALLE_MAX_BYTES = 20000;
+
+// Un detalle demasiado grande nunca debe costar la nota: se descarta el
+// detalle, no el intento.
+function _detalleSeguro(detalle) {
+  if (!detalle) return null;
+  try {
+    const txt = JSON.stringify(detalle);
+    if (txt.length > AIS_DETALLE_MAX_BYTES) {
+      console.warn('Detalle del intento demasiado grande (' + txt.length + ' car.); se guarda el intento sin detalle.');
+      return null;
+    }
+    return detalle;
+  } catch (e) {
+    console.warn('El detalle del intento no es serializable; se guarda sin detalle.', e);
+    return null;
+  }
+}
+
+async function guardarIntento(modulo, nombreModulo, correctas, total, detalle) {
+  // Lista blanca en un solo sitio (modulos.js). Falla ruidosamente aquí en vez
+  // de en silencio contra un constraint de la base, que es el bug que este
+  // proyecto ya sufrió cuatro veces. La guarda de typeof permite que una
+  // página que olvide cargar modulos.js degrade en vez de romperse.
+  if (typeof esModuloValido === 'function' && !esModuloValido(modulo)) {
+    const aviso = 'guardarIntento: el módulo "' + modulo + '" no está en MODULOS_CATALOGO (modulos.js). Añádelo ahí.';
+    console.error(aviso);
+    return { ok: false, error: aviso };
+  }
+
   const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
   const sesion = await obtenerSesionActual();
+  const detalleOk = _detalleSeguro(detalle);
 
   if (sesion) {
     const cliente = obtenerClienteAuth();
-    const { error } = await cliente.from('intentos').insert({
+    const fila = {
       usuario_id: sesion.user.id,
       modulo,
       nombre_modulo: nombreModulo,
       correctas,
       total,
       porcentaje
-    });
+    };
+    if (detalleOk) fila.detalle = detalleOk;
+
+    let { error } = await cliente.from('intentos').insert(fila);
+
+    // Si falló y llevábamos detalle, reintentamos sin él: la nota del
+    // estudiante nunca se pierde por culpa del payload nuevo.
+    if (error && detalleOk) {
+      console.warn('El insert con detalle falló (' + error.message + '); se reintenta sin detalle.');
+      delete fila.detalle;
+      ({ error } = await cliente.from('intentos').insert(fila));
+    }
+
     if (error) {
       console.error('No se pudo guardar el intento en Supabase:', error.message);
       return { ok: false, error: error.message };
     }
+    invalidarCacheIntentos();
     return { ok: true };
   }
 
@@ -129,15 +176,38 @@ async function guardarIntento(modulo, nombreModulo, correctas, total) {
     fecha: new Date().toISOString(),
     correctas,
     total,
-    porcentaje
+    porcentaje,
+    detalle: detalleOk
   });
-  localStorage.setItem(AIS_PROGRESO_KEY, JSON.stringify(intentos));
+  // localStorage puede lanzar QuotaExceededError (y con `detalle` el riesgo
+  // sube). Antes esto tumbaba guardarIntento() entero.
+  try {
+    localStorage.setItem(AIS_PROGRESO_KEY, JSON.stringify(intentos));
+  } catch (e) {
+    console.error('No se pudo guardar el intento en este navegador:', e);
+    return { ok: false, error: 'No hay espacio en el almacenamiento de este navegador.' };
+  }
+  invalidarCacheIntentos();
   return { ok: true };
 }
 
 // ---------- LECTURA DE INTENTOS ----------
-async function obtenerIntentos() {
+// El Panel del Estudiante pedía esta misma tabla 5 veces por carga (panel,
+// racha, logros y historial). Un memo de una carga lo deja en 1 sin cambiar
+// ninguna firma: quien necesite datos frescos pasa { refrescar: true }.
+let _intentosCache = null;
+
+function invalidarCacheIntentos() {
+  _intentosCache = null;
+}
+
+async function obtenerIntentos(opciones) {
+  const refrescar = !!(opciones && opciones.refrescar);
+  if (!refrescar && _intentosCache) return _intentosCache;
+
   const sesion = await obtenerSesionActual();
+  let resultado;
+
   if (sesion) {
     const cliente = obtenerClienteAuth();
     const { data, error } = await cliente
@@ -146,17 +216,22 @@ async function obtenerIntentos() {
       .eq('usuario_id', sesion.user.id)
       .order('fecha', { ascending: false });
     if (error) { console.error('No se pudieron leer los intentos:', error.message); return []; }
-    return data.map(i => ({
+    resultado = data.map(i => ({
       id: i.id,
       modulo: i.modulo,
       nombreModulo: i.nombre_modulo,
       fecha: i.fecha,
       correctas: i.correctas,
       total: i.total,
-      porcentaje: i.porcentaje
+      porcentaje: i.porcentaje,
+      detalle: i.detalle || null
     }));
+  } else {
+    resultado = obtenerIntentosLocal();
   }
-  return obtenerIntentosLocal();
+
+  _intentosCache = resultado;
+  return resultado;
 }
 
 async function obtenerIntentosPorModulo(modulo) {
@@ -313,10 +388,11 @@ async function migrarProgresoLocalSiHaceFalta() {
       correctas: i.correctas,
       total: i.total,
       porcentaje: i.porcentaje,
-      fecha: i.fecha
+      fecha: i.fecha,
+      detalle: i.detalle || null
     }));
     const { error } = await cliente.from('intentos').insert(filas);
-    if (!error) localStorage.removeItem(AIS_PROGRESO_KEY);
+    if (!error) { localStorage.removeItem(AIS_PROGRESO_KEY); invalidarCacheIntentos(); }
     else console.error('No se pudo migrar el progreso local:', error.message);
   }
 
@@ -438,21 +514,23 @@ async function obtenerActividadesAsignadas() {
 
   const { data: resultados } = await cliente
     .from('resultados_actividad')
-    .select('actividad_id, correctas, total, porcentaje, fecha')
+    .select('id, actividad_id, correctas, total, porcentaje, fecha')
     .eq('estudiante_id', sesion.user.id);
 
   const porActividad = {};
   (resultados || []).forEach(r => {
-    const acc = porActividad[r.actividad_id] || { intentos: 0, mejor: 0, ultima: null };
+    const acc = porActividad[r.actividad_id] || { intentos: 0, mejor: 0, ultima: null, ultimoId: null };
     acc.intentos++;
     acc.mejor = Math.max(acc.mejor, r.porcentaje);
-    if (!acc.ultima || r.fecha > acc.ultima) acc.ultima = r.fecha;
+    // Guardamos tambien el id del intento mas reciente para que el estudiante
+    // pueda abrir su propia entrega corregida desde el panel.
+    if (!acc.ultima || r.fecha > acc.ultima) { acc.ultima = r.fecha; acc.ultimoId = r.id; }
     porActividad[r.actividad_id] = acc;
   });
 
   const ahora = new Date();
   return actividades.map(a => {
-    const estado = porActividad[a.id] || { intentos: 0, mejor: 0, ultima: null };
+    const estado = porActividad[a.id] || { intentos: 0, mejor: 0, ultima: null, ultimoId: null };
     const vencida = !!a.fecha_limite && new Date(a.fecha_limite) < ahora;
     const sinIntentos = a.intentos_max !== null && a.intentos_max !== undefined && estado.intentos >= a.intentos_max;
     return {
@@ -465,11 +543,56 @@ async function obtenerActividadesAsignadas() {
       intentos: estado.intentos,
       mejor: estado.mejor,
       ultima: estado.ultima,
+      ultimoResultadoId: estado.ultimoId,
       completada: estado.intentos > 0,
       vencida,
       bloqueada: vencida || sinIntentos
     };
   });
+}
+
+// ---------- CORRECCIONES QUE ME HIZO EL PROFESOR ----------
+// La RLS ya permite al estudiante leer las correcciones de sus propias
+// entregas; lo que faltaba era traerlas al panel. Se usa para avisarle de que
+// su nota cambió o de que tiene un comentario esperando.
+async function obtenerMisCorrecciones() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return [];
+
+  const cliente = obtenerClienteAuth();
+
+  // Primero los ids de mis entregas; sin esto la consulta de correcciones no
+  // tiene por dónde filtrar (la policy la haría vacía de todos modos).
+  const { data: mios, error: e1 } = await cliente
+    .from('resultados_actividad')
+    .select('id, actividad_id')
+    .eq('estudiante_id', sesion.user.id);
+  if (e1 || !mios || mios.length === 0) {
+    if (e1) console.error('No se pudieron leer mis entregas:', e1.message);
+    return [];
+  }
+
+  const porResultado = {};
+  mios.forEach(r => { porResultado[r.id] = r.actividad_id; });
+
+  const { data, error } = await cliente
+    .from('correcciones_resultado')
+    .select('id, resultado_id, motivo, correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues, fecha')
+    .in('resultado_id', mios.map(r => r.id))
+    .order('fecha', { ascending: false });
+
+  if (error) { console.error('No se pudieron leer las correcciones:', error.message); return []; }
+
+  return (data || []).map(c => ({
+    id: c.id,
+    resultadoId: c.resultado_id,
+    actividadId: porResultado[c.resultado_id] || null,
+    motivo: c.motivo,
+    cambioNota: c.correctas_antes !== c.correctas_despues,
+    porcentajeAntes: c.porcentaje_antes,
+    porcentajeDespues: c.porcentaje_despues,
+    fecha: c.fecha
+  }));
 }
 
 // ---------- RESOLVER UNA ACTIVIDAD ----------

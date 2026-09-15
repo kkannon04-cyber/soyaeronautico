@@ -1507,3 +1507,414 @@ $$;
 
 grant execute on function public.obtener_resultado_plan(uuid) to authenticated;
 revoke execute on function public.obtener_resultado_plan(uuid) from public, anon;
+
+
+-- ============================================================================
+-- 2026-09-14 · LOTE DE MEJORAS: catálogo de módulos, detalle de intentos,
+--              corrección de exámenes y revisión del alumno
+-- ============================================================================
+-- Aplicado en producción como cuatro migraciones:
+--   20260915043429  intentos_modulo_formato_y_detalle
+--   20260915044706  corregir_resultado_generalizado
+--   20260915044729  obtener_resultado_examen
+--   20260915044750  obtener_resultado_examen_fix_orden
+-- Aquí se anota el ESTADO FINAL. La tercera quedó superada por la cuarta:
+-- usaba jsonb_to_recordset con un row_number() dentro de un lateral, que
+-- devolvía siempre 1 y por tanto no conservaba el orden de las preguntas.
+
+
+-- ------------------------------------------------------------
+-- 1. La lista blanca de módulos sale del SQL
+-- ------------------------------------------------------------
+-- La lista de ids vivía duplicada en 3 sitios (constante MODULOS de
+-- Panel_estudiante.html, el string que cada quiz pasa a guardarIntento(), y
+-- este CHECK). Ya causó 3 bugs de guardado silencioso (ver notas de
+-- 2026-08-26 y 2026-08-29 más arriba) y un 4º activo: 'simulador-nala' nunca
+-- se añadió y sus intentos se perdían sin aviso.
+--
+-- Solución: el CHECK deja de conocer la lista y valida sólo el FORMATO del
+-- slug. La lista blanca pasa a vivir en un único sitio, modulos.js, donde
+-- guardarIntento() la valida ANTES de la red y falla de forma ruidosa.
+-- Riesgo aceptado: un id con errata entraría en la tabla. La RLS limita a
+-- auth.uid() = usuario_id, así que sólo se ensuciaría el propio panel.
+-- Verificado antes de aplicar: los 5 valores distintos existentes cumplen el regex.
+
+alter table public.intentos drop constraint if exists intentos_modulo_valido;
+alter table public.intentos add constraint intentos_modulo_valido
+  check (modulo ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(modulo) between 3 and 60);
+
+
+-- ------------------------------------------------------------
+-- 2. Detalle de respuestas de los quizzes libres
+-- ------------------------------------------------------------
+-- Hasta ahora `intentos` sólo guardaba agregados, así que era imposible
+-- decirle al estudiante QUÉ falló. Columna jsonb nullable: viaja en el mismo
+-- insert y la misma migración de invitado que el resto de la fila.
+-- Forma: { v:1, preguntas:[ {i, ok, tema} ] }  (o variantes por simulador)
+--
+-- NO se ata la longitud del detalle a `total` a propósito: simulador-metar
+-- llama guardarIntento(..., notaFinal, 100) con 20 reportes, y un CHECK así
+-- lo rompería de inmediato.
+
+alter table public.intentos add column if not exists detalle jsonb;
+alter table public.intentos drop constraint if exists intentos_detalle_objeto;
+alter table public.intentos add constraint intentos_detalle_objeto
+  check (detalle is null or jsonb_typeof(detalle) = 'object');
+
+
+-- ------------------------------------------------------------
+-- 3. Corrección y retroalimentación escrita, también para exámenes
+-- ------------------------------------------------------------
+-- Antes sólo se podía corregir a mano un plan de vuelo, y el único texto
+-- libre que llegaba al alumno era `correcciones_resultado.motivo` de esa
+-- corrección. Un examen no admitía ni comentario ni ajuste de nota.
+--
+-- Se generaliza en una función nueva y `corregir_plan_vuelo` pasa a ser un
+-- envoltorio con la MISMA firma y el MISMO shape de retorno, para no tocar
+-- profesor.js ni simulador-plan-vuelo.html. El historial ya escrito en
+-- `correcciones_resultado` no se altera: misma tabla, mismas columnas.
+--
+-- Diferencia clave: en plan de vuelo las casillas viven en
+-- detalle->'casillas' (objeto); en examen el detalle ES el array de
+-- respuestas. El examen SIGUE guardando un array — si se convirtiera en
+-- objeto se romperían profesor.js:660 y la estadística por pregunta.
+
+create or replace function public.corregir_resultado(
+  p_resultado_id uuid,
+  p_cambios      jsonb   default '[]'::jsonb,
+  p_motivo       text    default null,
+  p_correctas    integer default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_es_plan boolean;
+  v_items jsonb;
+  v_cambio jsonb;
+  v_actual jsonb;
+  v_i integer;
+  v_ok boolean;
+  v_ok_auto boolean;
+  v_etiqueta text;
+  v_registro jsonb := '[]'::jsonb;
+  v_correctas integer;
+  v_porcentaje integer;
+  v_motivo text;
+  v_modo text;
+  v_hay_cambios boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  if v_act.profesor_id is distinct from auth.uid() then
+    raise exception 'Sólo el profesor de la actividad puede corregir esta entrega.';
+  end if;
+  if v_act.tipo not in ('examen', 'texto', 'plan_vuelo') then
+    raise exception 'Ese tipo de actividad no admite corrección.';
+  end if;
+
+  v_motivo      := nullif(trim(coalesce(p_motivo, '')), '');
+  v_es_plan     := (v_act.tipo = 'plan_vuelo');
+  v_hay_cambios := (jsonb_typeof(p_cambios) = 'array' and jsonb_array_length(p_cambios) > 0);
+
+  -- Los tres modos son mutuamente excluyentes.
+  if v_hay_cambios and p_correctas is not null then
+    raise exception 'Indica casillas o una nota global, no las dos cosas a la vez.';
+  elsif v_hay_cambios then
+    v_modo := 'casillas';
+  elsif p_correctas is not null then
+    v_modo := 'nota';
+  else
+    v_modo := 'comentario';
+  end if;
+
+  if v_modo <> 'casillas' and v_motivo is null then
+    raise exception 'Escribe un comentario para el estudiante.';
+  end if;
+  if v_act.tipo = 'texto' and v_modo <> 'comentario' then
+    raise exception 'En una lectura sólo se puede dejar un comentario.';
+  end if;
+
+  -- ---------- MODO COMENTARIO: no toca la nota ni el detalle ----------
+  if v_modo = 'comentario' then
+    insert into public.correcciones_resultado
+      (resultado_id, profesor_id, cambios, motivo,
+       correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+    values
+      (p_resultado_id, auth.uid(), '[]'::jsonb, v_motivo,
+       v_res.correctas, v_res.correctas, v_res.porcentaje, v_res.porcentaje);
+
+    return jsonb_build_object(
+      'correctas',  v_res.correctas,
+      'total',      v_res.total,
+      'porcentaje', v_res.porcentaje,
+      'casillas',   case when v_es_plan then v_res.detalle -> 'casillas' else null end,
+      'cambios',    '[]'::jsonb,
+      'modo',       'comentario'
+    );
+  end if;
+
+  -- ---------- MODO NOTA: ajuste global, no toca el detalle ----------
+  if v_modo = 'nota' then
+    if p_correctas < 0 or p_correctas > v_res.total then
+      raise exception 'La nota debe estar entre 0 y % .', v_res.total;
+    end if;
+    if p_correctas = v_res.correctas then
+      raise exception 'Esa entrega ya tiene esa nota.';
+    end if;
+
+    v_correctas  := p_correctas;
+    v_porcentaje := round(v_correctas * 100.0 / v_res.total);
+    v_registro   := jsonb_build_array(jsonb_build_object(
+      'i', null, 'label', 'Nota global',
+      'antes', v_res.correctas, 'despues', v_correctas
+    ));
+
+    update public.resultados_actividad
+       set correctas = v_correctas, porcentaje = v_porcentaje
+     where id = p_resultado_id;
+
+    insert into public.correcciones_resultado
+      (resultado_id, profesor_id, cambios, motivo,
+       correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+    values
+      (p_resultado_id, auth.uid(), v_registro, v_motivo,
+       v_res.correctas, v_correctas, v_res.porcentaje, v_porcentaje);
+
+    return jsonb_build_object(
+      'correctas',  v_correctas,
+      'total',      v_res.total,
+      'porcentaje', v_porcentaje,
+      'casillas',   case when v_es_plan then v_res.detalle -> 'casillas' else null end,
+      'cambios',    v_registro,
+      'modo',       'nota'
+    );
+  end if;
+
+  -- ---------- MODO CASILLAS ----------
+  -- Plan de vuelo: las casillas cuelgan de detalle->'casillas'.
+  -- Examen: el detalle ES el array de respuestas.
+  if v_es_plan then
+    v_items := coalesce(v_res.detalle -> 'casillas', '[]'::jsonb);
+  else
+    v_items := case when jsonb_typeof(v_res.detalle) = 'array'
+                    then v_res.detalle else '[]'::jsonb end;
+  end if;
+
+  if jsonb_array_length(v_items) = 0 then
+    raise exception 'Esta entrega no tiene detalle, así que no se puede corregir punto por punto.';
+  end if;
+
+  for v_cambio in select * from jsonb_array_elements(p_cambios)
+  loop
+    v_i  := (v_cambio ->> 'i')::integer;
+    v_ok := (v_cambio ->> 'ok')::boolean;
+
+    if v_i is null or v_ok is null or v_i < 0 or v_i >= jsonb_array_length(v_items) then
+      raise exception 'Uno de los puntos indicados no existe en esta entrega.';
+    end if;
+
+    v_actual := v_items -> v_i;
+
+    -- Sólo se registra lo que de verdad cambia de valor.
+    if (v_actual ->> 'ok')::boolean is distinct from v_ok then
+      v_ok_auto := coalesce((v_actual ->> 'ok_auto')::boolean, (v_actual ->> 'ok')::boolean);
+      v_items := jsonb_set(v_items, array[v_i::text, 'ok'], to_jsonb(v_ok));
+      v_items := jsonb_set(v_items, array[v_i::text, 'ok_auto'], to_jsonb(v_ok_auto));
+      -- Deja de estar "corregida" si el profesor la devuelve a su valor automático.
+      v_items := jsonb_set(v_items, array[v_i::text, 'corregida'],
+                           to_jsonb(v_ok is distinct from v_ok_auto));
+
+      -- El plan de vuelo trae 'label'; el examen no, así que se numera.
+      v_etiqueta := coalesce(v_actual ->> 'label', 'Pregunta ' || (v_i + 1)::text);
+
+      v_registro := v_registro || jsonb_build_array(jsonb_build_object(
+        'i', v_i,
+        'label', v_etiqueta,
+        'antes', (v_actual ->> 'ok')::boolean,
+        'despues', v_ok
+      ));
+    end if;
+  end loop;
+
+  if jsonb_array_length(v_registro) = 0 then
+    raise exception 'Los puntos que enviaste ya estaban calificados así.';
+  end if;
+
+  select count(*)::integer into v_correctas
+  from jsonb_array_elements(v_items) c
+  where (c ->> 'ok')::boolean;
+
+  v_porcentaje := round(v_correctas * 100.0 / v_res.total);
+
+  update public.resultados_actividad
+     set correctas  = v_correctas,
+         porcentaje = v_porcentaje,
+         detalle    = case when v_es_plan
+                           then jsonb_set(coalesce(v_res.detalle, '{}'::jsonb), '{casillas}', v_items)
+                           else v_items   -- el examen SIGUE siendo un array
+                      end
+   where id = p_resultado_id;
+
+  insert into public.correcciones_resultado
+    (resultado_id, profesor_id, cambios, motivo,
+     correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+  values
+    (p_resultado_id, auth.uid(), v_registro, v_motivo,
+     v_res.correctas, v_correctas, v_res.porcentaje, v_porcentaje);
+
+  return jsonb_build_object(
+    'correctas',  v_correctas,
+    'total',      v_res.total,
+    'porcentaje', v_porcentaje,
+    'casillas',   case when v_es_plan then v_items else null end,
+    'cambios',    v_registro,
+    'modo',       'casillas'
+  );
+end;
+$$;
+
+-- Envoltorio: misma firma y mismo retorno que antes. Las llamadas actuales
+-- (profesor.js y simulador-plan-vuelo.html) siguen funcionando sin cambios.
+create or replace function public.corregir_plan_vuelo(
+  p_resultado_id uuid,
+  p_cambios jsonb,
+  p_motivo text default null
+)
+returns jsonb
+language sql
+security definer
+set search_path = public
+as $$
+  select public.corregir_resultado(p_resultado_id, p_cambios, p_motivo, null);
+$$;
+
+grant execute on function public.corregir_resultado(uuid, jsonb, text, integer) to authenticated;
+revoke execute on function public.corregir_resultado(uuid, jsonb, text, integer) from public, anon;
+grant execute on function public.corregir_plan_vuelo(uuid, jsonb, text) to authenticated;
+revoke execute on function public.corregir_plan_vuelo(uuid, jsonb, text) from public, anon;
+
+
+-- ------------------------------------------------------------
+-- 4. El estudiante puede revisar su examen entregado
+-- ------------------------------------------------------------
+-- El alumno NO puede leer public.preguntas (policy de más arriba: sólo el
+-- profesor dueño, por diseño, porque ahí está la respuesta correcta), y su
+-- `detalle` sólo guarda uuids. Sin este RPC no hay forma de mostrarle su
+-- propia entrega.
+--
+-- Regla importante: `correcta` sólo se revela si quien mira es el profesor o
+-- si la actividad ya está cerrada (despublicada, vencida o sin intentos
+-- restantes). Es el mismo criterio que ya aplica obtener_resultado_plan() con
+-- la clave; sin él, la revisión sería la chuleta del siguiente intento.
+
+create or replace function public.obtener_resultado_examen(p_resultado_id uuid)
+returns jsonb
+language plpgsql
+security definer
+stable
+set search_path = public
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_es_profesor boolean;
+  v_intentos integer;
+  v_cerrada boolean;
+  v_preguntas jsonb;
+  v_correcciones jsonb;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  v_es_profesor := (v_act.profesor_id = auth.uid());
+
+  if not v_es_profesor and v_res.estudiante_id is distinct from auth.uid() then
+    raise exception 'Esta entrega no es tuya.';
+  end if;
+
+  if v_act.tipo not in ('examen', 'texto') then
+    raise exception 'Esa entrega no es de un examen ni de una lectura.';
+  end if;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = v_res.actividad_id and estudiante_id = v_res.estudiante_id;
+
+  v_cerrada := (not v_act.activa)
+            or (v_act.fecha_limite is not null and now() > v_act.fecha_limite)
+            or (v_act.intentos_max is not null and v_intentos >= v_act.intentos_max);
+
+  -- jsonb_array_elements ... with ordinality conserva la posición; el índice
+  -- resultante es el MISMO que usa corregir_resultado en su campo `i`.
+  select coalesce(jsonb_agg(
+    jsonb_build_object(
+      'i',           e.orden - 1,
+      'pregunta_id', e.item ->> 'pregunta_id',
+      'enunciado',   p.enunciado,
+      'opciones',    to_jsonb(p.opciones),
+      'tema',        p.tema,
+      'elegida',     (e.item ->> 'elegida')::smallint,
+      'ok',          (e.item ->> 'ok')::boolean,
+      'corregida',   coalesce((e.item ->> 'corregida')::boolean, false),
+      'correcta',    case when v_es_profesor or v_cerrada then p.correcta else null end
+    ) order by e.orden
+  ), '[]'::jsonb)
+  into v_preguntas
+  from jsonb_array_elements(
+         case when jsonb_typeof(v_res.detalle) = 'array' then v_res.detalle else '[]'::jsonb end
+       ) with ordinality as e(item, orden)
+  left join public.preguntas p on p.id = (e.item ->> 'pregunta_id')::uuid;
+
+  -- Historial de correcciones del profesor (el alumno ya tiene permiso de
+  -- lectura sobre esta tabla; aquí sólo se le entrega junto al resto).
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'fecha', c.fecha,
+    'motivo', c.motivo,
+    'cambios', c.cambios,
+    'correctas_antes', c.correctas_antes,
+    'correctas_despues', c.correctas_despues,
+    'porcentaje_antes', c.porcentaje_antes,
+    'porcentaje_despues', c.porcentaje_despues
+  ) order by c.fecha), '[]'::jsonb)
+  into v_correcciones
+  from public.correcciones_resultado c
+  where c.resultado_id = p_resultado_id;
+
+  return jsonb_build_object(
+    'id',                p_resultado_id,
+    'tipo',              v_act.tipo,
+    'actividad_titulo',  v_act.titulo,
+    'actividad_cerrada', v_cerrada,
+    'es_profesor',       v_es_profesor,
+    'correctas',         v_res.correctas,
+    'total',             v_res.total,
+    'porcentaje',        v_res.porcentaje,
+    'fecha',             v_res.fecha,
+    'preguntas',         v_preguntas,
+    'correcciones',      v_correcciones
+  );
+end;
+$$;
+
+grant execute on function public.obtener_resultado_examen(uuid) to authenticated;
+revoke execute on function public.obtener_resultado_examen(uuid) from public, anon;
