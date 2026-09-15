@@ -160,8 +160,20 @@ exports.handler = async (event) => {
   const secretoEsperado = process.env.AVISAR_PROFESORES_SECRET;
   const secretoRecibido = (event.headers || {})['x-avisar-secreto']
     || (event.headers || {})['X-Avisar-Secreto'];
+
+  // Se separan los dos fallos a propósito. Decir "no hay secreto en el
+  // servidor" no ayuda a adivinarlo — si no está configurado, el endpoint ya
+  // está cerrado — y en cambio ahorra un diagnóstico a ciegas. Ojo: las
+  // funciones de Netlify leen las variables del snapshot de SU deploy, así que
+  // crear la variable no basta; hay que redesplegar para que la vea.
+  if (!secretoEsperado) {
+    return json(500, {
+      error: 'AVISAR_PROFESORES_SECRET no está configurada en este despliegue.',
+      pista: 'Si acabas de crear la variable en Netlify, vuelve a desplegar el sitio para que la función la vea.'
+    });
+  }
   if (!secretoValido(secretoRecibido, secretoEsperado)) {
-    return json(401, { error: 'Secreto inválido o ausente.' });
+    return json(401, { error: 'El secreto enviado no coincide.' });
   }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
