@@ -429,6 +429,12 @@
                              margin:0 0 8px; letter-spacing:0.01em; }
   .print-head .print-meta{ font-family:'IBM Plex Mono'; font-size:0.68rem; line-height:1.75; }
   .print-head .print-meta b{ font-weight:600; }
+  .print-head .print-corr{ margin-top:10px; padding-top:8px; border-top:1px solid var(--hairline); }
+  .print-head .print-corr > b{ font-family:'Archivo'; font-size:0.78rem; }
+  .print-head .print-corr-item{
+    font-family:'IBM Plex Mono'; font-size:0.62rem; line-height:1.55;
+    margin-top:6px; padding-left:10px; border-left:2px solid var(--hairline);
+  }
 
   @media print{
     @page{ size:A4 portrait; margin:12mm 10mm; }
@@ -508,11 +514,57 @@
       color:#000 !important; page-break-inside:avoid; white-space:pre-wrap;
     }
 
+
+    /* ----------------------------------------------------------------
+       PAGINACIÓN: página 1 el ejercicio y quién lo presenta, página 2 el
+       formato completo. El formato es lo que no puede salir partido, así que
+       arranca en página propia y se comprime para caber entero en una.
+
+       El recorte va en dos pasos: primero se quita relleno muerto (no cambia
+       el tamaño del texto y ya baja de 1713 a 1237 px), y sólo después se
+       aplica un zoom para cerrar el hueco que falta hasta los 1032 px útiles
+       de una A4. Si un navegador no soporta `zoom`, el formato simplemente
+       ocupa dos páginas como antes: se degrada, no se rompe.
+       ---------------------------------------------------------------- */
+
+    /* Fuera del PDF lo que lo alargaría a tres o cuatro páginas. El puntaje ya
+       va en la cabecera, así que repetirlo sólo gasta papel. */
+    #scoreBanner, .feedback-list, #salidaMensajes{ display:none !important; }
+
+    .instrument:has(#fplForm){ break-before:page; page-break-before:always; }
+    #fplForm{ break-inside:avoid; page-break-inside:avoid; zoom:0.75; }
+
+    #fplForm .fpl-box{ padding:3px 8px 4px; }
+    #fplForm .blab{ margin-bottom:3px; font-size:0.55rem; line-height:1.15; }
+    #fplForm .blab em{ font-size:0.53rem; }
+    #fplForm input, #fplForm select, #fplForm textarea{
+      padding:2px 6px; font-size:0.74rem; border-radius:3px;
+    }
+    #fplForm textarea{ line-height:1.35; }
+    #fplForm .tbox{ width:27px; height:22px; font-size:0.7rem; }
+    #fplForm .tlab{ font-size:0.5rem; line-height:1.05; }
+    #fplForm .tlab em{ font-size:0.47rem; }
+    #fplForm .tboxes{ gap:6px; }
+    #fplForm .fpl-head{ padding:6px 12px; }
+    #fplForm .fpl-head-title{ font-size:0.95rem; }
+    #fplForm .fpl-head-title em{ font-size:0.68rem; }
+    #fplForm .fpl-proc, #fplForm .fpl-shaded-note{
+      padding-top:3px; padding-bottom:3px; font-size:0.55rem;
+    }
+    #fplForm .sym{ font-size:0.66rem; padding-bottom:3px; }
+
+    /* El historial de correcciones ya va completo en la cabecera del PDF
+       (#printHead .print-corr): repetirlo aquí abajo es lo que empujaba una
+       tercera página casi vacía, con la 1 a medio llenar. En pantalla sigue
+       viéndose igual; sólo se oculta al imprimir. */
+    #zonaHistorial{ display:none !important; }
+
     /* Pie con el crédito de autoría, sólo en el papel */
     .print-pie{
-      display:block !important; margin-top:14px; padding-top:8px;
+      display:block !important; margin-top:10px; padding-top:6px;
       border-top:1px solid #000; font-family:'IBM Plex Mono';
-      font-size:0.6rem; line-height:1.6; color:#333;
+      font-size:0.55rem; line-height:1.45; color:#333;
+      break-inside:avoid; page-break-inside:avoid;
     }
 
     a[href]::after{ content:none !important; }
@@ -3029,16 +3081,33 @@ btnAyuda.addEventListener('click', () => {
     // es lo primero que necesita ver quien archive o revise el PDF.
     const e = m.entrega;
     if(e){
-      const corr = (e.correcciones || [])[0];
+      const correcciones = e.correcciones || [];
+      // El historial se imprime aquí, en la cabecera, y no donde está en
+      // pantalla: la página 1 va medio vacía y allí abajo se llevaba él solo
+      // una tercera hoja. Va completo, no resumido: es la prueba de por qué
+      // cambió la nota.
+      const historial = correcciones.length ? `
+        <div class="print-corr">
+          <b>Correcciones de la calificación</b>
+          ${correcciones.map(c => `
+            <div class="print-corr-item">
+              ${esc(fechaLegible(c.fecha))} · ${esc(c.profesor)} ·
+              ${c.correctas_antes}/${e.total} (${c.porcentaje_antes}%) → ${c.correctas_despues}/${e.total} (${c.porcentaje_despues}%)<br>
+              ${(c.cambios || []).map(x =>
+                `${esc(x.label || ('Casilla ' + x.i))}: ${x.antes ? 'correcta' : 'incorrecta'} → ${x.despues ? 'correcta' : 'incorrecta'}`
+              ).join(' · ')}
+              ${c.motivo ? `<br><i>“${esc(c.motivo)}”</i>` : ''}
+            </div>`).join('')}
+        </div>` : '';
+
       printHead.innerHTML = `
         <h2>${esc(e.actividad_titulo)}</h2>
         <div class="print-nombre">${esc(e.estudiante)}</div>
         <div class="print-meta">
           <b>Plan de vuelo entregado:</b> ${esc(fechaLegible(e.fecha))}<br>
-          <b>Calificación:</b> ${e.correctas} de ${e.total} revisiones correctas &nbsp;·&nbsp; ${e.porcentaje} / 100<br>
-          ${corr ? `<b>Nota ajustada por ${esc(corr.profesor)}</b> el ${esc(fechaLegible(corr.fecha))}: de ${corr.porcentaje_antes}% a ${corr.porcentaje_despues}%${(e.correcciones || []).length > 1 ? ` (${e.correcciones.length} correcciones en total)` : ''}<br>` : ''}
+          <b>Calificación:</b> ${e.correctas} de ${e.total} revisiones correctas &nbsp;·&nbsp; ${e.porcentaje} / 100${correcciones.length ? ' (nota ajustada por el profesor)' : ''}<br>
           <b>PDF generado:</b> ${fecha}
-        </div>`;
+        </div>${historial}`;
       return;
     }
 
