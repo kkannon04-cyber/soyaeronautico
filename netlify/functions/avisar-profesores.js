@@ -13,12 +13,16 @@
 //   Header:  x-avisar-secreto: <AVISAR_PROFESORES_SECRET>
 //   Body:    {"enviar": false}   -> simulacro: devuelve la lista de destinatarios
 //            {"enviar": true}    -> envía de verdad
-//            {"enviar": true, "solo": ["correo@ejemplo.com"]} -> envía solo a esos
+//            {"enviar": true, "solo": ["correo@ejemplo.com"]} -> filtra la lista
+//            {"destinatarios": [{"email":"x@y.com","nombre":"X"}]} -> lista
+//                          explícita; en ese caso NO se consulta Supabase.
 //
-// Variables de entorno necesarias en Netlify:
+// Variables de entorno en Netlify:
 //   RESEND_API_KEY              (ya existe, la usa send-auth-email.js)
-//   SUPABASE_SERVICE_ROLE_KEY   (nueva: hace falta para leer auth.users)
 //   AVISAR_PROFESORES_SECRET    (nueva: cualquier cadena larga y aleatoria)
+//   SUPABASE_SERVICE_ROLE_KEY   (opcional: sólo hace falta si NO se pasan
+//                                "destinatarios" y hay que buscar quién tiene
+//                                rol teacher leyendo auth.users)
 
 const crypto = require('crypto');
 
@@ -162,8 +166,7 @@ exports.handler = async (event) => {
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const apiKey = process.env.RESEND_API_KEY;
-  if (!serviceKey) return json(500, { error: 'SUPABASE_SERVICE_ROLE_KEY no configurada.' });
-  if (!apiKey)     return json(500, { error: 'RESEND_API_KEY no configurada.' });
+  if (!apiKey) return json(500, { error: 'RESEND_API_KEY no configurada.' });
 
   let cuerpo = {};
   try { cuerpo = JSON.parse(event.body || '{}'); } catch { return json(400, { error: 'JSON inválido.' }); }
@@ -172,11 +175,23 @@ exports.handler = async (event) => {
   const enviarDeVerdad = cuerpo.enviar === true;
   const soloEstos = Array.isArray(cuerpo.solo) ? cuerpo.solo.map(s => String(s).toLowerCase()) : null;
 
+  // Dos orígenes posibles. El explícito evita necesitar la service role key
+  // para un envío puntual del que ya se sabe a quién va.
   let profesores;
-  try {
-    profesores = await obtenerProfesores(serviceKey);
-  } catch (e) {
-    return json(502, { error: e.message });
+  if (Array.isArray(cuerpo.destinatarios) && cuerpo.destinatarios.length) {
+    profesores = cuerpo.destinatarios
+      .filter(d => d && typeof d.email === 'string' && d.email.indexOf('@') > 0)
+      .map(d => ({ email: d.email.trim(), nombre: (d.nombre || '').trim() || null }));
+    if (!profesores.length) return json(400, { error: 'La lista de destinatarios no trae ningún correo válido.' });
+  } else {
+    if (!serviceKey) {
+      return json(500, { error: 'Sin "destinatarios" en el cuerpo hace falta SUPABASE_SERVICE_ROLE_KEY para buscar los profesores.' });
+    }
+    try {
+      profesores = await obtenerProfesores(serviceKey);
+    } catch (e) {
+      return json(502, { error: e.message });
+    }
   }
 
   if (soloEstos) {
