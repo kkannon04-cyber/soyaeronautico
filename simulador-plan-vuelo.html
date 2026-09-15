@@ -2201,10 +2201,18 @@ btnAyuda.addEventListener('click', () => {
     // dentro del caso: el traslado internacional cambia el aeródromo de destino.
     const ruta = rutaPara(origen.cod, destinoFinal.cod, INTERNACIONALES.indexOf(destinoFinal) !== -1);
 
+    // La casilla 7 lleva la matrícula en unos casos y el distintivo de llamada
+    // en otros. El enunciado tiene que decir EL QUE se va a exigir: antes daba
+    // siempre la matrícula, así que en los vuelos de servicio regular el alumno
+    // escribía HK… y se le marcaba mal sin haber forma de saberlo.
+    const identificacionEspecial = (f7 === mat)
+      ? `matrícula <b>${mat}</b>`
+      : `distintivo de llamada <b>${f7}</b> — por tratarse de servicio aéreo regular, la casilla 7 lleva el distintivo y no la matrícula`;
+
     return {
       nivelTag: 'NIVEL 4 · VUELOS ESPECIALES',
       titulo: `${caso.replace('_',' ')} — ${origen.nom} → ${destinoFinal.nom}`,
-      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>, matrícula <b>${mat}</b>. Equipo COM/NAV <b>${eq.a}</b>, vigilancia <b>${eq.b}</b>.${requierePBN?` Capacidades PBN: <b>${pbn.replace('PBN/','')}</b>.`:''} Origen <b>${origen.cod}</b>, destino <b>${destinoFinal.cod}</b> (${destinoFinal.nom}), sin alterno. EOBT <b>${hora} UTC</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. El explotador es <b>${linea.nom}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
+      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>, ${identificacionEspecial}. Equipo COM/NAV <b>${eq.a}</b>, vigilancia <b>${eq.b}</b>.${requierePBN?` Capacidades PBN: <b>${pbn.replace('PBN/','')}</b>.`:''} Origen <b>${origen.cod}</b>, destino <b>${destinoFinal.cod}</b> (${destinoFinal.nom}), sin alterno. EOBT <b>${hora} UTC</b>. Velocidad <b>${speed}</b>, nivel <b>${nivel}</b>, ruta <b>${ruta.r}</b>. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. El explotador es <b>${linea.nom}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
       keys: [
         ['Casilla 7', f7],
         ['Casilla 8', `${f8r} · ${f8t}`],
@@ -2312,10 +2320,17 @@ btnAyuda.addEventListener('click', () => {
       resumen = `Se trata de un <b>vuelo militar en formación de dos aeronaves</b>. La casilla 9 lleva el <b>número de aeronaves</b> —que sólo se anota cuando es más de una— y, como se trata de una formación, el designador de tipo se sustituye por <b>ZZZZ</b>; los números y tipos reales se detallan en la casilla 18 precedidos de <b>TYP/</b>. La categoría de estela corresponde a la aeronave del tipo indicado.`;
     }
 
+    // Ningún caso del nivel 5 decía la identificación salvo el de sobrevuelo,
+    // que sí la nombraba en su propio texto. Los demás generaban una matrícula
+    // al azar y la validaban sin haberla mostrado nunca.
+    const identificacionAIS = (v.f7 === mat)
+      ? `matrícula <b>${mat}</b>`
+      : `distintivo de llamada <b>${v.f7}</b>`;
+
     return {
       nivelTag: 'NIVEL 5 · CASOS AIS',
       titulo,
-      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>. Origen <b>${origen.cod}</b> (${origen.nom}), destino <b>${destino.cod}</b> (${destino.nom}), sin alterno. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. Velocidad <b>${v.f15v}</b>, nivel <b>${v.f15n}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
+      narrativa: `${resumen} Aeronave: <b>${aero.nombre}</b>, ${identificacionAIS}. Origen <b>${origen.cod}</b> (${origen.nom}), destino <b>${destino.cod}</b> (${destino.nom}), sin alterno. Duración estimada ${eetH}h${eetM}min, autonomía ${auto.slice(0,2)}h${auto.slice(2)}min, <b>${personas}</b> personas a bordo. Velocidad <b>${v.f15v}</b>, nivel <b>${v.f15n}</b>. No lleva botes, chalecos ni equipo de supervivencia; lleva UHF, VHF y ELT. Sin observaciones. Color: ${color.toLowerCase()}. Piloto al mando: <b>${piloto}</b>, licencia ${lic}, quien también presenta el plan.`,
       keys: [
         ['Casilla 7', v.f7],
         ['Casilla 8', `${v.f8r} · ${v.f8t}`],
