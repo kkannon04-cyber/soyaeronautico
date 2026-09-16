@@ -1,0 +1,935 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrenamiento AIS/COM | SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:active{ transform:translateY(1px); }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  @media (max-width:1100px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
+
+  .subtabs{ padding:10px 32px 0; border-bottom:1px solid var(--hairline); background:var(--bg); overflow-x:auto; }
+  .subtabs-inner{ max-width:1000px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; white-space:nowrap; }
+  .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
+  .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
+  .subtab.active .n{ background:var(--accent); color:#fff; }
+
+  .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.6rem, 3.8vw, 2.3rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--warn); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
+  .hero-note b{ color:var(--text); }
+  .btn-volver-modulo-solido{ display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .btn-volver-modulo-solido:hover{ filter:brightness(1.08); }
+
+  .quiz-container{ max-width:900px; margin:0 auto; padding:20px 32px 60px; }
+  .question-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:24px; transition:border-color .2s; }
+  .question-card.correct{ border-left:6px solid var(--vfr); }
+  .question-card.wrong{ border-left:6px solid var(--danger); }
+  .q-header{ display:flex; align-items:baseline; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .q-num{ font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
+  .q-tag{ font-family:'IBM Plex Mono'; font-size:0.65rem; color:var(--text-muted); background:var(--bg); padding:2px 10px; border-radius:12px; border:1px solid var(--hairline); }
+  .q-text{ font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.55; }
+  .q-notam{ font-family:'IBM Plex Mono'; font-size:0.78rem; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:10px 14px; margin-bottom:14px; white-space:pre-wrap; line-height:1.6; color:var(--text-muted); }
+  .options{ display:flex; flex-direction:column; gap:8px; }
+  .opt-btn{ background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); transition:border-color .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .opt-btn:hover:not(:disabled){ border-color:var(--accent); background:var(--panel-alt); }
+  .opt-btn:active{ transform:translateY(1px); }
+  .opt-btn.selected-correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.12); }
+  .opt-btn.selected-wrong{ border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); }
+  .opt-btn.reveal-correct{ border-color:var(--vfr); background:rgba(var(--vfr-rgb),0.08); }
+  .opt-btn:disabled{ cursor:default; opacity:0.85; }
+  .feedback{ margin-top:12px; font-size:0.88rem; padding:10px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--hairline); display:none; line-height:1.55; }
+  .feedback.show{ display:block; }
+  .feedback.correct{ border-color:var(--vfr); color:var(--vfr); }
+  .feedback.wrong{ border-color:var(--danger); color:var(--danger); }
+  .feedback b{ color:var(--text); }
+
+  .score-panel{ position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:8px; }
+  .score-panel .nota{ font-size:1.2rem; font-weight:700; color:var(--accent); }
+  .reset-btn{ background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 20px; border-radius:30px; font-weight:600; cursor:pointer; transition:filter .15s, background .15s; font-family:'IBM Plex Sans'; }
+  .reset-btn:hover{ filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
+  .reset-btn:active{ transform:translateY(1px); }
+  .btn-volver-panel{ display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:7px 16px; border-radius:30px; font-weight:600; font-size:0.82rem; text-decoration:none; transition:filter .15s, background .15s; white-space:nowrap; }
+  .btn-volver-panel:hover{ filter:brightness(1.08); background:rgba(var(--accent-rgb),0.08); }
+  .finish-note{ display:none; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; max-width:900px; margin:20px auto 0; padding:14px 20px; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; font-size:0.9rem; }
+  .finish-note.show{ display:flex; }
+  .finish-note a{ color:var(--vfr); font-weight:700; white-space:nowrap; }
+  .finish-note.tier-excelente{ border-left-color:var(--vfr); background:rgba(var(--vfr-rgb),0.08); }
+  .finish-note.tier-bien{ border-left-color:var(--mvfr); }
+  .finish-note.tier-reforzar{ border-left-color:var(--warn); }
+  .nota.tier-excelente{ color:var(--vfr); }
+  .nota.tier-bien{ color:var(--mvfr); }
+  .nota.tier-reforzar{ color:var(--warn); }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:600px){ .topbar{ padding:12px 16px; } .quiz-container{ padding:12px 16px; } .question-card{ padding:18px; } .score-panel{ padding:12px 16px; } .hero-simple{ padding:28px 16px 8px; } }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- ENTRENAMIENTO AIS/COM: configuración ---------- */
+  [hidden]{ display:none !important; }
+  .setup-title{ font-size:1.2rem; margin-bottom:18px; }
+  .setup-block{ margin-bottom:20px; }
+  .setup-label{ font-weight:600; font-size:0.92rem; margin-bottom:10px; }
+  .chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ display:inline-flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--hairline); border-radius:30px; padding:9px 18px; font-size:0.88rem; font-weight:500; color:var(--text); cursor:pointer; font-family:'IBM Plex Sans'; transition:border-color .15s, background .15s, color .15s; }
+  .chip:hover{ border-color:var(--accent); }
+  .chip.on{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.12); color:var(--accent); font-weight:600; }
+  .chip-otra input{ width:64px; background:var(--panel); border:1px solid var(--hairline); border-radius:6px; padding:4px 8px; font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text); }
+  .setup-sub{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; font-size:0.88rem; color:var(--text-muted); }
+  .setup-sub select{ background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:8px 10px; font-family:'IBM Plex Sans'; font-size:0.88rem; color:var(--text); max-width:100%; }
+  .setup-resumen{ font-size:0.9rem; color:var(--text-muted); line-height:1.55; margin:4px 0 0; }
+  .btn-empezar:disabled{ opacity:0.5; cursor:not-allowed; filter:none; }
+  .opt-letra{ font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
+<script src="progreso.js"></script>
+</head>
+<body>
+<script src="auth-gate.js"></script>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html">Navegación</a>
+            <a href="notam.html">NOTAM</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <!-- <a href="satelite.html">Satélite</a> -->
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html" class="active">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="login.html" class="nav-login-btn" id="navLoginBtn">Iniciar sesión</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <!-- <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a> -->
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html" class="active">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="login.html" id="navLoginBtnMobile">Iniciar sesión <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Zona de Quizzes — Entrenamiento</div>
+  <h1>Entrenamiento AIS/COM</h1>
+  <p class="lead">Banco de <span id="totalBanco">173</span> preguntas del cuestionario básico AIS/COM, con preguntas de COM, AIS, MET, cartas y aeródromos. Tú decides cuántas responder y en qué orden. Los enunciados, las opciones y su orden son exactamente los del cuestionario original.</p>
+  <div class="hero-note">
+    <span>📌</span>
+    <span><b>Sobre el orden:</b> lo único que cambia es el orden de las <b>preguntas</b>. Las opciones A–E de cada pregunta nunca se mezclan, porque algunas respuestas dependen de ellas (por ejemplo, "c y d son correctas"). Cada tarjeta muestra también el número que la pregunta tiene en el cuestionario original.</span>
+  </div>
+  <a href="quizzes.html" class="btn-volver-modulo-solido">← Volver a la Zona de Quizzes</a>
+</section>
+
+<!-- ---------- CONFIGURACIÓN ---------- -->
+<div class="quiz-container" id="setupView">
+  <div class="question-card setup-card">
+    <h2 class="setup-title">Configura tu entrenamiento</h2>
+
+    <div class="setup-block">
+      <div class="setup-label">¿Cuántas preguntas?</div>
+      <div class="chip-group" id="chipsCantidad" role="radiogroup" aria-label="Cantidad de preguntas">
+        <button type="button" class="chip" data-cantidad="25" role="radio">25</button>
+        <button type="button" class="chip" data-cantidad="50" role="radio">50</button>
+        <button type="button" class="chip" data-cantidad="60" role="radio">60</button>
+        <button type="button" class="chip" data-cantidad="100" role="radio">100</button>
+        <button type="button" class="chip" data-cantidad="todas" role="radio"><span>Todas (<span id="chipTodas">173</span>)</span></button>
+        <label class="chip chip-otra" id="chipOtra">
+          Otra:
+          <input type="number" id="cantidadOtra" min="1" inputmode="numeric" aria-label="Otra cantidad de preguntas">
+        </label>
+      </div>
+    </div>
+
+    <div class="setup-block">
+      <div class="setup-label">¿En qué orden?</div>
+      <div class="chip-group" id="chipsOrden" role="radiogroup" aria-label="Orden de las preguntas">
+        <button type="button" class="chip" data-orden="aleatorio" role="radio">🔀 Al azar</button>
+        <button type="button" class="chip" data-orden="secuencial" role="radio">🔢 Orden del cuestionario</button>
+      </div>
+      <div class="setup-sub" id="bloqueDesde" hidden>
+        <label for="desdePregunta">Empezar desde la pregunta</label>
+        <select id="desdePregunta"></select>
+      </div>
+    </div>
+
+    <p class="setup-resumen" id="setupResumen" aria-live="polite"></p>
+    <button type="button" class="btn-volver-modulo-solido btn-empezar" id="btnEmpezar">Comenzar entrenamiento →</button>
+  </div>
+</div>
+
+<!-- ---------- ENTRENAMIENTO ---------- -->
+<div class="quiz-container" id="quizContainer" hidden>
+  <!-- las preguntas se inyectan acá -->
+</div>
+
+<div class="score-panel" id="scorePanel" hidden>
+  <span><span class="mono" id="answeredCount">0</span> / <span class="mono" id="totalSesion">0</span> respondidas</span>
+  <span class="nota" id="notaFinal">—</span>
+  <button class="reset-btn" id="resetQuiz">Reiniciar quiz</button>
+  <button class="reset-btn" id="cambiarConfig">Cambiar configuración</button>
+  <a href="Panel_estudiante.html" class="btn-volver-panel">Volver al Panel del Estudiante</a>
+</div>
+
+<div class="finish-note" id="finishNote" aria-live="polite">
+  <span id="finishMsg">✅ Resultado guardado en tu progreso.</span>
+  <span><a href="quizzes.html">Volver a la Zona de Quizzes →</a> · <a href="Panel_estudiante.html">Ver mi progreso →</a></span>
+</div>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Entrenamiento AIS/COM — Curso Básico Operador de Estación Aeronáutica AIS/COM/MET</span>
+  <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
+</footer>
+
+<script>
+  // ---------- TEMA OSCURO ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){ document.documentElement.setAttribute('data-theme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme','light'); themeToggle.setAttribute('aria-label','Cambiar a modo oscuro'); }
+    else{ document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('aisTheme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+
+  // ---------- BANCO DE PREGUNTAS — CUESTIONARIO AIS/COM (BÁSICAS) ----------
+  // Generado automáticamente desde cuestionario_AIS_COM.md (hoja "BASICAS AIS
+  // COM"), sin retipear: enunciados, opciones y su ORDEN son literales del
+  // original. `n` es el número de la pregunta en el cuestionario (la 122 no
+  // existe en el archivo fuente, por eso son 173) y `correct` es el índice
+  // de la opción correcta (0 = A).
+  //
+  // REGLA: las opciones NUNCA se barajan. Varias respuestas dependen de la
+  // letra ("c y d son correctas", "A y B son correctas"). Solo se reordena el
+  // arreglo de preguntas.
+  const BANCO = [
+    {"n":1,"comp":"COM","q":"La Red de Telecomunicaciones Aeronáuticas ATN, comprende diferentes aplicaciones aire-tierra y tierra-tierra. La aplicación correspondiente a Comunicaciones por enlace de Datos para el Servicio de Información de Vuelo, es:","options":["D-FIS","ADS","CPDLC","AMHS","AIDC"],"correct":0},
+    {"n":2,"comp":"COM","q":"La seguridad del sistema ATC descansa sobre unas comunicaciones fiables y precisas entre controladores y pilotos. Actualmente, son comunicaciones orales pero en los últimos años, se han desarrollado nuevos sistemas que permiten la comunicación de mensajes digitales entre controladores y pilotos. Estas comunicaciones se denominan:","options":["CPDLC","AIDC","ACAS","D-ATIS","ADS"],"correct":0},
+    {"n":3,"comp":"COM","q":"La vigilancia dependiente automática es una técnica de vigilancia por la que una aeronave transmite, vía enlace de datos, una serie de parámetros extraídos de los sistemas de navegación y posicionamiento de a bordo. Es conocida como:","options":["AMHS","D-METAR","ACL","ADS","ACARS"],"correct":3},
+    {"n":4,"comp":"COM","q":"El Designador de Dependencia correspondiente a la oficina \"Dirección Regional Aeronáutica de Bogotá\", es:","options":["SKBOZXOC","SKBOYAYO","SKBOYAYT","SKBOYAYM","SKBOYAYZ"],"correct":4},
+    {"n":5,"comp":"COM","q":"Un mensaje de \"SERVICIO\", se identificará mediante la inclusión al comienzo del texto, con la abreviatura:","options":["DUPE","AMD","RPT","COR","SVC"],"correct":4},
+    {"n":6,"comp":"COM","q":"El acrónimo \"AIDC\" que corresponde a una aplicación ATN Tierra-Tierra, corresponde a:","options":["Sistema de mensajería para los Servicios ATS","Servicio de Información de Vuelo por Data Link","Comunicaciones por Data Link entre instalaciones ATS","Servicio de Información de Área Terminal por Data Link","Comunicaciones por Data Link entre piloto y controlador"],"correct":2},
+    {"n":7,"comp":"COM","q":"El orden de prioridad para la transmisión de mensajes en la red de telecomunicaciones fijas aeronáuticas AFTN-AMHS es el siguiente:","options":["SS, FF, DD, GG, KK","SS, DD, FF, GG, KK","SS, DD, FF, KK, GG","SS, FF, DD, KK, GG","SS, DD, FF, KK, LL"],"correct":1},
+    {"n":8,"comp":"COM","q":"El concepto \"Procedimiento por el que la estación receptora repite un mensaje recibido o una parte apropiada del mismo a la estación transmisora con el fin de obtener confirmación que la recepción ha sido correcta\", corresponde a:\"","options":["Comunicación de AIRE a TIERRA","Comunicación interpiloto AIRE - AIRE","Comunicación TIERRA a AIRE","Colación","Intercomunicación"],"correct":3},
+    {"n":9,"comp":"COM","q":"Las partes que conforman un mensaje AFTN/AMHS en su orden son:","options":["Remitente, Destinatario, Encabezamiento y Texto","Dirección, Encabezamiento, Procedencia y Texto","Encabezamiento, Dirección, Procedencia y Texto","Encabezamiento, Procedencia, Dirección y Texto","Remitente, Destinatario, Procedencia y Texto"],"correct":2},
+    {"n":10,"comp":"COM","q":"La Dirección de un mensaje AFTN/AMHS está compuesta por:","options":["El Indicador de Lugar y el o los Indicadores de Destinatario","El Indicador de Prioridad y el o los Indicadores de Destinatario","El Indicador de Prioridad y el o los Indicadores de remitente","El Indicador de Lugar y el o los Indicadores de remitente","El Indicador de Lugar y el o los Indicadores del remitente"],"correct":1},
+    {"n":11,"comp":"COM","q":"El Grupo Fecha-Hora o Grupo DTG en un mensaje AFTN/AMHS indica:","options":["La fecha y la hora en la que un mensaje es depositado para su correspondiente transmisión","La fecha y la hora en la que un mensaje es recibido después de su correspondiente transmisión","La fecha y la hora en la que un mensaje es entregado a su o a sus respectivo(s) destinatarios","La fecha y la hora en la que un mensaje es recibido por su o sus respectivos(s) remitentes","La fecha y la hora en la que un mensaje es recibido y entregado después de su correspondiente transmisión"],"correct":0},
+    {"n":12,"comp":"COM","q":"La segunda letra de un Indicador de Lugar corresponde a:","options":["La región de la OACI donde se encuentra ubicado la ciudad o la entidad o el organismo o el aeródromo","La entidad, organismo o empresa explotadora a la que debe dirigirse una aeronave","El país o Estado donde se encuentra localizado la ciudad o la entidad o el organismo o el aeródromo","El grado o nivel de tratamiento que se le debe dar a una aeronave","La prioridad del organismo o empresa explotadora a la que debe dirigirse una aeronave"],"correct":2},
+    {"n":13,"comp":"COM","q":"El Servicio Internacional de Telecomunicaciones Aeronáuticas - SITA - comprende los Servicios:","options":["Fijo  - Móvil - Radionavegación - Radiodifusión Aeronáuticos","Fijo - Meteorológico - Móvil - Radiodifusión Aeronáuticos","Fijo - Móvil - Radionavegación - Teledetección Aeronáuticos","Fijo - Móvil - Radionavegación - Radiolocalización Aeronáuticos","Móvil - Radionavegación - Radioteledetección - Radiodifusión Aeronáuticos"],"correct":0},
+    {"n":14,"comp":"COM","q":"En el servicio de telecomunicaciones aeronáuticas internacionales se emplearán abreviaturas y códigos, que se encuentran incluidos y publicados en documento OACI:","options":["7910","9613","8400","8126","8896"],"correct":2},
+    {"n":15,"comp":"COM","q":"Los mensajes Relativos a la Regularidad de Vuelo abarcarán entre otros, los siguientes mesajes:","options":["Sobre la carga de la aeronave, requeridos a efectos de cálculo del peso y del centrado","De movimiento y control (ATS Normalizados)","Relativos a la seguridad de un barco, aeronave u otro vehículo o de una persona a bordo o a la vista","Relativos a la Gestión Pública","Sobre el funcionamiento de los servicios de telecomunicaciones aeronáuticas"],"correct":1},
+    {"n":16,"comp":"COM","q":"Los mensajes de Urgencia tienen  prioridad:","options":["FF","SS","DD","GG","KK"],"correct":2},
+    {"n":17,"comp":"COM","q":"La aceptación, transmisión y entrega de mensajes por el Servicio de Telecomunicaciones Aeronáuticos especifica que a través de la Red AFTN-AMHS, se pueden cursar entre otros, una de las siguientes categorías de mensajes:","options":["Aeronáuticos Administrativos","Relativos a la Seguridad del Vuelo","Relativos a la Gestión Pública","Para el intercambio nacional comercial","De Informes de Salud Pública"],"correct":0},
+    {"n":18,"comp":"COM","q":"Un Indicador de Lugar OACI, está referido a Grupo clave de:","options":["Ocho (8) letras que nos indica la entidad, organismo, empresa explotadora, oficina o persona a la cual va dirigido un mensaje","Cuatro (4) letras que identifica a una ciudad o un aeropuerto o una región de información de vuelo","Dos (2) letras, asignado por el remitente de acuerdo con disposiciones de la OACI, y ubicadas al comienzo de la dirección","Seis (6) dígitos: Los dos primeros nos indican el día y los cuatro (4) restantes la hora UTC en que fue entregado el mensaje para su correspondiente  tratamiento","Seis (6) dígitos que indica el año, el mes y el día en el que se cumple un vuelo"],"correct":1},
+    {"n":19,"comp":"COM","q":"El indicador de prioridad en la estructura de un mensaje AFTN/AMHS,  corresponde al Grupo clave de:","options":["Seis (6) dígitos: Los dos primeros nos indican el día y los cuatro (4) restantes la hora UTC en que fue entregado el mensaje para su correspondiente  tratamiento","Ocho (8), letras que nos indica la entidad, organismo, empresa explotadora, oficina o persona a la cual va dirigido un mensaje","Cuatro (4) letras que identifica a una ciudad o un aeropuerto o una región de información de vuelo","Dos (2) letras, asignado por el remitente de acuerdo con disposiciones de la OACI, y que forman parte de la dirección del mensaje","Ocho (8), letras que nos indica la entidad, organismo, empresa explotadora, oficina o persona que está originando un mensaje"],"correct":3},
+    {"n":20,"comp":"COM","q":"La opción \"Crear\" del aplicativo  FPL Electrónico, le indica al usuario externo que puede:","options":["Abrir la plantilla FPL e ingresar el contenido del FPL","Enviar un e-mail al ARO para que le habiliten la plantilla","Confirmar al ARO que ya envió el FPL para su revisión","Pedirle al líder funcional que le cree una nueva contraseña","Ingresar su identificador de usuario y su contraseña"],"correct":0},
+    {"n":21,"comp":"COM","q":"En el aplicativo FPL Electrónico, cuando aparece la casilla \"PRIORIDAD\", al momento de diligenciarlo indica:","options":["Se debe ingresar la prioridad del mensaje (FF, DD, SS, etc)","El sistema por defecto asignará la correspondiente prioridad","Se debe ingresar el status correspondiente, si aplica (HOSP, FFR, etc)","Este espacio se debe dejar en blanco si la aeronave vuela sin status","c y d son correctas"],"correct":4},
+    {"n":22,"comp":"COM","q":"Los \"Designadores OACI y los Designadores de Llamados Radiotelefónicos\" de empresas explotadoras de aeronaves, están contenidos en documento OACI:","options":["8643","8171","8585","9613","9705"],"correct":2},
+    {"n":23,"comp":"COM","q":"En la casilla 13 del  aplicativo FPL Electrónico aparece un ítem relacionado con la \"FECHA\", quel hace referencia a la Fecha de:","options":["Presentación del Plan de Vuelo","En la que se efectuará el vuelo","Caducidad del Plan de Vuelo","Vencimiento del Chequeo de Vuelo","Expedición de la Licencia"],"correct":1},
+    {"n":24,"comp":"COM","q":"En el campo \"Planes de Vuelo Aceptados\" del aplicativo FPL Electrónico, el usuario externo solo visualiza los FPLs:","options":["Pendientes por aprobar por parte del usuario que lo diligenció","A los que se debe hacer alguna modificación o algún cambio","Pendientes por aprobar por parte de la oficina ARO","Que han sido diligenciados por parte de la oficina ARO","Diligenciados y aprobados para aeronaves de su empresa"],"correct":4},
+    {"n":25,"comp":"COM","q":"Para que a una aeronave de aviación general o de aviación comercial no regular le sea aprobado un FPL en el aplicativo FPL Electrónico se deben cumplir unos requisitos por parte del usuario; estos son:","options":["Presentar personalmente en la oficina ARO los documentos requeridos (declaración general, pagos aeroportuarios, etc).","Enviar por correo certificado los documentos requeridos (declaración general, pagos aeroportuarios, etc).","Hacer caso omiso al envío de los documentos requeridos (declaración general, pagos aeroportuarios, etc).","Enviar a través del correo electrónico en respuesta al correo recibido los documentos requeridos (declaración general, pagos aeroportuarios, etc).","Entregar solo fotocopias en la oficina ARO de los documentos requeridos (declaración general, pagos aeroportuarios, etc)."],"correct":3},
+    {"n":26,"comp":"COM","q":"Cuando el usuario requiere presentar un cambio de equipo en un FPL ya presentado en el aplicativo FPL Electrónico, la acción a tomar será: Activa el campo:","options":["OTHER INFORMATION e ingresa CHG","TYPE AIRCRAFT e ingresa CHG","MESSAGE TYPE e ingresa CHG","TYPE OF FLIGHT e ingresa CHG","EQUIPMENT e ingresa CHG"],"correct":2},
+    {"n":27,"comp":"COM","q":"Un mensaje NOTAM publicado por el Servicio de Información Aeronáutica es ORIGINADO por:","options":["El Banco Meteorológico                  Nacional ¿ SKBOYZYX","El Supervisor AIS/COM/MET Regional Bogotá ¿ SKBOYTYU","La Estación Fija Aeronáutica de Bogotá ¿ SKBOYFYX","La Oficina Notam Internacional SKBOYNYX","La Oficina de AIS Publicaciones ¿ SKBOYOYP"],"correct":3},
+    {"n":28,"comp":"COM","q":"La prioridad FOXTROT FOXTROT en la mensajería AFTN/AMHS se asigna a:","options":["Un mensaje de Alerta","Un mensaje Meterológico","Un mensaje Administrativo","Un mensaje de Facilidades","Un mensaje de Plan de Vuelo"],"correct":4},
+    {"n":29,"comp":"COM","q":"Durante el diligenciamiento de un FPL a través del aplicativo FPL Electrónico, al ingresar el dato del campo \"ENDURANCE\" , se da a conocer información acerca de:","options":["Combustible a bordo","Número de Botes salvavidas","Equipo de supervivencia","Color de la cubierta","Nombre del piloto"],"correct":0},
+    {"n":30,"comp":"COM","q":"En el aplicativo FPL Electrónico, cuando ingresamos la información correspondiente al campo \"CATEGORÍA DE ESTELA TURBULENTA\", se hace referencia a:","options":["Reglas de Vuelo y Tipo de Vuelo","Número y tipo de mensaje","Aeródromo de salida y hora","Identificación de la aeronave","Categoría de estela turbulenta"],"correct":4},
+    {"n":31,"comp":"COM","q":"Cuando se registra el FPL en el aplicativo FPL Electrónico, al ingresar la información del campo \"TIPO DE VUELO\" al dar click en la pestaña correspondiente nos puede indicar diferentes opciones. La opción de la letra N, se refiere a:","options":["Aviación Militar","Aviación Comercial Regular","Aviación Experimental","Aviación Comercial No Regular","Aviación General"],"correct":3},
+    {"n":32,"comp":"COM","q":"Cuando se está creando un FPL en el aplicativo FPL Electrónico, al ingresar la información en el campo \"TIPO DE VUELO\", al dar click en la pestaña y colocar la letra M, se refiere a:","options":["Aviación Militar","Aviación Comercial Regular","Aviación Experimental","Aviación Comercial No Regular","Aviación General"],"correct":0},
+    {"n":33,"comp":"COM","q":"Cuando se está creando un FPL en el aplicativo FPL Electrónico, al ingresar la información en el campo \"TIPO DE VUELO\", al dar click en la pestaña y colocar la letra G, se refiere a:","options":["Aviación Militar","Aviación Comercial Regular","Aviación Experimental","Aviación Comercial No Regular","Aviación General"],"correct":4},
+    {"n":34,"comp":"COM","q":"Cuando se está creando un FPL en el aplicativo FPL Electrónico, al ingresar la información en el campo \"TIPO DE VUELO\", al dar click en la pestaña y colocar la letra S, se refiere a:","options":["Aviación Militar","Aviación Comercial Regular","Aviación Experimental","Aviación Comercial No Regular","Aviación General"],"correct":1},
+    {"n":35,"comp":"COM","q":"Al crear un FPL en el aplicativo  FPL Electrónico, al ingresar la información correspondiente al campo \"CATEGORÍA DE ESTELA TURBULENTA\", al activar la pestaña se nos muestran diferentes letras, entre estas la letra M que corresponde a:","options":["Turbulencia Liviana","Turbulencia Pesada","Turbulencia Mediana","Turbulencia Superpesada","Turbulencia Mínima"],"correct":2},
+    {"n":36,"comp":"COM","q":"Al crear un FPL en el aplicativo  FPL Electrónico, al ingresar la información correspondiente al campo \"CATEGORÍA DE ESTELA TURBULENTA\", al activar la pestaña se nos muestran diferentes letras, entre estas la letra L que corresponde a:","options":["Turbulencia Liviana","Turbulencia Pesada","Turbulencia Mediana","Turbulencia Superpesada","Turbulencia Mínima"],"correct":0},
+    {"n":37,"comp":"COM","q":"Al crear un FPL en el aplicativo  FPL Electrónico, al ingresar la información correspondiente al campo \"CATEGORÍA DE ESTELA TURBULENTA\", al activar la pestaña se nos muestran diferentes letras, entre estas la letra J que corresponde a:","options":["Turbulencia Liviana","Turbulencia Pesada","Turbulencia Mediana","Turbulencia Superpesada","Turbulencia Mínima"],"correct":3},
+    {"n":38,"comp":"COM","q":"Al crear un FPL en el aplicativo  FPL Electrónico, al ingresar la información correspondiente al campo \"CATEGORÍA DE ESTELA TURBULENTA\", al activar la pestaña se nos muestran diferentes letras, entre estas la letra H que corresponde a:","options":["Turbulencia Liviana","Turbulencia Pesada","Turbulencia Mediana","Turbulencia Superpesada","Turbulencia Mínima"],"correct":1},
+    {"n":39,"comp":"COM","q":"La información correspondiente al campo \"REGLAS DE VUELO\", en un FPL en el aplicativo FPL Electrónico y desplegar la pestaña, nos ilustra diferentes opciones, siendo la opción Z, la correspondiente a que El vuelo inicia:","options":["IFR y se mantiene IFR todo el vuelo","VFR y se mantiene VFR todo el vuelo","VFR y tiene cambios subsiguientes","IFR y tiene cambios subsiguientes","IFR y termina en condiciones IFR"],"correct":2},
+    {"n":40,"comp":"COM","q":"La información correspondiente al campo \"REGLAS DE VUELO\", en un FPL en el aplicativo FPL Electrónico y desplegar la pestaña, nos ilustra diferentes opciones, siendo la opción  V, la correspondiente a que El vuelo inicia:","options":["IFR y se mantiene IFR todo el vuelo","VFR y se mantiene VFR todo el vuelo","VFR y tiene cambios subsiguientes","IFR y tiene cambios subsiguientes","IFR y termina en condiciones IFR"],"correct":1},
+    {"n":41,"comp":"COM","q":"La información correspondiente al campo \"REGLAS DE VUELO\", en un FPL en el aplicativo FPL Electrónico y desplegar la pestaña, nos ilustra diferentes opciones, siendo la opción  ¿I¿, la correspondiente a que El vuelo inicia:","options":["IFR y se mantiene IFR todo el vuelo","VFR y se mantiene VFR todo el vuelo","VFR y tiene cambios subsiguientes","IFR y tiene cambios subsiguientes","IFR y termina en condiciones IFR"],"correct":0},
+    {"n":42,"comp":"COM","q":"La información correspondiente al campo \"REGLAS DE VUELO\", en un FPL en el aplicativo FPL Electrónico y desplegar la pestaña, nos ilustra diferentes opciones, siendo la opción  Y, la correspondiente a que El vuelo inicia:","options":["El vuelo inicia IFR y se mantiene IFR todo el vuelo","El vuelo inicia VFR y se mantiene VFR todo el vuelo","El vuelo inicia VFR y tiene cambios subsiguientes","El vuelo inicia IFR y tiene cambios subsiguientes","El vuelo inicia IFR y termina en condiciones IFR"],"correct":3},
+    {"n":43,"comp":"COM","q":"Al crear un FPL en el aplicativo FPL Electrónico cuando se ingresa la información correspondiente al campo \"TIPO DE MENSAJE\" y se activa la pestaña, nos muestra diferentes opciones entre estas la opción DLA, que nos dice que el FPL ACEPTADO se le:","options":["Puede posponer la hora de salida","Dar por cancelado","Incluir cambios en su contenido","Incluir datos de estimación","No se le modifica nada en su contenido"],"correct":0},
+    {"n":44,"comp":"COM","q":"Al crear un FPL en el FPL Electrónico e ingresar la información correspondiente al campo \"TIPO DE MENSAJE\" y se activa la pestaña, nos muestra diferentes opciones entre estas la opción CNL, que nos dice que: el FPL ACEPTADO se le:","options":["Puede posponer la hora de salida","Dar por cancelado","Incluir cambios en su contenido","Incluir datos de estimación","No se le modifica nada en su contenido"],"correct":1},
+    {"n":45,"comp":"COM","q":"Al ingresar los datos de un FPL en el aplicativo FPL Electrónico, y se quiere informar sobre el equipo de Supervivencia, en el campo para indicar que la aeronave tiene equipo \"MARÍTIMO\" a bordo, se señala la letra:","options":["PAPA","JULIETH","DELTA","MIKE","SIERRA"],"correct":3},
+    {"n":46,"comp":"COM","q":"Al ingresar los datos los datos de un FPL en el aplicativo FPL Electrónico, y se quiere informar sobre el equipo de Supervivencia, en el campo para indicar que la aeronave tiene equipo SELVA a bordo, se señala la letra:","options":["PAPA","JULIETH","DELTA","MIKE","SIERRA"],"correct":1},
+    {"n":47,"comp":"COM","q":"Al ingresar los datos de un FPL en el aplicativo FPL Electrónico, y se quiere informar sobre el equipo de Supervivencia, en el campo para indicar que la aeronave tiene equipo \"DESÉRTICO\" a bordo, se señala la letra:","options":["PAPA","JULIETH","DELTA","MIKE","SIERRA"],"correct":2},
+    {"n":48,"comp":"COM","q":"Al ingresar los datos los datos de un FPL en el aplicativo FPL Electrónico, y se quiere informar sobre el equipo de Supervivencia, en el campo para indicar que la aeronave tiene equipo \"POLAR\" a bordo, se señala la letra:","options":["PAPA","JULIETH","DELTA","MIKE","SIERRA"],"correct":0},
+    {"n":49,"comp":"COM","q":"Al ingresar los datos en un FPL en el aplicativo FPL Electrónico y se quiere informar sobre si los \"CHALECOS SALVAVIDAS\" en el equipo de Supervivencia disponen de ayudas complementarias y en el campo se indica la opción FOXTROT para indicar que los chalecos tienen:","options":["Comunicación en VHF","Comunicación en UHF","Dispositivo de luces","Comunicación en HF","Dispositivo fluorescente"],"correct":4},
+    {"n":50,"comp":"COM","q":"Al ingresar los datos de un FPL en el aplicativo FPL Electrónico y se quiere informar que los \"CHALECOS SALVAVIDAS\" en el equipo de Supervivencia disponen de ayudas complementarias, en el campo se indica la opción LIGHT para indicar que los chalecos poseen:","options":["Comunicación en VHF","Comunicación en UHF","Dispositivo de luces","Comunicación en HF","Dispositivo fluorescente"],"correct":2},
+    {"n":51,"comp":"COM","q":"Al ingresar los datos de un FPL en el aplicativo FPL Electrónico y se quiere informar que los \"CHALECOS SALVAVIDAS\" en el equipo de Supervivencia disponen de ayudas complementarias, en el campo se indica la opción UNIFORM para indicar que los chalecos tienen:","options":["Comunicación en VHF","Comunicación en UHF","Dispositivo de luces","Comunicación en HF","Dispositivo fluorescente"],"correct":1},
+    {"n":52,"comp":"COM","q":"Al ingresar los datos de un FPL en el aplicativo FPL Electrónico y se quiere informar que los \"CHALECOS SALVAVIDAS\" en el equipo de Supervivencia disponen de ayudas complementarias, en el campo se indica la opción VICTOR para indicar que los chalecos tienen:","options":["Comunicación en VHF","Comunicación en UHF","Dispositivo de luces","Comunicación en HF","Dispositivo fluorescente"],"correct":0},
+    {"n":53,"comp":"COM","q":"La información correspondiente a \"PERSONAS A BORDO\" en la información suplementaria de un FPL en el aplicativo FPL Electrónico, nos da a conocer la capacidad de:","options":["Personas en los botes salvavidas","Personas que tiene la aeronave","Combustible que tiene la aeronave","Rendimiento que tiene la aeronave","Chalecos que dispone la aeronave"],"correct":1},
+    {"n":54,"comp":"COM","q":"Para conocer más en detalle el por qué se debe o no reportar una novedad como FACILIDAD, debemos tener en cuenta que existen diferentes tipos de mantenimiento. Uno de ellos es denominado \"PREVENTIVO\" y consiste en:","options":["Determinar en todo instante, la condición técnica (mecánica y eléctrica) real de la máquina examinada, mientras esta se encuentre en pleno funcionamiento","Tiene  lugar antes de que ocurra una falla o avería. Este mantenimiento también es denominado mantenimiento planificado.","Este mantenimiento tiene como fundamento, los principios de solidaridad, colaboración, iniciativa propia, sensibilización, trabajo en equipo.","Tiene lugar luego que ocurre una falla o avería, es decir, solo actuará cuando se presenta un error en el sistema. Este mantenimiento también es denominado mantenimiento reactivo.","Este es el que ocurre después que la falla o avería ya se ha normalizado y no implica ningún tipo de reporte de novedad como facilidad."],"correct":1},
+    {"n":55,"comp":"COM","q":"Para conocer más en detalle el por qué se debe o no, reportar una novedad como FACILIDAD, se debe tener en cuenta que existen diferentes tipos de mantenimiento, no de ellos es denominado \"PREDICTIVO\" y:","options":["Consiste en determinar en todo instante, la condición técnica (mecánica y eléctrica) real de la máquina examinada, mientras esta se encuentre en pleno funcionamiento.","Este mantenimiento también es denominado mantenimiento planificado, tiene  lugar antes de que ocurra una falla o avería.","Este mantenimiento tiene como fundamento, los principios de solidaridad, colaboración, iniciativa propia, sensibilización, trabajo en equipo.","Este mantenimiento también es denominado mantenimiento reactivo. Tiene lugar luego que ocurre una falla o avería, es decir, solo actuará cuando se presenta un error en el sistema","Este es el que ocurre después que la falla o avería ya se ha normalizado y no implica ningún tipo de reporte de novedad como facilidad."],"correct":0},
+    {"n":56,"comp":"COM","q":"Para conocer más en detalle el por qué se debe o no reportar una novedad como FACILIDAD, debemos tener en cuenta que existen diferentes tipos de mantenimiento. Uno de ellos es denominado PREDICTIVO y consiste en:","options":["Determinar en todo instante, la condición técnica (mecánica y eléctrica) real de la máquina examinada, mientras esta se encuentre en pleno funcionamiento.","Este mantenimiento también es denominado mantenimiento planificado, tiene  lugar antes de que ocurra una falla o avería.","Este mantenimiento tiene como fundamento, los principios de solidaridad, colaboración, iniciativa propia, sensibilización, trabajo en equipo.","Este mantenimiento también es denominado mantenimiento reactivo. Tiene lugar luego que ocurre una falla o avería, es decir, solo actuará cuando se presenta un error en el sistema","Este es el que ocurre después que la falla o avería ya se ha normalizado y no implica ningún tipo de reporte de novedad como facilidad."],"correct":3},
+    {"n":57,"comp":"COM","q":"El funcionario OEA o el CTA  en donde no hay OEA, a primera hora del día en cada aeródromo debe enviar el mensaje de FACILIDADES AERONÁUTICAS a la siguiente dependencia:","options":["Jefatura de Grupo de Aeronavegación de la Regional correspondiente","Supervisor Operativo AIS/COM de la respectiva Regional","Oficina de Procedimientos AIS/COM/MET","Jefatura oficina AIS/Publicaciones","Dependencia del Servicio de Información Aeronáutica"],"correct":1},
+    {"n":58,"comp":"AIS","q":"De acuerdo con las recomendaciones OACI y el RAC Colombia, cuantos NOTAM puedo publicar en un Mensaje AMHS:","options":["solo dos","Máximo tres","los que sean necesarios","solo uno","hasta cinco"],"correct":3},
+    {"n":59,"comp":"AIS","q":"Para publicar un NOTAM de distribución Internacional, debe llevar la serie:","options":["A","B","C","V","S"],"correct":0},
+    {"n":60,"comp":"AIS","q":"El sistema reglamentado AIRAC de la OACI se basa en:","options":["Publicar SID o STAR","Cumplir con las Procedimientos de Tránsito Aéreo","Fechas Predeterminadas","Publicar Radioayudas","Publicar Suplementos."],"correct":2},
+    {"n":61,"comp":"AIS","q":"Se pronostica instalar en  Junio del año 2016 el VOR de los Andes, se necesita difundir este tipo de información con la suficiente antelación, por lo tanto recurrimos a que tipo de publicación:","options":["AIP","SUP","NOTAM","AIC","AMDT"],"correct":3},
+    {"n":62,"comp":"AIS","q":"Se prevé dar al servicio dentro de tres meses un procedimiento de Salida Normalizada por Instrumentos (SID), para la publicación de este tipo de información debemos recurrir a :","options":["NOTAM","Suplemento Regular","Circular Informativa","Suplemento AIRAC","Enmienda AIP"],"correct":3},
+    {"n":63,"comp":"AIS","q":"Necesitamos publicar el desplazamiento del umbral de una pista, para este tipo de información recurrimos a la publicación de :","options":["Metar","Suplemento","Circular AIC","Enmienda","NOTAM"],"correct":4},
+    {"n":64,"comp":"AIS","q":"El Director de Servicios a la Navegación Aérea, autoriza publicar el cambio de horario de operación de un Aeródromo que aparece publicado en el AIP, en este caso recurrimos a publicar:","options":["AIRAC","Suplemento Regular","Suplemento AIRAC","NOTAM","Circular AIC"],"correct":3},
+    {"n":65,"comp":"AIS","q":"\"La Oficina de Control y Seguridad Aérea necesita cambiar para Junio de 2021,  los requisitos para que las aeronaves puedan efectuar vuelos de prueba, mantenimiento; para publicar esta información recurrimos a:\"","options":["Suplemento AIRAC","Enmienda Regular","Circular AIC","Circular Informativa","NOTAM"],"correct":2},
+    {"n":66,"comp":"AIS","q":"La oficina de Telecomunicaciones de la Aerocivil solicita por medio de un oficio se dé a conocer el nuevo sistema Radar ubicado en Gaviotas departamento del Meta, con todas sus especificaciones técnicas, para este tipo de publicación recurrimos a:","options":["AIP","Suplemento","Circular AIC","Enmienda","NOTAM"],"correct":4},
+    {"n":67,"comp":"AIS","q":"Se detecta en Colombia en la zona de Riohacha la presencia de material radioactivo y la caída de desechos tóxicos, para este tipo de información debemos publicar:","options":["Circular de Alerta","NOTAM","NOTAM Radioactivo","NOTAM Informativo","Suplemento"],"correct":1},
+    {"n":68,"comp":"AIS","q":"Cuando se presenten solicitudes de publicación de información contra actos de interferencia ilícita, debemos recurrir a:","options":["Circulares AIC","Suplementos","NOTAM","Enmiendas","AIP"],"correct":0},
+    {"n":69,"comp":"AIS","q":"Cuando se requiere tomar medidas en un Aeródromo con respecto a la Atenuación de ruido, debemos publicar:","options":["NOTAM","Suplemento Regular","Suplemento AIRAC","Circular Informativa","Circular AIC"],"correct":4},
+    {"n":70,"comp":"AIS","q":"La oficina de Licencias de la Aerocivil desea dar a conocer a los usuarios del transporte aéreo las disposiciones para el otorgamiento de licencias a las tripulaciones; para esto recurrimos a un:","options":["Suplemento","NOTAM","Enmienda AIP","Circular AIC","Mensaje Técnico"],"correct":3},
+    {"n":71,"comp":"AIS","q":"Para solicitar un informe METAR lo puedo hacer a través del AMHS a la siguiente dirección:","options":["SKBOYMYX","SKBOYCYX","SKBOYZYX","SKBOZTZX","SKBOZQZX"],"correct":2},
+    {"n":72,"comp":"AIS","q":"Las oficinas encargadas de recibir los planes de vuelo donde se preste este servicio en Colombia son:","options":["AIS/PUB","AIS/ARO","AIS/NOF","AIS/ACC","AIS/MAP"],"correct":1},
+    {"n":73,"comp":"AIS","q":"Cuando un Piloto le presenta un Plan de Vuelo para efectuar un vuelo de Aviación Comercial No Regular en un A320, que tipo de Licencia le debe exigir:","options":["PPA","PCA","PTH","PTL","APA"],"correct":3},
+    {"n":74,"comp":"AIS","q":"En que casilla del FPL presentado debe colocar el Piloto la información sobre equipos y capacidades de Vigilancia:","options":["7","10A","15","10B","18"],"correct":3},
+    {"n":75,"comp":"AIS","q":"En que casilla del FPL presentado debe colocar el Piloto la información sobre especificaciones o descriptores de PBN:","options":["8","13","15","18","10B"],"correct":3},
+    {"n":76,"comp":"AIS","q":"Con que letra y en que casillas se deben identificar y aclarar, los equipos adicionales de COM/, NAV/ y DAT/:","options":["Z-10a-18","Y-10a-15","C-10a-10b","U-10a-13","W-10a-18"],"correct":0},
+    {"n":77,"comp":"AIS","q":"Si usted recibe un Plan de Vuelo, con que letra le certifica que la aeronave esta autorizada para especificaciones de PBN (RNAV/RNP):","options":["A","B","R","V","P"],"correct":2},
+    {"n":78,"comp":"AIS","q":"Que descriptor alfanumérico debe incluir el piloto de una aeronave en la casilla 10 A del FPL, para que le sea autorizada su salida (PDC), a través del ACARS:","options":["A1","M3","E3","J3","B1"],"correct":2},
+    {"n":79,"comp":"AIS","q":"El descriptor alfanumérico que debe colocar el Piloto en la casilla 10A del FPL para indicar que tiene equipo para el enlace de datos entre Controlador y Piloto (CPDLC) a través de Satélites de Comunicaciones con la constelación Iridium es:","options":["J1","J2","J3","J5","J7"],"correct":4},
+    {"n":80,"comp":"AIS","q":"El descriptor alfanumérico que debe colocar un Piloto en la casilla 10  del FPL, para indicar que tiene Comunicaciones Radiotelefónicas con el Control de Tránsito Aéreo a través de los Satélites de Comunicaciones Inmarsat es:","options":["P1","M1","M2","M3","P9"],"correct":1},
+    {"n":81,"comp":"AIS","q":"Con que descriptor en la casilla 10 A del FPL,  el Piloto de una aeronave nos dice que tiene un sistema de aterrizaje apoyado con aumentación GBAS:","options":["B","G","Z","R","A"],"correct":4},
+    {"n":82,"comp":"AIS","q":"Con que descriptor en la casilla 10 A del FPL,  el Piloto de una aeronave nos dice que tiene un sistema de aterrizaje con guía vertical apoyado con un sistema de aumentación SBAS:","options":["L","W","C","B","G"],"correct":3},
+    {"n":83,"comp":"AIS","q":"Si la tripulación de una Aeronave Colombiana, le presenta plan de vuelo con destino Europa, debe llevar obligatoriamente un equipo de comunicaciones con capacidad de separación de canales de 8.33 KHZ, la letra que debe colocar en la casilla 10 A  es la:","options":["W","Z","Y","G","R"],"correct":2},
+    {"n":84,"comp":"AIS","q":"Si presentan un plan de vuelo y en la casilla 10B, capacidades de Vigilancia le presentan la letra S, esto significa: que la aeronave lleva un equipo de vigilancia en Modo:","options":["Secundario","Selectivo","Stándard","Superior","Special"],"correct":1},
+    {"n":85,"comp":"AIS","q":"Para indicar que una aeronave tiene un equipo de vigilancia ADS-B, con capacidad especializada out/in de 1090 MHZ, el descriptor alfanumérico que debe colocar en la casilla 10B es:","options":["V2","U2","G1","D1","B2"],"correct":4},
+    {"n":86,"comp":"AIS","q":"El piloto de la Aeronave B767, coloca un descriptor en la casilla 10B, en su plan de vuelo para indicar que tiene un equipo ADS-C, con capacidades FANS 1/A, este descriptor es:","options":["B1","B2","G1","D1","V2"],"correct":3},
+    {"n":87,"comp":"AIS","q":"Si el Piloto de una aeronave coloca la letra correspondiente en la casilla 10A que tiene abordo un equipo de navegación satelital, esta letra","options":["A","B","N","G","R"],"correct":3},
+    {"n":88,"comp":"AIS","q":"Cual de los siguientes sistemas de aviónica avanzada reemplazará en un futuro no lejano al sistema ILS:","options":["GNSS","ABAS","SBAS","GBAS","RNAV"],"correct":3},
+    {"n":89,"comp":"AIS","q":"Con el siguiente descriptor en la casilla 10 A, el Piloto de una Aeronave nos puede indicar que tiene abordo un equipo FMC,  para la creación de Way Point de Referencia (WPR) y enviarlo al ATC a través del ACARS:","options":["B2","A1","E1","C1","D1"],"correct":2},
+    {"n":90,"comp":"AIS","q":"Cuando un Piloto coloca en la casilla 18 del FPL el descriptor SUR/, significa que tiene equipos adicionales de:","options":["Aproximación","Navegación","Orientación","Vigilancia","Ubicación"],"correct":3},
+    {"n":91,"comp":"AIS","q":"Si el Piloto de una Aeronave Certificada para RNAV y RNP es decir PBN, le coloca en la casilla 18 del FPL, que tiene aprobado el descriptor B2, significa que tiene aprobación para:","options":["RNAV 5, con todos los sensores","RNAV 5, GNSS","RNAV 2, DME/DME","RNAV 1, GNSS","RNAV 1, LORANC"],"correct":1},
+    {"n":92,"comp":"AIS","q":"Si el Piloto de una Aeronave Certificada para PBN, coloca en la casilla 18 del FPL, que tiene aprobado el descriptor S2, significa que tiene aprobación para:","options":["RNP4","RNP1 GNSS","RNP APCH","RNP APCH con Baro-VNAV","RNP AR APCH con RF"],"correct":3},
+    {"n":93,"comp":"AIS","q":"Todo piloto al mando de una aeronave antes de iniciar un vuelo debe estar familiarizado con ____________ en concordancia con lo establecido en la AIP COLOMBIA parte ENR 1.10-1","options":["con toda la información disponible apropiada al vuelo proyectado","con todos los NOTAM","con todos los Metares","Con todas las restricciones","con toda las rutas disponibles"],"correct":0},
+    {"n":94,"comp":"AIS","q":"Que tipo de vuelo no Puede efectuar una Aeronave de Aviación Comercial No Regular en Colombia:","options":["Aerotaxi","Chárter","Ambulancia","Oscar Papa","Carga"],"correct":3},
+    {"n":95,"comp":"AIS","q":"Cuando un Piloto de Aeronave en Colombia, coloca precedido de STS/alguna referencia significa que:","options":["Puede salir sin autorización","Puede salir sin Llamar a la Torre de Control","Puede rodar sin restricciones","Tiene tratamiento Especial","No necesita presentar plan de vuelo"],"correct":3},
+    {"n":96,"comp":"AIS","q":"Uno de los siguientes indicadores de Status: NO esta Exento de medidas ATFM:","options":["STS/EMER","STS/HOSP","STS/MEDEVAC","STS/HEAD","STS/NONRVSM"],"correct":4},
+    {"n":97,"comp":"AIS","q":"En el Aeropuerto Internacional Eldorado está prohibida la operación de Aeronaves:","options":["Trimotores","Bimotores","A Pistón","Turbo Hélice","Jet"],"correct":2},
+    {"n":98,"comp":"AIS","q":"Cuantos cambios de nivel o de velocidad puede hacer un Piloto con una aeronave en vuelo:","options":["Los que sean necesarios","Los que le diga el despacho","Los que le asigne el Control","Ninguno","Solo los programados"],"correct":0},
+    {"n":99,"comp":"AIS","q":"En Colombia es______ presentar un plan de vuelo para volar cualquier tipo de aeronave:","options":["Opcional","Recomendable","Necesario","Importante","Obligatorio"],"correct":4},
+    {"n":100,"comp":"AIS","q":"Los designadores de tipos de Aeronaves de la OACI, los encuentro en el Documento:","options":["7910","8643","8585","7030","8400"],"correct":1},
+    {"n":101,"comp":"AIS","q":"EL acrónimo ACN, hace referencia a:","options":["Numero de Clasificación de Pavimentos","Numero de Clasificación de Aeródromos","Número de Clasificación de Autonomía","Número de Clasificación de Aeronaves","Número de Clasificación de Aeropuertos"],"correct":3},
+    {"n":102,"comp":"AIS","q":"Información especificada que respecto a un vuelo proyectado de una aeronave, se somete a las dependencias de los Servicios de Tránsito Aéreo. La anterior definición  corresponde a:","options":["Un METAR","Un Pronóstico","Un Plan de Vuelo","Un TAF","Una Autorización de Control"],"correct":2},
+    {"n":103,"comp":"AIS","q":"La Separación Vertical Mínima Reducida (RVSM) con aprobación, entre niveles superiores es de:","options":["1.500 FT","2.000 FT","2.500 FT","1.000 FT","500 FT"],"correct":3},
+    {"n":104,"comp":"AIS","q":"La aprobación dentro del Espacio Aéreo Colombiano para rutas RNAV es de:","options":["RNAV1","RNAV2","RNAV 5","RNAV3","RNAV4"],"correct":2},
+    {"n":105,"comp":"AIS","q":"Se considera un Plan de Vuelo Repetitivo, cuando cumple un vuelo regular con:","options":["la misma Ruta","el mismo Nivel","el mismo avión","la misma hora","Todas las anteriores"],"correct":4},
+    {"n":106,"comp":"AIS","q":"El Acrónimo AIM traduce:","options":["Servicio de Información Aeronáutica","Gestión de Información Aeronáutica","Publicación de Información Aeronáutica","Oficina de Plan de Vuelo","Aeronautical Information Meteorological"],"correct":1},
+    {"n":107,"comp":"AIS","q":"El significado de la Abreviatura GNSS es:","options":["Sistema Global de Navegación por Satélite","Sistema de Aumentación y Navegación","Sistema de Navegación Inercial","Sistema de Navegación Basada en Tierra","Sitema de Navegacion Basado Abordo"],"correct":0},
+    {"n":108,"comp":"AIS","q":"El significado de la abreviatura PBN en Español, es:","options":["Navegación basada en Procedimientos","Navegación basada en NDB","Navegación basada en VOR","Navegación basada en Performance","Navegación basada en Precisión"],"correct":3},
+    {"n":109,"comp":"AIS","q":"El significado de la Abreviatura DOF es:","options":["Dia del vuelo","Hora del vuelo","Dia y hora del vuelo","Mes y hora del vuelo","Ninguna de las anteriores"],"correct":0},
+    {"n":110,"comp":"AIS","q":"El Significado de la Abreviatura STS/ HAZMAT es:","options":["Transporta Material de Escombros","Transporta Ceniza Volcánica","Transporta Nieve","Transporta Material Peligroso","Transporta Material para el asma"],"correct":3},
+    {"n":111,"comp":"AIS","q":"El significado de la Abreviatura STS/ALTRV es:","options":["Reservación de altitud","Separación Vertical","Separación Longitudinal","Separación Lateral","Espacio Aéreo Restringido"],"correct":0},
+    {"n":112,"comp":"AIS","q":"El significado de la Abreviatura STS/AFTMX es:","options":["Exento de demoras","Exento de impuestos","Exento de Autorización de salida","Exento de Paz y Salvo","Exento de Servicios"],"correct":0},
+    {"n":113,"comp":"AIS","q":"El significado de la Abreviatura STS/HEAD es:","options":["U n vuelo con Jefe de Estado abordo","Un vuelo con Vicepresidente abordo","Un vuelo con autoridades  de estado abordo","Un vuelo con la primera Dama de la nación abordo","Un vuelo con Ministros abordo"],"correct":0},
+    {"n":114,"comp":"AIS","q":"Las capacidades de PBN en una aeronave son:","options":["PBM y RNP","SID y STAR","IAC y WAC","RNAV y RNP","GBAS y SBAS"],"correct":3},
+    {"n":115,"comp":"AIS","q":"Los descriptores GBAS, SBAS y ABAS son sistemas de:","options":["Aproximación","Aumentación","Angulo de planeo","Procedimientos GNSS","Rutas GNSS"],"correct":1},
+    {"n":116,"comp":"AIS","q":"En que casilla del Plan de vuelo se realizan los cambios de velocidad y / o altitud o nivel:","options":["18","13","19","15","11"],"correct":3},
+    {"n":117,"comp":"MET","q":"¿Que es la meteorología?","options":["Es la ciencia interdisciplinaria, fundamentalmente una rama de la Física de la atmósfera, que estudia el estado del tiempo, el medio atmosférico, los fenómenos allí producidos y las leyes que lo rigen","Es la ciencia interdisciplinaria, fundamentalmente una rama de la Física, que estudia el estado armónico del medio ambiente, los fenómenos naturales del planeta","Es la ciencia que estudia las causas que producen los terremotos, el mecanismo por el cual se producen y propagan las ondas sísmicas, y la predicción del fenómeno sísmico"],"correct":0},
+    {"n":118,"comp":"MET","q":"Los fenómenos atmosféricos o meteoros pueden ser:","options":["De gran escala. Mediana, poca, insignificante.","Hidrometeoros, Litometeoros, Eolometeoros, Electrometeoros, Fotometeoros","Meteoritos Escasos, Dispersos y Fragmentados"],"correct":1},
+    {"n":119,"comp":"MET","q":"De los valores de la atmosfera estándar o tipo, los más familiares en aviación, son:","options":["Nivel del mar a una temperatura de 15ºC y una presión de 1013.15 mb. o 29.92\", y una disminución de 2ºC de temperatura y 1\" de presión por cada 1000 pies de altura","Nivel del mar una temperatura de 10ºC y una presión de 1010.3 mb. o 29,83\", y una disminución de 1ºC de temperatura y 2\" de presión por cada 1000 pies de altura","Nivel del mar una temperatura de 18ºC y una presión de 1012.3 mb. o 29,89\", y una disminución de 1ºC de temperatura y 2\" de presión por cada 1000 pies de altura"],"correct":0},
+    {"n":120,"comp":"MET","q":"Cuando se registra la temperatura del termómetro seco y punto de roció iguales","options":["La humedad relativa es entonces del 100%","Favorece la posibilidad de hidrometeoros","Esta precipitando","A y B son correctas"],"correct":3},
+    {"n":121,"comp":"MET","q":"Las cuatro estaciones en Colombia son:","options":["Determinadas por cuatro posiciones principales, opuestas simétricamente, que ocupa la Tierra durante su recorrido en torno al astro rey. Reciben el nombre de rosa de los vientos","Determinadas por cuatro posiciones principales, norte, sur, oriente y occidente, que ocupa la Tierra durante su recorrido en torno al astro rey. Reciben el nombre de solsticios y equinoccios","No se presentan estaciones, son cuatro temporadas; dos con muchas precipitaciones y dos predominantes secas"],"correct":2},
+    {"n":123,"comp":"MET","q":"¿Qué es y cómo es la Zona de Convergencia Intertropical, ZCIT?","options":["Es un cinturón de baja presión que ciñe el globo terrestre en la región ecuatorial. Está formado, como su nombre indica, por la convergencia de aire cálido y húmedo de latitudes por encima y por debajo del ecuador","Es un cinturón de alta presión que ciñe el globo terrestre en la región ecuatorial. Está formado, como su nombre indica, por la convergencia de aire cálido y húmedo de latitudes por encima y por debajo del ecuador","Es un cinturón nubes que esta exactamente y sin movimientos sobre la región ecuatorial. Está formado, como su nombre indica, por la convergencia de aire frío y seco de latitudes por encima y por debajo del ecuador"],"correct":0},
+    {"n":124,"comp":"MET","q":"¿Se entiende por turbulencia?","options":["Cualquier ruptura del flujo del aire por la causa de las tormentas.","Cualquier ruptura del flujo laminar del aire por la causa que sea","Cualquier formación del aire por la causa ajenas"],"correct":1},
+    {"n":125,"comp":"MET","q":"La intensidad de la turbulencia se mide por el efecto que causa en una aeronave:","options":["Ligera, Moderada, Fuerte y Extrema","Tenue, oscurecida y oscura","Liviana, moderada, pesada y superpesada"],"correct":0},
+    {"n":126,"comp":"MET","q":"¿Que es el gradiente adiabático?","options":["Es la variación de temperatura que experimentan las masas de aire en movimiento vertical.","Es la variación de viento que experimentan las masas de aire en movimiento vertical","Es la variación de temperatura que experimentan las masas de aire en movimiento horizontal"],"correct":0},
+    {"n":127,"comp":"MET","q":"¿Que se entiende por sotavento y barlovento?","options":["Barlovento es el lado de una montaña donde el aire cálido húmedo es asciende y puede formar nubes y Sotavento es el lado donde el viento desciende seco y aumenta su temperatura en horas del día","Barlovento es el lado de una montaña donde el aire frío es impulsado y puede formar nubes y Sotavento es el lado donde el viento desciende y normalmente aumenta su temperatura en horas del día","Barlovento es el lado de una montaña donde el aire frío es impulsado y no producen nubes y Sotavento es el lado donde el viento desciende y normalmente forman nubes"],"correct":0},
+    {"n":128,"comp":"MET","q":"Las corrientes en chorro en la Tierra son:","options":["Chorros polares, chorros subtropicales y ecuatoriales","Chorros polares, chorros subtropicales y ecuatorial","Chorros subpolares, chorros tropicales y ecuatoriales"],"correct":1},
+    {"n":129,"comp":"MET","q":"¿Cuáles son los ciclos de vida de una tormenta?","options":["Cúmulo, Madurez y Disipación","Nacer, reproducir y morir","Madurez, converger y precipitar"],"correct":0},
+    {"n":130,"comp":"MET","q":"¿Cómo se clasifican las nubes?","options":["Se clasifican en función de su altura, forma y cobertura","Se clasifican en función de su altura geográfica y la forma de su cúspide","Se clasifican en función de su altura en la atmósfera y la forma o estructura"],"correct":0},
+    {"n":131,"comp":"MET","q":"Algunos riesgos meteorológicos en vuelos son:","options":["El Engelamiento, las Cenizas volcánicas y las tormentas eléctricas","Cizalladuras, Tormentas, Chubascos y frío","Niebla, Húmeda y visibilidad"],"correct":0},
+    {"n":132,"comp":"MET","q":"¿Cuál es gradiente de presión e intensidad del viento si los mapas meteorológicos muestran isobaras muy juntas entre sí?","options":["Gradiente fuerte y viento con mucha intensidad","Gradiente y viento moderado","Gradiente y viento débil"],"correct":0},
+    {"n":133,"comp":"MET","q":"¿Qué significa la abreviatura “NOSIG”?","options":["Ningún informe recibido","Sin problemas meteorológicos","Sin cambios significativos"],"correct":2},
+    {"n":134,"comp":"MET","q":"¿Qué significa la expresión “Fragmentadas (Broken – BKN)”?","options":["3 a 5 Octac del cielo cubierto de nubes","5 a 7 Octas del cielo cubierto de nubes","3 a 4 Octas del cielo cubierto de nubes"],"correct":1},
+    {"n":135,"comp":"MET","q":"¿Cuál es el periodo de validez de un TREND?","options":["1 hora","6 horas","2 horas"],"correct":2},
+    {"n":136,"comp":"MET","q":"En presencia de altas presiones atmosféricas:","options":["Se podría presentar mayormente nubes advectivas y litometeoros","Se podría presentar mayormente nubes convectivas y litometeoros","Se podría presentar mayormente nubes convectivas e hidrometeoros"],"correct":0},
+    {"n":137,"comp":"MET","q":"Cielo cubierto entre 1/8 a 2/8:","options":["NSW","FEW","OVC"],"correct":1},
+    {"n":138,"comp":"MET","q":"Viento en calma:","options":["CW","00000","9999"],"correct":1},
+    {"n":139,"comp":"MET","q":"Visibilidad menor a 1000 metros","options":["Neblina","Bruma","Niebla"],"correct":2},
+    {"n":140,"comp":"MET","q":"RETSRA, corresponde a:","options":["Recientemente lluvia y tormenta eléctrica moderada","Reinantes lluvia y tormenta eléctrica moderada","Lluvia moderada en las vecindades"],"correct":0},
+    {"n":141,"comp":"MET","q":"No hay nubes significativas:","options":["SKC","NSW","NSC"],"correct":2},
+    {"n":142,"comp":"MET","q":"En un reporte METAR, la abreviatura NIL significa:","options":["Estación cerrada","Instrumentos fuera de servicio","Reparación de instalaciones","Estación ausente o datos faltantes"],"correct":3},
+    {"n":143,"comp":"MET","q":"Un informe meteorológico ordinario de superficie se conoce como:","options":["TAF","METAR","SIGMET","GAMET"],"correct":1},
+    {"n":144,"comp":"MET","q":"La nube más peligrosa en aviación es:","options":["NS","CB","SC","CI"],"correct":1},
+    {"n":145,"comp":"MET","q":"El pronóstico de área Terminal se abrevia como:","options":["TAF","METAR","SIGMET","GAMET"],"correct":0},
+    {"n":146,"comp":"MET","q":"El punto de rocio es:","options":["La expansión entre la actual temperatura y la temperatura durante la evaporación","La temperatura a la cual los puntos de evaporación y condensación son iguales","La temperatura a la cual debe enfriarse una masa de aire para saturarse","La temperatura a la cual se forma niebla"],"correct":2},
+    {"n":147,"comp":"MET","q":"¿En qué parte de la atmósfera se presentan la mayor cantidad de condiciones meteorológicas?","options":["Tropopausa","Tropósfera","Estratósfera","Exosfera"],"correct":1},
+    {"n":148,"comp":"MET","q":"La gradiente térmica vertical promedio en la tropósfera es:","options":["2.0°C por cada 1,000 pies","3.0°C por cada 1,000 pies","5.4°C por cada 1,000 pies"],"correct":0},
+    {"n":149,"comp":"MET","q":"El proceso de condensación consiste en:","options":["El paso de gaseoso a sólido","El paso de gaseoso a líquido","El paso de sólido a líquido","El paso de líquido a sólido"],"correct":1},
+    {"n":150,"comp":"MET","q":"La Zona de Convergencia Intertropical – ITCZ, se asocia al:","options":["Con llovizna, lluvias y aguaceros, variable según la época del año","Tormentas eléctricas en cadena y/o turbulencias","Zonas con altas temperaturas y ligeras lloviznas tropicales","Convergencias de frentes con formaciones ciclónicas"],"correct":1},
+    {"n":151,"comp":"MET","q":"Los meteoros se clasifican en:","options":["Acuosos, luminosos, sólidos y gaseosos","Fotometeoros, litometeoros, hidroacuosos e igneometeoros","Sólidos, líquidos y luminosos","Hidrometeoros, litometeoros, fotometeoros y electrometeoros"],"correct":0},
+    {"n":152,"comp":"CARTAS","q":"Las cartas publicadas por el estado se clasifican en tres grupos denominados","options":["Obligatorias, condicionales, voluntarias","Obligatorias, opcionales, necesarias","Obligatorias, condicionales, opcionales","Obligatorias, condicionales, de planificación"],"correct":2},
+    {"n":153,"comp":"CARTAS","q":"La carta tipo plano de aeródromo es una carta de tipo:","options":["Condicional","Obligatoria","Opcional","Planificación"],"correct":1},
+    {"n":154,"comp":"CARTAS","q":"¿Una de las cartas utilizadas en la fase de rodaje desde el estacionamiento hasta el punto de espera es?","options":["Plano de aeródromo","Carta de aproximación","Carta de ruta","SID"],"correct":0},
+    {"n":155,"comp":"CARTAS","q":"¿Las letras  Y / Z empleadas en un procedimiento de aproximación nos indican que el procedimiento requiere para su guía de?","options":["VOR","DME","LOC","LLZ"],"correct":1},
+    {"n":156,"comp":"CARTAS","q":"¿El texto mostrado en la carta relacionada con CAT: A/B/C/D Corresponde a?","options":["15 MTS","20 MTS","30 MTS","60 MTS"],"correct":2},
+    {"n":157,"comp":"CARTAS","q":"¿La PDG normalizada y mínima de un procedimiento de salida corresponde a?","options":["3,5%","2,0%","3,8%","3,3%"],"correct":3},
+    {"n":158,"comp":"CARTAS","q":"¿Un procedimiento de aproximación  soportado por un ILS corresponde a un procedimiento?","options":["NPA o 2D","VFR","PA ó 3D","NDB"],"correct":2},
+    {"n":159,"comp":"CARTAS","q":"¿El acrónimo SD en un procedimiento de aproximación significa?","options":["Stop Descend","Stop approach","Stop landing","Stop take off"],"correct":0},
+    {"n":160,"comp":"AD","q":"La elevación de un aeródromo está referida a la elevación del punto más alto:","options":["Del aeródromo","Del área de aterrizaje","De la pista de aterrizaje"],"correct":1},
+    {"n":161,"comp":"AD","q":"El área rectangular definida en el terreno designada como área adecuada sobre la cual un avión puede efectuar parte del ascenso inicial hasta una altura especificada se abrevia:","options":["SWY","CWY","RESA"],"correct":1},
+    {"n":162,"comp":"AD","q":"El objetivo de un CTR es:","options":["Proteger las trayectorias de llegada y salidas de las aeronaves en plan de vuelo IFR","Permitir que las aeronaves puedan efectuar llegadas o salidas normalizadas","Garantizar que las trayectorias de llegada estén protegidas de obstáculos","Proteger la trayectoria de llegada de las aeronaves en plan IFR"],"correct":0},
+    {"n":163,"comp":"AD","q":"Se efectuarán radiodifusiones ATIS en los aeródromos donde:","options":["Sea necesario reducir el volumen de comunicaciones en canales aeroterrestres VHF ATS","Sea necesario reducir el volumen de comunicaciones en canales aeroterrestres HF","Existan en un TMA más de dos aeropuertos","Existan aeropuertos internacionales"],"correct":0},
+    {"n":164,"comp":"AD","q":"Una autorización ATC normalizada, entre otros, contendrá́ los siguientes elementos en su orden:","options":["Matrícula del avión, designador de la SID, ruta; nivel de vuelo, información complementaria.","Registro de la aeronave, autorización correspondiente, nivel de vuelo, ruta de vuelo, código SSR","Identificación de la aeronave, nivel; información complementaria, límite de la autorización, otras instrucciones","Identificación de la aeronave, límite de la autorización, ruta de vuelo, nivel o niveles de vuelo, otras instrucciones"],"correct":3},
+    {"n":165,"comp":"AD","q":"La frecuencia para aeródromos sin servicio de tránsito aéreo es:","options":["112,9 Mhz","118,7 Mhz","122,9 Mhz","126,5 MHz"],"correct":2},
+    {"n":166,"comp":"AD","q":"Cuando una aeronave aterriza en un aeródromo con el altímetro reglado a la presión QFE del mismo aeródromo, el altímetro marcará:","options":["Cero","Elevación del aeródromo","Distancia al Nivel Medio del Mar","Distancia a la Isobara 1013,2 hPa"],"correct":0},
+    {"n":167,"comp":"AD","q":"En caso de fallo en ambos sentidos en las comunicaciones aeroterrestres, un vuelo VFR hará́ lo siguiente:","options":["Proseguirá́ según el FPL actualizado, iniciará el descenso desde la ayuda especificada, completará un procedimiento normal de aproximación y aterrizará de ser posible dentro de los 30 minutos siguientes a la hora prevista de llegada","Proseguirá́ su vuelo en VMC y aterrizará en el aeródromo apropiado más cercano que encuentre. Notificará su llegada por el medio más rápido a la dependencia apropiada de control de tránsito aéreo","Volverá́ al aeródromo de partida si se encuentra a menos de la mitad total de recorrido, o de 30 minutos de vuelo, lo que de las dos resulte menor"],"correct":1},
+    {"n":168,"comp":"AD","q":"La distancia vertical entre un nivel, punto u objeto considerado como punto, y el nivel medio del mar corresponde a:","options":["Altura","Altitud","Elevación","Altitud de presión"],"correct":1},
+    {"n":169,"comp":"AD","q":"Si una pista de aterrizaje y despegue de un aeródromo tiene una numeración 09/27 ¿Cuál sería la orientación magnética de esta?","options":["09/27","090 grados/270 grados","009/027"],"correct":1},
+    {"n":170,"comp":"AD","q":"Área definida de tierra o agua (que incluye todas las edificaciones, instalaciones y equipos) destinada total o parcialmente a la llegada, salida y movimiento de superficie de aeronaves","options":["Área de movimiento","Aeródromo","Área de maniobras"],"correct":1},
+    {"n":171,"comp":"AD","q":"Todas las marcaciones sobre la pista son de color:","options":["Amarillo","Blanco","Rojo"],"correct":1},
+    {"n":172,"comp":"AD","q":"Parte del aeródromo que ha de utilizarse para el despegue, aterrizaje y rodaje de aeronaves, excluyendo las plataformas","options":["Calle de rodaje","Área de movimiento","Área de maniobras"],"correct":2},
+    {"n":173,"comp":"AD","q":"La clave de referencia de aeródromo tiene como propósito relacionar entre sí las especificaciones concernientes a las características de los aeródromos, consta de:","options":["Un número y una letra","Una pista y calles de rodaje","Área de movimiento y plataforma"],"correct":0},
+    {"n":174,"comp":"AD","q":"Longitud de pista adecuada que ha sido declarada disponible para la carrera de despegue","options":["SWY","CWY","TORA"],"correct":2}
+  ];
+
+  const MODULO_ID = 'quiz-ais-com';
+  const MODULO_NOMBRE = 'Entrenamiento AIS/COM';
+  const LETRAS = 'ABCDE';
+
+  // ---------- CONFIGURACIÓN ----------
+  const config = { cantidad: 50, orden: 'aleatorio', desde: BANCO[0].n };
+
+  const setupView = document.getElementById('setupView');
+  const chipsCantidad = document.getElementById('chipsCantidad');
+  const chipsOrden = document.getElementById('chipsOrden');
+  const inputOtra = document.getElementById('cantidadOtra');
+  const chipOtra = document.getElementById('chipOtra');
+  const bloqueDesde = document.getElementById('bloqueDesde');
+  const selectDesde = document.getElementById('desdePregunta');
+  const setupResumen = document.getElementById('setupResumen');
+
+  document.getElementById('totalBanco').textContent = BANCO.length;
+  document.getElementById('chipTodas').textContent = BANCO.length;
+  inputOtra.max = BANCO.length;
+  BANCO.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.n;
+    o.textContent = `Pregunta ${p.n} · ${p.comp}`;
+    selectDesde.appendChild(o);
+  });
+
+  // Cuántas preguntas se harán realmente con la configuración actual. En
+  // orden del cuestionario, si se empieza cerca del final quedan menos.
+  function cantidadEfectiva(){
+    const pedida = config.cantidad === 'todas' ? BANCO.length : config.cantidad;
+    if(config.orden === 'secuencial'){
+      const inicio = BANCO.findIndex(p => p.n === config.desde);
+      return Math.min(pedida, BANCO.length - Math.max(inicio, 0));
+    }
+    return Math.min(pedida, BANCO.length);
+  }
+
+  function pintarConfig(){
+    chipsCantidad.querySelectorAll('button.chip').forEach(c => {
+      const on = String(config.cantidad) === c.dataset.cantidad && !chipOtra.classList.contains('on');
+      c.classList.toggle('on', on);
+      c.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    chipsOrden.querySelectorAll('.chip').forEach(c => {
+      const on = config.orden === c.dataset.orden;
+      c.classList.toggle('on', on);
+      c.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    bloqueDesde.hidden = config.orden !== 'secuencial';
+
+    const pedida = config.cantidad === 'todas' ? BANCO.length : config.cantidad;
+    const efectiva = cantidadEfectiva();
+    let txt;
+    if(!efectiva){
+      txt = 'Elige cuántas preguntas quieres responder.';
+    } else if(config.orden === 'aleatorio'){
+      txt = `Responderás ${efectiva} pregunta${efectiva === 1 ? '' : 's'} elegida${efectiva === 1 ? '' : 's'} al azar entre las ${BANCO.length} del banco.`;
+    } else {
+      const inicio = BANCO.findIndex(p => p.n === config.desde);
+      const ultima = BANCO[inicio + efectiva - 1].n;
+      txt = `Responderás de la pregunta ${config.desde} a la ${ultima} (${efectiva} pregunta${efectiva === 1 ? '' : 's'}), en el orden del cuestionario.`;
+      if(efectiva < pedida) txt += ` Desde ese punto solo quedan ${efectiva}.`;
+    }
+    setupResumen.textContent = txt;
+    document.getElementById('btnEmpezar').disabled = !efectiva;
+  }
+
+  chipsCantidad.querySelectorAll('button.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      config.cantidad = c.dataset.cantidad === 'todas' ? 'todas' : parseInt(c.dataset.cantidad, 10);
+      chipOtra.classList.remove('on');
+      inputOtra.value = '';
+      pintarConfig();
+    });
+  });
+  inputOtra.addEventListener('input', () => {
+    const v = parseInt(inputOtra.value, 10);
+    chipOtra.classList.add('on');
+    config.cantidad = (v >= 1) ? Math.min(v, BANCO.length) : 0;
+    pintarConfig();
+  });
+  inputOtra.addEventListener('blur', () => {
+    if(chipOtra.classList.contains('on') && config.cantidad) inputOtra.value = config.cantidad;
+  });
+  chipsOrden.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => { config.orden = c.dataset.orden; pintarConfig(); });
+  });
+  selectDesde.addEventListener('change', () => { config.desde = parseInt(selectDesde.value, 10); pintarConfig(); });
+
+  // Fisher-Yates sobre una COPIA del arreglo de preguntas (no de opciones).
+  function barajar(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function armarSesion(){
+    const n = cantidadEfectiva();
+    if(config.orden === 'aleatorio') return barajar(BANCO).slice(0, n);
+    const inicio = BANCO.findIndex(p => p.n === config.desde);
+    return BANCO.slice(inicio, inicio + n);
+  }
+
+  // ---------- ESTADO ----------
+  let questions = [];
+  let answered = [];
+  // Acierto por pregunta, para poder decirle al panel QUE se falló.
+  let aciertos = [];
+  let correctAnswers = 0;
+  let totalAnswered = 0;
+  let intentoGuardado = false;
+
+  const container = document.getElementById('quizContainer');
+  const scorePanel = document.getElementById('scorePanel');
+  const answeredSpan = document.getElementById('answeredCount');
+  const totalSesionSpan = document.getElementById('totalSesion');
+  const notaSpan = document.getElementById('notaFinal');
+  const finishNote = document.getElementById('finishNote');
+  const finishMsg = document.getElementById('finishMsg');
+
+  function iniciarSesion(){
+    questions = armarSesion();
+    answered = new Array(questions.length).fill(false);
+    aciertos = new Array(questions.length).fill(null);
+    correctAnswers = 0;
+    totalAnswered = 0;
+    intentoGuardado = false;
+    finishNote.classList.remove('show', 'tier-excelente', 'tier-bien', 'tier-reforzar');
+    notaSpan.classList.remove('tier-excelente', 'tier-bien', 'tier-reforzar');
+    totalSesionSpan.textContent = questions.length;
+
+    setupView.hidden = true;
+    container.hidden = false;
+    scorePanel.hidden = false;
+    renderQuestions();
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderQuestions(){
+    container.innerHTML = '';
+    questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.dataset.idx = idx;
+
+      const header = document.createElement('div');
+      header.className = 'q-header';
+      header.innerHTML = `<span class="q-num">${idx+1}/${questions.length}</span><span class="q-tag">Pregunta ${q.n} del cuestionario</span><span class="q-tag">${q.comp}</span>`;
+      card.appendChild(header);
+
+      const qText = document.createElement('div');
+      qText.className = 'q-text';
+      qText.textContent = q.q;
+      card.appendChild(qText);
+
+      const optsDiv = document.createElement('div');
+      optsDiv.className = 'options';
+      q.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        const letra = document.createElement('span');
+        letra.className = 'opt-letra';
+        letra.textContent = LETRAS[oi] + '.';
+        btn.appendChild(letra);
+        btn.appendChild(document.createTextNode(' ' + opt));
+        btn.dataset.optIdx = oi;
+        btn.addEventListener('click', () => handleAnswer(idx, oi));
+        optsDiv.appendChild(btn);
+      });
+      card.appendChild(optsDiv);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'feedback';
+      feedback.id = `fb-${idx}`;
+      feedback.setAttribute('aria-live', 'polite');
+      card.appendChild(feedback);
+
+      container.appendChild(card);
+    });
+    updateUI();
+  }
+
+  function handleAnswer(qIdx, optIdx){
+    if(answered[qIdx]) return;
+    const q = questions[qIdx];
+    const isCorrect = optIdx === q.correct;
+
+    answered[qIdx] = true;
+    aciertos[qIdx] = isCorrect;
+    totalAnswered++;
+    if(isCorrect) correctAnswers++;
+
+    const card = container.querySelector(`.question-card[data-idx="${qIdx}"]`);
+    const btns = card.querySelectorAll('.opt-btn');
+    btns.forEach((b, i) => {
+      b.disabled = true;
+      if(i === q.correct) b.classList.add('reveal-correct');
+      if(i === optIdx && isCorrect) b.classList.add('selected-correct');
+      if(i === optIdx && !isCorrect) b.classList.add('selected-wrong');
+    });
+    card.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    const fb = document.getElementById(`fb-${qIdx}`);
+    fb.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+    if(isCorrect){
+      fb.textContent = '✅ Correcto.';
+    } else {
+      fb.textContent = '❌ Incorrecto. La respuesta correcta era: ';
+      const b = document.createElement('b');
+      b.textContent = `${LETRAS[q.correct]}. ${q.options[q.correct]}`;
+      fb.appendChild(b);
+    }
+
+    updateUI();
+  }
+
+  function updateUI(){
+    answeredSpan.textContent = totalAnswered;
+    const total = questions.length;
+    if(total > 0 && totalAnswered === total){
+      const notaFinalPct = Math.round((correctAnswers / total) * 100);
+      notaSpan.textContent = `${notaFinalPct}% (${correctAnswers}/${total})`;
+      const tier = notaFinalPct >= 90 ? 'excelente' : (notaFinalPct >= 70 ? 'bien' : 'reforzar');
+      notaSpan.classList.remove('tier-excelente', 'tier-bien', 'tier-reforzar');
+      notaSpan.classList.add(`tier-${tier}`);
+      finishNote.classList.remove('tier-excelente', 'tier-bien', 'tier-reforzar');
+      finishNote.classList.add(`tier-${tier}`);
+      if(!intentoGuardado && typeof guardarIntento === 'function'){
+        intentoGuardado = true;
+        const mensajesTier = {
+          excelente: '🏆 ¡Excelente! Dominas el cuestionario AIS/COM. Resultado guardado en tu progreso.',
+          bien: '✅ ¡Buen trabajo! Resultado guardado en tu progreso.',
+          reforzar: '💪 Resultado guardado. Repasa las preguntas que fallaste y vuelve a intentarlo cuando quieras.'
+        };
+        finishMsg.textContent = 'Guardando tu resultado…';
+        finishNote.classList.add('show');
+        const detalle = typeof construirDetalleIntento === 'function'
+          ? construirDetalleIntento(MODULO_ID, questions.map((q, i) => ({ ok: aciertos[i], pregunta: q })))
+          : null;
+        guardarIntento(MODULO_ID, MODULO_NOMBRE, correctAnswers, total, detalle).then(res => {
+          finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
+        });
+      } else {
+        finishNote.classList.add('show');
+      }
+    } else if(totalAnswered > 0){
+      const notaParcial = Math.round((correctAnswers / totalAnswered) * 100);
+      notaSpan.textContent = `${notaParcial}% (parcial)`;
+    } else {
+      notaSpan.textContent = '—';
+    }
+  }
+
+  function confirmarSalida(accion){
+    if(totalAnswered === 0 || totalAnswered === questions.length) return true;
+    return confirm(`Llevas ${totalAnswered} de ${questions.length} respondidas. ¿${accion} de todas formas? Perderás tu avance actual.`);
+  }
+
+  // Reiniciar conserva la configuración; al azar vuelve a sortear preguntas.
+  document.getElementById('resetQuiz').addEventListener('click', () => {
+    if(!confirmarSalida('Reiniciar')) return;
+    iniciarSesion();
+  });
+
+  document.getElementById('cambiarConfig').addEventListener('click', () => {
+    if(!confirmarSalida('Cambiar la configuración')) return;
+    container.hidden = true;
+    scorePanel.hidden = true;
+    finishNote.classList.remove('show');
+    container.innerHTML = '';
+    questions = [];
+    setupView.hidden = false;
+    setupView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('btnEmpezar').addEventListener('click', iniciarSesion);
+
+  pintarConfig();
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+<script>
+  // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
+  (async function actualizarBotonSesion(){
+    if (typeof sbClient === 'undefined' || !sbClient) return;
+    const { data } = await sbClient.auth.getSession();
+    if (!data || !data.session) return;
+    const btnDesktop = document.getElementById('navLoginBtn');
+    const btnMobile = document.getElementById('navLoginBtnMobile');
+    if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
+    if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+</script>
+</body>
+</html>

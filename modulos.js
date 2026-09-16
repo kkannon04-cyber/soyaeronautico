@@ -53,6 +53,12 @@ const MODULOS_CATALOGO = [
   { id: 'quiz-notam', nombre: 'NOTAM', url: 'quiz-notam.html',
     tipo: 'quiz', seccion: 'modulos', badge: '25 preguntas', temaPorDefecto: 'notam-fundamentos' },
 
+  // Añadido 2026-09-16: banco de 173 preguntas del cuestionario básico AIS/COM;
+  // el estudiante elige cantidad y orden. Mezcla COM/AIS/MET/cartas/AD, así
+  // que no tiene una página teórica única: sin tema por defecto.
+  { id: 'quiz-ais-com', nombre: 'Entrenamiento AIS/COM', url: 'quiz-ais-com.html',
+    tipo: 'quiz', seccion: 'modulos', badge: '173 preguntas · a tu medida', temaPorDefecto: null },
+
   { id: 'simulador-plan-vuelo', nombre: 'Simulador Plan de Vuelo', url: 'simulador-plan-vuelo.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Llenado de FPL campo por campo con validación.', temaPorDefecto: 'plan-de-vuelo' },
