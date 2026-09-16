@@ -717,7 +717,7 @@
       <div id="actInfo" class="act-info" style="display:none;"></div>
 
       <div id="actCrear" style="display:none;">
-        <p class="bhint" style="margin-bottom:14px;">Genera una situación de vuelo con el motor del simulador, cámbiala si quieres y publícala para tu grupo. <b>El formulario de abajo queda como clave de respuestas</b>: revísalo antes de publicar, porque es contra él que se calificará a tus estudiantes.</p>
+        <p class="bhint" style="margin-bottom:14px;">Elige el nivel abajo y pulsa <b>Generar situación</b>, o importa un FPL real (o llena el formulario a mano) y pulsa <b>Redacción automática</b>: escribe el caso sin dar los códigos. También puedes escribir o corregir la situación tú mismo. <b>El formulario de abajo queda como clave de respuestas</b>: revísalo antes de publicar, porque es contra él que se calificará a tus estudiantes.</p>
         <div class="act-grid">
           <label class="act-field"><span>Título de la actividad</span><input id="actTitulo" maxlength="120" placeholder="Parcial 1 — Plan de vuelo IFR"></label>
           <label class="act-field"><span>Fecha límite (opcional)</span><input id="actLimite" type="datetime-local"></label>
@@ -727,7 +727,8 @@
         </div>
         <p class="bhint" style="margin-top:8px;">Puedes editar el texto libremente. Para resaltar un dato enciérralo entre <code>&lt;b&gt;</code> y <code>&lt;/b&gt;</code>; cualquier otra etiqueta se mostrará como texto normal.</p>
         <div class="action-row" style="margin-top:14px;">
-          <button class="btn btn-outline" id="actRegenerar" type="button">Generar otra situación</button>
+          <button class="btn btn-outline" id="actRegenerar" type="button">Generar situación</button>
+          <button class="btn btn-outline" id="actRedactar" type="button">Redacción automática</button>
           <button class="btn btn-primary" id="actPublicar" type="button">Publicar actividad</button>
           <a class="btn btn-outline" href="panel-profesor.html">Volver al panel</a>
         </div>
@@ -2617,6 +2618,9 @@ btnAyuda.addEventListener('click', () => {
     levelRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentLevel = parseInt(btn.dataset.level, 10);
+    // El profesor sólo elige el nivel: la situación la genera él con el botón,
+    // para no pisar lo que ya haya escrito o importado.
+    if(modoActividad === 'crear') return;
     nuevaSituacion();
   });
 
@@ -2633,6 +2637,7 @@ btnAyuda.addEventListener('click', () => {
   }
 
   btnDatos.addEventListener('click', () => {
+    if(modoActividad === 'resolver') return;
     const visible = scenarioGrid.style.display !== 'none';
     scenarioGrid.style.display = visible ? 'none' : 'grid';
     btnDatos.textContent = visible ? 'Mostrar datos clave' : 'Ocultar datos clave';
@@ -2900,9 +2905,17 @@ btnAyuda.addEventListener('click', () => {
     }
 
     // --- Casilla 7
+    // Los mensajes que retransmite un centro ATS pueden traer pegado el modo y
+    // código SSR asignado (ARE4272/A2374, Doc 4444 Ap. 3, campo 7). No es parte
+    // del formulario que diligencia el explotador, así que se separa y se avisa.
     if(partes[i]){
-      const id = partes[i].toUpperCase();
-      if(/^[A-Z0-9]{1,7}$/.test(id)) valores.f7 = id;
+      const id = partes[i].toUpperCase().replace(/\s+/g,'');
+      const m = /^([A-Z0-9]{1,7})(?:\/([AC]\d{4}))?$/.exec(id);
+      if(m){
+        valores.f7 = m[1];
+        if(m[2]) noEntendido.push({campo:'Casilla 7', texto:m[2],
+          motivo:'Es el código SSR que asignó el ATS al retransmitir el mensaje; no va en el formulario y se omitió.'});
+      }
       else noEntendido.push({campo:'Casilla 7', texto:partes[i], motivo:'La identificación son de 1 a 7 caracteres alfanuméricos.'});
       i++;
     }
@@ -2967,12 +2980,65 @@ btnAyuda.addEventListener('click', () => {
       i++;
     }
 
-    // --- Casilla 18: todo lo que quede
+    // --- Casillas 18 y 19
+    // Algunos mensajes traen la información suplementaria al final
+    // (-E/0412 P/TBN R/UVE…). Se reconoce porque empieza por uno de sus
+    // indicadores de una letra; si no, todo lo que quede es casilla 18.
     if(partes[i] !== undefined){
-      valores.f18 = partes.slice(i).join(' ').toUpperCase().trim() || '0';
+      let resto = partes.slice(i);
+      const idx19 = resto.findIndex((p, k) => k > 0 && /^[EPRSJDANC]\//.test(p.toUpperCase()));
+      if(idx19 !== -1){
+        parse19(resto.slice(idx19).join(' ').toUpperCase(), valores, noEntendido);
+        resto = resto.slice(0, idx19);
+      }
+      // "CODE/ E8042C": un espacio tras la barra rompe el indicador en la red.
+      valores.f18 = resto.join(' ').toUpperCase().replace(/\b([A-Z]{3,4})\/\s+/g, '$1/').trim() || '0';
     }
 
     return { ok: Object.keys(valores).length > 1, valores, noEntendido };
+  }
+
+  // Casilla 19 (Doc 4444, Ap. 2). En el formulario se TACHA lo que no se lleva,
+  // así que cada letra ausente del mensaje queda tachada, y un grupo que no
+  // aparece significa que no se lleva nada de él.
+  function parse19(texto, valores, noEntendido){
+    const trozos = {};
+    const re = /(?:^|\s)([EPRSJDANC])\/\s*/g;
+    const marcas = [];
+    let m;
+    while((m = re.exec(texto)) !== null) marcas.push({ind:m[1], ini:m.index, fin:re.lastIndex});
+    marcas.forEach((mk, k) => {
+      const fin = k + 1 < marcas.length ? marcas[k+1].ini : texto.length;
+      trozos[mk.ind] = texto.slice(mk.fin, fin).trim();
+    });
+    const quitar = (todas, presentes) => todas.filter(l => presentes.indexOf(l) === -1);
+    const letras = s => (s || '').replace(/[^A-Z]/g,'').split('');
+
+    if(trozos.E !== undefined){
+      if(/^\d{4}$/.test(trozos.E)) valores.e19 = trozos.E;
+      else noEntendido.push({campo:'Casilla 19 E/', texto:trozos.E, motivo:'La autonomía son 4 cifras (horas y minutos).'});
+    }
+    if(trozos.P !== undefined) valores.p19 = trozos.P;
+    valores.r19x = quitar(['U','V','E'], letras(trozos.R));
+    valores.s19x = quitar(['P','D','M','J'], letras(trozos.S));
+    valores.j19x = quitar(['L','F','U','V'], letras(trozos.J));
+
+    const d = /^(\d{1,2})\s*(\d{1,3})?\s*(C\b)?\s*(.*)$/.exec(trozos.D || '');
+    if(trozos.D === undefined || (d && parseInt(d[1],10) === 0)){
+      valores.d19x = ['D','C'];
+    } else if(d){
+      valores.d19n = d[1];
+      valores.d19c = d[2] || '';
+      valores.d19col = (d[4] || '').trim();
+      valores.d19x = d[3] ? [] : ['C'];
+    } else {
+      noEntendido.push({campo:'Casilla 19 D/', texto:trozos.D, motivo:'Se esperaba número, capacidad, C si están cubiertos y color.'});
+    }
+
+    if(trozos.A !== undefined) valores.a19 = trozos.A;
+    if(trozos.N){ valores.n19txt = trozos.N; valores.n19x = []; }
+    else valores.n19x = ['N'];
+    if(trozos.C !== undefined) valores.c19 = trozos.C.replace(/\)\s*$/, '').trim();
   }
 
   // ---------- Interfaz ----------
@@ -2994,6 +3060,7 @@ btnAyuda.addEventListener('click', () => {
   }
 
   $('btnImportar').addEventListener('click', () => {
+    if(!puedeImportar()) return;
     const p = $('importarPanel');
     p.style.display = p.style.display === 'none' ? '' : 'none';
     if(p.style.display !== 'none') $('importarTexto').focus();
@@ -3004,6 +3071,7 @@ btnAyuda.addEventListener('click', () => {
   });
 
   $('btnImportarAplicar').addEventListener('click', () => {
+    if(!puedeImportar()) return;
     const aviso = $('importarAviso');
     const r = parseFPL($('importarTexto').value);
 
@@ -3027,7 +3095,10 @@ btnAyuda.addEventListener('click', () => {
       if(!reemplazar){
         mezcla = Object.assign({}, r.valores);
         Object.keys(mezcla).forEach(k => {
-          if((actuales[k] || '').trim() !== '') mezcla[k] = actuales[k];
+          // Las casillas que se tachan son listas, no texto.
+          const actual = actuales[k];
+          const lleno = Array.isArray(actual) ? actual.length > 0 : String(actual || '').trim() !== '';
+          if(lleno) mezcla[k] = actual;
         });
       }
     }
@@ -3070,7 +3141,7 @@ btnAyuda.addEventListener('click', () => {
   }
 
   btnRespuesta.addEventListener('click', () => {
-    if(!currentSituation) return;
+    if(!currentSituation || modoActividad) return;
     const abierto = respuestaOficial.style.display !== 'none';
     if(!abierto){
       fplOficialTexto.textContent = msgFPL(currentSituation.values) + '\n\n' + msgSPL(currentSituation.values);
@@ -3489,8 +3560,10 @@ btnAyuda.addEventListener('click', () => {
   }
 
   function validar(){
-    if(!currentSituation) return;
+    // El profesor puede armar la clave sin haber generado situación (a mano o
+    // importando un FPL), así que su revisión no depende de currentSituation.
     if(modoActividad === 'crear') return revisarClave();
+    if(!currentSituation) return;
     if(modoActividad === 'resolver') return entregarActividad();
     if(modoActividad === 'revisar') return;
     if(modo === 'error') return calificarMarcas();
@@ -3781,6 +3854,8 @@ btnAyuda.addEventListener('click', () => {
   let falloForzado = null;
 
   function practicarFallo(id){
+    // Dentro de una actividad esto sacaría al usuario de ella.
+    if(modoActividad) return;
     const f = FALLOS.find(x => x.id === id);
     if(!f) return;
     falloForzado = id;
@@ -4099,6 +4174,21 @@ btnAyuda.addEventListener('click', () => {
     telexPanel.style.display = 'none';
     examBar.style.display = 'none';
     scenarioPanel.style.display = 'block';
+    // Importar un FPL resolvería la actividad sin analizarla, y "Practicar
+    // este error" sacaría al usuario de ella con una situación al azar.
+    refrescarBotonImportar();
+    const errores = $('erroresPanel');
+    if(errores) errores.style.display = 'none';
+  }
+
+  // Mientras el estudiante resuelve, tampoco ve las reglas rápidas: son los
+  // puntos clave de cada casilla. Vuelven a estar en la revisión posterior.
+  function ocultarAyudaAlumno(){
+    btnAyuda.style.display = 'none';
+    helpPanel.classList.remove('visible');
+    // Sin nivel, ayuda, importar ni "nueva situación", la barra queda vacía.
+    const barra = btnAyuda.closest('.controls');
+    if(barra) barra.style.display = 'none';
   }
 
   // ---------- Profesor: crear la actividad ----------
@@ -4112,6 +4202,29 @@ btnAyuda.addEventListener('click', () => {
     actNarrativa.value = sit.narrativa;
     if(!actTitulo.value.trim()) actTitulo.value = sit.titulo;
     actEstado.textContent = '';
+    actRegenerar.textContent = 'Generar otra situación';
+  }
+
+  // Punto de partida del profesor: nada precargado. La situación la genera,
+  // la importa o la escribe él cuando quiera.
+  function dejarActividadEnBlanco(){
+    limpiarResultados();
+    feedbackList.innerHTML = '';
+    currentSituation = null;
+    levelTag.textContent = '';
+    scenarioNarrative.innerHTML = '<p class="bhint">Todavía no hay situación. Elige el nivel y pulsa <b>Generar situación</b>, importa un FPL o escribe la situación en el cuadro de arriba y llena el formulario a mano.</p>';
+    scenarioGrid.innerHTML = '';
+    limpiarFormulario(false);
+    bloquearFormulario(false);
+    actTitulo.value = '';
+    actLimite.value = '';
+    actIntentos.value = '';
+    actDesc.value = '';
+    actNarrativa.value = '';
+    $('importarPanel').style.display = 'none';
+    $('importarTexto').value = '';
+    $('importarAviso').innerHTML = '';
+    actRegenerar.textContent = 'Generar situación';
   }
 
   function iniciarModoCrear(){
@@ -4130,7 +4243,10 @@ btnAyuda.addEventListener('click', () => {
     btnSiguiente.style.display = 'none';
     btnDatos.style.display = 'none';
     btnPDF.style.display = 'none';
-    regenerarParaProfesor();
+    refrescarBotonImportar();
+    const errores = $('erroresPanel');
+    if(errores) errores.style.display = 'none';
+    dejarActividadEnBlanco();
   }
 
   // Comprueba la clave contra sí misma: las comparaciones con "lo esperado"
@@ -4157,6 +4273,396 @@ btnAyuda.addEventListener('click', () => {
 
   if(actRegenerar) actRegenerar.addEventListener('click', regenerarParaProfesor);
 
+  // ==========================================================================
+  // REDACTAR LA SITUACIÓN A PARTIR DEL FORMULARIO
+  // Convierte un plan ya diligenciado (normalmente un FPL real importado) en
+  // una situación escrita que NO entrega los códigos: el equipo va en palabras,
+  // los aeródromos y las FIR por su nombre (el alumno busca el indicador), la
+  // matrícula con su guion, las fechas y duraciones en lenguaje corriente.
+  //
+  // Lo que es un dato puro —distintivo de llamada, ruta, dirección Modo S,
+  // observaciones del explotador— va literal. Lo que no se puede describir con
+  // certeza (texto libre de NAV/, DAT/, SUR/…, o un código que no está en las
+  // tablas) también va literal y se le avisa al profesor: no se inventa.
+  // ==========================================================================
+
+  // Sólo para la redacción; no alimentan a los generadores de escenarios.
+  const AERODROMOS_EXTRA = [
+    {cod:'SKPV', nom:'Providencia (El Embrujo)'},
+    {cod:'SKMD', nom:'Medellín (Enrique Olaya Herrera)'},
+    {cod:'SKSM', nom:'Santa Marta (Simón Bolívar)'},
+    {cod:'MPTO', nom:'Ciudad de Panamá (Tocumen), Panamá'},
+    {cod:'MPPA', nom:'Ciudad de Panamá (Albrook «Marcos A. Gelabert»), Panamá'},
+    {cod:'MPSM', nom:'Río Hato (Scarlett Martínez), Panamá'},
+    {cod:'MSLP', nom:'San Salvador (Monseñor Óscar Arnulfo Romero), El Salvador'},
+    // Nacionales
+    {cod:'SKUI', nom:'Quibdó (El Caraño)'},
+    {cod:'SKMR', nom:'Montería (Los Garzones)'},
+    {cod:'SKGI', nom:'Girardot (Santiago Vila)'},
+    {cod:'SKBG', nom:'Bucaramanga (Palonegro)'},
+    {cod:'SKRH', nom:'Riohacha (Almirante Padilla)'},
+    {cod:'SKVP', nom:'Valledupar (Alfonso López Pumarejo)'},
+    {cod:'SKMZ', nom:'Manizales (La Nubia)'},
+    {cod:'SKIB', nom:'Ibagué (Perales)'},
+    {cod:'SKNV', nom:'Neiva (Benito Salas)'},
+    {cod:'SKPP', nom:'Popayán (Guillermo León Valencia)'},
+    {cod:'SKEJ', nom:'Barrancabermeja (Yariguíes)'},
+    {cod:'SKCZ', nom:'Corozal (Las Brujas)'},
+    {cod:'SKTM', nom:'Tame (Gustavo Vargas)'},
+    {cod:'SKUC', nom:'Arauca (Santiago Pérez Quiroz)'},
+    {cod:'SKAS', nom:'Puerto Asís (Tres de Mayo)'},
+    {cod:'SKTU', nom:'Turbo (Gonzalo Mejía)'},
+    {cod:'SKCO', nom:'Tumaco (La Florida)'},
+    {cod:'SKBU', nom:'Buenaventura (Gerardo Tobar López)'},
+    {cod:'SKGP', nom:'Guapi (Juan Casiano)'},
+    {cod:'SKFL', nom:'Florencia (Gustavo Artunduaga Paredes)'},
+    {cod:'SKMU', nom:'Mitú (Fabio Alberto León Bentley)'},
+    {cod:'SKPC', nom:'Puerto Carreño (Germán Olano)'},
+    {cod:'SKNQ', nom:'Nuquí (Reyes Murillo)'},
+    {cod:'SKLC', nom:'Carepa (Antonio Roldán Betancourt)'},
+    {cod:'SKPI', nom:'Pitalito (Contador)'},
+    {cod:'SKOC', nom:'Ocaña (Aguas Claras)'},
+    {cod:'SKCU', nom:'Caucasia (Juan H. White)'},
+    {cod:'SKMG', nom:'Magangué (Baracoa)'},
+    {cod:'SKGY', nom:'Bogotá (Guaymaral)'},
+    // Internacionales frecuentes desde Colombia
+    {cod:'KFLL', nom:'Fort Lauderdale, Estados Unidos'},
+    {cod:'KJFK', nom:'Nueva York (John F. Kennedy), Estados Unidos'},
+    {cod:'KMCO', nom:'Orlando, Estados Unidos'},
+    {cod:'KIAH', nom:'Houston (George Bush Intercontinental), Estados Unidos'},
+    {cod:'KATL', nom:'Atlanta (Hartsfield-Jackson), Estados Unidos'},
+    {cod:'KEWR', nom:'Newark, Estados Unidos'},
+    {cod:'MMUN', nom:'Cancún, México'},
+    {cod:'MMGL', nom:'Guadalajara, México'},
+    {cod:'SEQM', nom:'Quito (Mariscal Sucre), Ecuador'},
+    {cod:'SEGU', nom:'Guayaquil (José Joaquín de Olmedo), Ecuador'},
+    {cod:'SCEL', nom:'Santiago (Arturo Merino Benítez), Chile'},
+    {cod:'SAEZ', nom:'Buenos Aires (Ezeiza), Argentina'},
+    {cod:'SBGR', nom:'São Paulo (Guarulhos), Brasil'},
+    {cod:'SLVR', nom:'Santa Cruz (Viru Viru), Bolivia'},
+    {cod:'SUMU', nom:'Montevideo (Carrasco), Uruguay'},
+    {cod:'SVMC', nom:'Maracaibo (La Chinita), Venezuela'},
+    {cod:'LEMD', nom:'Madrid (Barajas), España'},
+    {cod:'LEBL', nom:'Barcelona (El Prat), España'},
+    {cod:'LFPG', nom:'París (Charles de Gaulle), Francia'},
+    {cod:'EHAM', nom:'Ámsterdam (Schiphol), Países Bajos'},
+    {cod:'EDDF', nom:'Fráncfort, Alemania'},
+    {cod:'MDSD', nom:'Santo Domingo (Las Américas), República Dominicana'},
+    {cod:'MDPC', nom:'Punta Cana, República Dominicana'},
+    {cod:'TNCC', nom:'Curazao (Hato)'},
+    {cod:'TNCA', nom:'Aruba (Reina Beatriz)'},
+    {cod:'MKJP', nom:'Kingston (Norman Manley), Jamaica'},
+    {cod:'MUHA', nom:'La Habana (José Martí), Cuba'},
+    {cod:'MGGT', nom:'Ciudad de Guatemala (La Aurora), Guatemala'},
+    {cod:'MNMG', nom:'Managua (Augusto C. Sandino), Nicaragua'}
+  ];
+  const AERONAVES_EXTRA = [
+    {tipo:'AT45', nombre:'ATR 42-500'},
+    {tipo:'AC90', nombre:'Turbo Commander 690'},
+    {tipo:'BE9L', nombre:'Beechcraft King Air 90'},
+    {tipo:'CN35', nombre:'CASA CN-235'},
+    {tipo:'B39M', nombre:'Boeing 737 MAX 9'},
+    {tipo:'AT43', nombre:'ATR 42-300'},
+    {tipo:'AT75', nombre:'ATR 72-500'},
+    {tipo:'E170', nombre:'Embraer 170'},
+    {tipo:'B744', nombre:'Boeing 747-400'},
+    {tipo:'B748', nombre:'Boeing 747-8'},
+    {tipo:'B77L', nombre:'Boeing 777-200LR / 777F'},
+    {tipo:'B78X', nombre:'Boeing 787-10'},
+    {tipo:'A359', nombre:'Airbus A350-900'},
+    {tipo:'A339', nombre:'Airbus A330-900neo'},
+    {tipo:'C295', nombre:'Airbus C295'},
+    {tipo:'B350', nombre:'Beechcraft King Air 350'},
+    {tipo:'C150', nombre:'Cessna 150'},
+    {tipo:'C206', nombre:'Cessna 206'},
+    {tipo:'PA31', nombre:'Piper PA-31 Navajo'},
+    {tipo:'PA34', nombre:'Piper PA-34 Seneca'},
+    {tipo:'P28A', nombre:'Piper PA-28 Cherokee'},
+    {tipo:'DA42', nombre:'Diamond DA42 Twin Star'},
+    {tipo:'LJ45', nombre:'Learjet 45'},
+    {tipo:'C56X', nombre:'Cessna Citation Excel'},
+    {tipo:'GLF4', nombre:'Gulfstream IV'},
+    {tipo:'H60',  nombre:'Sikorsky UH-60 Black Hawk'},
+    {tipo:'B412', nombre:'Bell 412'}
+  ];
+  const FIRS = {
+    SKED:'Bogotá', SKEC:'Barranquilla', MPZL:'Panamá', SPIM:'Lima', SEGU:'Guayaquil',
+    SVZM:'Maiquetía', MHTG:'Centroamérica', TNCF:'Curazao', MKJK:'Kingston',
+    KZMA:'Miami', SBAZ:'Amazónica', MDCS:'Santo Domingo', TTZP:'Piarco',
+    GVSC:'Sal Oceánica', MUFH:'La Habana', TJZS:'San Juan', MMFR:'México'
+  };
+  // Doc 4444, Ap. 2, casilla 18, indicador STS/.
+  const STS_PROSA = {
+    ALTRV:'se realiza de acuerdo con una reserva de altitud',
+    ATFMX:'la autoridad ATS lo aprobó como exento de las medidas ATFM',
+    FFR:'es un vuelo de extinción de incendios',
+    FLTCK:'es una verificación en vuelo para calibrar radioayudas',
+    HAZMAT:'transporta mercancías peligrosas',
+    HEAD:'lleva la categoría de vuelo de Jefe de Estado',
+    HOSP:'es un vuelo médico declarado por las autoridades médicas',
+    HUM:'es una misión humanitaria',
+    MARSA:'una entidad militar asume la separación de las aeronaves militares',
+    MEDEVAC:'es una evacuación médica de emergencia crítica para la vida',
+    NONRVSM:'la aeronave no tiene capacidad RVSM pero se propone volar en espacio aéreo RVSM',
+    SAR:'es una misión de búsqueda y salvamento',
+    STATE:'es un vuelo de servicios militares, de aduanas o de policía'
+  };
+  // Doc 8168: categoría de aproximación según la velocidad en el umbral (Vat).
+  const PER_PROSA = {
+    A:'su velocidad en el umbral (Vat) es inferior a 91 kt',
+    B:'su velocidad en el umbral (Vat) está entre 91 y 120 kt',
+    C:'su velocidad en el umbral (Vat) está entre 121 y 140 kt',
+    D:'su velocidad en el umbral (Vat) está entre 141 y 165 kt',
+    E:'su velocidad en el umbral (Vat) está entre 166 y 210 kt',
+    H:'es un helicóptero'
+  };
+  // Prefijos de nacionalidad que se escriben con guion en la matrícula (la de
+  // Estados Unidos, N, va sin guion). Si no se reconoce, se deja como viene.
+  const PREFIJOS_REG = ['HK','HP','CC','TI','YV','HC','OB','LV','CP','CX','ZP','TG','HR','YN','YS','HI',
+                        'XA','XB','XC','PP','PR','PS','PT','EC'];
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+                 'septiembre','octubre','noviembre','diciembre'];
+
+  function nombreAerodromo(cod, literales){
+    const c = norm(cod);
+    const a = AERODROMOS.concat(INTERNACIONALES, AERODROMOS_EXTRA).find(x => x.cod === c);
+    if(a) return a.nom;
+    literales.push(`aeródromo ${c} (no está en las tablas: el texto lleva el indicador)`);
+    return c;
+  }
+  function nombreAeronave(tipo, literales){
+    const t = norm(tipo);
+    const a = AERONAVES.concat(AERONAVES_EXTRA).find(x => x.tipo === t);
+    if(a) return a.nombre;
+    literales.push(`tipo de aeronave ${t} (no está en las tablas: el texto lleva el designador)`);
+    return t;
+  }
+  function horaUTC(hhmm){ return `${hhmm.slice(0,2)}:${hhmm.slice(2,4)} UTC`; }
+  function duracion(hhmm){
+    const h = parseInt(hhmm.slice(0,2),10), m = parseInt(hhmm.slice(2,4),10);
+    if(isNaN(h) || isNaN(m)) return hhmm;
+    return h ? `${h} h ${String(m).padStart(2,'0')} min` : `${m} min`;
+  }
+  function fechaDOF(aammdd){
+    const m = /^(\d{2})(\d{2})(\d{2})$/.exec(aammdd);
+    if(!m || !MESES[parseInt(m[2],10)-1]) return null;
+    return `${parseInt(m[3],10)} de ${MESES[parseInt(m[2],10)-1]} de 20${m[1]}`;
+  }
+  function matriculaConGuion(reg){
+    const r = norm(reg);
+    const p = PREFIJOS_REG.find(x => r.startsWith(x) && r.length > x.length);
+    return p ? `${p}-${r.slice(p.length)}` : r;
+  }
+  function velocidadProsa(v){
+    let m;
+    if((m = /^N(\d{4})$/.exec(v))) return `${parseInt(m[1],10)} nudos`;
+    if((m = /^K(\d{4})$/.exec(v))) return `${parseInt(m[1],10)} km/h`;
+    if((m = /^M(\d)(\d{2})$/.exec(v))) return `Mach ${m[1]},${m[2]}`;
+    return v;
+  }
+  function nivelProsa(n){
+    let m;
+    const miles = x => x.toLocaleString('es-CO');
+    if(n === 'VFR') return 'sin nivel de crucero determinado, en VFR';
+    if((m = /^F(\d{3})$/.exec(n))) return `nivel de vuelo ${parseInt(m[1],10)}`;
+    if((m = /^A(\d{3})$/.exec(n))) return `altitud de ${miles(parseInt(m[1],10)*100)} pies`;
+    if((m = /^S(\d{4})$/.exec(n))) return `nivel métrico normalizado de ${miles(parseInt(m[1],10)*10)} metros`;
+    if((m = /^M(\d{4})$/.exec(n))) return `altitud de ${miles(parseInt(m[1],10)*10)} metros`;
+    return n;
+  }
+
+  // {IND: valor} en el orden en que venían; lo que no tenga indicador conocido
+  // queda en `sueltos`.
+  function trocear18(f18){
+    const t = norm(f18);
+    const marcas = indicadores18(t);
+    const out = {};
+    const sueltos = marcas.length ? t.slice(0, marcas[0].pos).trim() : (t === '0' ? '' : t);
+    marcas.forEach((mk, k) => {
+      const fin = k + 1 < marcas.length ? marcas[k+1].pos : t.length;
+      out[mk.ind] = t.slice(mk.pos + mk.ind.length + 1, fin).trim();
+    });
+    return {datos: out, sueltos};
+  }
+
+  function redactarSituacion(v){
+    const literales = [];
+    const faltan = [];
+    const b = x => `<b>${x}</b>`;
+    const val = k => norm(v[k]);
+    const OBLIGATORIAS = {f7:'casilla 7 (identificación)', f8r:'casilla 8 (reglas de vuelo)', f8t:'casilla 8 (tipo de vuelo)',
+      f9t:'casilla 9 (tipo de aeronave)', f9e:'casilla 9 (estela)', f10a:'casilla 10a', f10b:'casilla 10b',
+      f13a:'casilla 13 (aeródromo de salida)', f13h:'casilla 13 (hora)', f15v:'casilla 15 (velocidad)',
+      f15n:'casilla 15 (nivel)', f15r:'casilla 15 (ruta)', f16d:'casilla 16 (destino)', f16e:'casilla 16 (EET total)'};
+    Object.keys(OBLIGATORIAS).forEach(k => { if(!val(k)) faltan.push(OBLIGATORIAS[k]); });
+
+    const {datos: d18, sueltos} = trocear18(v.f18);
+    const parrafos = [];
+
+    // --- Identificación, reglas, tipo de vuelo y aeronave
+    const REGLAS = {I:'en IFR durante todo el vuelo', V:'en VFR durante todo el vuelo',
+      Y:'empezando en IFR y pasando a VFR en el punto que indica la ruta',
+      Z:'empezando en VFR y pasando a IFR en el punto que indica la ruta'};
+    const TIPOS = {S:'servicio aéreo regular', N:'transporte aéreo no regular', G:'aviación general',
+      M:'aviación militar', X:'una categoría distinta de regular, no regular, general o militar'};
+    const aeronave = val('f9t') === 'ZZZZ'
+      ? 'aeronaves sin designador de tipo asignado'
+      : nombreAeronave(val('f9t'), literales);
+    const cuantas = val('f9n') && parseInt(val('f9n'),10) > 1
+      ? (val('f9t') === 'ZZZZ'
+          ? `una formación de ${b(parseInt(val('f9n'),10))} ${b(aeronave)}`
+          : `una formación de ${b(parseInt(val('f9n'),10))} aeronaves ${b(aeronave)}`)
+      : (val('f9t') === 'ZZZZ' ? b(aeronave) : `un ${b(aeronave)}`);
+    parrafos.push(
+      `El vuelo se identifica como ${b(val('f7'))}. Es un vuelo de ${b(TIPOS[val('f8t')] || val('f8t'))} ` +
+      `que se realiza ${b(REGLAS[val('f8r')] || val('f8r'))}, con ${cuantas}.`);
+
+    // --- Salida, destino, alternos
+    let salida;
+    if(val('f13a') === 'ZZZZ') salida = `Sale de un ${b('aeródromo sin indicador de lugar asignado')}`;
+    else if(val('f13a') === 'AFIL') salida = `El plan se ${b('presenta estando la aeronave en vuelo')}`;
+    else salida = `Sale de ${b(nombreAerodromo(val('f13a'), literales))}`;
+    let destino = val('f16d') === 'ZZZZ'
+      ? b('un aeródromo sin indicador de lugar asignado')
+      : b(nombreAerodromo(val('f16d'), literales));
+    const alternos = [val('f16a1'), val('f16a2')].filter(Boolean).map(a =>
+      a === 'ZZZZ' ? 'uno sin indicador de lugar asignado' : nombreAerodromo(a, literales));
+    let frase = `${salida}, con hora prevista de fuera calzos ${b(horaUTC(val('f13h')))}, hacia ${destino}; ` +
+      `la duración total estimada es de ${b(duracion(val('f16e')))}.`;
+    if(alternos.length) frase += alternos.length === 1
+      ? ` Aeródromo de alternativa de destino: ${b(alternos[0])}.`
+      : ` Aeródromos de alternativa de destino: ${b(alternos[0])} y ${b(alternos[1])}.`;
+    if(d18.DOF){
+      const f = fechaDOF(d18.DOF);
+      if(f) frase += ` La fecha del vuelo es el ${b(f)}.`;
+      else literales.push(`DOF/${d18.DOF} (no es una fecha AAMMDD válida)`);
+    }
+    parrafos.push(frase);
+
+    // --- Crucero y ruta
+    parrafos.push(`Velocidad verdadera de crucero: ${b(velocidadProsa(val('f15v')))}; nivel de crucero: ` +
+      `${b(nivelProsa(val('f15n')))}. Ruta prevista: ${b(val('f15r'))}.`);
+
+    // --- Equipo
+    const tok10a = trocear10a(val('f10a'));
+    tok10a.filter(t => !MAPA10A[t]).forEach(t => literales.push(`letra ${t} de la casilla 10a (no reconocida)`));
+    const tok10b = trocear10b(val('f10b'));
+    tok10b.filter(t => t !== 'N' && !MAPA10B[t]).forEach(t => literales.push(`descriptor ${t} de la casilla 10b (no reconocido)`));
+    // Las listas se mezclan: en el orden del código regalarían el orden
+    // alfanumérico que el alumno debe aplicar.
+    const mezclar = xs => xs.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+    const vigilancia = val('f10b') === 'N'
+      ? 'no lleva equipo de vigilancia'
+      : `lleva ${mezclar(trocear10b(val('f10b')).map(c => prosa10b(c))).join('; ')}`;
+    const lista10a = mezclar(trocear10a(val('f10a')).map(l => prosa10a(l)));
+    let equipo = `${b('Equipo a bordo')}: ${val('f10a') === 'N' ? 'no lleva equipo COM/NAV para la ruta, o no está en servicio' : lista10a.join('; ')}. ` +
+      `${b('Vigilancia')}: ${vigilancia}.`;
+    if(d18.PBN){
+      const cods = (d18.PBN.match(/[A-Z]\d/g) || []);
+      cods.filter(c => !MAPA_PBN[c]).forEach(c => literales.push(`especificación PBN ${c} (no reconocida)`));
+      equipo += ` Está aprobada para navegación basada en la performance con: ${mezclar(cods.map(c => prosaPBNde(c))).join('; ')}.`;
+    }
+    parrafos.push(equipo);
+
+    // --- Otros datos (casilla 18), en un orden distinto del prescrito
+    const otros = [];
+    if(d18.STS) d18.STS.split(/\s+/).forEach(s => {
+      if(STS_PROSA[s]) otros.push(`Tratamiento especial: ${STS_PROSA[s]}.`);
+      else { otros.push(`Tratamiento especial: ${b(s)}.`); literales.push(`STS/${s} (no reconocido)`); }
+    });
+    if(d18.OPR) otros.push(`El explotador es ${b(d18.OPR)}.`);
+    if(d18.REG) otros.push(`Matrícula de la aeronave: ${b(matriculaConGuion(d18.REG))}.`);
+    if(d18.DEP) otros.push(val('f13a') === 'AFIL'
+      ? `Dependencia ATS a la que se presenta el plan: ${b(/^[A-Z]{4}$/.test(d18.DEP) ? 'la de ' + nombreAerodromo(d18.DEP, literales) : d18.DEP)}.`
+      : `Nombre y lugar del aeródromo de salida: ${b(d18.DEP)}.`);
+    if(d18.DEST) otros.push(`Nombre y lugar del aeródromo de destino: ${b(d18.DEST)}.`);
+    if(d18.ALTN) otros.push(d18.ALTN === 'NIL'
+      ? `El explotador ${b('se acoge a la excepción de aeródromo de alternativa')} para este vuelo.`
+      : `Nombre del aeródromo de alternativa de destino: ${b(d18.ALTN)}.`);
+    if(d18.RALT) otros.push(`Alternativa en ruta: ${d18.RALT.split(/\s+/).map(a => b(/^[A-Z]{4}$/.test(a) ? nombreAerodromo(a, literales) : a)).join(', ')}.`);
+    if(d18.TALT) otros.push(`Alternativa de despegue: ${d18.TALT.split(/\s+/).map(a => b(/^[A-Z]{4}$/.test(a) ? nombreAerodromo(a, literales) : a)).join(', ')}.`);
+    if(d18.EET) d18.EET.split(/\s+/).forEach(e => {
+      const m = /^(.+?)(\d{4})$/.exec(e);
+      if(m && FIRS[m[1]]) otros.push(`Estima cruzar el límite de la ${b('FIR ' + FIRS[m[1]])} cuando lleve ${b(duracion(m[2]))} desde el despegue.`);
+      else if(m && /^[A-Z]{2,5}$/.test(m[1]) && m[1].length !== 4) otros.push(`Estima pasar por el punto ${b(m[1])} cuando lleve ${b(duracion(m[2]))} desde el despegue.`);
+      else { otros.push(`Tiempo estimado acumulado: ${b(e)}.`); literales.push(`EET/${e} (FIR o punto no reconocido)`); }
+    });
+    if(d18.SEL) otros.push(`Código SELCAL: ${b(d18.SEL.length === 4 ? d18.SEL.slice(0,2) + '-' + d18.SEL.slice(2) : d18.SEL)}.`);
+    if(d18.CODE) otros.push(`Dirección de aeronave (Modo S): ${b(d18.CODE)}.`);
+    if(d18.PER){
+      if(PER_PROSA[d18.PER]) otros.push(`Para la aproximación, ${PER_PROSA[d18.PER]}.`);
+      else { otros.push(`Categoría de performance: ${b(d18.PER)}.`); literales.push(`PER/${d18.PER} (no reconocida)`); }
+    }
+    const LIBRES = {NAV:'Información de navegación adicional', COM:'Información de comunicaciones adicional',
+      DAT:'Información de enlace de datos adicional', SUR:'Información de vigilancia adicional',
+      TYP:'Tipos de aeronave', DLE:'Demora o espera en ruta', ORGN:'Dirección del originador',
+      RIF:'Ruta hacia el destino revisado'};
+    Object.keys(LIBRES).forEach(ind => {
+      if(!d18[ind]) return;
+      otros.push(`${LIBRES[ind]}: ${b(d18[ind])}.`);
+      literales.push(`${ind}/${d18[ind]} (texto del explotador, va literal)`);
+    });
+    if(d18.RMK) otros.push(`Observaciones: ${b(d18.RMK)}.`);
+    if(sueltos){ otros.push(`Otros datos: ${b(sueltos)}.`); literales.push(`«${sueltos}» en la casilla 18 sin indicador reconocido`); }
+    parrafos.push(otros.length ? otros.join(' ') : 'No hay otra información que declarar.');
+
+    // --- Casilla 19 y firma
+    const hay19 = ['e19','p19','a19','c19'].some(k => val(k));
+    if(hay19){
+      const s19 = [];
+      if(val('e19')) s19.push(`autonomía de ${b(duracion(val('e19')))}`);
+      if(val('p19')) s19.push(val('p19') === 'TBN'
+        ? `el número de ${b('personas a bordo se notificará más adelante')}`
+        : `${b(/^\d+$/.test(val('p19')) ? parseInt(val('p19'),10) : val('p19'))} personas a bordo`);
+      const llevados = (todas, tach, nombres) => todas.filter(l => (tach||[]).indexOf(l) === -1).map(l => nombres[l]);
+      const radios = llevados(['U','V','E'], v.r19x, {U:'UHF 243,0 MHz', V:'VHF 121,5 MHz', E:'ELT'});
+      s19.push(radios.length ? `radios de emergencia: ${b(radios.join(', '))}` : b('sin radios de emergencia'));
+      const superv = llevados(['P','D','M','J'], v.s19x, {P:'polar', D:'desértico', M:'marítimo', J:'de selva'});
+      s19.push(superv.length ? `equipo de supervivencia ${b(superv.join(', '))}` : b('sin equipo de supervivencia'));
+      const chalecos = llevados(['L','F','U','V'], v.j19x, {L:'luz', F:'fluoresceína', U:'radio UHF', V:'radio VHF'});
+      s19.push(chalecos.length ? `chalecos salvavidas con ${b(chalecos.join(', '))}` : b('sin chalecos con luz, fluoresceína ni radio'));
+      if((v.d19x||[]).indexOf('D') !== -1 || !val('d19n')) s19.push(b('sin botes neumáticos'));
+      else s19.push(`${b(val('d19n'))} botes neumáticos` + (val('d19c') ? ` con capacidad total para ${b(parseInt(val('d19c'),10))} personas` : '') +
+        `, ${b((v.d19x||[]).indexOf('C') === -1 ? 'cubiertos' : 'sin cubierta')}` + (val('d19col') ? `, de color ${b(val('d19col'))}` : ''));
+      if(val('a19')) s19.push(`color y marcas de la aeronave: ${b(val('a19'))}`);
+      if((v.n19x||[]).indexOf('N') === -1 && val('n19txt')) s19.push(`observaciones: ${b(val('n19txt'))}`);
+      if(val('c19')) s19.push(`piloto al mando: ${b(val('c19'))}` + (val('c19lic') ? `, licencia ${b(val('c19lic'))}` : ''));
+      parrafos.push(`${b('Información suplementaria')}: ${s19.join('; ')}.`);
+    } else {
+      faltan.push('casilla 19 (autonomía, personas a bordo, color y piloto: el mensaje FPL no la transmite)');
+    }
+    if(val('presentadoPor')) parrafos.push(`Presenta el plan ${b(val('presentadoPor'))}` + (val('licencia') ? `, licencia ${b(val('licencia'))}.` : '.'));
+    else faltan.push('presentado por / licencia');
+
+    return {narrativa: parrafos.join('\n\n'), literales, faltan};
+  }
+
+  const actRedactar = $('actRedactar');
+  if(actRedactar) actRedactar.addEventListener('click', () => {
+    const v = leerForm();
+    if(!norm(v.f7) && !norm(v.f13a) && !norm(v.f16d)){
+      actEstado.textContent = 'El formulario está vacío: importa un FPL o llénalo antes de escribir la situación.';
+      return;
+    }
+    if(actNarrativa.value.trim() && !confirm('Se reemplazará el texto de la situación que ya escribiste. ¿Continuar?')) return;
+
+    const r = redactarSituacion(v);
+    actNarrativa.value = r.narrativa;
+    const origen = nombreAerodromo(v.f13a || '', []), destino = nombreAerodromo(v.f16d || '', []);
+    if(!actTitulo.value.trim()) actTitulo.value = `Plan de vuelo ${norm(v.f7)} — ${origen} → ${destino}`.slice(0, 120);
+    currentSituation = {
+      titulo: actTitulo.value.trim(), narrativa: r.narrativa, nivelTag: 'PLAN DE VUELO REAL',
+      fuenteRuta: '', keys: [], values: v
+    };
+    renderSituacion(Object.assign({}, currentSituation, {narrativa: sanitizarNarrativa(r.narrativa)}));
+
+    const lista = xs => `<ul style="margin:6px 0 0 18px;">${xs.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    let html = '✅ Situación escrita a partir del formulario. Revísala y ajústala antes de publicar.';
+    if(r.faltan.length) html += `<br><br>⚠️ <b>El formulario no tiene estos datos</b>, así que el estudiante no podrá responderlos. Complétalos en el formulario y pulsa de nuevo Redacción automática:${lista(r.faltan)}`;
+    if(r.literales.length) html += `<br>ℹ️ <b>Van literales en el texto</b> (no se pudieron describir sin inventar):${lista(r.literales)}`;
+    actEstado.innerHTML = html;
+  });
+
   if(actPublicar) actPublicar.addEventListener('click', async () => {
     if(typeof crearActividadPlanVuelo !== 'function'){
       actEstado.textContent = 'No se pudo cargar el módulo de profesores. Recarga la página.';
@@ -4175,6 +4681,8 @@ btnAyuda.addEventListener('click', () => {
     }
 
     actPublicar.disabled = true;
+    actRegenerar.disabled = true;
+    bloquearFormulario(true);
     actEstado.textContent = 'Publicando…';
     const res = await crearActividadPlanVuelo({
       grupoId: grupoCrear,
@@ -4192,10 +4700,20 @@ btnAyuda.addEventListener('click', () => {
       clave: leerForm()
     });
     actPublicar.disabled = false;
+    actRegenerar.disabled = false;
 
-    if(!res.ok){ actEstado.textContent = 'No se pudo publicar: ' + res.error; return; }
-    actEstado.innerHTML = '✅ Actividad publicada. Ya aparece en el panel de tu grupo. '
+    if(!res.ok){
+      bloquearFormulario(false);
+      actEstado.textContent = 'No se pudo publicar: ' + res.error;
+      return;
+    }
+    // Lo publicado ya no se edita desde aquí: se limpia todo y la página
+    // queda lista para armar otra actividad.
+    dejarActividadEnBlanco();
+    actEstado.innerHTML = `✅ Actividad <b>«${esc(titulo)}»</b> publicada. Ya aparece en el panel de tu grupo. `
+      + 'Si quieres, arma otra: genera una nueva situación o importa un FPL. '
       + '<a href="panel-profesor.html">Volver al panel</a>.';
+    actPanel.scrollIntoView({behavior:'smooth', block:'start'});
   });
 
   // ---------- Estudiante: resolver la actividad asignada ----------
@@ -4207,6 +4725,7 @@ btnAyuda.addEventListener('click', () => {
     actPanel.style.display = 'block';
     actLabel.textContent = 'Actividad asignada';
     soloFormulario();
+    ocultarAyudaAlumno();
     btnPDF.style.display = 'none';
     informar('Cargando la actividad…');
 
