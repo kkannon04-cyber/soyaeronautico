@@ -2143,3 +2143,113 @@ revoke execute on function public.trg_aviso_rol_profesor()     from public, anon
 -- columna es más caro.
 
 revoke update on public.perfiles from anon;
+
+-- ============================================================
+-- ESTUDIANTE EN HASTA 5 GRUPOS (migración estudiante_hasta_cinco_grupos,
+-- aplicada 2026-09-16)
+--
+-- Antes: inscripciones.estudiante_id era UNIQUE y unirse_a_grupo() hacía
+-- "on conflict do update", así que unirse a un segundo grupo sacaba al
+-- estudiante del primero sin avisar. Ahora suma el grupo, con tope de 5
+-- validado en el servidor. Las funciones que califican ya cruzaban por
+-- inscripciones, así que funcionan con varios grupos sin cambios.
+-- ============================================================
+
+alter table public.inscripciones drop constraint if exists inscripciones_estudiante_id_key;
+alter table public.inscripciones
+  add constraint inscripciones_estudiante_grupo_key unique (estudiante_id, grupo_id);
+
+-- Todos los grupos del estudiante. security definer por la misma razón que
+-- mi_grupo_actual(): las policies no deben consultarse entre sí (recursión).
+create or replace function public.mis_grupos()
+returns setof uuid language sql security definer stable set search_path = public as $$
+  select grupo_id from public.inscripciones where estudiante_id = auth.uid();
+$$;
+revoke execute on function public.mis_grupos() from public, anon;
+grant execute on function public.mis_grupos() to authenticated;
+
+-- Se conserva por compatibilidad, ahora determinista: el grupo más reciente.
+create or replace function public.mi_grupo_actual()
+returns uuid language sql security definer stable set search_path = public as $$
+  select grupo_id from public.inscripciones
+  where estudiante_id = auth.uid()
+  order by fecha desc
+  limit 1;
+$$;
+
+drop policy if exists "El estudiante ve el grupo al que pertenece" on public.grupos;
+create policy "El estudiante ve el grupo al que pertenece"
+  on public.grupos for select
+  using (id in (select public.mis_grupos()));
+
+drop policy if exists "El estudiante ve las actividades publicadas de su grupo" on public.actividades;
+create policy "El estudiante ve las actividades publicadas de su grupo"
+  on public.actividades for select
+  using (activa and grupo_id in (select public.mis_grupos()));
+
+-- Unirse suma el grupo en vez de reemplazar el anterior, con tope de 5.
+-- El candado por estudiante evita que dos peticiones simultáneas dejen
+-- pasar un sexto grupo.
+create or replace function public.unirse_a_grupo(p_codigo text)
+returns table(grupo_id uuid, grupo_nombre text)
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_id uuid;
+  v_nombre text;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión para unirte a un grupo.';
+  end if;
+
+  select g.id, g.nombre into v_id, v_nombre
+  from public.grupos g
+  where g.codigo = upper(trim(p_codigo));
+
+  if not found then
+    raise exception 'Código de grupo no válido.';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtext('inscripciones:' || auth.uid()::text));
+
+  if exists (select 1 from public.inscripciones i
+             where i.estudiante_id = auth.uid() and i.grupo_id = v_id) then
+    raise exception 'Ya perteneces a este grupo.';
+  end if;
+
+  if (select count(*) from public.inscripciones i where i.estudiante_id = auth.uid()) >= 5 then
+    raise exception 'Ya estás en 5 grupos, que es el máximo. Sal de uno para unirte a otro.';
+  end if;
+
+  insert into public.inscripciones (estudiante_id, grupo_id)
+  values (auth.uid(), v_id);
+
+  return query select v_id, v_nombre;
+end;
+$$;
+
+-- Entregas del estudiante en actividades de grupos de los que ya salió.
+-- Sin esto perdería la puerta a "Ver mi entrega" al salir del grupo; las
+-- funciones de revisión ya le permiten abrirlas porque sólo exigen que la
+-- entrega sea suya. Las actividades despublicadas no se listan.
+create or replace function public.mis_entregas_de_grupos_anteriores()
+returns table(actividad_id uuid, titulo text, tipo text, grupo_nombre text,
+              intentos integer, mejor integer, ultima timestamptz, ultimo_resultado_id uuid)
+language sql security definer stable set search_path = public
+as $$
+  select a.id, a.titulo, a.tipo, g.nombre,
+         count(*)::integer,
+         max(r.porcentaje)::integer,
+         max(r.fecha),
+         (array_agg(r.id order by r.fecha desc))[1]
+  from public.resultados_actividad r
+  join public.actividades a on a.id = r.actividad_id
+  join public.grupos g on g.id = a.grupo_id
+  where r.estudiante_id = auth.uid()
+    and a.activa
+    and a.grupo_id not in (select i.grupo_id from public.inscripciones i where i.estudiante_id = auth.uid())
+  group by a.id, a.titulo, a.tipo, g.nombre
+  order by max(r.fecha) desc;
+$$;
+revoke execute on function public.mis_entregas_de_grupos_anteriores() from public, anon;
+grant execute on function public.mis_entregas_de_grupos_anteriores() to authenticated;

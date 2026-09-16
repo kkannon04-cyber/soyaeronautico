@@ -316,6 +316,27 @@
   .grupo-mensaje.ok { color: var(--success); }
   .btn-salir-grupo { background: none; border: 1px solid var(--border-color); color: var(--text-muted); padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; margin-top: 14px; }
   .btn-salir-grupo:hover { border-color: var(--danger); color: var(--danger); }
+  /* Varios grupos (hasta 5) */
+  .grupo-fila { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+  .grupo-fila:first-child { padding-top: 0; }
+  .grupo-fila .grupo-nombre { font-size: 0.95rem; margin-bottom: 2px; }
+  .grupo-fila p { margin: 0; font-size: 0.75rem; }
+  .grupo-fila .btn-salir-grupo { margin-top: 0; flex-shrink: 0; }
+  .grupo-cupo { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; }
+  .grupo-etiqueta { display: inline-block; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600;
+    color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 20px; padding: 2px 8px; margin-left: 6px; }
+
+  /* Historial de actividades (cerradas, completadas o de grupos anteriores) */
+  .act-subtitulo { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0 6px; }
+  .act-historial-btn { width: 100%; display: flex; justify-content: space-between; align-items: center;
+    background: none; border: 1px dashed var(--border-color); border-radius: 8px; padding: 9px 12px; margin-top: 12px;
+    font-size: 0.82rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+  .act-historial-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .act-historial-btn .acordeon-chevron { transition: transform 0.2s ease; }
+  .act-historial-btn[aria-expanded="true"] .acordeon-chevron { transform: rotate(180deg); }
+  .notif-acciones { display: flex; gap: 10px; }
 
   /* Estado de una actividad asignada */
   .badge-estado { display:inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-left: 6px; }
@@ -480,7 +501,10 @@
           <div class="notif-panel" id="notifPanel" hidden>
             <div class="notif-cabecera">
               <span>Novedades</span>
-              <button class="notif-marcar" id="notifMarcar" type="button">Marcar todo como visto</button>
+              <span class="notif-acciones">
+                <button class="notif-marcar" id="notifMarcar" type="button">Marcar como visto</button>
+                <button class="notif-marcar" id="notifVaciar" type="button">Vaciar</button>
+              </span>
             </div>
             <div class="notif-lista" id="notifLista"></div>
           </div>
@@ -627,7 +651,7 @@
 
           <!-- Vínculo con un profesor mediante código de grupo -->
           <div class="panel-card">
-            <div class="panel-header">Mi grupo</div>
+            <div class="panel-header">Mis grupos</div>
             <div id="grupoContainer"></div>
           </div>
 
@@ -1135,18 +1159,24 @@
   // que el panel ya descarga. Lo "visto" se guarda por usuario en este
   // navegador: no es estado compartido, es una conveniencia local.
   const NOTIF_VENCE_DIAS = 3;
+  const NOTIF_CORRECCION_DIAS = 30;  // una corrección deja de avisarse al mes
+  const NOTIF_MAX = 20;              // tope de la lista
   let _notifClaveVistas = 'aisNotifVistas_invitado';
+  let _notifClaveVaciadas = 'aisNotifVaciadas_invitado';
 
-  function leerVistas(){
+  function leerIds(clave){
     try {
-      const v = JSON.parse(localStorage.getItem(_notifClaveVistas));
+      const v = JSON.parse(localStorage.getItem(clave));
       return Array.isArray(v) ? v : [];
     } catch (e) { return []; }
   }
-
-  function guardarVistas(ids){
-    try { localStorage.setItem(_notifClaveVistas, JSON.stringify(ids.slice(0, 200))); } catch (e) {}
+  function guardarIds(clave, ids){
+    // Sin duplicados y conservando los más recientes: la lista no crece sin fin.
+    const unicos = [...new Set(ids)].slice(-300);
+    try { localStorage.setItem(clave, JSON.stringify(unicos)); } catch (e) {}
   }
+  function leerVistas(){ return leerIds(_notifClaveVistas); }
+  function guardarVistas(ids){ guardarIds(_notifClaveVistas, leerVistas().concat(ids)); }
 
   function construirNotificaciones(actividades, correcciones){
     const out = [];
@@ -1157,7 +1187,7 @@
         out.push({
           id: 'act-' + a.id,
           titulo: 'Actividad pendiente',
-          texto: `${escaparHTML(a.titulo)} — tu profesor la publicó y aún no la has presentado.`,
+          texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} — tu profesor la publicó y aún no la has presentado.`,
           fecha: a.fechaLimite || null,
           url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
         });
@@ -1167,9 +1197,10 @@
         const d = diasHasta(a.fechaLimite);
         if (d <= NOTIF_VENCE_DIAS) {
           out.push({
-            id: 'venc-' + a.id + '-' + a.fechaLimite,
+            // El tramo va en el id: si se vació «cierra en 3 días», «cierra hoy» vuelve a avisar.
+            id: 'venc-' + a.id + '-' + a.fechaLimite + '-' + (d <= 0 ? 'hoy' : d === 1 ? 'manana' : 'pronto'),
             titulo: d <= 0 ? 'Cierra hoy' : (d === 1 ? 'Cierra mañana' : `Cierra en ${d} días`),
-            texto: `${escaparHTML(a.titulo)} deja de admitir entregas el ${formatFecha(a.fechaLimite)}.`,
+            texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} deja de admitir entregas el ${formatFecha(a.fechaLimite)}.`,
             fecha: a.fechaLimite,
             url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
           });
@@ -1177,8 +1208,10 @@
       }
     });
 
-    // Correcciones y comentarios del profesor.
-    correcciones.forEach(c => {
+    // Correcciones y comentarios del profesor, sólo los del último mes: antes
+    // se acumulaban para siempre.
+    const limiteCorr = Date.now() - NOTIF_CORRECCION_DIAS * 86400000;
+    correcciones.filter(c => c.fecha && new Date(c.fecha).getTime() >= limiteCorr).forEach(c => {
       const act = actividades.find(a => a.id === c.actividadId);
       const nombre = act ? escaparHTML(act.titulo) : 'una de tus entregas';
       const detalle = c.cambioNota
@@ -1195,41 +1228,63 @@
       });
     });
 
-    // Las más urgentes o recientes primero; sin fecha, al final.
+    // Orden: primero lo que está por cerrar (lo más próximo arriba), luego las
+    // actividades pendientes y al final las correcciones, la más reciente arriba.
+    const peso = i => i.id.startsWith('venc-') ? 0 : i.id.startsWith('act-') ? 1 : 2;
+    const ms = f => f ? new Date(f).getTime() : Infinity;
     return out.sort((a, b) => {
-      if (!a.fecha && !b.fecha) return 0;
-      if (!a.fecha) return 1;
-      if (!b.fecha) return -1;
-      return new Date(a.fecha) - new Date(b.fecha);
+      if (peso(a) !== peso(b)) return peso(a) - peso(b);
+      if (peso(a) === 2) return ms(b.fecha) - ms(a.fecha);
+      return ms(a.fecha) - ms(b.fecha);
     });
   }
 
-  async function renderNotificaciones(actividades, correcciones){
+  async function renderNotificaciones(actividades, correcciones, mostrarCampana){
     const wrap  = document.getElementById('notifWrap');
     const lista = document.getElementById('notifLista');
     const badge = document.getElementById('notifBadge');
 
-    const items = construirNotificaciones(actividades, correcciones);
-    if (items.length === 0) { wrap.style.display = 'none'; return; }
+    // "Vaciar" oculta lo que había en ese momento; una novedad posterior trae
+    // un id distinto (otra corrección, otro plazo) y vuelve a aparecer.
+    const vaciadas = leerIds(_notifClaveVaciadas);
+    const items = construirNotificaciones(actividades, correcciones)
+      .filter(i => vaciadas.indexOf(i.id) === -1)
+      .slice(0, NOTIF_MAX);
+
+    if (items.length === 0 && !mostrarCampana) { wrap.style.display = 'none'; return; }
     wrap.style.display = '';
 
-    const vistas = leerVistas();
-    const sinVer = items.filter(i => vistas.indexOf(i.id) === -1);
+    function pintar(){
+      const vistas = leerVistas();
+      const sinVer = items.filter(i => vistas.indexOf(i.id) === -1);
+      badge.textContent = sinVer.length > 9 ? '9+' : String(sinVer.length);
+      badge.style.display = sinVer.length ? '' : 'none';
 
-    badge.textContent = sinVer.length > 9 ? '9+' : String(sinVer.length);
-    badge.style.display = sinVer.length ? '' : 'none';
+      lista.innerHTML = items.length
+        ? items.map(i => `
+          <a class="notif-item ${vistas.indexOf(i.id) === -1 ? 'nueva' : ''}" href="${i.url}" data-notif="${i.id}">
+            <h5>${i.titulo}</h5>
+            <p>${i.texto}</p>
+            ${i.fecha ? `<span class="notif-cuando">${formatFecha(i.fecha)}</span>` : ''}
+          </a>`).join('')
+        : '<div class="notif-vacio">No tienes novedades.</div>';
 
-    lista.innerHTML = items.map(i => `
-      <a class="notif-item ${vistas.indexOf(i.id) === -1 ? 'nueva' : ''}" href="${i.url}">
-        <h5>${i.titulo}</h5>
-        <p>${i.texto}</p>
-        ${i.fecha ? `<span class="notif-cuando">${formatFecha(i.fecha)}</span>` : ''}
-      </a>`).join('');
+      // Abrir una notificación la marca como vista.
+      lista.querySelectorAll('[data-notif]').forEach(el => {
+        el.addEventListener('click', () => guardarVistas([el.dataset.notif]));
+      });
+    }
+    pintar();
 
     document.getElementById('notifMarcar').onclick = () => {
       guardarVistas(items.map(i => i.id));
-      badge.style.display = 'none';
-      lista.querySelectorAll('.notif-item').forEach(el => el.classList.remove('nueva'));
+      pintar();
+    };
+    document.getElementById('notifVaciar').onclick = () => {
+      guardarIds(_notifClaveVaciadas, vaciadas.concat(items.map(i => i.id)));
+      guardarVistas(items.map(i => i.id));
+      items.length = 0;
+      pintar();
     };
   }
 
@@ -1427,15 +1482,51 @@
     // volver a escribir todo desde cero.
     const codigoUrl = new URLSearchParams(location.search).get('codigo') || '';
     const valorInicial = valorPrevio || codigoUrl;
-    document.getElementById('grupoContainer').innerHTML = `
-      <div class="grupo-box">
-        <p>¿Tu instructor te dio un código de clase? Escríbelo aquí para ver las actividades que te asigne.</p>
+    const grupos = _gruposEstudiante;
+    const lleno = grupos.length >= MAX_GRUPOS_ESTUDIANTE;
+
+    const filas = grupos.map(g => `
+      <div class="grupo-fila">
+        <div>
+          <div class="grupo-nombre">${escaparHTML(g.nombre)}</div>
+          <p>Desde el ${formatFecha(g.desde)}</p>
+        </div>
+        <button class="btn-salir-grupo" type="button" data-salir-grupo="${escaparHTML(g.id)}" data-nombre="${escaparHTML(g.nombre)}">Salir</button>
+      </div>`).join('');
+
+    const formulario = lleno
+      ? `<p class="grupo-cupo">Estás en ${grupos.length} de ${MAX_GRUPOS_ESTUDIANTE} grupos, que es el máximo. Sal de uno para unirte a otro.</p>`
+      : `<p style="margin-top:${grupos.length ? '14px' : '0'};">${grupos.length
+            ? 'Para unirte a otro grupo, escribe el código que te dio tu instructor.'
+            : '¿Tu instructor te dio un código de clase? Escríbelo aquí para ver las actividades que te asigne.'}</p>
         <div class="codigo-form">
           <input type="text" id="codigoGrupoInput" maxlength="12" placeholder="CÓDIGO" value="${escaparHTML(valorInicial)}" aria-label="Código de grupo">
           <button type="button" id="btnUnirmeGrupo">Unirme</button>
         </div>
+        ${grupos.length ? `<p class="grupo-cupo">${grupos.length} de ${MAX_GRUPOS_ESTUDIANTE} grupos</p>` : ''}`;
+
+    document.getElementById('grupoContainer').innerHTML = `
+      <div class="grupo-box">
+        ${filas}
+        ${formulario}
         ${mensaje ? `<div class="grupo-mensaje ${tipoMensaje || ''}">${escaparHTML(mensaje)}</div>` : ''}
       </div>`;
+
+    document.querySelectorAll('[data-salir-grupo]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`¿Salir del grupo «${btn.dataset.nombre}»?\n\nDejarás de ver sus actividades. Tus entregas anteriores se conservan y seguirás viéndolas en el historial de actividades. Puedes volver a entrar con el mismo código.`)) return;
+        btn.disabled = true;
+        const salida = await salirDeGrupo(btn.dataset.salirGrupo);
+        if (!salida.ok) {
+          btn.disabled = false;
+          pintarFormularioGrupo(salida.error, 'error');
+          return;
+        }
+        await refrescarGruposYActividades();
+      });
+    });
+
+    if (lleno) return;
 
     const input = document.getElementById('codigoGrupoInput');
     const boton = document.getElementById('btnUnirmeGrupo');
@@ -1448,15 +1539,17 @@
         pintarFormularioGrupo(res.error, 'error', input.value);
         return;
       }
-      await renderMiGrupo();
-      await renderActividadesAsignadas();
+      await refrescarGruposYActividades(res.grupo ? `Te uniste a «${res.grupo.nombre}».` : '');
     }
 
     boton.addEventListener('click', intentarUnirse);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') intentarUnirse(); });
   }
 
-  async function renderMiGrupo(){
+  // Grupos del estudiante (hasta MAX_GRUPOS_ESTUDIANTE, definido en progreso.js).
+  let _gruposEstudiante = [];
+
+  async function renderMiGrupo(mensajeOk){
     const contenedor = document.getElementById('grupoContainer');
     const sesion = await obtenerSesionActual();
 
@@ -1465,38 +1558,20 @@
         <div class="grupo-box">
           <p>Si tu instructor te dio un código de clase, <a href="login.html" style="color:var(--primary);font-weight:600;">inicia sesión</a> para unirte a su grupo y ver las actividades que te asigne.</p>
         </div>`;
-      return null;
+      _gruposEstudiante = [];
+      return [];
     }
 
-    const res = await obtenerMiGrupo();
-    if (!res.ok || !res.grupo) {
-      pintarFormularioGrupo();
-      return null;
-    }
+    const res = await obtenerGruposDelEstudiante();
+    _gruposEstudiante = res.ok ? res.grupos : [];
+    pintarFormularioGrupo(res.ok ? mensajeOk : res.error, res.ok ? 'ok' : 'error');
+    return _gruposEstudiante;
+  }
 
-    const g = res.grupo;
-    contenedor.innerHTML = `
-      <div class="grupo-box">
-        <div class="grupo-nombre">${escaparHTML(g.nombre)}</div>
-        <p>Estás vinculado a este grupo desde el ${formatFecha(g.desde)}. Las actividades que te asigne tu profesor aparecen en la columna de la izquierda.</p>
-        <button class="btn-salir-grupo" type="button" id="btnSalirGrupo">Salir del grupo</button>
-      </div>`;
-
-    const btnSalirGrupo = document.getElementById('btnSalirGrupo');
-    btnSalirGrupo.addEventListener('click', async () => {
-      if (!confirm('¿Salir de este grupo?\n\nDejarás de ver sus actividades. Tus resultados anteriores se conservan y puedes volver a entrar con el mismo código.')) return;
-      btnSalirGrupo.disabled = true;
-      const salida = await salirDeMiGrupo();
-      if (!salida.ok) {
-        btnSalirGrupo.disabled = false;
-        pintarFormularioGrupo(salida.error, 'error');
-        return;
-      }
-      await renderMiGrupo();
-      await renderActividadesAsignadas();
-    });
-
-    return g;
+  async function refrescarGruposYActividades(mensajeOk){
+    await renderMiGrupo(mensajeOk);
+    const lista = await renderActividadesAsignadas();
+    renderVencimientos(lista);
   }
 
   // Enlace del estudiante a su propia entrega ya calificada (y corregida por
@@ -1517,48 +1592,86 @@
     const sesion = await obtenerSesionActual();
     if (!sesion) { card.style.display = 'none'; return []; }
 
-    const grupo = await obtenerMiGrupo();
-    if (!grupo.ok || !grupo.grupo) { card.style.display = 'none'; return []; }
-
-    const actividades = await obtenerActividadesAsignadas();
+    const [actividades, anteriores] = await Promise.all([
+      _gruposEstudiante.length ? obtenerActividadesAsignadas() : Promise.resolve([]),
+      obtenerEntregasDeGruposAnteriores()
+    ]);
+    if (!_gruposEstudiante.length && !anteriores.length) { card.style.display = 'none'; return []; }
     card.style.display = 'block';
 
-    if (actividades.length === 0) {
-      contenedor.innerHTML = `<div class="empty-state">Tu profesor todavía no ha publicado actividades para este grupo. Cuando lo haga, aparecerán aquí.</div>`;
-      return actividades;
-    }
+    // Pendientes: lo que todavía se puede presentar, lo que cierra antes arriba.
+    // Historial: cerradas, completadas, sin intentos y de grupos anteriores.
+    // Nada desaparece: el historial es la puerta a "Ver mi entrega".
+    const ms = f => f ? new Date(f).getTime() : Infinity;
+    const pendientes = actividades
+      .filter(a => !a.bloqueada && !a.completada)
+      .sort((x, y) => ms(x.fechaLimite) - ms(y.fechaLimite));
+    const historial = actividades
+      .filter(a => a.bloqueada || a.completada)
+      .concat(anteriores)
+      .sort((x, y) => (ms(y.ultima || y.fechaLimite || y.creadoEn) || 0) - (ms(x.ultima || x.fechaLimite || x.creadoEn) || 0));
+    const variosGrupos = _gruposEstudiante.length > 1 || anteriores.length > 0;
 
-    contenedor.innerHTML = '';
-    actividades.forEach(a => {
-      const estado = a.vencida ? 'cerrada' : (a.completada ? 'hecha' : 'pendiente');
-      const textoEstado = a.vencida ? 'Cerrada' : (a.completada ? 'Completada' : 'Pendiente');
+    function itemHTML(a){
+      const estado = a.deGrupoAnterior ? 'cerrada' : a.vencida ? 'cerrada' : (a.completada ? 'hecha' : 'pendiente');
+      const textoEstado = a.deGrupoAnterior ? 'Grupo anterior' : a.vencida ? 'Cerrada' : (a.completada ? 'Completada' : 'Pendiente');
 
       const detalles = [];
       if (a.completada) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · mejor ${a.mejor}%`);
       if (a.fechaLimite) detalles.push(`${a.vencida ? 'Cerró' : 'Cierra'} el ${formatFecha(a.fechaLimite)}`);
       if (a.intentosMax) detalles.push(`Máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}`);
 
-      const item = document.createElement('div');
-      item.className = 'module-item';
-      item.innerHTML = `
-        <div class="module-info">
-          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
-          <span class="badge-estado ${estado}">${textoEstado}</span>
-          <h4>${escaparHTML(a.titulo)}</h4>
-          <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
-          ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
-        </div>
-        <div class="module-acciones">
-          ${a.bloqueada
-            ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-            : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`}
-          ${verEntregaHTML(a)}
-        </div>
-      `;
-      contenedor.appendChild(item);
+      // Una actividad completada que todavía admite intentos puede repetirse.
+      const accion = a.deGrupoAnterior ? ''
+        : a.bloqueada
+          ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
+          : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
+
+      return `
+        <div class="module-item">
+          <div class="module-info">
+            <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
+            <span class="badge-estado ${estado}">${textoEstado}</span>
+            ${variosGrupos && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
+            <h4>${escaparHTML(a.titulo)}</h4>
+            <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
+            ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
+          </div>
+          <div class="module-acciones">
+            ${accion}
+            ${verEntregaHTML(a)}
+          </div>
+        </div>`;
+    }
+
+    let html = pendientes.length
+      ? pendientes.map(itemHTML).join('')
+      : `<div class="empty-state">${actividades.length || anteriores.length
+          ? 'No tienes actividades pendientes.'
+          : 'Tu profesor todavía no ha publicado actividades. Cuando lo haga, aparecerán aquí.'}</div>`;
+
+    if (historial.length) {
+      const abierto = (() => { try { return localStorage.getItem('aisActHistorialAbierto') === '1'; } catch (e) { return false; } })();
+      html += `
+        <button type="button" class="act-historial-btn" id="actHistorialBtn" aria-expanded="${abierto}">
+          <span>Historial (${historial.length}) — cerradas, completadas y de grupos anteriores</span>
+          <svg class="acordeon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div id="actHistorialLista" ${abierto ? '' : 'hidden'}>${historial.map(itemHTML).join('')}</div>`;
+    }
+    contenedor.innerHTML = html;
+
+    const btnHist = document.getElementById('actHistorialBtn');
+    if (btnHist) btnHist.addEventListener('click', () => {
+      const abrir = btnHist.getAttribute('aria-expanded') !== 'true';
+      btnHist.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      document.getElementById('actHistorialLista').hidden = !abrir;
+      try { localStorage.setItem('aisActHistorialAbierto', abrir ? '1' : '0'); } catch (e) {}
     });
 
-    return actividades;
+    // Las notificaciones de correcciones necesitan también las actividades de
+    // grupos anteriores para poner el nombre y el enlace correcto.
+    return actividades.concat(anteriores);
   }
 
   // ---------- ARRANQUE ----------
@@ -1578,11 +1691,14 @@
 
     // Vencimientos y novedades se derivan de las actividades que acabamos de
     // cargar, para no volver a pedirlas a la red.
-    if (sesion) _notifClaveVistas = 'aisNotifVistas_' + sesion.user.id;
+    if (sesion) {
+      _notifClaveVistas = 'aisNotifVistas_' + sesion.user.id;
+      _notifClaveVaciadas = 'aisNotifVaciadas_' + sesion.user.id;
+    }
     const lista = actividades || [];
     renderVencimientos(lista);
     const correcciones = sesion ? await obtenerMisCorrecciones() : [];
-    await renderNotificaciones(lista, correcciones);
+    await renderNotificaciones(lista, correcciones, _gruposEstudiante.length > 0);
   })();
   </script>
 

@@ -466,11 +466,16 @@ async function obtenerMiGrupo() {
   const sesion = await obtenerSesionActual();
   if (!sesion) return { ok: false, error: 'Sin sesión', grupo: null };
 
+  // Desde 2026-09-16 un estudiante puede estar en varios grupos; esta función
+  // se conserva por compatibilidad y devuelve el más reciente. Para la lista
+  // completa usar obtenerGruposDelEstudiante().
   const cliente = obtenerClienteAuth();
   const { data, error } = await cliente
     .from('inscripciones')
     .select('grupo_id, fecha, grupos(nombre, codigo)')
     .eq('estudiante_id', sesion.user.id)
+    .order('fecha', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) { console.error('No se pudo leer el grupo:', error.message); return { ok: false, error: error.message, grupo: null }; }
@@ -487,6 +492,74 @@ async function obtenerMiGrupo() {
   };
 }
 
+// ---------- GRUPOS DEL ESTUDIANTE (hasta 5) ----------
+// El tope lo impone el servidor en unirse_a_grupo(); aquí sólo se refleja.
+const MAX_GRUPOS_ESTUDIANTE = 5;
+
+async function obtenerGruposDelEstudiante() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Sin sesión', grupos: [] };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('inscripciones')
+    .select('grupo_id, fecha, grupos(nombre, codigo)')
+    .eq('estudiante_id', sesion.user.id)
+    .order('fecha', { ascending: true });
+
+  if (error) { console.error('No se pudieron leer los grupos:', error.message); return { ok: false, error: error.message, grupos: [] }; }
+
+  return {
+    ok: true,
+    grupos: (data || []).map(i => ({
+      id: i.grupo_id,
+      nombre: i.grupos ? i.grupos.nombre : 'Grupo',
+      codigo: i.grupos ? i.grupos.codigo : '',
+      desde: i.fecha
+    }))
+  };
+}
+
+async function salirDeGrupo(grupoId) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Sin sesión' };
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente
+    .from('inscripciones')
+    .delete()
+    .eq('estudiante_id', sesion.user.id)
+    .eq('grupo_id', grupoId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// Entregas en actividades de grupos de los que el estudiante ya salió. La
+// RLS ya no le deja leer esas actividades, así que el servidor le entrega
+// sólo lo necesario para listar la entrega y abrirla.
+async function obtenerEntregasDeGruposAnteriores() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return [];
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('mis_entregas_de_grupos_anteriores');
+  if (error) { console.error('No se pudieron leer las entregas anteriores:', error.message); return []; }
+  return (data || []).map(r => ({
+    id: r.actividad_id,
+    titulo: r.titulo,
+    tipo: r.tipo,
+    grupoNombre: r.grupo_nombre,
+    intentos: r.intentos,
+    mejor: r.mejor,
+    ultima: r.ultima,
+    ultimoResultadoId: r.ultimo_resultado_id,
+    completada: true,
+    vencida: false,
+    bloqueada: true,
+    deGrupoAnterior: true
+  }));
+}
+
+// Sale de TODOS los grupos. Se conserva por compatibilidad; el panel usa
+// salirDeGrupo(grupoId).
 async function salirDeMiGrupo() {
   const sesion = await obtenerSesionActual();
   if (!sesion) return { ok: false, error: 'Sin sesión' };
@@ -506,7 +579,7 @@ async function obtenerActividadesAsignadas() {
   const cliente = obtenerClienteAuth();
   const { data: actividades, error } = await cliente
     .from('actividades')
-    .select('id, titulo, descripcion, tipo, fecha_limite, intentos_max, creado_en')
+    .select('id, titulo, descripcion, tipo, fecha_limite, intentos_max, creado_en, grupo_id, grupos(nombre)')
     .order('creado_en', { ascending: false });
 
   if (error) { console.error('No se pudieron leer las actividades asignadas:', error.message); return []; }
@@ -538,6 +611,9 @@ async function obtenerActividadesAsignadas() {
       titulo: a.titulo,
       descripcion: a.descripcion,
       tipo: a.tipo,
+      grupoId: a.grupo_id,
+      grupoNombre: a.grupos ? a.grupos.nombre : '',
+      creadoEn: a.creado_en,
       fechaLimite: a.fecha_limite,
       intentosMax: a.intentos_max,
       intentos: estado.intentos,
