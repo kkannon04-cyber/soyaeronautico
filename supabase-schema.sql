@@ -1015,10 +1015,33 @@ returns boolean language sql immutable set search_path = public as $$
   ), '{}');
 $$;
 
+-- Descriptores de la casilla 10 ordenados: una letra, seguida de una cifra si
+-- la lleva (E1, J3, B1, U2…). Si queda cualquier otro carácter devuelve null,
+-- que nunca es igual a nada. La casilla 10 se califica así, sin importar el
+-- orden: el Doc 4444 no prescribe uno y 22 de 77 FPL reales de Colombia no
+-- siguen el alfanumérico (migración plan_vuelo_casilla10_sin_orden).
+create or replace function public.fpl_descriptores(p_valor jsonb)
+returns text[] language sql immutable set search_path = public as $$
+  select case
+    when regexp_replace(fpl_norm(p_valor), '[A-Z][0-9]?', '', 'g') <> '' then null
+    else coalesce((
+      select array_agg(t[1] order by t[1])
+      from regexp_matches(fpl_norm(p_valor), '[A-Z][0-9]?', 'g') as t
+    ), '{}'::text[])
+  end;
+$$;
+
 -- Califica el formulario entregado contra la clave guardada y registra el
--- resultado. Las 20 revisiones son exactamente las mismas que muestra el
--- simulador en pantalla, para que la nota del servidor y la
+-- resultado. Las 10 revisiones (casillas 7 a 18) son exactamente las mismas
+-- que muestra el simulador en pantalla, para que la nota del servidor y la
 -- retroalimentación del navegador nunca se contradigan.
+--
+-- Hasta el 2026-09-16 eran 20: también la casilla 19 (9 revisiones) y
+-- "Presentado por / Licencia". Se quitaron a pedido del usuario porque en
+-- clase casi ningún plan las trae y dejarlas en blanco restaba nota
+-- (migración plan_vuelo_sin_casilla_19). Las entregas anteriores conservan
+-- sus 20 casillas y su nota; corregir_resultado() trabaja sobre las casillas
+-- guardadas en cada entrega, así que sigue funcionando con ambas.
 create or replace function public.calificar_plan_vuelo(p_actividad_id uuid, p_valores jsonb)
 returns jsonb
 language plpgsql
@@ -1033,6 +1056,7 @@ declare
   v_correctas integer := 0;
   v_detalle jsonb := '[]'::jsonb;
   v_porcentaje integer;
+  v_restantes integer;
 begin
   if auth.uid() is null then
     raise exception 'Debes iniciar sesión.';
@@ -1071,7 +1095,8 @@ begin
     raise exception 'Esta actividad todavía no tiene su plan de vuelo cargado.';
   end if;
 
-  -- Las 20 revisiones, en el mismo orden que el simulador.
+  -- Las 10 revisiones, en el mismo orden que el simulador. La casilla 19 y
+  -- "Presentado por / Licencia" se diligencian pero no se califican.
   with revisiones(n, cas, etiqueta, ok) as (
     values
       (1, '7',   'Casilla 7 — Identificación de aeronave',
@@ -1084,10 +1109,11 @@ begin
               fpl_norm(p_valores->'f9n') = fpl_norm(v_clave->'f9n')
               and fpl_norm(p_valores->'f9t') = fpl_norm(v_clave->'f9t')
               and fpl_norm(p_valores->'f9e') = fpl_norm(v_clave->'f9e')),
+      -- La casilla 10 se compara por descriptores, sin importar el orden.
       (5, '10',  'Casilla 10a — Equipo COM/NAV y de aproximación',
-              fpl_norm(p_valores->'f10a') = fpl_norm(v_clave->'f10a')),
+              coalesce(fpl_descriptores(p_valores->'f10a') = fpl_descriptores(v_clave->'f10a'), false)),
       (6, '10',  'Casilla 10b — Equipo de vigilancia',
-              fpl_norm(p_valores->'f10b') = fpl_norm(v_clave->'f10b')),
+              coalesce(fpl_descriptores(p_valores->'f10b') = fpl_descriptores(v_clave->'f10b'), false)),
       (7, '13',  'Casilla 13 — Aeródromo de salida y hora',
               fpl_norm(p_valores->'f13a') = fpl_norm(v_clave->'f13a')
               and fpl_norm(p_valores->'f13h') = fpl_norm(v_clave->'f13h')),
@@ -1101,33 +1127,7 @@ begin
               and fpl_norm(p_valores->'f16a1') = fpl_norm(v_clave->'f16a1')
               and fpl_norm(p_valores->'f16a2') = fpl_norm(v_clave->'f16a2')),
       (10, '18',  'Casilla 18 — Otros datos',
-              fpl_norm(p_valores->'f18') = fpl_norm(v_clave->'f18')),
-      (11, '19E', 'Casilla 19 — E/ Autonomía',
-              fpl_norm(p_valores->'e19') = fpl_norm(v_clave->'e19')),
-      (12, '19P', 'Casilla 19 — P/ Personas a bordo',
-              fpl_norm(p_valores->'p19') = fpl_norm(v_clave->'p19')),
-      (13, '19R', 'Casilla 19 — R/ Radio de emergencia',
-              fpl_mismo_set(p_valores->'r19x', v_clave->'r19x')),
-      (14, '19S', 'Casilla 19 — S/ Equipo de supervivencia',
-              fpl_mismo_set(p_valores->'s19x', v_clave->'s19x')),
-      (15, '19J', 'Casilla 19 — J/ Chalecos',
-              fpl_mismo_set(p_valores->'j19x', v_clave->'j19x')),
-      (16, '19D', 'Casilla 19 — D/ Botes neumáticos',
-              fpl_mismo_set(p_valores->'d19x', v_clave->'d19x')
-              and fpl_norm(p_valores->'d19n') = fpl_norm(v_clave->'d19n')
-              and fpl_norm(p_valores->'d19c') = fpl_norm(v_clave->'d19c')
-              and fpl_norm(p_valores->'d19col') = fpl_norm(v_clave->'d19col')),
-      (17, '19A', 'Casilla 19 — A/ Color y marcas',
-              fpl_norm(p_valores->'a19') = fpl_norm(v_clave->'a19')),
-      (18, '19N', 'Casilla 19 — N/ Observaciones',
-              fpl_mismo_set(p_valores->'n19x', v_clave->'n19x')
-              and fpl_norm(p_valores->'n19txt') = fpl_norm(v_clave->'n19txt')),
-      (19, '19C', 'Casilla 19 — C/ Piloto al mando',
-              fpl_norm(p_valores->'c19') = fpl_norm(v_clave->'c19')
-              and fpl_norm(p_valores->'c19lic') <> ''),
-      (20, 'PRES','Presentado por / Licencia',
-              fpl_norm(p_valores->'presentadoPor') <> ''
-              and fpl_norm(p_valores->'licencia') <> '')
+              fpl_norm(p_valores->'f18') = fpl_norm(v_clave->'f18'))
   )
   select count(*)::integer,
          count(*) filter (where ok)::integer,
@@ -1143,15 +1143,23 @@ begin
     (p_actividad_id, auth.uid(), v_correctas, v_total, v_porcentaje, true,
      jsonb_build_object('tipo', 'plan_vuelo', 'valores', p_valores, 'casillas', v_detalle));
 
-  -- Se devuelve la clave para que el simulador pueda explicar casilla por
-  -- casilla qué estuvo mal, igual que hace calificar_actividad() con la
-  -- respuesta correcta de cada pregunta.
+  -- Intentos que le quedan después de esta entrega (null = sin límite).
+  v_restantes := case when v_act.intentos_max is null then null
+                      else greatest(v_act.intentos_max - (v_intentos + 1), 0) end;
+
+  -- La clave permite al simulador explicar casilla por casilla qué se
+  -- esperaba, pero sólo se entrega si ya no puede volver a intentarlo: con
+  -- intentos pendientes le serviría para copiar la respuesta. Si la actividad
+  -- no tiene límite de intentos, la verá en la revisión cuando cierre.
+  -- (Hasta el 2026-09-16 se devolvía siempre; migración
+  -- plan_vuelo_clave_al_agotar_intentos.)
   return jsonb_build_object(
     'correctas', v_correctas,
     'total', v_total,
     'porcentaje', v_porcentaje,
     'casillas', v_detalle,
-    'clave', v_clave
+    'intentos_restantes', v_restantes,
+    'clave', case when v_restantes = 0 then v_clave else null end
   );
 end;
 $$;
@@ -1160,6 +1168,7 @@ grant execute on function public.calificar_plan_vuelo(uuid, jsonb) to authentica
 revoke execute on function public.calificar_plan_vuelo(uuid, jsonb) from public, anon;
 revoke execute on function public.fpl_norm(jsonb) from public, anon;
 revoke execute on function public.fpl_mismo_set(jsonb, jsonb) from public, anon;
+revoke execute on function public.fpl_descriptores(jsonb) from public, anon;
 
 -- 5) Leer un plan de vuelo ya entregado ------------------------------------
 
@@ -1415,6 +1424,11 @@ revoke execute on function public.corregir_plan_vuelo(uuid, jsonb, text) from pu
 -- obtener_resultado_plan(): añadir el historial de correcciones y el
 -- estado de la actividad, que el panel necesita para avisar si todavía
 -- está abierta a entregas.
+--
+-- 2026-09-16 (plan_vuelo_clave_al_agotar_intentos): el estudiante también
+-- recibe la clave, pero sólo cuando ya no puede volver a entregar (actividad
+-- cerrada, despublicada o sin intentos). Con ella el simulador le muestra qué
+-- se esperaba y el plan correcto en formato FPL.
 -- ------------------------------------------------------------
 create or replace function public.obtener_resultado_plan(p_resultado_id uuid)
 returns jsonb
@@ -1431,6 +1445,8 @@ declare
   v_nombre text;
   v_correcciones jsonb;
   v_es_profesor boolean;
+  v_intentos integer;
+  v_puede_reintentar boolean;
 begin
   if auth.uid() is null then
     raise exception 'Debes iniciar sesión.';
@@ -1460,6 +1476,15 @@ begin
     into v_nombre
   from public.perfiles p
   where p.id = v_res.estudiante_id;
+
+  -- ¿Puede el dueño de esta entrega volver a entregar la actividad?
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = v_res.actividad_id and estudiante_id = v_res.estudiante_id;
+
+  v_puede_reintentar := v_act.activa
+    and (v_act.fecha_limite is null or now() <= v_act.fecha_limite)
+    and (v_act.intentos_max is null or v_intentos < v_act.intentos_max);
 
   -- Historial de correcciones, de la más reciente a la más antigua.
   select coalesce(jsonb_agg(
@@ -1498,9 +1523,10 @@ begin
     'correcciones', v_correcciones,
     'enunciado', v_enunciado,
     'es_profesor', v_es_profesor,
-    -- Sólo el profesor recibe la clave: el estudiante podría tener intentos
-    -- pendientes en esta misma actividad.
-    'clave', case when v_es_profesor then v_clave else null end
+    'puede_reintentar', v_puede_reintentar,
+    -- El profesor recibe siempre la clave. El estudiante, sólo cuando ya no
+    -- puede volver a entregar: antes le serviría para copiar la respuesta.
+    'clave', case when v_es_profesor or not v_puede_reintentar then v_clave else null end
   );
 end;
 $$;

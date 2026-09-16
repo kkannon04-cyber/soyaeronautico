@@ -345,6 +345,35 @@
   .badge-estado.cerrada { background: rgba(100,116,139,0.16); color: var(--text-muted); }
   .btn-launch:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
 
+  /* === SECCIÓN ACTIVIDADES (#actividades, dentro de esta misma página) === */
+  .nav-contador { margin-left: auto; min-width: 20px; padding: 1px 7px; border-radius: 10px; background: var(--warning);
+    color: #0f172a; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; text-align: center; }
+  .act-pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .act-pie p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+  .act-grupos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .act-grupo-card { display: flex; flex-direction: column; gap: 12px; background: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+  .act-grupo-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-color: var(--primary); }
+  .act-grupo-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .act-grupo-card p { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
+  .act-cifras { display: flex; flex-wrap: wrap; gap: 6px; }
+  .act-cifras .badge-estado { margin-left: 0; }
+  .act-cierre { align-self: flex-start; white-space: normal; }
+  .act-volver { display: inline-block; font-size: 0.82rem; font-weight: 600; color: var(--primary); margin-bottom: 10px; }
+  .act-volver:hover { text-decoration: underline; }
+  .act-nota { font-size: 0.85rem; color: var(--text-muted); margin: -6px 0 16px; line-height: 1.5; }
+  #actEncabezado:focus { outline: none; }
+  .act-pestanas { display: flex; gap: 4px; padding: 4px; background: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 10px; margin-bottom: 16px; }
+  .act-pestana { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: none;
+    border-radius: 7px; padding: 9px 10px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+  .act-pestana:hover { color: var(--primary); }
+  .act-pestana[aria-pressed="true"] { background: var(--primary); color: #fff; }
+  .act-pestana-num { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 10px;
+    background: var(--border-color); color: var(--text-main); }
+  .act-pestana[aria-pressed="true"] .act-pestana-num { background: rgba(255,255,255,0.22); color: #fff; }
+  @media (max-width: 480px) { .act-pestana { flex-direction: column; gap: 3px; padding: 7px 4px; font-size: 0.78rem; } }
+
   /* Racha de estudio */
   .streak-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
   .streak-summary { display: flex; gap: 24px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -435,9 +464,15 @@
       </div>
     </a>
     <div class="nav-menu">
-      <a class="nav-item active" href="Panel_estudiante.html">
+      <a class="nav-item active" href="Panel_estudiante.html" id="navPanel" data-vista="panel" aria-current="page">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
         Panel Principal
+      </a>
+      <!-- Sección de esta misma página (ver aplicarRuta); el contador son las pendientes -->
+      <a class="nav-item" href="#actividades" id="navActividades" data-vista="actividades">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17.5" rx="1.5"/><path d="M9 2.5h6v3H9z"/><path d="m9 13.5 2 2 4-4"/></svg>
+        Actividades
+        <span class="nav-contador" id="navActividadesContador" style="display:none;">0</span>
       </a>
       <a class="nav-item" href="ats.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 21 10.4 6M14.5 21 13.6 6"/><path d="M8.5 9h7v3h-7z"/><path d="M12 4v2"/></svg>
@@ -523,7 +558,7 @@
     </header>
 
     <!-- CONTENIDO DASHBOARD -->
-    <div class="dashboard-container">
+    <div class="dashboard-container" id="vistaPanel">
 
       <!-- Saludo -->
       <div class="welcome-section">
@@ -576,8 +611,9 @@
 
         <!-- Columna Izquierda: Herramientas -->
         <div>
-          <!-- Actividades que asignó el profesor (solo si el estudiante
-               está vinculado a un grupo; si no, esta tarjeta no se muestra) -->
+          <!-- Resumen de las actividades del profesor: sólo las 3 pendientes
+               publicadas más recientemente. Todo lo demás (por grupo y por
+               estado) está en la sección Actividades (#actividades). -->
           <div class="panel-card" id="actividadesCard" style="display:none;">
             <button type="button" class="panel-header acordeon-toggle" data-acordeon="actividades" aria-expanded="true">
               <span>Actividades de mi profesor</span>
@@ -649,10 +685,11 @@
             <div id="vencimientosContainer"></div>
           </div>
 
-          <!-- Vínculo con un profesor mediante código de grupo -->
+          <!-- Vínculo con un profesor mediante código de grupo. Está también
+               en la sección Actividades; ver contenedoresGrupo(). -->
           <div class="panel-card">
             <div class="panel-header">Mis grupos</div>
-            <div id="grupoContainer"></div>
+            <div id="grupoContainerPanel"></div>
           </div>
 
           <!-- RACHA DE ESTUDIO -->
@@ -694,6 +731,27 @@
 
       </div>
     </div>
+
+    <!-- SECCIÓN ACTIVIDADES (#actividades y #actividades/<grupo>). Se muestra
+         en lugar del panel principal; ver aplicarRuta(). -->
+    <div class="dashboard-container" id="vistaActividades" hidden>
+      <div class="welcome-section">
+        <div>
+          <h2>Actividades</h2>
+          <p>Lo que te asignaron tus profesores, por grupo y por estado.</p>
+        </div>
+      </div>
+      <div class="content-grid">
+        <div id="actVistaContenido"></div>
+        <div>
+          <!-- Vínculo con un profesor mediante código de grupo -->
+          <div class="panel-card">
+            <div class="panel-header">Mis grupos</div>
+            <div id="grupoContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   <div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
 </main>
 
@@ -731,6 +789,9 @@
       try{ localStorage.setItem(CLAVE, oculto ? 'oculto' : 'visible'); }catch(e){ /* almacenamiento bloqueado */ }
     });
     backdrop.addEventListener('click', cerrarCajon);
+    // Panel Principal y Actividades cambian de vista sin recargar la página, así que
+    // en móvil el cajón no se cerraría solo.
+    sidebar.addEventListener('click', e => { if(esMovil() && e.target.closest('[data-vista]')) cerrarCajon(); });
     document.addEventListener('keydown', e => { if(e.key === 'Escape') cerrarCajon(); });
     // Al pasar de móvil a escritorio, el cajón deja de tener sentido y debe quedar cerrado.
     window.addEventListener('resize', () => { if(!esMovil()){ cerrarCajon(); aplicarPlegado(document.documentElement.classList.contains('sidebar-collapsed')); } });
@@ -1474,6 +1535,15 @@
       '<a class="nav-item" href="panel-profesor.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg>Panel del Profesor</a>';
   }
 
+  // "Mis grupos" se muestra en el panel principal y en la sección Actividades.
+  // Los dos se pintan igual y cada uno lleva sus propios controles (sin ids,
+  // para no duplicarlos): unirse o salir desde cualquiera refresca ambos.
+  function contenedoresGrupo(){
+    return ['grupoContainerPanel', 'grupoContainer']
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+  }
+
   function pintarFormularioGrupo(mensaje, tipoMensaje, valorPrevio){
     // Permite llegar con el código ya puesto desde un enlace de invitación
     // (Panel_estudiante.html?codigo=XXXXXX), sin tener que escribirlo. Si el
@@ -1500,64 +1570,67 @@
             ? 'Para unirte a otro grupo, escribe el código que te dio tu instructor.'
             : '¿Tu instructor te dio un código de clase? Escríbelo aquí para ver las actividades que te asigne.'}</p>
         <div class="codigo-form">
-          <input type="text" id="codigoGrupoInput" maxlength="12" placeholder="CÓDIGO" value="${escaparHTML(valorInicial)}" aria-label="Código de grupo">
-          <button type="button" id="btnUnirmeGrupo">Unirme</button>
+          <input type="text" class="codigo-grupo-input" maxlength="12" placeholder="CÓDIGO" value="${escaparHTML(valorInicial)}" aria-label="Código de grupo">
+          <button type="button" class="btn-unirme-grupo">Unirme</button>
         </div>
         ${grupos.length ? `<p class="grupo-cupo">${grupos.length} de ${MAX_GRUPOS_ESTUDIANTE} grupos</p>` : ''}`;
 
-    document.getElementById('grupoContainer').innerHTML = `
-      <div class="grupo-box">
-        ${filas}
-        ${formulario}
-        ${mensaje ? `<div class="grupo-mensaje ${tipoMensaje || ''}">${escaparHTML(mensaje)}</div>` : ''}
-      </div>`;
+    contenedoresGrupo().forEach(contenedor => {
+      contenedor.innerHTML = `
+        <div class="grupo-box">
+          ${filas}
+          ${formulario}
+          ${mensaje ? `<div class="grupo-mensaje ${tipoMensaje || ''}">${escaparHTML(mensaje)}</div>` : ''}
+        </div>`;
 
-    document.querySelectorAll('[data-salir-grupo]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm(`¿Salir del grupo «${btn.dataset.nombre}»?\n\nDejarás de ver sus actividades. Tus entregas anteriores se conservan y seguirás viéndolas en el historial de actividades. Puedes volver a entrar con el mismo código.`)) return;
-        btn.disabled = true;
-        const salida = await salirDeGrupo(btn.dataset.salirGrupo);
-        if (!salida.ok) {
-          btn.disabled = false;
-          pintarFormularioGrupo(salida.error, 'error');
+      contenedor.querySelectorAll('[data-salir-grupo]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm(`¿Salir del grupo «${btn.dataset.nombre}»?\n\nDejarás de ver sus actividades. Tus entregas anteriores se conservan y seguirás viéndolas en Actividades › Grupos anteriores. Puedes volver a entrar con el mismo código.`)) return;
+          btn.disabled = true;
+          const salida = await salirDeGrupo(btn.dataset.salirGrupo);
+          if (!salida.ok) {
+            btn.disabled = false;
+            pintarFormularioGrupo(salida.error, 'error');
+            return;
+          }
+          await refrescarGruposYActividades();
+        });
+      });
+
+      if (lleno) return;
+
+      const input = contenedor.querySelector('.codigo-grupo-input');
+      const boton = contenedor.querySelector('.btn-unirme-grupo');
+
+      async function intentarUnirse(){
+        boton.disabled = true;
+        boton.textContent = 'Uniéndote…';
+        const res = await unirseAGrupo(input.value);
+        if (!res.ok) {
+          pintarFormularioGrupo(res.error, 'error', input.value);
           return;
         }
-        await refrescarGruposYActividades();
-      });
-    });
-
-    if (lleno) return;
-
-    const input = document.getElementById('codigoGrupoInput');
-    const boton = document.getElementById('btnUnirmeGrupo');
-
-    async function intentarUnirse(){
-      boton.disabled = true;
-      boton.textContent = 'Uniéndote…';
-      const res = await unirseAGrupo(input.value);
-      if (!res.ok) {
-        pintarFormularioGrupo(res.error, 'error', input.value);
-        return;
+        await refrescarGruposYActividades(res.grupo ? `Te uniste a «${res.grupo.nombre}».` : '');
       }
-      await refrescarGruposYActividades(res.grupo ? `Te uniste a «${res.grupo.nombre}».` : '');
-    }
 
-    boton.addEventListener('click', intentarUnirse);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') intentarUnirse(); });
+      boton.addEventListener('click', intentarUnirse);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') intentarUnirse(); });
+    });
   }
 
   // Grupos del estudiante (hasta MAX_GRUPOS_ESTUDIANTE, definido en progreso.js).
   let _gruposEstudiante = [];
 
   async function renderMiGrupo(mensajeOk){
-    const contenedor = document.getElementById('grupoContainer');
     const sesion = await obtenerSesionActual();
 
     if (!sesion) {
-      contenedor.innerHTML = `
-        <div class="grupo-box">
-          <p>Si tu instructor te dio un código de clase, <a href="login.html" style="color:var(--primary);font-weight:600;">inicia sesión</a> para unirte a su grupo y ver las actividades que te asigne.</p>
-        </div>`;
+      contenedoresGrupo().forEach(contenedor => {
+        contenedor.innerHTML = `
+          <div class="grupo-box">
+            <p>Si tu instructor te dio un código de clase, <a href="login.html" style="color:var(--primary);font-weight:600;">inicia sesión</a> para unirte a su grupo y ver las actividades que te asigne.</p>
+          </div>`;
+      });
       _gruposEstudiante = [];
       return [];
     }
@@ -1586,96 +1659,335 @@
     return `<a href="${destino}${encodeURIComponent(a.ultimoResultadoId)}"><button class="btn-launch secundario">Ver mi entrega</button></a>`;
   }
 
+  // Una actividad como tarjeta, igual en el panel principal y en la sección
+  // Actividades. mostrarGrupo añade la etiqueta con el nombre del grupo.
+  function actividadItemHTML(a, mostrarGrupo){
+    const estado = a.deGrupoAnterior ? 'cerrada' : a.vencida ? 'cerrada' : (a.completada ? 'hecha' : 'pendiente');
+    const textoEstado = a.deGrupoAnterior ? 'Grupo anterior' : a.vencida ? 'Cerrada' : (a.completada ? 'Completada' : 'Pendiente');
+
+    const detalles = [];
+    if (a.completada) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · mejor ${a.mejor}%`);
+    if (a.fechaLimite) detalles.push(`${a.vencida ? 'Cerró' : 'Cierra'} el ${formatFecha(a.fechaLimite)}`);
+    if (a.intentosMax) detalles.push(`Máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}`);
+
+    // Una actividad completada que todavía admite intentos puede repetirse.
+    const accion = a.deGrupoAnterior ? ''
+      : a.bloqueada
+        ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
+        : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
+
+    return `
+      <div class="module-item">
+        <div class="module-info">
+          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
+          <span class="badge-estado ${estado}">${textoEstado}</span>
+          ${mostrarGrupo && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
+          <h4>${escaparHTML(a.titulo)}</h4>
+          <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
+          ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
+        </div>
+        <div class="module-acciones">
+          ${accion}
+          ${verEntregaHTML(a)}
+        </div>
+      </div>`;
+  }
+
+  const ACT_PANEL_MAX = 3;  // pendientes que se ven en el panel principal
+
+  // Lo ya descargado, compartido por la tarjeta del panel y la sección
+  // Actividades para no volver a pedirlo a la red al cambiar de vista.
+  let _actDatos = { cargado: false, actividades: [], anteriores: [] };
+
+  // Nada desaparece: toda actividad cae en exactamente uno de los tres grupos.
+  //   pendientes   → todavía se puede presentar y no la ha presentado
+  //   entregadas   → la presentó al menos una vez (pueda o no repetirla)
+  //   noEntregadas → se cerró o se quedó sin intentos sin que la presentara
+  function clasificarActividades(lista){
+    const asc = f => f ? new Date(f).getTime() : Infinity;   // sin fecha, al final
+    const desc = f => f ? new Date(f).getTime() : 0;
+    return {
+      pendientes: lista.filter(a => !a.bloqueada && !a.completada)
+        .sort((x, y) => (asc(x.fechaLimite) - asc(y.fechaLimite)) || (desc(y.creadoEn) - desc(x.creadoEn))),
+      entregadas: lista.filter(a => a.completada)
+        .sort((x, y) => desc(y.ultima) - desc(x.ultima)),
+      noEntregadas: lista.filter(a => a.bloqueada && !a.completada)
+        .sort((x, y) => desc(y.fechaLimite || y.creadoEn) - desc(x.fechaLimite || x.creadoEn))
+    };
+  }
+
   async function renderActividadesAsignadas(){
     const card = document.getElementById('actividadesCard');
     const contenedor = document.getElementById('actividadesContainer');
     const sesion = await obtenerSesionActual();
-    if (!sesion) { card.style.display = 'none'; return []; }
+    if (!sesion) {
+      card.style.display = 'none';
+      _actDatos = { cargado: true, actividades: [], anteriores: [] };
+      actualizarNavActividades();
+      if (rutaActual().vista === 'actividades') pintarVistaActividades();
+      return [];
+    }
 
     const [actividades, anteriores] = await Promise.all([
       _gruposEstudiante.length ? obtenerActividadesAsignadas() : Promise.resolve([]),
       obtenerEntregasDeGruposAnteriores()
     ]);
-    if (!_gruposEstudiante.length && !anteriores.length) { card.style.display = 'none'; return []; }
-    card.style.display = 'block';
+    _actDatos = { cargado: true, actividades, anteriores };
+    actualizarNavActividades();
 
-    // Pendientes: lo que todavía se puede presentar, lo que cierra antes arriba.
-    // Historial: cerradas, completadas, sin intentos y de grupos anteriores.
-    // Nada desaparece: el historial es la puerta a "Ver mi entrega".
-    const ms = f => f ? new Date(f).getTime() : Infinity;
+    // Panel principal: sólo las pendientes publicadas más recientemente. Las
+    // demás, las entregadas y las cerradas están en la sección Actividades.
+    // La tarjeta se muestra aunque no haya grupos, porque es el camino para
+    // encontrar el formulario de unirse.
+    const reciente = f => f ? new Date(f).getTime() : 0;
     const pendientes = actividades
       .filter(a => !a.bloqueada && !a.completada)
-      .sort((x, y) => ms(x.fechaLimite) - ms(y.fechaLimite));
-    const historial = actividades
-      .filter(a => a.bloqueada || a.completada)
-      .concat(anteriores)
-      .sort((x, y) => (ms(y.ultima || y.fechaLimite || y.creadoEn) || 0) - (ms(x.ultima || x.fechaLimite || x.creadoEn) || 0));
-    const variosGrupos = _gruposEstudiante.length > 1 || anteriores.length > 0;
+      .sort((x, y) => reciente(y.creadoEn) - reciente(x.creadoEn));
+    const recientes = pendientes.slice(0, ACT_PANEL_MAX);
+    card.style.display = 'block';
 
-    function itemHTML(a){
-      const estado = a.deGrupoAnterior ? 'cerrada' : a.vencida ? 'cerrada' : (a.completada ? 'hecha' : 'pendiente');
-      const textoEstado = a.deGrupoAnterior ? 'Grupo anterior' : a.vencida ? 'Cerrada' : (a.completada ? 'Completada' : 'Pendiente');
-
-      const detalles = [];
-      if (a.completada) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · mejor ${a.mejor}%`);
-      if (a.fechaLimite) detalles.push(`${a.vencida ? 'Cerró' : 'Cierra'} el ${formatFecha(a.fechaLimite)}`);
-      if (a.intentosMax) detalles.push(`Máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}`);
-
-      // Una actividad completada que todavía admite intentos puede repetirse.
-      const accion = a.deGrupoAnterior ? ''
-        : a.bloqueada
-          ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-          : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
-
-      return `
-        <div class="module-item">
-          <div class="module-info">
-            <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
-            <span class="badge-estado ${estado}">${textoEstado}</span>
-            ${variosGrupos && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
-            <h4>${escaparHTML(a.titulo)}</h4>
-            <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
-            ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
-          </div>
-          <div class="module-acciones">
-            ${accion}
-            ${verEntregaHTML(a)}
-          </div>
-        </div>`;
+    let html;
+    if (!_gruposEstudiante.length) {
+      html = `<div class="empty-state">${anteriores.length
+        ? 'Ya no estás en ningún grupo. Tus entregas anteriores siguen guardadas en la sección Actividades.'
+        : '¿Tu instructor te dio un código de clase? Escríbelo en «Mis grupos» para unirte y ver lo que te asigne.'}</div>`;
+    } else if (recientes.length) {
+      html = recientes.map(a => actividadItemHTML(a, _gruposEstudiante.length > 1)).join('');
+    } else {
+      html = `<div class="empty-state">${actividades.length
+        ? 'No tienes actividades pendientes.'
+        : 'Tu profesor todavía no ha publicado actividades. Cuando lo haga, aparecerán aquí.'}</div>`;
     }
-
-    let html = pendientes.length
-      ? pendientes.map(itemHTML).join('')
-      : `<div class="empty-state">${actividades.length || anteriores.length
-          ? 'No tienes actividades pendientes.'
-          : 'Tu profesor todavía no ha publicado actividades. Cuando lo haga, aparecerán aquí.'}</div>`;
-
-    if (historial.length) {
-      const abierto = (() => { try { return localStorage.getItem('aisActHistorialAbierto') === '1'; } catch (e) { return false; } })();
-      html += `
-        <button type="button" class="act-historial-btn" id="actHistorialBtn" aria-expanded="${abierto}">
-          <span>Historial (${historial.length}) — cerradas, completadas y de grupos anteriores</span>
-          <svg class="acordeon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div id="actHistorialLista" ${abierto ? '' : 'hidden'}>${historial.map(itemHTML).join('')}</div>`;
-    }
+    const resumen = pendientes.length > recientes.length
+      ? `Las ${recientes.length} más recientes de ${pendientes.length} pendientes.`
+      : '';
+    html += `
+      <div class="act-pie">
+        <p>${resumen}</p>
+        <a href="#actividades"><button class="btn-launch" type="button">Ir a actividades</button></a>
+      </div>`;
     contenedor.innerHTML = html;
 
-    const btnHist = document.getElementById('actHistorialBtn');
-    if (btnHist) btnHist.addEventListener('click', () => {
-      const abrir = btnHist.getAttribute('aria-expanded') !== 'true';
-      btnHist.setAttribute('aria-expanded', abrir ? 'true' : 'false');
-      document.getElementById('actHistorialLista').hidden = !abrir;
-      try { localStorage.setItem('aisActHistorialAbierto', abrir ? '1' : '0'); } catch (e) {}
-    });
+    if (rutaActual().vista === 'actividades') pintarVistaActividades();
 
     // Las notificaciones de correcciones necesitan también las actividades de
     // grupos anteriores para poner el nombre y el enlace correcto.
     return actividades.concat(anteriores);
   }
 
+  function actualizarNavActividades(){
+    const n = _actDatos.actividades.filter(a => !a.bloqueada && !a.completada).length;
+    const contador = document.getElementById('navActividadesContador');
+    contador.textContent = n > 99 ? '99+' : String(n);
+    contador.style.display = n ? '' : 'none';
+    document.getElementById('navActividades')
+      .setAttribute('aria-label', n ? `Actividades, ${n} pendiente${n === 1 ? '' : 's'}` : 'Actividades');
+  }
+
+  // ---------- SECCIÓN ACTIVIDADES ----------
+  // Vive en esta misma página (#actividades, #actividades/<grupo>,
+  // #actividades/anteriores) para reutilizar la barra lateral, las
+  // notificaciones y los datos ya descargados. El hash hace que el botón
+  // "atrás" del navegador y del celular funcione entre grupo y lista.
+  function rutaActual(){
+    const partes = location.hash.replace(/^#/, '').split('/')
+      .map(p => { try { return decodeURIComponent(p); } catch (e) { return p; } });
+    if (partes[0] !== 'actividades') return { vista: 'panel', grupo: null };
+    return { vista: 'actividades', grupo: partes[1] || null };
+  }
+
+  function irAListaDeActividades(){
+    history.replaceState(null, '', location.pathname + location.search + '#actividades');
+  }
+
+  function pintarVistaActividades(){
+    const cont = document.getElementById('actVistaContenido');
+    if (!_actDatos.cargado) {
+      cont.innerHTML = '<div class="empty-state">Cargando tus actividades…</div>';
+      return;
+    }
+    const { actividades, anteriores } = _actDatos;
+    const grupos = _gruposEstudiante;
+
+    // Con un solo grupo y nada de grupos anteriores la lista de grupos sobra:
+    // se entra directo al grupo.
+    const directo = grupos.length === 1 && !anteriores.length;
+
+    let destino = rutaActual().grupo;
+    const existe = destino === 'anteriores' ? anteriores.length > 0 : grupos.some(g => g.id === destino);
+    // Enlace a un grupo del que ya salió (o viejo): vuelve a la lista.
+    if (destino && !existe) { irAListaDeActividades(); destino = null; }
+    if (!destino && directo) destino = grupos[0].id;
+
+    if (destino === 'anteriores') return pintarGruposAnteriores(cont, anteriores);
+    const grupo = destino && grupos.find(g => g.id === destino);
+    if (grupo) return pintarGrupo(cont, grupo, actividades.filter(a => a.grupoId === grupo.id), !directo);
+    pintarListaGrupos(cont, grupos, actividades, anteriores);
+  }
+
+  function pintarListaGrupos(cont, grupos, actividades, anteriores){
+    if (!grupos.length && !anteriores.length) {
+      cont.innerHTML = `
+        <div class="panel-card">
+          <div class="panel-header" id="actEncabezado" tabindex="-1">Actividades por grupo</div>
+          <div class="grupo-box"><p>Todavía no estás en ningún grupo. Cuando te unas con el código que te dio tu instructor, sus actividades aparecerán aquí.</p></div>
+        </div>`;
+      return;
+    }
+
+    const tarjetas = grupos.map(g => {
+      const c = clasificarActividades(actividades.filter(a => a.grupoId === g.id));
+      // Las pendientes ya vienen ordenadas por cierre: la primera con fecha es la más próxima.
+      const proxima = c.pendientes.find(a => a.fechaLimite);
+      const dias = proxima ? diasHasta(proxima.fechaLimite) : null;
+      return `
+        <a class="act-grupo-card" href="#actividades/${encodeURIComponent(g.id)}">
+          <div>
+            <div class="grupo-nombre">${escaparHTML(g.nombre)}</div>
+            <p>Desde el ${formatFecha(g.desde)}</p>
+          </div>
+          <div class="act-cifras">
+            <span class="badge-estado pendiente">${c.pendientes.length} pendiente${c.pendientes.length === 1 ? '' : 's'}</span>
+            <span class="badge-estado hecha">${c.entregadas.length} entregada${c.entregadas.length === 1 ? '' : 's'}</span>
+            ${c.noEntregadas.length ? `<span class="badge-estado cerrada">${c.noEntregadas.length} no entregada${c.noEntregadas.length === 1 ? '' : 's'}</span>` : ''}
+          </div>
+          ${proxima && dias <= VENC_DIAS ? `<span class="venc-chip act-cierre ${clasePlazo(dias)}">Próximo cierre: ${formatFecha(proxima.fechaLimite)}</span>` : ''}
+        </a>`;
+    });
+
+    if (anteriores.length) {
+      tarjetas.push(`
+        <a class="act-grupo-card" href="#actividades/anteriores">
+          <div>
+            <div class="grupo-nombre">Grupos anteriores</div>
+            <p>Grupos de los que saliste. Tus entregas se conservan.</p>
+          </div>
+          <div class="act-cifras">
+            <span class="badge-estado cerrada">${anteriores.length} entrega${anteriores.length === 1 ? '' : 's'} conservada${anteriores.length === 1 ? '' : 's'}</span>
+          </div>
+        </a>`);
+    }
+
+    cont.innerHTML = `
+      <div class="panel-card">
+        <div class="panel-header" id="actEncabezado" tabindex="-1">Actividades por grupo</div>
+        <div class="act-grupos-grid">${tarjetas.join('')}</div>
+      </div>`;
+  }
+
+  const ACT_PESTANAS = [
+    { id: 'pendientes',   texto: 'Pendientes',    vacio: 'No tienes actividades pendientes en este grupo.' },
+    { id: 'entregadas',   texto: 'Entregadas',    vacio: 'Todavía no has entregado ninguna actividad de este grupo.' },
+    { id: 'noEntregadas', texto: 'No entregadas', vacio: 'No tienes actividades cerradas sin entregar en este grupo.' }
+  ];
+  // La pestaña se recuerda mientras se está en el mismo grupo (por ejemplo al
+  // volver a pintar tras unirse a otro grupo) y vuelve a Pendientes al cambiar.
+  let _actPestana = 'pendientes';
+  let _actGrupoPintado = null;
+
+  function pintarGrupo(cont, grupo, lista, conVolver){
+    if (_actGrupoPintado !== grupo.id) { _actPestana = 'pendientes'; _actGrupoPintado = grupo.id; }
+    const c = clasificarActividades(lista);
+    const volver = conVolver ? '<a class="act-volver" href="#actividades">← Todos mis grupos</a>' : '';
+
+    if (!lista.length) {
+      cont.innerHTML = `
+        <div class="panel-card">
+          ${volver}
+          <div class="panel-header" id="actEncabezado" tabindex="-1">${escaparHTML(grupo.nombre)}</div>
+          <div class="empty-state">Tu profesor todavía no ha publicado actividades en este grupo. Cuando lo haga, aparecerán aquí.</div>
+        </div>`;
+      return;
+    }
+
+    cont.innerHTML = `
+      <div class="panel-card">
+        ${volver}
+        <div class="panel-header" id="actEncabezado" tabindex="-1">${escaparHTML(grupo.nombre)}</div>
+        <div class="act-pestanas" role="group" aria-label="Estado de las actividades">
+          ${ACT_PESTANAS.map(p => `
+            <button type="button" class="act-pestana" data-pestana="${p.id}" aria-controls="actLista" aria-pressed="${p.id === _actPestana}">
+              ${p.texto} <span class="act-pestana-num">${c[p.id].length}</span>
+            </button>`).join('')}
+        </div>
+        <div id="actLista" aria-live="polite"></div>
+      </div>`;
+
+    function pintarLista(){
+      const pestana = ACT_PESTANAS.find(p => p.id === _actPestana) || ACT_PESTANAS[0];
+      const items = c[pestana.id];
+      document.getElementById('actLista').innerHTML = items.length
+        ? items.map(a => actividadItemHTML(a, false)).join('')
+        : `<div class="empty-state">${pestana.vacio}</div>`;
+      cont.querySelectorAll('.act-pestana').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.dataset.pestana === pestana.id)));
+    }
+    cont.querySelectorAll('.act-pestana').forEach(b => b.addEventListener('click', () => {
+      _actPestana = b.dataset.pestana;
+      pintarLista();
+    }));
+    pintarLista();
+  }
+
+  function pintarGruposAnteriores(cont, anteriores){
+    const reciente = f => f ? new Date(f).getTime() : 0;
+    const lista = anteriores.slice().sort((x, y) => reciente(y.ultima) - reciente(x.ultima));
+    cont.innerHTML = `
+      <div class="panel-card">
+        <a class="act-volver" href="#actividades">← Todos mis grupos</a>
+        <div class="panel-header" id="actEncabezado" tabindex="-1">Grupos anteriores</div>
+        <p class="act-nota">Entregas que hiciste en grupos de los que ya saliste. Puedes seguir abriéndolas.</p>
+        ${lista.map(a => actividadItemHTML(a, true)).join('')}
+      </div>`;
+  }
+
+  // Muestra el panel principal o la sección Actividades según el hash.
+  let _rutaPintada = null;
+  function aplicarRuta(){
+    const enActividades = rutaActual().vista === 'actividades';
+    document.getElementById('vistaPanel').hidden = enActividades;
+    document.getElementById('vistaActividades').hidden = !enActividades;
+
+    const navPanel = document.getElementById('navPanel');
+    const navAct = document.getElementById('navActividades');
+    navPanel.classList.toggle('active', !enActividades);
+    navAct.classList.toggle('active', enActividades);
+    if (enActividades) { navAct.setAttribute('aria-current', 'page'); navPanel.removeAttribute('aria-current'); }
+    else { navPanel.setAttribute('aria-current', 'page'); navAct.removeAttribute('aria-current'); }
+    document.title = (enActividades ? 'Actividades' : 'Panel del Estudiante') + ' · SoyAeronáutico';
+
+    if (enActividades) pintarVistaActividades();
+
+    // Sólo al cambiar de vista o de grupo (no al repintar con datos nuevos):
+    // volver arriba y llevar el foco al encabezado, para que en el celular no
+    // se quede a mitad de página.
+    const ruta = rutaActual();
+    const clave = ruta.vista + '/' + (ruta.grupo || '');
+    if (_rutaPintada !== null && _rutaPintada !== clave) {
+      document.querySelector('.main-content').scrollTop = 0;
+      const encabezado = enActividades ? document.getElementById('actEncabezado') : null;
+      if (encabezado) encabezado.focus({ preventScroll: true });
+    }
+    _rutaPintada = clave;
+  }
+
+  window.addEventListener('hashchange', aplicarRuta);
+  window.addEventListener('popstate', aplicarRuta);
+  // Estando en Actividades, "Panel Principal" vuelve sin recargar la página;
+  // estando ya en el panel, el enlace se comporta como siempre.
+  document.getElementById('navPanel').addEventListener('click', e => {
+    if (rutaActual().vista !== 'actividades') return;
+    e.preventDefault();
+    history.pushState(null, '', location.pathname);
+    aplicarRuta();
+  });
+
   // ---------- ARRANQUE ----------
   (async function inicio(){
+    // Un enlace de invitación (?codigo=…) abre la sección Actividades, que es
+    // donde está el formulario para unirse al grupo.
+    if (new URLSearchParams(location.search).get('codigo') && !location.hash) irAListaDeActividades();
+    aplicarRuta();
     const sesion = await obtenerSesionActual();
     renderAuthNav(sesion);
     if (sesion) await migrarProgresoLocalSiHaceFalta();

@@ -1492,7 +1492,7 @@ function renderActividades() {
           <h4 style="margin-top:8px;">${esc(a.titulo)}</h4>
           <p>
             ${esc(a.grupoNombre)}${a.tipo === 'plan_vuelo'
-              ? ' · formulario OACI completo (20 revisiones)'
+              ? ' · formulario OACI, se califican las casillas 7 a 18'
               : ` · ${a.numPreguntas} pregunta${a.numPreguntas === 1 ? '' : 's'}`}
             ${a.intentosMax ? ` · máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}` : ' · intentos ilimitados'}
             ${a.fechaLimite ? ` · ${vencida ? 'cerró' : 'cierra'} el ${fechaCorta(a.fechaLimite)}` : ''}

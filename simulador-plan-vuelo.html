@@ -223,6 +223,9 @@
   .fpl-supl{ background:var(--panel-alt); border-top:1.5px solid var(--text-muted); border-bottom:1px solid var(--hairline); padding:9px 16px; text-align:center; }
   .fpl-supl b{ font-size:0.66rem; letter-spacing:0.03em; text-transform:uppercase; }
   .fpl-supl em{ display:block; font-style:italic; font-size:0.6rem; color:var(--text-muted); }
+  /* Aviso de que la casilla 19 y el pie no suman nota (ver CALIFICAR_INFO_SUPLEMENTARIA) */
+  .fpl-no-califica{ display:none; margin-top:5px; font-family:'IBM Plex Mono'; font-size:0.62rem; font-weight:600; color:var(--accent); }
+  .fpl-form.sin-nota-19 .fpl-no-califica{ display:block; }
 
   /* Casillas de una letra que se tachan, como en el formulario de papel.
      Cada rótulo va encima de su casilla y en el flujo normal, de modo que el
@@ -261,6 +264,11 @@
   .fpl-form.modo-marcar .fpl-box[data-cas]{ cursor:pointer; }
   .fpl-form.modo-marcar .fpl-box[data-cas]:hover{ background:rgba(var(--accent-rgb),0.06); }
   .fpl-form.modo-marcar .fpl-box.marcada{ background:rgba(var(--accent-rgb),0.12); box-shadow:inset 0 0 0 2px var(--accent); }
+  /* Lo que no se califica no se puede marcar */
+  .fpl-form.modo-marcar.sin-nota-19 .fpl-box[data-cas^="19"],
+  .fpl-form.modo-marcar.sin-nota-19 .fpl-box[data-cas="PRES"]{ cursor:default; }
+  .fpl-form.modo-marcar.sin-nota-19 .fpl-box[data-cas^="19"]:hover,
+  .fpl-form.modo-marcar.sin-nota-19 .fpl-box[data-cas="PRES"]:hover{ background:transparent; }
   /* Al calificar: rojo = la casilla sí tenía error; morado = la marcaste sin tenerlo. */
   .fpl-box.rev-bad{ background:rgba(var(--danger-rgb),0.10); box-shadow:inset 0 0 0 2px var(--danger); }
   .fpl-box.rev-falso{ background:rgba(139,92,246,0.12); box-shadow:inset 0 0 0 2px var(--lifr); }
@@ -457,7 +465,7 @@
     #actCrear, #actAviso, #actInfo, #zonaCorreccion, .fb-corr,
     .mode-desc, .controls, .exam-bar, .help-panel, #telexPanel,
     .action-row, #respuestaOficial, #scenarioGrid, #saveMsg,
-    footer{ display:none !important; }
+    .fpl-no-califica, footer{ display:none !important; }
 
     .print-only{ display:block !important; }
 
@@ -529,7 +537,7 @@
 
     /* Fuera del PDF lo que lo alargaría a tres o cuatro páginas. El puntaje ya
        va en la cabecera, así que repetirlo sólo gasta papel. */
-    #scoreBanner, .feedback-list, #salidaMensajes{ display:none !important; }
+    #scoreBanner, .feedback-list, #salidaMensajes, #fplCorrectoWrap{ display:none !important; }
 
     .instrument:has(#fplForm){ break-before:page; page-break-before:always; }
     #fplForm{ break-inside:avoid; page-break-inside:avoid; zoom:0.75; }
@@ -843,7 +851,7 @@
           <li>Comunicaciones: <code>H</code> HF · <code>U</code> UHF · <code>V</code> VHF · <code>Y</code> VHF de 8,33 kHz · <code>M1</code>/<code>M2</code>/<code>M3</code> voz ATC por SATCOM.</li>
           <li>Enlace de datos: <code>E1</code> FMC WPR ACARS · <code>E2</code> D-FIS ACARS · <code>E3</code> PDC ACARS · <code>J1</code> CPDLC ATN VDL Modo 2 · <code>J2</code>…<code>J7</code> CPDLC FANS 1/A.</li>
           <li>Capacidades (no son equipo): <code>R</code> aprobada PBN · <code>W</code> aprobada RVSM · <code>X</code> NAT HLA · <code>Z</code> otro equipo, que se detalla en la 18.</li>
-          <li>Las letras se anotan en <b>orden alfanumérico</b>, con la <code>S</code> encabezando el grupo: <code>SDE3FGHIRWY</code>.</li>
+          <li>Se acostumbra anotar las letras en <b>orden alfanumérico</b>, con la <code>S</code> al inicio, como en los ejemplos del Doc 4444: <code>SDE3FGHIRWY</code>. El Doc 4444 no lo exige y muchos planes reales usan otro orden, así que <b>el orden no cambia la calificación</b>: cuenta que estén todas las letras que corresponden.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -927,6 +935,7 @@
           <li>En <code>R/</code>, <code>S/</code>, <code>J/</code> y <code>N/</code> <b>se tacha lo que NO se lleva</b>: <code>U</code> UHF 243,0 · <code>V</code> VHF 121,5 · <code>E</code> ELT; <code>P</code> polar · <code>D</code> desértico · <code>M</code> marítimo · <code>J</code> selva; <code>L</code> luz · <code>F</code> fluoresceína · <code>U</code>/<code>V</code> radio de los chalecos; <code>N</code> si no hay observaciones.</li>
           <li><code>D/</code> botes: táchense <code>D</code> y <code>C</code> si no se llevan; táchese sólo <code>C</code> si se llevan pero no están cubiertos.</li>
           <li><code>A/</code> color y marcas · <code>C/</code> nombre del piloto al mando <b>y su número de licencia</b>. Al pie, quien presenta el plan también firma con su número de licencia.</li>
+          <li>En este simulador y en las actividades del profesor <b>la casilla 19 y el pie no se califican</b>: puedes dejarlos en blanco sin que baje la nota.</li>
         </ul>
       </div>
     </div>
@@ -1103,6 +1112,7 @@
         <div class="fpl-supl">
           <b>Información suplementaria (en los mensajes FPL no hay que transmitir estos datos)</b>
           <em>Supplementary information (Not to be transmitted in FPL messages)</em>
+          <span class="fpl-no-califica">No se califica: esta sección y el pie («Presentado por» y licencia) son opcionales.</span>
         </div>
         <div class="fpl-row">
           <div class="fpl-box" data-cas="19E">
@@ -1237,6 +1247,13 @@
       </div>
 
       <div class="score-banner" id="scoreBanner" style="display:none;"></div>
+      <!-- Plan correcto en formato FPL, en actividades: para el profesor siempre y
+           para el estudiante cuando ya no puede volver a entregar. Si el profesor
+           importó un FPL, se muestra tal cual lo pegó (clave.fplOriginal). -->
+      <div id="fplCorrectoWrap" style="display:none; margin:0 0 16px;">
+        <div class="instrument-label" style="margin-bottom:6px;">Plan de vuelo correcto — mensaje FPL</div>
+        <div class="fpl-raw-box mono" id="fplCorrectoTexto">—</div>
+      </div>
       <div class="feedback-list" id="feedbackList"></div>
 
       <!-- Sólo en la revisión de una entrega y sólo para el profesor -->
@@ -2556,7 +2573,18 @@ btnAyuda.addEventListener('click', () => {
     examen: 'Cinco planes seguidos, sin ver la respuesta ni la retroalimentación hasta terminar. Al final obtienes la nota, el tiempo empleado y el detalle de errores por casilla.'
   };
 
+  // ---------- Casilla 19 y "Presentado por": se diligencian pero no se califican ----------
+  // Decisión del usuario (2026-09-16): en clase casi ningún plan trae la casilla 19
+  // ni el pie firmado, así que dejarlos en blanco no debe restar nota. El formulario
+  // los conserva (el formato oficial los tiene) y siguen saliendo en el SPL y en el PDF.
+  // Este interruptor sólo gobierna el navegador: las actividades las califica
+  // calificar_plan_vuelo() en Supabase, que tampoco los revisa desde la migración
+  // plan_vuelo_sin_casilla_19. Reactivarlos exige cambiar los dos lados a la vez.
+  const CALIFICAR_INFO_SUPLEMENTARIA = false;
+  const esInfoSuplementaria = cas => /^19/.test(cas) || cas === 'PRES';
+
   const fplForm = $('fplForm');
+  fplForm.classList.toggle('sin-nota-19', !CALIFICAR_INFO_SUPLEMENTARIA);
   const levelRow = $('levelRow');
   const levelTag = $('levelTag');
   const scenarioPanel = $('scenarioPanel');
@@ -2581,6 +2609,8 @@ btnAyuda.addEventListener('click', () => {
   const fplOficialTexto = $('fplOficialTexto');
   const fplUsuarioTexto = $('fplUsuarioTexto');
   const splUsuarioTexto = $('splUsuarioTexto');
+  const fplCorrectoWrap = $('fplCorrectoWrap');
+  const fplCorrectoTexto = $('fplCorrectoTexto');
   const salidaMensajes = $('salidaMensajes');
   const scoreBanner = $('scoreBanner');
   const feedbackList = $('feedbackList');
@@ -2652,6 +2682,7 @@ btnAyuda.addEventListener('click', () => {
     feedbackList.innerHTML = '';
     fplUsuarioTexto.textContent = '—';
     splUsuarioTexto.textContent = '—';
+    fplCorrectoWrap.style.display = 'none';
     fplForm.querySelectorAll('.fpl-box').forEach(b => b.classList.remove('marcada','rev-ok','rev-bad'));
   }
 
@@ -2710,6 +2741,8 @@ btnAyuda.addEventListener('click', () => {
     if(!box) return;
     const cas = box.dataset.cas;
     const marcar = !box.classList.contains('marcada');
+    // Lo que no se califica tampoco puede tener un error que detectar.
+    if(!CALIFICAR_INFO_SUPLEMENTARIA && esInfoSuplementaria(cas)) return;
     fplForm.querySelectorAll(`.fpl-box[data-cas="${cas}"]`).forEach(b => b.classList.toggle('marcada', marcar));
   });
 
@@ -3070,6 +3103,37 @@ btnAyuda.addEventListener('click', () => {
     $('importarAviso').innerHTML = '';
   });
 
+  // Texto del último FPL importado, tal cual lo pegó el profesor. Al publicar la
+  // actividad viaja dentro de la clave (clave.fplOriginal), para que el
+  // estudiante vea el plan correcto en ese mismo formato cuando le toque.
+  let ultimoFplImportado = '';
+  const CAMPOS_FPL = ['f7','f8r','f8t','f9n','f9t','f9e','f10a','f10b','f13a','f13h',
+    'f15v','f15n','f15r','f16d','f16e','f16a1','f16a2','f18'];
+
+  // Se queda con el mensaje (FPL-…) y descarta lo que se haya pegado alrededor
+  // (cabeceras AMHS, prioridad, hora de depósito).
+  function textoFplOriginal(crudo){
+    const t = String(crudo || '').replace(/\r\n?/g, '\n');
+    const m = t.match(/\(?FPL-[^)]*\)?/);
+    return (m ? m[0] : t).trim();
+  }
+
+  // Si el profesor corrigió casillas a mano después de importar, el texto
+  // original ya no es la respuesta y mostrarlo contradiría la nota.
+  function fplOriginalCoincide(texto, clave){
+    const p = parseFPL(texto);
+    return p.ok && CAMPOS_FPL.every(k => norm(p.valores[k]) === norm(clave[k]));
+  }
+
+  function textoFplCorrecto(clave){
+    return (clave && clave.fplOriginal) || msgFPL(clave || {});
+  }
+
+  function mostrarFplCorrecto(clave){
+    fplCorrectoTexto.textContent = textoFplCorrecto(clave);
+    fplCorrectoWrap.style.display = 'block';
+  }
+
   $('btnImportarAplicar').addEventListener('click', () => {
     if(!puedeImportar()) return;
     const aviso = $('importarAviso');
@@ -3080,6 +3144,7 @@ btnAyuda.addEventListener('click', () => {
         r.noEntendido.map(n => `<li>${esc(n.campo)}: ${esc(n.motivo)}</li>`).join('')}</ul></div>`;
       return;
     }
+    ultimoFplImportado = textoFplOriginal($('importarTexto').value);
 
     // Si ya hay algo escrito, el usuario decide qué hacer con ello.
     const actuales = leerForm();
@@ -3276,6 +3341,15 @@ btnAyuda.addEventListener('click', () => {
 
   // Compara lo que el alumno declaró con lo esperado y lo dice en palabras:
   // decirle "falta G (GNSS)" enseña mucho más que mostrarle la cadena correcta.
+  // La casilla 10 se califica por los descriptores que lleva, no por su orden:
+  // el Doc 4444 no prescribe ninguno y 22 de 77 FPL reales de Colombia (p. ej.
+  // SWYDE1E2E3FGHIRZ) no siguen el alfanumérico, así que exigirlo marcaba mal
+  // respuestas correctas. Los repetidos no se igualan aquí: se rechazan antes.
+  // calificar_plan_vuelo hace lo mismo en el servidor (fpl_descriptores).
+  function mismosDescriptores(dados, esperados){
+    return dados.slice().sort().join(',') === esperados.slice().sort().join(',');
+  }
+
   function diffDescriptores(dados, esperados, prosaDe){
     const falta = esperados.filter(t => dados.indexOf(t) === -1);
     const sobra = dados.filter(t => esperados.indexOf(t) === -1);
@@ -3335,7 +3409,8 @@ btnAyuda.addEventListener('click', () => {
   }
 
   // Devuelve un bloque de retroalimentación por casilla. `soloFPL` omite la
-  // casilla 19 y el pie, que no viajan en un mensaje FPL.
+  // casilla 19 y el pie, que no viajan en un mensaje FPL; con
+  // CALIFICAR_INFO_SUPLEMENTARIA en false se omiten siempre (10 bloques, 7 a 18).
   function validarPlan(v, exp, soloFPL){
     const B = [];
     const add = (cas, label, ok, msg) => B.push({cas, label, ok, msg});
@@ -3395,9 +3470,9 @@ btnAyuda.addEventListener('click', () => {
       add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `${mono('N')} significa que <b>no</b> se lleva equipo COM/NAV para la ruta, o que está fuera de servicio: va sola, nunca acompañada de otras letras.`);
     } else if(declaradasEnS.length){
       add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `La letra ${mono('S')} ya significa <b>equipo normalizado</b>, que es VHF, VOR e ILS. No hay que volver a anotar ${declaradasEnS.map(t => mono(t)+' ('+INCLUIDAS_EN_S[t]+')').join(', ')}: es el error más frecuente de esta casilla.`);
-    } else if(!igual(a10, exp.f10a)){
+    } else if(!mismosDescriptores(tok10a, espTok10a)){
       const dif = diffDescriptores(tok10a, espTok10a, t => MAPA10A[t]);
-      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `Se esperaba ${mono(exp.f10a)}${dif ? ': ' + dif : ''}. Recuerda que las letras van en orden alfanumérico y que la ${mono('S')} encabeza el grupo.`);
+      add('10','Casilla 10a — Equipo COM/NAV y de aproximación', false, `Se esperaba ${mono(exp.f10a)}${dif ? ': ' + dif : ''}.`);
     } else add('10','Casilla 10a — Equipo COM/NAV y de aproximación', true, '');
 
     // --- Casilla 10b — Equipo de vigilancia ---
@@ -3414,7 +3489,7 @@ btnAyuda.addEventListener('click', () => {
       add('10','Casilla 10b — Equipo de vigilancia', false, `${mono('N')} significa que no se lleva equipo de vigilancia: va sola.`);
     } else if(ssrDeclarados.length > 1){
       add('10','Casilla 10b — Equipo de vigilancia', false, `Se anotó más de un descriptor de transpondedor (${ssrDeclarados.map(mono).join(', ')}). Sólo se elige <b>uno</b>: el de Modo A/C (${mono('A')} o ${mono('C')}) o el de Modo S (${mono('E')}, ${mono('H')}, ${mono('I')}, ${mono('L')}, ${mono('P')}, ${mono('S')} o ${mono('X')}), al que sí pueden sumarse los de ADS-B y ADS-C.`);
-    } else if(!igual(b10, exp.f10b)){
+    } else if(!mismosDescriptores(tok10b, espTok10b)){
       const dif = diffDescriptores(tok10b, espTok10b, t => (MAPA10B[t] ? MAPA10B[t].prosa : ''));
       add('10','Casilla 10b — Equipo de vigilancia', false, `Se esperaba ${mono(exp.f10b)}${dif ? ': ' + dif : ''}.`);
     } else add('10','Casilla 10b — Equipo de vigilancia', true, '');
@@ -3510,7 +3585,7 @@ btnAyuda.addEventListener('click', () => {
       add('18','Casilla 18 — Otros datos', false, `Se esperaba ${mono(exp.f18)}${dif ? '. ' + dif : '.'}`);
     } else add('18','Casilla 18 — Otros datos', true, '');
 
-    if(soloFPL) return B;
+    if(soloFPL || !CALIFICAR_INFO_SUPLEMENTARIA) return B;
 
     // --- Casilla 19 ---
     const e19v = norm(v.e19);
@@ -3803,7 +3878,9 @@ btnAyuda.addEventListener('click', () => {
     {cas:'18', req:v => v.f18 && v.f18 !== '0',
      ap:v => { v.f18 = 'INFO/REVISAR ' + v.f18; },
      expl:'<b>INFO/</b> no existe como indicador de la casilla 18. Sólo se admiten los del Doc 4444, y cualquier dato que no tenga indicador propio va al final tras <b>RMK/</b>.'}
-  ];
+  // Los fallos de la casilla 19 se conservan escritos pero no se inyectan ni
+  // salen en el catálogo mientras esa casilla no se califique.
+  ].filter(f => CALIFICAR_INFO_SUPLEMENTARIA || !esInfoSuplementaria(f.cas));
 
   // ==========================================================================
   // BIBLIOTECA DE ERRORES FRECUENTES Y ESTADÍSTICA POR CASILLA
@@ -3895,6 +3972,8 @@ btnAyuda.addEventListener('click', () => {
     const cont = document.getElementById('erroresMias');
     const st = leerStatsFpl();
     const filas = Object.keys(st.porCasilla)
+      // Las estadísticas guardadas antes de 2026-09-16 traen la casilla 19 y el pie.
+      .filter(cas => CALIFICAR_INFO_SUPLEMENTARIA || !esInfoSuplementaria(cas))
       .map(cas => {
         const c = st.porCasilla[cas];
         return { cas, revisiones:c.revisiones, fallos:c.fallos,
@@ -4224,6 +4303,7 @@ btnAyuda.addEventListener('click', () => {
     $('importarPanel').style.display = 'none';
     $('importarTexto').value = '';
     $('importarAviso').innerHTML = '';
+    ultimoFplImportado = '';
     actRegenerar.textContent = 'Generar situación';
   }
 
@@ -4589,10 +4669,8 @@ btnAyuda.addEventListener('click', () => {
     });
     if(d18.SEL) otros.push(`Código SELCAL: ${b(d18.SEL.length === 4 ? d18.SEL.slice(0,2) + '-' + d18.SEL.slice(2) : d18.SEL)}.`);
     if(d18.CODE) otros.push(`Dirección de aeronave (Modo S): ${b(d18.CODE)}.`);
-    if(d18.PER){
-      if(PER_PROSA[d18.PER]) otros.push(`Para la aproximación, ${PER_PROSA[d18.PER]}.`);
-      else { otros.push(`Categoría de performance: ${b(d18.PER)}.`); literales.push(`PER/${d18.PER} (no reconocida)`); }
-    }
+    // PER/ va en su propio párrafo (ver más abajo): dentro de "otros datos"
+    // pasaba desapercibido y el alumno no sabía que tenía que declararlo.
     const LIBRES = {NAV:'Información de navegación adicional', COM:'Información de comunicaciones adicional',
       DAT:'Información de enlace de datos adicional', SUR:'Información de vigilancia adicional',
       TYP:'Tipos de aeronave', DLE:'Demora o espera en ruta', ORGN:'Dirección del originador',
@@ -4605,6 +4683,14 @@ btnAyuda.addEventListener('click', () => {
     if(d18.RMK) otros.push(`Observaciones: ${b(d18.RMK)}.`);
     if(sueltos){ otros.push(`Otros datos: ${b(sueltos)}.`); literales.push(`«${sueltos}» en la casilla 18 sin indicador reconocido`); }
     parrafos.push(otros.length ? otros.join(' ') : 'No hay otra información que declarar.');
+
+    // --- Categoría de performance (PER/). Decisión del usuario (2026-09-16): se
+    // da la letra en palabras, sin el indicador, igual que el SELCAL o la
+    // dirección Modo S; la Vat acompaña como explicación del Doc 8168.
+    if(d18.PER){
+      if(PER_PROSA[d18.PER]) parrafos.push(`${b('Categoría de la aeronave para la aproximación')} (Doc 8168): ${b(d18.PER)} — ${PER_PROSA[d18.PER]}.`);
+      else { parrafos.push(`${b('Categoría de la aeronave para la aproximación')}: ${b(d18.PER)}.`); literales.push(`PER/${d18.PER} (no reconocida)`); }
+    }
 
     // --- Casilla 19 y firma
     const hay19 = ['e19','p19','a19','c19'].some(k => val(k));
@@ -4628,11 +4714,12 @@ btnAyuda.addEventListener('click', () => {
       if((v.n19x||[]).indexOf('N') === -1 && val('n19txt')) s19.push(`observaciones: ${b(val('n19txt'))}`);
       if(val('c19')) s19.push(`piloto al mando: ${b(val('c19'))}` + (val('c19lic') ? `, licencia ${b(val('c19lic'))}` : ''));
       parrafos.push(`${b('Información suplementaria')}: ${s19.join('; ')}.`);
-    } else {
+    } else if(CALIFICAR_INFO_SUPLEMENTARIA){
       faltan.push('casilla 19 (autonomía, personas a bordo, color y piloto: el mensaje FPL no la transmite)');
     }
+    // Sin nota para la 19 ni el pie, que falten no deja al alumno sin poder responder.
     if(val('presentadoPor')) parrafos.push(`Presenta el plan ${b(val('presentadoPor'))}` + (val('licencia') ? `, licencia ${b(val('licencia'))}.` : '.'));
-    else faltan.push('presentado por / licencia');
+    else if(CALIFICAR_INFO_SUPLEMENTARIA) faltan.push('presentado por / licencia');
 
     return {narrativa: parrafos.join('\n\n'), literales, faltan};
   }
@@ -4680,6 +4767,9 @@ btnAyuda.addEventListener('click', () => {
       fechaLimite = d.toISOString();
     }
 
+    const clave = leerForm();
+    if(ultimoFplImportado && fplOriginalCoincide(ultimoFplImportado, clave)) clave.fplOriginal = ultimoFplImportado;
+
     actPublicar.disabled = true;
     actRegenerar.disabled = true;
     bloquearFormulario(true);
@@ -4697,7 +4787,7 @@ btnAyuda.addEventListener('click', () => {
         nivelTag: currentSituation ? currentSituation.nivelTag : '',
         fuenteRuta: currentSituation ? currentSituation.fuenteRuta : ''
       },
-      clave: leerForm()
+      clave
     });
     actPublicar.disabled = false;
     actRegenerar.disabled = false;
@@ -4788,6 +4878,36 @@ btnAyuda.addEventListener('click', () => {
     btnPDF.style.display = 'inline-flex';
   }
 
+  // Aviso para cuando la respuesta todavía no se puede mostrar. `restantes` es
+  // null si la actividad no tiene límite de intentos.
+  function avisoRespuestaPendiente(restantes){
+    const cabeza = (restantes === null || restantes === undefined)
+      ? 'Puedes volver a intentarlo'
+      : `Te ${restantes === 1 ? 'queda 1 intento' : 'quedan ' + restantes + ' intentos'}`;
+    return `
+      <div class="fb-block">
+        <div class="fb-head"><span class="fb-icon">🔒</span><span>${cabeza}: la respuesta correcta todavía no se muestra</span></div>
+        <div class="fb-body">Abajo ves qué casillas no coinciden con la situación planteada. Lo que se esperaba en cada una y el plan correcto en formato FPL aparecerán cuando ya no puedas volver a entregar: al agotar los intentos o cuando cierre la actividad (en <b>Ver mi entrega</b>).</div>
+      </div>`;
+  }
+
+  // Sin la clave sólo se sabe qué casillas fallaron (lo dice el servidor). Los
+  // errores de formato sí se explican, porque no revelan la respuesta: se
+  // obtienen validando el plan contra sí mismo, como hace revisarClave().
+  function bloquesSinClave(v, casillas){
+    const formato = validarPlan(v, v, false);
+    return casillas.map((c, i) => {
+      const f = formato[i];
+      const msg = c.ok ? ''
+        : (f && f.label === c.label && !f.ok ? f.msg : 'No coincide con la situación planteada. Vuelve a leerla con atención.');
+      return `
+        <div class="fb-block ${c.ok?'ok':'bad'}">
+          <div class="fb-head"><span class="fb-icon">${c.ok?'✅':'❌'}</span><span>${esc(c.label)}</span></div>
+          ${msg ? `<div class="fb-body">${msg}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
   async function entregarActividad(){
     const restantes = actividadActual && actividadActual.intentos_max
       ? actividadActual.intentos_max - actividadActual.intentos_usados
@@ -4811,15 +4931,23 @@ btnAyuda.addEventListener('click', () => {
     borrarBorrador();
 
     const res = r.resultado;
-    // La clave llega con la calificación, así que ahora sí se puede explicar
-    // casilla por casilla. El puntaje que se muestra es el del servidor.
-    const blocks = validarPlan(v, res.clave || {}, false);
-    feedbackList.innerHTML = blocks.map(b => `
-      <div class="fb-block ${b.ok?'ok':'bad'}">
-        <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
-        ${b.msg ? `<div class="fb-body">${b.msg}</div>` : ''}
-      </div>
-    `).join('');
+    // El servidor sólo manda la clave cuando ya no quedan intentos. Con ella se
+    // explica casilla por casilla y se muestra el plan correcto; sin ella, sólo
+    // qué casillas no coinciden, para no regalar la respuesta del siguiente
+    // intento. El puntaje que se muestra es siempre el del servidor.
+    if(res.clave){
+      const blocks = validarPlan(v, res.clave, false);
+      feedbackList.innerHTML = blocks.map(b => `
+        <div class="fb-block ${b.ok?'ok':'bad'}">
+          <div class="fb-head"><span class="fb-icon">${b.ok?'✅':'❌'}</span><span>${b.label}</span></div>
+          ${b.msg ? `<div class="fb-body">${b.msg}</div>` : ''}
+        </div>
+      `).join('');
+      mostrarFplCorrecto(res.clave);
+    } else {
+      feedbackList.innerHTML = avisoRespuestaPendiente(res.intentos_restantes)
+        + bloquesSinClave(v, res.casillas || []);
+    }
     fplUsuarioTexto.textContent = msgFPL(v);
     splUsuarioTexto.textContent = msgSPL(v);
 
@@ -4971,11 +5099,19 @@ btnAyuda.addEventListener('click', () => {
           ? '<br><span style="color:var(--text-muted);">Esta actividad sigue abierta: tus estudiantes todavía pueden entregar.</span>'
           : ''));
 
-    // La explicación de cada casilla sólo puede calcularse con la clave, que
-    // el servidor entrega únicamente al profesor.
-    explicacionesRevision = e.clave ? validarPlan(e.valores || {}, e.clave, false) : [];
+    // La explicación completa de cada casilla sólo puede calcularse con la
+    // clave, que el servidor entrega al profesor y al estudiante que ya no
+    // puede volver a entregar. Sin ella se explican sólo los errores de
+    // formato (el plan validado contra sí mismo no revela la respuesta).
+    explicacionesRevision = e.clave
+      ? validarPlan(e.valores || {}, e.clave, false)
+      : validarPlan(e.valores || {}, e.valores || {}, false);
 
     pintarRevisionCasillas();
+    if(e.clave) mostrarFplCorrecto(e.clave);
+    // Sólo si el servidor confirma que todavía puede entregar (un servidor sin
+    // la migración plan_vuelo_clave_al_agotar_intentos no manda ese dato).
+    else if(!e.es_profesor && e.puede_reintentar === true) feedbackList.insertAdjacentHTML('afterbegin', avisoRespuestaPendiente(undefined));
     pintarHistorial();
 
     fplUsuarioTexto.textContent = msgFPL(e.valores || {});
