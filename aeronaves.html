@@ -1,0 +1,1188 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aeronaves | SoyAeronáutico</title>
+<meta name="description" content="Ficha de consulta de tipos de aeronave por designador OACI: estela turbulenta, performance por fase de vuelo, datos técnicos y reconocimiento visual.">
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Las fotos se sirven desde el CDN de Wikimedia: no pesan en el repo ni
+     consumen ancho de banda de Netlify. -->
+<link rel="preconnect" href="https://upload.wikimedia.org" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --vfr:#2E9E6D;
+    --mvfr:#3E7BFA;
+    --ifr:#D64545;
+    --lifr:#8B5CF6;
+    --warn:#E08E3E;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --vfr:#4FA88C;
+    --mvfr:#4A8FD1;
+    --ifr:#C9564F;
+    --lifr:#B15FC7;
+    --warn:#D19A55;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- STICKY HEADER (misma estructura que glosario.html) ---------- */
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+
+  /* Sin backdrop-filter aquí: crea un contexto de apilamiento que deja el menú "Módulos"
+     detrás de .search-wrap (sticky más abajo), sin importar el z-index del menú. */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--mvfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--mvfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--mvfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--mvfr); }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+  .nav-dropdown-menu a.active{ color:var(--mvfr); font-weight:600; }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  /* La barra gana el enlace 'Aeronaves': entre 1240 y 1400 px se estrecha la
+     separación para que los siete enlaces quepan en una sola línea, y por
+     debajo de 1240 px se pasa al menú desplegable. */
+  nav.desktop-nav a, .nav-dropdown-btn{ white-space:nowrap; }
+  @media (max-width:1400px){ nav.desktop-nav{ gap:20px; } }
+  @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
+  @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- HERO ---------- */
+  .hero-simple{ max-width:1180px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--mvfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.7rem, 3.6vw, 2.5rem); line-height:1.15; margin-bottom:12px; }
+  .hero-simple p.lead{ color:var(--text-muted); max-width:720px; font-size:1rem; line-height:1.6; margin:0; }
+
+  /* ---------- BARRA DE BÚSQUEDA Y FILTROS ---------- */
+  .search-wrap{ max-width:1180px; margin:26px auto 0; padding:0 32px; position:sticky; top:65px; z-index:40; }
+  .search-instrument{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
+    padding:18px 20px; box-shadow:var(--shadow-card);
+  }
+  .search-row{ display:flex; gap:10px; align-items:center; }
+  .search-icon{ flex-shrink:0; color:var(--text-muted); }
+  .search-input{
+    flex:1; min-width:0; background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:12px 14px; font-size:1rem; color:var(--text); font-family:'IBM Plex Mono';
+    outline:none; transition:border-color .15s;
+  }
+  .search-input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.25); }
+  .clear-btn, .toolbar-toggle{
+    flex-shrink:0; background:none; border:1px solid var(--hairline); color:var(--text-muted);
+    border-radius:8px; width:38px; height:38px; cursor:pointer; font-size:0.95rem; display:flex;
+    align-items:center; justify-content:center; transition:.15s;
+  }
+  .clear-btn:hover{ color:var(--danger); border-color:var(--danger); }
+  .toolbar-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  .toolbar-toggle svg{ transition:transform .25s ease; }
+  .search-toolbar.collapsed .toolbar-toggle svg{ transform:rotate(180deg); }
+  .search-toolbar .collapsible-part{
+    overflow:hidden; max-height:600px; opacity:1;
+    transition:max-height .25s ease, opacity .2s ease, margin-top .25s ease;
+  }
+  .search-toolbar.collapsed .collapsible-part{
+    max-height:0; opacity:0; margin-top:0 !important; pointer-events:none;
+  }
+
+  .filter-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+  .filter-chip{
+    font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.03em;
+    padding:6px 13px; border-radius:20px; border:1px solid var(--hairline);
+    background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; user-select:none;
+  }
+  .filter-chip:hover{ border-color:var(--accent); color:var(--text); }
+  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .sort-row{ display:flex; gap:6px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+  .sort-label{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); letter-spacing:0.05em; text-transform:uppercase; margin-right:2px; }
+  .sort-btn{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; padding:4px 10px; border-radius:7px;
+    border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s;
+  }
+  .sort-btn:hover{ color:var(--text); border-color:var(--accent); }
+  .sort-btn.active{ background:var(--panel-alt); color:var(--accent); border-color:var(--accent); font-weight:600; }
+
+  .result-meta{
+    max-width:1180px; margin:14px auto 0; padding:0 32px;
+    font-family:'IBM Plex Mono'; font-size:0.76rem; color:var(--text-muted);
+  }
+
+  /* ---------- REJILLA DE FICHAS ---------- */
+  .content{ max-width:1180px; margin:0 auto; padding:20px 32px 90px; }
+  .grid{ display:grid; gap:18px; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); }
+
+  .card{
+    display:flex; flex-direction:column; text-align:left; padding:0; cursor:pointer;
+    font:inherit; color:inherit; overflow:hidden;
+    background:var(--panel); border:1px solid var(--hairline); border-radius:14px;
+    box-shadow:var(--shadow-card); transition:transform .15s ease, box-shadow .15s ease, border-color .15s;
+  }
+  .card:hover{ transform:translateY(-3px); border-color:var(--accent); }
+  .card:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* La foto vive en el CDN de Wikimedia: si un archivo se renombra allá, el
+     respaldo .ph-fallback queda visible y la tarjeta nunca muestra un hueco roto. */
+  .ph{ position:relative; aspect-ratio:16/10; overflow:hidden; background:var(--panel-alt); border-bottom:1px solid var(--hairline); }
+  .ph img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s ease, filter .25s ease; }
+  /* La foto se ve siempre, atenuada, para que los rótulos encima se lean.
+     Al apuntar, tocar o enfocar la tarjeta se muestra a plena luz. */
+  .ph img{ filter:brightness(.72) saturate(.9); }
+  .ph::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, rgba(10,38,71,.28) 0%, rgba(10,38,71,.10) 45%, rgba(10,38,71,.45) 100%);
+    transition:opacity .25s ease;
+  }
+  .card:hover .ph img, .card:focus-visible .ph img, .card:active .ph img{ filter:none; transform:scale(1.04); }
+  .card:hover .ph::after, .card:focus-visible .ph::after, .card:active .ph::after{ opacity:0; }
+  @media (hover:none){
+    /* Sin ratón: se aclara al tocar, que es cuando la tarjeta queda activa. */
+    .ph img{ filter:brightness(.80) saturate(.95); }
+  }
+  .ph-fallback{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:1.6rem; letter-spacing:0.06em;
+    color:var(--text-muted); background:var(--panel-alt);
+  }
+  .ph .code{
+    position:absolute; left:10px; bottom:10px; font-family:'IBM Plex Mono'; font-weight:700;
+    font-size:1.05rem; letter-spacing:0.04em; background:var(--navy); color:#fff;
+    padding:4px 11px; border-radius:7px;
+  }
+  [data-theme="dark"] .ph .code{ background:#000; }
+  .ph .pax{
+    position:absolute; left:10px; top:10px; font-family:'IBM Plex Mono'; font-weight:700;
+    font-size:0.64rem; letter-spacing:0.06em; background:rgba(255,255,255,.93); color:#0F1B2D;
+    padding:4px 9px; border-radius:6px;
+  }
+  .ph .wtc{
+    position:absolute; right:10px; top:10px; font-family:'IBM Plex Mono'; font-weight:700;
+    font-size:0.64rem; letter-spacing:0.08em; background:rgba(255,255,255,.93); color:#0F1B2D;
+    padding:4px 9px; border-radius:6px; text-transform:uppercase;
+  }
+  .card-body{ padding:14px 16px 16px; display:flex; flex-direction:column; gap:11px; flex:1; }
+  .card-name{ font-family:'Archivo'; font-weight:700; font-size:1rem; line-height:1.25; }
+  .card-mfr{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; color:var(--text-muted); text-transform:uppercase; margin-top:-6px; }
+  .card-specs{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--hairline); border:1px solid var(--hairline); border-radius:9px; overflow:hidden; margin-top:auto; }
+  .card-specs div{ background:var(--panel); padding:8px 10px; }
+  .card-specs div.wide{ grid-column:1 / -1; }
+  .card-specs .t{ font-family:'IBM Plex Mono'; font-size:0.58rem; letter-spacing:0.09em; text-transform:uppercase; color:var(--text-muted); display:block; }
+  .card-specs .v{ font-family:'IBM Plex Mono'; font-weight:600; font-size:0.95rem; color:var(--text); }
+  .card-specs .v small{ font-size:0.62rem; font-weight:400; color:var(--text-muted); margin-left:2px; }
+  .tag-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tag{
+    font-family:'IBM Plex Mono'; font-weight:600; font-size:0.62rem; letter-spacing:0.04em;
+    border-radius:5px; padding:3px 8px; background:rgba(var(--accent-rgb),0.13); color:var(--accent);
+  }
+  .tag.cat{ background:rgba(var(--muted-rgb),0.14); color:var(--text-muted); }
+
+  .no-results{ text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .no-results .big{ font-size:2.4rem; margin-bottom:10px; }
+
+  .source-note{
+    max-width:1180px; margin:10px auto 0; padding:14px 32px 0;
+    font-size:0.76rem; color:var(--text-muted); line-height:1.6;
+  }
+  .disclaimer{
+    max-width:1180px; margin:22px auto 0; padding:14px 18px;
+    border:1px solid var(--hairline); border-left:3px solid var(--mvfr);
+    border-radius:10px; background:var(--panel);
+    font-size:0.84rem; color:var(--text); line-height:1.6;
+  }
+  .disclaimer b{ font-family:'Archivo'; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- FICHA DETALLADA (MODAL) ---------- */
+  dialog.sheet{
+    padding:0; border:1px solid var(--hairline); border-radius:16px;
+    background:var(--bg); color:var(--text);
+    width:min(880px, calc(100vw - 24px));
+    /* El diagrama de fases tiene un ancho mínimo y, sin este tope, estiraba
+       el cuadro más allá de la pantalla en móvil. */
+    max-width:calc(100vw - 24px); max-height:90vh; overflow:hidden;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.6);
+  }
+  .sheet-body > *{ max-width:100%; }
+  dialog.sheet::backdrop{ background:rgba(10,13,16,.62); backdrop-filter:blur(3px); }
+  .sheet-head{
+    position:sticky; top:0; z-index:2; display:flex; gap:14px; justify-content:space-between;
+    align-items:flex-start; padding:16px 20px 14px;
+    border-bottom:1px solid var(--hairline); background:var(--panel);
+  }
+  .sheet-head h2{ font-size:1.5rem; line-height:1.1; }
+  .sheet-head .sub{ font-family:'IBM Plex Mono'; font-size:0.74rem; color:var(--text-muted); margin-top:5px; }
+  .sheet-close{
+    flex-shrink:0; font-family:'IBM Plex Mono'; font-size:0.76rem; background:none;
+    border:1px solid var(--hairline); color:var(--text-muted); padding:7px 12px;
+    border-radius:8px; cursor:pointer; transition:.15s;
+  }
+  .sheet-close:hover{ color:var(--danger); border-color:var(--danger); }
+  .sheet-body{ padding:0 20px 28px; overflow-y:auto; max-height:calc(90vh - 80px); }
+  .sheet-hero{ margin:0 -20px; border-bottom:1px solid var(--hairline); position:relative; background:var(--panel-alt); }
+  .sheet-hero img{ width:100%; aspect-ratio:21/9; object-fit:cover; display:block; }
+  .cred{ font-family:'IBM Plex Mono'; font-size:0.64rem; color:var(--text-muted); padding:7px 0 0; line-height:1.5; }
+  .cred a{ color:var(--accent); }
+
+  .sec{ margin-top:24px; }
+  .sec > h3{
+    font-family:'Archivo'; font-weight:800; font-size:0.82rem; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--mvfr);
+    border-bottom:1px solid var(--hairline); padding-bottom:6px; margin-bottom:12px;
+  }
+  .spec{ display:grid; gap:1px; grid-template-columns:repeat(auto-fit, minmax(148px, 1fr)); background:var(--hairline); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
+  .spec div{ background:var(--panel); padding:10px 12px; }
+  .spec .t{ font-family:'IBM Plex Mono'; font-size:0.58rem; letter-spacing:0.09em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:2px; }
+  .spec .v{ font-family:'IBM Plex Mono'; font-size:0.98rem; font-weight:600; }
+  .spec .v small{ font-size:0.62rem; font-weight:400; color:var(--text-muted); margin-left:3px; }
+  .spec .v.sm{ font-size:0.78rem; font-weight:400; line-height:1.45; }
+
+  /* Tabla de fases: es la lectura natural de la base de EUROCONTROL. */
+  .tw{ overflow-x:auto; border:1px solid var(--hairline); border-radius:10px; }
+  table.phases{ width:100%; border-collapse:collapse; font-size:0.84rem; background:var(--panel); }
+  table.phases th, table.phases td{ text-align:left; padding:8px 12px; border-bottom:1px solid var(--hairline); white-space:nowrap; }
+  table.phases tr:last-child td{ border-bottom:none; }
+  table.phases th{
+    font-family:'IBM Plex Mono'; font-size:0.6rem; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text-muted); font-weight:500; background:var(--panel-alt);
+  }
+  table.phases td.fase{ font-weight:600; font-family:'Archivo'; white-space:normal; }
+  table.phases td.v{ font-family:'IBM Plex Mono'; font-variant-numeric:tabular-nums; }
+  table.phases td.v small{ color:var(--text-muted); font-size:0.66rem; margin-left:3px; }
+
+  .nota{ font-size:0.85rem; color:var(--text-muted); margin-top:10px; line-height:1.6; }
+  .fuente-aviso{ font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.04em;
+    text-transform:uppercase; color:var(--text-muted); margin-top:0; }
+
+  @media (max-width:700px){
+    .hero-simple, .search-wrap, .result-meta, .content, .source-note{ padding-left:20px; padding-right:20px; }
+    .search-wrap{ top:57px; }
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:14px; }
+    .sheet-head h2{ font-size:1.25rem; }
+  }
+  @media (prefers-reduced-motion:reduce){ .card, .ph img{ transition:none; } }
+
+  /* ---------- PERFIL DE VUELO POR FASES ----------
+     Versión propia del diagrama de la Aircraft Performance Database. En vez
+     del arcoíris del original, una progresión sobre la paleta del sitio:
+     verde al despegar, azul en crucero, violeta y rojo al descender. */
+  :root{
+    --pf-1:#2E9E6D; --pf-2:#37A98A; --pf-3:#3C9FB4; --pf-4:#3E7BFA; --pf-5:#1657C6;
+    --pf-6:#5B62D6; --pf-7:#8B5CF6; --pf-8:#B8569E; --pf-9:#D64545;
+    --pf-texto:#0F1B2D; --pf-guia:rgba(15,27,45,.28);
+  }
+  [data-theme="dark"]{
+    --pf-1:#2F7F5C; --pf-2:#31856E; --pf-3:#357F91; --pf-4:#3D66C4; --pf-5:#2B4E9E;
+    --pf-6:#4B51AB; --pf-7:#6F4BC2; --pf-8:#93467E; --pf-9:#AA3D3D;
+    --pf-texto:#EDEFF3; --pf-guia:rgba(237,239,243,.3);
+  }
+
+  .perfil-wrap{ border:1px solid var(--hairline); border-radius:12px; background:var(--panel); overflow:hidden; }
+  /* En móvil el diagrama no puede encogerse sin volverse ilegible: se desplaza
+     en horizontal y la tabla de fases queda como lectura completa. */
+  .perfil-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .perfil{ display:block; width:100%; min-width:720px; height:auto; }
+
+  .pf-borde{ fill:none; stroke:var(--hairline); stroke-width:2.5; }
+  .pf-suelo{ stroke:var(--hairline); stroke-width:2.5; }
+  .pf-guia{ stroke:var(--pf-guia); stroke-width:1.6; stroke-dasharray:5 5; }
+  .pf-regla{ stroke-width:5; stroke-linecap:round; }
+
+  /* Tamaños grandes en coordenadas del SVG: el lienzo se reduce al ancho de
+     la ficha, así que en pantalla acaban en un cuerpo normal de lectura. */
+  .pf-tit{ font-family:'Archivo', sans-serif; font-weight:800; font-size:27px; fill:var(--pf-texto); }
+  .pf-sub{ font-family:'IBM Plex Mono', monospace; font-size:18px; fill:var(--text-muted); }
+  .pf-dato{ font-family:'IBM Plex Mono', monospace; font-size:22px; fill:var(--pf-texto); }
+  .pf-k{ fill:var(--text-muted); }
+  .pf-v{ font-weight:600; }
+  .pf-nd{ fill:var(--text-muted); font-weight:400; font-style:italic; font-size:19px; }
+  .pf-u{ fill:var(--text-muted); font-size:18px; }
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{
+    position:absolute; top:0; right:0; bottom:0;
+    width:min(300px, 85vw);
+    background:var(--panel);
+    border-left:1px solid var(--hairline);
+    padding:24px 0;
+    display:flex; flex-direction:column;
+    overflow-y:auto;
+    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
+  }
+  .mobile-nav-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px 20px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:12px;
+  }
+  .mobile-nav-close{
+    background:none; border:1px solid var(--hairline);
+    color:var(--text); width:40px; height:40px;
+    border-radius:8px; font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mobile-nav-links a{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    text-decoration:none; color:var(--text);
+    font-size:0.95rem; font-weight:500;
+    border-bottom:1px solid var(--hairline);
+    transition:background .15s, color .15s, padding-left .15s;
+  }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{
+    margin-top:auto; padding:20px 24px 0;
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px solid var(--hairline);
+  }
+  .mobile-nav-footer .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--hairline);
+    color:var(--text-muted); padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
+    transition:color .2s, border-color .2s;
+  }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html">Navegación</a>
+            <a href="notam.html">NOTAM</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="aeronaves.html" class="active">Aeronaves</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <!-- <a href="satelite.html">Satélite</a> -->
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="login.html" class="nav-login-btn" id="navLoginBtn">Iniciar sesión</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="aeronaves.html" class="active">Aeronaves <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <!-- <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a> -->
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="login.html" id="navLoginBtnMobile">Iniciar sesión <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Designadores de tipo OACI · Doc 8643 · Performance EUROCONTROL</div>
+  <h1>Aeronaves</h1>
+  <p class="lead">
+    La ficha de cada tipo de aeronave: el designador que va en la casilla 9 del plan de vuelo,
+    su categoría de estela turbulenta, y la performance publicada para cada fase del vuelo —
+    despegue, ascenso, crucero, descenso, aproximación y aterrizaje.
+    Busca por designador, modelo o fabricante y abre la ficha para ver los datos completos.
+  </p>
+</section>
+
+  <div class="search-toolbar" id="searchToolbar">
+    <div class="search-wrap">
+      <div class="search-instrument">
+        <div class="search-row">
+          <span class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Designador, modelo o fabricante… ej. A320, Caravan, Boeing" autocomplete="off">
+          <button class="clear-btn" id="clearBtn" aria-label="Limpiar búsqueda" type="button">✕</button>
+          <button class="toolbar-toggle" id="toolbarToggle" aria-label="Contraer barra de búsqueda" aria-expanded="true" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          </button>
+        </div>
+        <div class="filter-row collapsible-part" id="filterRow">
+          <span class="filter-chip active" data-f="all">Todas</span>
+          <span class="filter-chip" data-f="com">Comercial</span>
+          <span class="filter-chip" data-f="reg">Regional</span>
+          <span class="filter-chip" data-f="exe">Ejecutivo</span>
+          <span class="filter-chip" data-f="ga">Aviación general</span>
+          <span class="filter-chip" data-f="heli">Helicópteros</span>
+          <span class="filter-chip" data-f="mil">Carga y militar</span>
+        </div>
+        <div class="sort-row collapsible-part">
+          <span class="sort-label">Ordenar por</span>
+          <button class="sort-btn active" data-s="icao" type="button">Designador</button>
+          <button class="sort-btn" data-s="name" type="button">Modelo A–Z</button>
+          <button class="sort-btn" data-s="mtow" type="button">MTOW</button>
+          <button class="sort-btn" data-s="tas" type="button">Velocidad</button>
+          <button class="sort-btn" data-s="pax" type="button">Pasajeros</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-meta collapsible-part">
+      <span id="resultCount">— aeronaves</span>
+    </div>
+  </div>
+
+<main class="content">
+  <div class="grid" id="grid"></div>
+  <div class="no-results" id="noResults" hidden>
+    <div class="big">🔍</div>
+    <p>Ningún tipo coincide con la búsqueda.</p>
+  </div>
+
+  <div class="disclaimer">
+    <b>Uso didáctico.</b> Los valores provienen de la <i>Aircraft Performance Database</i> de
+    EUROCONTROL, que advierte expresamente que su contenido es indicativo, representa valores
+    típicos del tipo y <b>no debe usarse con fines operacionales</b>. Para volar, la referencia es
+    siempre el manual de vuelo (AFM/POH) de la aeronave concreta y la documentación oficial del
+    operador. Los designadores de tipo oficiales están en el Doc 8643 de la OACI.
+  </div>
+</main>
+
+<p class="source-note" id="fuente"></p>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Fuente: EUROCONTROL Aircraft Performance Database · Fotografías: Wikimedia Commons</span>
+  <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
+</footer>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet-head">
+    <div>
+      <h2 id="sheetTitle">—</h2>
+      <p class="sub" id="sheetSub">—</p>
+    </div>
+    <button class="sheet-close" id="sheetClose" type="button">Cerrar ✕</button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+</dialog>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- ZULU MINI CLOCK ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function p(n){ return n.toString().padStart(2,'0'); }
+  function tickZulu(){
+    const now = new Date();
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  tickZulu();
+  setInterval(tickZulu, 1000);
+
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+
+<script src="aeronaves-data.js"></script>
+<script>
+/* ==========================================================================
+   AERONAVES — ficha de consulta por designador de tipo OACI
+   Los datos vienen de aeronaves-data.js (base de EUROCONTROL). Este archivo
+   solo pinta: rejilla, búsqueda, filtros y la ficha detallada con el perfil
+   de vuelo por fases.
+   ========================================================================== */
+(function(){
+  'use strict';
+
+  var A = (typeof AERONAVES !== 'undefined') ? AERONAVES : [];
+  var grid = document.getElementById('grid');
+  var noRes = document.getElementById('noResults');
+  var out = document.getElementById('resultCount');
+
+  var CAT = { com:'Comercial', reg:'Regional', exe:'Ejecutivo',
+              ga:'Aviación general', heli:'Helicóptero', mil:'Carga y militar' };
+
+  // Estela turbulenta: el dato que más se usa en control, así que se explica.
+  var WTC = { L:'Ligera', M:'Media', H:'Pesada', J:'Super' };
+
+  var estado = { q:'', cat:'all', orden:'icao' };
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+  // Separador de miles en español: 73 900 kg se lee mejor que 73900.
+  function miles(n){
+    if(n == null || n === '') return '';
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+  function val(v, u){
+    if(v == null || v === '' || v === '-') return '—';
+    return esc(v) + (u ? ' <small>' + u + '</small>' : '');
+  }
+
+  /* ---------- PERFIL DE VUELO POR FASES ----------
+     Versión propia del diagrama de la Aircraft Performance Database: el perfil
+     (ascenso · crucero · descenso) con cada fase como una banda de color y sus
+     cifras colgadas en escalera.
+
+     El reparto evita que los rótulos se pisen entre sí o con la rampa: cada
+     bloque se ancla al borde exterior de su banda y se sitúa por encima de la
+     altura que tiene el perfil en ese punto. Los del ascenso crecen hacia la
+     izquierda y los del descenso hacia la derecha, así que el centro queda
+     libre para el crucero. Las cifras van en tamaño grande dentro del lienzo
+     porque el SVG se reduce al ancho de la ficha. */
+  function perfil(d){
+    var W = 1560, H = 900,
+        SUELO = 830, TECHO = 300,       // rasante y nivel de crucero
+        IZQ = 250, X1 = 660, X2 = 940, DER = 1320,
+        ANCHO = 232,                    // ancho del bloque de texto
+        MARGEN = 22;                    // separación del rótulo sobre la rampa
+
+    function alturaEn(x){
+      if(x <= IZQ) return SUELO;
+      if(x <= X1)  return SUELO - (SUELO - TECHO) * (x - IZQ) / (X1 - IZQ);
+      if(x <= X2)  return TECHO;
+      if(x <= DER) return TECHO + (SUELO - TECHO) * (x - X2) / (DER - X2);
+      return SUELO;
+    }
+
+    // Bandas del ascenso y del descenso, repartidas por igual.
+    function tramos(a, b, n){
+      var paso = (b - a) / n, t = [];
+      for(var i = 0; i < n; i++) t.push([a + i * paso, a + (i + 1) * paso]);
+      return t;
+    }
+    var sube = tramos(IZQ, X1, 4), baja = tramos(X2, DER, 4);
+
+    var fases = [
+      { x:sube[0], lado:'izq', color:'var(--pf-1)', t:'Despegue', sub:'',
+        datos:[['V2', d.v2, 'kt'], ['Distancia', d.fartO, 'm'], ['MTOW', miles(d.mtow), 'kg']] },
+      { x:sube[1], lado:'izq', color:'var(--pf-2)', t:'Ascenso inicial', sub:'hasta 5 000 ft',
+        datos:[['IAS', d.iasIni, 'kt'], ['ROC', miles(d.rocIni), 'ft/min']] },
+      { x:sube[2], lado:'izq', color:'var(--pf-3)', t:'Ascenso', sub:'hasta FL150',
+        datos:[['IAS', d.iasClimb, 'kt'], ['ROC', miles(d.rocClimb), 'ft/min']] },
+      { x:sube[3], lado:'izq', color:'var(--pf-4)', t:'Ascenso Mach', sub:'hasta FL240',
+        datos:[['Mach', d.machClimb, ''], ['ROC', miles(d.rocMach), 'ft/min']] },
+      { x:[X1, X2], lado:'cima', color:'var(--pf-5)', t:'Crucero', sub:'',
+        datos:[['TAS', d.tas, 'kt'], ['Mach', d.mach, ''],
+               ['Techo', d.ceiling ? 'FL' + d.ceiling : '', ''],
+               ['Alcance', miles(d.range), 'NM']] },
+      { x:baja[0], lado:'der', color:'var(--pf-6)', t:'Descenso inicial', sub:'hasta FL240',
+        datos:[['Mach', d.machDesc, ''], ['ROD', miles(d.rodIni), 'ft/min']] },
+      { x:baja[1], lado:'der', color:'var(--pf-7)', t:'Descenso', sub:'hasta FL100',
+        datos:[['IAS', d.iasDesc, 'kt'], ['ROD', miles(d.rodDesc), 'ft/min']] },
+      { x:baja[2], lado:'der', color:'var(--pf-8)', t:'Aproximación', sub:'',
+        datos:[['IAS', d.iasApp, 'kt'], ['MCS', d.mcs, 'kt'], ['ROD', miles(d.rodApp), 'ft/min']] },
+      { x:baja[3], lado:'der', color:'var(--pf-9)', t:'Aterrizaje', sub:'',
+        datos:[['Vat', d.vat, 'kt'], ['Distancia', d.fardL, 'm'],
+               ['Categoría', d.apc, '']] }
+    ];
+
+    var LINEA = 30, TITULO = 34, SUBT = 24;   // alturas de renglón
+    var bandas = '', rotulos = '';
+
+    fases.forEach(function(f){
+      var x0 = f.x[0], x1 = f.x[1], cx = (x0 + x1) / 2;
+
+      bandas += '<rect x="' + x0.toFixed(1) + '" y="0" width="' + (x1 - x0).toFixed(1) +
+                '" height="' + H + '" fill="' + f.color + '" clip-path="url(#pfClip)"/>';
+
+      var lineas = f.datos.filter(function(t){ return t[1] != null && t[1] !== ''; });
+      var sinDato = lineas.length === 0;
+      if(sinDato) lineas = [['', 'sin dato publicado', '']];
+
+      // Alto del bloque: título + subtítulo + filete + renglones de datos.
+      var alto = 26 + (f.sub ? 22 : 0) + 14 + 26 + (lineas.length - 1) * LINEA + 10;
+      var tx, ty, anclaX;
+
+      if(f.lado === 'cima'){
+        tx = cx - ANCHO / 2;
+        ty = 40;
+        anclaX = cx;
+      }else if(f.lado === 'izq'){
+        // Crece hacia la izquierda y se apoya sobre la rampa en su borde bajo.
+        tx = x0 - ANCHO + 30;
+        ty = alturaEn(x0) - MARGEN - alto;
+        anclaX = x0 + 18;
+      }else{
+        tx = x1 - 30;
+        ty = alturaEn(x1) - MARGEN - alto;
+        anclaX = x1 - 18;
+      }
+      tx = Math.min(Math.max(tx, 12), W - ANCHO - 12);
+      ty = Math.max(ty, 24);
+
+      var yTit = ty + 26;
+      var ySub = yTit + 22;
+      var yReg = (f.sub ? ySub : yTit) + 14;   // el filete va DEBAJO del título
+
+      rotulos +=
+        '<g class="pf-rot">' +
+        '<line x1="' + anclaX + '" y1="' + (ty + alto) + '" x2="' + anclaX +
+          '" y2="' + (alturaEn(anclaX) - 4) + '" class="pf-guia"/>' +
+        '<text x="' + tx + '" y="' + yTit + '" class="pf-tit">' + esc(f.t) + '</text>' +
+        (f.sub ? '<text x="' + tx + '" y="' + ySub + '" class="pf-sub">' + esc(f.sub) + '</text>' : '') +
+        '<line x1="' + tx + '" y1="' + yReg + '" x2="' + (tx + 74) + '" y2="' + yReg +
+          '" class="pf-regla" stroke="' + f.color + '"/>';
+
+      lineas.forEach(function(t, k){
+        var yy = yReg + 26 + k * LINEA;
+        rotulos +=
+          '<text x="' + tx + '" y="' + yy + '" class="pf-dato">' +
+          (t[0] ? '<tspan class="pf-k">' + esc(t[0]) + '</tspan> ' : '') +
+          '<tspan class="pf-v' + (sinDato ? ' pf-nd' : '') + '">' + esc(t[1]) + '</tspan>' +
+          (t[2] ? ' <tspan class="pf-u">' + esc(t[2]) + '</tspan>' : '') +
+          '</text>';
+      });
+      rotulos += '</g>';
+    });
+
+    var trazo = 'M' + IZQ + ',' + SUELO + ' L' + X1 + ',' + TECHO +
+                ' L' + X2 + ',' + TECHO + ' L' + DER + ',' + SUELO + ' Z';
+
+    return '<div class="perfil-wrap"><div class="perfil-scroll">' +
+      '<svg class="perfil" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+        'aria-label="Perfil de vuelo por fases del tipo ' + esc(d.icao) + '">' +
+        '<defs><clipPath id="pfClip"><path d="' + trazo + '"/></clipPath></defs>' +
+        '<line x1="40" y1="' + SUELO + '" x2="' + (W - 40) + '" y2="' + SUELO + '" class="pf-suelo"/>' +
+        bandas +
+        '<path d="' + trazo + '" class="pf-borde"/>' +
+        rotulos +
+      '</svg></div></div>';
+  }
+
+  /* ---------- TARJETA ---------- */
+  function tarjeta(d, i){
+    var foto = d.img
+      ? '<img src="' + esc(d.img) + '" alt="' + esc(d.name) + '" loading="lazy" decoding="async" ' +
+        'onerror="this.style.display=&quot;none&quot;">'
+      : '';
+    return '<button class="card" type="button" data-i="' + i + '">' +
+      '<div class="ph">' +
+        '<span class="ph-fallback">' + esc(d.icao) + '</span>' + foto +
+        (d.pax ? '<span class="pax">' + esc(d.pax) + ' PAX</span>' : '') +
+        '<span class="code">' + esc(d.icao) + '</span>' +
+        (d.wtc ? '<span class="wtc">Estela ' + esc(WTC[d.wtc] || d.wtc) + '</span>' : '') +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div>' +
+          '<p class="card-name">' + esc(d.name) + '</p>' +
+          '<p class="card-mfr">' + esc(d.mfr) + '</p>' +
+        '</div>' +
+        '<div class="tag-row">' +
+          (d.type ? '<span class="tag">' + esc(d.type) + '</span>' : '') +
+          '<span class="tag cat">' + esc(CAT[d.cat] || '') + '</span>' +
+        '</div>' +
+        '<div class="card-specs">' +
+          '<div><span class="t">TAS crucero</span><span class="v">' + val(d.tas, 'kt') + '</span></div>' +
+          '<div><span class="t">MTOW</span><span class="v">' + val(miles(d.mtow), 'kg') + '</span></div>' +
+          '<div class="wide"><span class="t">Capacidad máxima</span><span class="v">' +
+            (d.pax ? esc(d.pax) + ' <small>pasajeros</small>' : '—') + '</span></div>' +
+        '</div>' +
+      '</div>' +
+    '</button>';
+  }
+
+  /* ---------- FICHA DETALLADA ---------- */
+  function campo(t, v, u, sm){
+    return '<div><span class="t">' + t + '</span><span class="v' + (sm ? ' sm' : '') + '">' +
+           val(v, u) + '</span></div>';
+  }
+
+  function fila(fase, a, b, c){
+    if(!a && !b && !c) return '';
+    return '<tr><td class="fase">' + fase + '</td>' +
+           '<td class="v">' + (a || '—') + '</td>' +
+           '<td class="v">' + (b || '—') + '</td>' +
+           '<td class="v">' + (c || '—') + '</td></tr>';
+  }
+
+  // Descriptor del Doc 8643: L2J = avión terrestre, 2 motores, de reacción.
+  function leerTipo(t){
+    var cls = { L:'avión terrestre', S:'hidroavión', A:'anfibio',
+                H:'helicóptero', G:'autogiro', T:'convertible' };
+    var mot = { P:'de pistón', T:'de turbohélice', J:'de reacción', E:'eléctricos' };
+    var m = /^([LSAHGT])(\d)([PTJE])$/.exec(t);
+    if(!m) return '';
+    var n = parseInt(m[2], 10);
+    return (cls[m[1]] || m[1]) + ' con ' + n + (n === 1 ? ' motor ' : ' motores ') + (mot[m[3]] || m[3]);
+  }
+
+  function ficha(d){
+    var h = '';
+
+    if(d.img){
+      h += '<div class="sheet-hero"><img src="' + esc(d.img) + '" alt="' + esc(d.name) +
+           '" onerror="this.parentNode.style.display=&quot;none&quot;"></div>' +
+           '<p class="cred">Fotografía: ' + esc(d.autor || 'autor no indicado') +
+           (d.lic ? ' · ' + esc(d.lic) : '') +
+           (d.pag ? ' · <a href="' + esc(d.pag) + '" target="_blank" rel="noopener">ver en Wikimedia Commons</a>' : '') +
+           '</p>';
+    }
+
+    var lect = leerTipo(d.type);
+    h += '<div class="sec"><h3>Identificación y clasificación</h3><div class="spec">' +
+      campo('Designador OACI', d.icao) +
+      campo('Fabricante', d.mfr, '', 1) +
+      campo('Modelo', d.name, '', 1) +
+      campo('Descriptor', d.type) +
+      campo('Estela turbulenta', d.wtc ? (d.wtc + ' · ' + (WTC[d.wtc] || '')) : '', '', 1) +
+      campo('RECAT-EU', d.recat, '', 1) +
+      campo('Cat. aproximación', d.apc) +
+      campo('Código IATA', d.iata, '', 1) +
+      campo('Capacidad máxima', d.pax ? d.pax + ' pasajeros' : '', '', 1) +
+    '</div>' +
+    (lect ? '<p class="nota">El descriptor <b>' + esc(d.type) + '</b> del Doc 8643 se lee: ' +
+            esc(lect) + '.</p>' : '') +
+    '</div>';
+
+    h += '<div class="sec"><h3>Perfil de vuelo por fases</h3>' + perfil(d) +
+         '<p class="nota">Valores típicos del tipo publicados por EUROCONTROL. ' +
+         'Cuando una fase aparece como <i>sin dato publicado</i>, la base no ' +
+         'recoge esa cifra para esta aeronave.</p></div>';
+
+    h += '<div class="sec"><h3>Performance en detalle</h3><div class="tw">' +
+      '<table class="phases"><thead><tr>' +
+        '<th>Fase</th><th>Velocidad</th><th>Régimen</th><th>Otros</th>' +
+      '</tr></thead><tbody>' +
+      fila('Despegue', d.v2 ? d.v2 + ' kt <small>V2</small>' : '', '',
+           d.fartO ? d.fartO + ' m <small>distancia</small>' : '') +
+      fila('Ascenso inicial <small>a 5 000 ft</small>',
+           d.iasIni ? d.iasIni + ' kt <small>IAS</small>' : '',
+           d.rocIni ? miles(d.rocIni) + ' ft/min <small>ROC</small>' : '', '') +
+      fila('Ascenso <small>a FL150</small>',
+           d.iasClimb ? d.iasClimb + ' kt <small>IAS</small>' : '',
+           d.rocClimb ? miles(d.rocClimb) + ' ft/min <small>ROC</small>' : '', '') +
+      fila('Ascenso Mach', d.machClimb ? 'M ' + d.machClimb : '',
+           d.rocMach ? miles(d.rocMach) + ' ft/min <small>ROC</small>' : '', '') +
+      fila('Crucero', d.tas ? d.tas + ' kt <small>TAS</small>' : '', d.mach ? 'M ' + d.mach : '',
+           (d.ceiling ? 'FL' + d.ceiling + ' <small>techo</small>' : '') +
+           (d.range ? ' · ' + miles(d.range) + ' NM <small>alcance</small>' : '')) +
+      fila('Descenso inicial <small>a FL240</small>', d.machDesc ? 'M ' + d.machDesc : '',
+           d.rodIni ? miles(d.rodIni) + ' ft/min <small>ROD</small>' : '', '') +
+      fila('Descenso <small>a FL100</small>',
+           d.iasDesc ? d.iasDesc + ' kt <small>IAS</small>' : '',
+           d.rodDesc ? miles(d.rodDesc) + ' ft/min <small>ROD</small>' : '', '') +
+      fila('Aproximación', d.iasApp ? d.iasApp + ' kt <small>IAS</small>' : '',
+           d.rodApp ? miles(d.rodApp) + ' ft/min <small>ROD</small>' : '',
+           d.mcs ? d.mcs + ' kt <small>MCS</small>' : '') +
+      fila('Aterrizaje', d.vat ? d.vat + ' kt <small>Vat</small>' : '', '',
+           (d.fardL ? d.fardL + ' m <small>distancia</small>' : '') +
+           (d.apc ? ' · categoría ' + d.apc : '')) +
+      '</tbody></table></div></div>';
+
+    h += '<div class="sec"><h3>Datos técnicos</h3><div class="spec">' +
+      campo('Envergadura', d.span, '', 1) +
+      campo('Longitud', d.len, '', 1) +
+      campo('Altura', d.hgt, '', 1) +
+      campo('MTOW', miles(d.mtow), 'kg') +
+    '</div>' +
+    (d.eng ? '<p class="nota"><b>Planta motriz:</b> ' + esc(d.eng) + '</p>' : '') +
+    '</div>';
+
+    if(d.wing || d.engpos || d.tail || d.gear){
+      // En ala rotatoria esos campos describen el rotor, no un ala ni un
+      // empenaje, así que las etiquetas cambian.
+      var rotatoria = (d.type || '').charAt(0) === 'H';
+      h += '<div class="sec"><h3>Reconocimiento visual</h3><div class="spec">' +
+        campo(rotatoria ? 'Rotor principal' : 'Posición del ala', d.wing, '', 1) +
+        campo(rotatoria ? 'Posición del motor' : 'Posición de motores', d.engpos, '', 1) +
+        campo(rotatoria ? 'Rotor de cola' : 'Configuración de cola', d.tail, '', 1) +
+        campo(rotatoria ? 'Tren de aterrizaje' : 'Tren de aterrizaje', d.gear, '', 1) +
+      '</div></div>';
+    }
+
+    if(d.acc || d.notes || d.alt){
+      // Acomodación y notas son prosa libre de la fuente y se citan tal cual,
+      // en inglés: traducirlas automáticamente cambiaría matices técnicos.
+      h += '<div class="sec"><h3>Ficha de la fuente</h3>' +
+           '<p class="nota fuente-aviso">Texto literal de la Aircraft Performance ' +
+           'Database de EUROCONTROL, en inglés.</p>';
+      if(d.acc)   h += '<p class="nota"><b>Accommodation:</b> <span lang="en">' + esc(d.acc) + '</span></p>';
+      if(d.notes) h += '<p class="nota" lang="en">' + esc(d.notes) + '</p>';
+      if(d.alt)   h += '<p class="nota"><b>Otras denominaciones:</b> ' + esc(d.alt) + '</p>';
+      h += '</div>';
+    }
+
+    return h;
+  }
+
+  /* ---------- LISTA, BÚSQUEDA Y ORDEN ---------- */
+  var visibles = [];
+
+  function pintar(){
+    var q = estado.q.trim().toLowerCase();
+    visibles = A.filter(function(d){
+      if(estado.cat !== 'all' && d.cat !== estado.cat) return false;
+      if(!q) return true;
+      return (d.icao + ' ' + d.name + ' ' + d.mfr + ' ' + (d.alt || '') + ' ' + (d.iata || ''))
+        .toLowerCase().indexOf(q) !== -1;
+    });
+
+    var o = estado.orden;
+    visibles.sort(function(a, b){
+      if(o === 'mtow') return (parseInt(b.mtow, 10) || 0) - (parseInt(a.mtow, 10) || 0);
+      if(o === 'tas')  return (parseInt(b.tas, 10) || 0) - (parseInt(a.tas, 10) || 0);
+      if(o === 'pax')  return (parseInt(b.pax, 10) || 0) - (parseInt(a.pax, 10) || 0);
+      if(o === 'name') return (a.name || '').localeCompare(b.name || '', 'es');
+      return a.icao.localeCompare(b.icao, 'es');
+    });
+
+    grid.innerHTML = visibles.map(tarjeta).join('');
+    noRes.hidden = visibles.length > 0;
+    out.textContent = visibles.length + (visibles.length === 1 ? ' aeronave' : ' aeronaves') +
+      (visibles.length !== A.length ? ' de ' + A.length : '');
+  }
+
+  var input = document.getElementById('searchInput');
+  input.addEventListener('input', function(){ estado.q = input.value; pintar(); });
+  document.getElementById('clearBtn').addEventListener('click', function(){
+    input.value = ''; estado.q = ''; pintar(); input.focus();
+  });
+
+  document.getElementById('filterRow').addEventListener('click', function(e){
+    var c = e.target.closest('.filter-chip'); if(!c) return;
+    this.querySelectorAll('.filter-chip').forEach(function(o){ o.classList.toggle('active', o === c); });
+    estado.cat = c.dataset.f; pintar();
+  });
+
+  document.querySelectorAll('.sort-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.sort-btn').forEach(function(o){ o.classList.toggle('active', o === b); });
+      estado.orden = b.dataset.s; pintar();
+    });
+  });
+
+  /* ---------- APERTURA DE LA FICHA ----------
+     El designador queda en el fragmento de la URL (aeronaves.html#A320) para
+     poder enlazar una ficha concreta desde otra página o compartirla. */
+  var sheet = document.getElementById('sheet');
+
+  function abrir(d, conHash){
+    if(!d) return;
+    document.getElementById('sheetTitle').textContent = d.icao + ' · ' + d.name;
+    document.getElementById('sheetSub').textContent =
+      d.mfr + (d.type ? ' · ' + d.type : '') + (d.wtc ? ' · estela ' + (WTC[d.wtc] || d.wtc) : '');
+    var body = document.getElementById('sheetBody');
+    body.innerHTML = ficha(d);
+    body.scrollTop = 0;
+    if(!sheet.open) sheet.showModal();
+    if(conHash && history.replaceState) history.replaceState(null, '', '#' + d.icao);
+  }
+
+  function cerrar(){
+    sheet.close();
+    if(history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  grid.addEventListener('click', function(e){
+    var b = e.target.closest('.card'); if(!b) return;
+    abrir(visibles[+b.dataset.i], true);
+  });
+  document.getElementById('sheetClose').addEventListener('click', cerrar);
+  sheet.addEventListener('click', function(e){ if(e.target === sheet) cerrar(); });
+  sheet.addEventListener('close', function(){
+    if(location.hash && history.replaceState){
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  });
+
+  // Si la página se abre con #DESIGNADOR, se muestra esa ficha directamente.
+  (function(){
+    var h = (location.hash || '').replace('#', '').toUpperCase();
+    if(!h) return;
+    for(var i = 0; i < A.length; i++){
+      if(A[i].icao === h){ abrir(A[i], false); return; }
+    }
+  })();
+
+  /* ---------- CONTRAER LA BARRA ---------- */
+  (function(){
+    var tb = document.getElementById('searchToolbar');
+    var bt = document.getElementById('toolbarToggle');
+    if(!tb || !bt) return;
+    bt.addEventListener('click', function(){
+      var col = tb.classList.toggle('collapsed');
+      bt.setAttribute('aria-expanded', col ? 'false' : 'true');
+      bt.setAttribute('aria-label', col ? 'Desplegar barra de búsqueda' : 'Contraer barra de búsqueda');
+    });
+  })();
+
+  /* ---------- CRÉDITOS ---------- */
+  document.getElementById('fuente').innerHTML =
+    'Performance y datos técnicos: <b>EUROCONTROL Aircraft Performance Database</b> ' +
+    '(valores indicativos del tipo, no operacionales). Designadores de tipo: <b>Doc 8643 de la OACI</b>. ' +
+    'Fotografías de Wikimedia Commons, servidas desde el servidor de Wikimedia; el autor y la ' +
+    'licencia de cada una aparecen en su ficha.';
+
+  pintar();
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script>
+  // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
+  (async function actualizarBotonSesion(){
+    if (typeof sbClient === 'undefined' || !sbClient) return;
+    const { data } = await sbClient.auth.getSession();
+    if (!data || !data.session) return;
+    const btnDesktop = document.getElementById('navLoginBtn');
+    const btnMobile = document.getElementById('navLoginBtnMobile');
+    if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
+    if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+</script>
+</body>
+</html>

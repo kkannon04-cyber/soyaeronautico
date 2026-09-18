@@ -1,0 +1,468 @@
+<title>Strips de Autonomía</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#E7E4DA; --strip:#FBFAF6; --strip-2:#F1EFE7;
+    --ink:#15181B; --ink-2:#4E565E; --ink-3:#7C848C;
+    --rule:#CFCBBF; --rule-soft:#DFDCD2;
+    --aftn:#14506E; --aftn-soft:#DCE8EF;
+    --amber:#8A5A0B; --amber-soft:#F3E9D4;
+    --go:#2B6A4C; --go-soft:#DFEBE3;
+    --crit:#9A2E20; --crit-soft:#F3E0DC;
+    --shadow:0 1px 0 rgba(21,24,27,.05), 0 12px 28px -20px rgba(21,24,27,.6);
+    --f-disp:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+    --f-body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0F1317; --strip:#171C21; --strip-2:#1E242A;
+      --ink:#E4E5E0; --ink-2:#A8B0B8; --ink-3:#79828B;
+      --rule:#2F3740; --rule-soft:#232A31;
+      --aftn:#79B7D9; --aftn-soft:#132936;
+      --amber:#D6A44E; --amber-soft:#2B2416;
+      --go:#64BC8F; --go-soft:#16281F;
+      --crit:#E58374; --crit-soft:#311D19;
+      --shadow:0 1px 0 rgba(0,0,0,.35), 0 14px 30px -20px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0F1317; --strip:#171C21; --strip-2:#1E242A;
+    --ink:#E4E5E0; --ink-2:#A8B0B8; --ink-3:#79828B;
+    --rule:#2F3740; --rule-soft:#232A31;
+    --aftn:#79B7D9; --aftn-soft:#132936;
+    --amber:#D6A44E; --amber-soft:#2B2416;
+    --go:#64BC8F; --go-soft:#16281F;
+    --crit:#E58374; --crit-soft:#311D19;
+    --shadow:0 1px 0 rgba(0,0,0,.35), 0 14px 30px -20px rgba(0,0,0,.9);
+  }
+
+  *{ box-sizing:border-box; }
+  [hidden]{ display:none !important; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-body); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{ font-family:var(--f-disp); font-weight:700; margin:0; text-wrap:balance; }
+  p{ margin:0; }
+  img{ max-width:100%; display:block; }
+  .num{ font-variant-numeric:tabular-nums; }
+  .wrap{ max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:0 70px; }
+
+  /* Cabecera */
+  header.top{ border-bottom:1px solid var(--rule); background:var(--strip); }
+  .top-in{ max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:38px 26px; display:grid; gap:16px; }
+  .eyebrow{ font-family:var(--f-mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--aftn); }
+  h1{ font-size:clamp(2.5rem,1.3rem+5.4vw,4.3rem); line-height:.95; text-transform:uppercase; }
+  h1 .thin{ display:block; font-weight:500; color:var(--ink-2); }
+  .deck{ max-width:58ch; color:var(--ink-2); font-size:1.05rem; }
+  .by{ display:flex; flex-wrap:wrap; gap:8px 22px; align-items:baseline; border-top:1px solid var(--rule-soft); padding-top:14px; }
+  .by .lbl{ font-family:var(--f-mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .by .who{ font-family:var(--f-disp); font-size:1.45rem; letter-spacing:.02em; text-transform:uppercase; }
+  .by .who span{ color:var(--ink-3); padding-inline:6px; }
+
+  /* Método */
+  .how{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); margin-block:34px 30px; }
+  .how div{ border-left:3px solid var(--aftn); padding-left:14px; }
+  .how b{ font-family:var(--f-mono); font-size:.7rem; letter-spacing:.12em; color:var(--aftn); display:block; text-transform:uppercase; }
+  .how h3{ font-size:1.3rem; text-transform:uppercase; margin-block:2px 3px; }
+  .how p{ font-size:.9rem; color:var(--ink-2); }
+
+  /* Filtros */
+  .bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--rule); }
+  .bar .lbl{ font-family:var(--f-mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-right:4px; }
+  .chip{ font-family:var(--f-mono); font-size:.74rem; padding:5px 11px; border:1px solid var(--rule); background:var(--strip); color:var(--ink-2); cursor:pointer; }
+  .chip[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .chip:focus-visible,.card:focus-visible,.x:focus-visible{ outline:2px solid var(--aftn); outline-offset:2px; }
+
+  /* Tarjetas */
+  .grid{ display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); }
+  .card{
+    background:var(--strip); border:1px solid var(--rule); box-shadow:var(--shadow);
+    display:flex; flex-direction:column; text-align:left; padding:0; cursor:pointer;
+    font:inherit; color:inherit; transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 1px 0 rgba(21,24,27,.05), 0 18px 34px -20px rgba(21,24,27,.7); }
+  .ph{ position:relative; aspect-ratio:16/9; overflow:hidden; background:var(--strip-2); border-bottom:1px solid var(--rule); }
+  .ph img{ width:100%; height:100%; object-fit:cover; }
+  .code{
+    position:absolute; left:0; bottom:0; font-family:var(--f-mono); font-weight:600; font-size:1.35rem;
+    background:var(--ink); color:var(--paper); padding:4px 12px 3px; letter-spacing:.04em;
+  }
+  .see{
+    position:absolute; right:8px; bottom:8px; font-family:var(--f-mono); font-size:.62rem; letter-spacing:.1em;
+    text-transform:uppercase; background:rgba(251,250,246,.92); color:#15181B; padding:4px 8px; border:1px solid rgba(21,24,27,.2);
+  }
+  .paxb{
+    position:absolute; left:8px; top:8px; font-family:var(--f-mono); font-size:.66rem; letter-spacing:.06em;
+    background:rgba(251,250,246,.93); color:#15181B; padding:3px 8px; border:1px solid rgba(21,24,27,.2);
+  }
+  .body{ padding:13px 15px 15px; display:grid; gap:11px; }
+  .head{ display:grid; gap:2px; }
+  .cs{ font-family:var(--f-mono); font-weight:600; font-size:1.05rem; }
+  .model{ font-size:.86rem; color:var(--ink-2); }
+  .leg{ font-family:var(--f-mono); font-size:.82rem; color:var(--ink); }
+  .leg em{ font-style:normal; color:var(--ink-3); }
+
+  .duo{ display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--rule); }
+  .duo > div{ padding:9px 11px; display:grid; gap:1px; }
+  .duo > div + div{ border-left:1px solid var(--rule); background:var(--strip-2); }
+  .duo .t{ font-family:var(--f-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .duo .n{ font-family:var(--f-disp); font-size:2.05rem; line-height:1; font-variant-numeric:tabular-nums; }
+  .duo .u{ font-family:var(--f-mono); font-size:.62rem; color:var(--ink-3); }
+
+  .tri{ display:flex; height:9px; border:1px solid var(--rule); }
+  .tri i{ display:block; }
+  .s-vue{ background:var(--aftn); } .s-res{ background:var(--amber); } .s-dis{ background:var(--go-soft); }
+  .trilab{ display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:.63rem; color:var(--ink-3); }
+
+  .gain{ font-family:var(--f-mono); font-size:.76rem; padding:6px 9px; display:flex; gap:7px; align-items:baseline; }
+  .gain.up{ background:var(--go-soft); color:var(--go); }
+  .gain.down{ background:var(--crit-soft); color:var(--crit); }
+  .gain.flat{ background:var(--strip-2); color:var(--ink-2); }
+  .gain b{ font-size:.92rem; }
+  .gain small{ color:var(--ink-3); font-size:.68rem; }
+
+  /* Modal */
+  dialog{ border:1px solid var(--rule); background:var(--strip); color:var(--ink); padding:0; width:min(860px,calc(100vw - 24px)); max-height:88vh; box-shadow:0 30px 70px -30px rgba(0,0,0,.65); }
+  dialog::backdrop{ background:rgba(10,13,16,.65); }
+  .dh{ position:sticky; top:0; z-index:2; display:flex; gap:14px; justify-content:space-between; align-items:flex-start; padding:15px 18px 13px; border-bottom:1px solid var(--rule); background:var(--strip-2); }
+  .dh h2{ font-size:1.7rem; line-height:1; text-transform:uppercase; }
+  .dh .sub{ font-family:var(--f-mono); font-size:.74rem; color:var(--ink-2); margin-top:4px; }
+  .x{ font-family:var(--f-mono); font-size:.78rem; background:transparent; border:1px solid var(--rule); color:var(--ink-2); padding:5px 10px; cursor:pointer; }
+  .db{ padding:0 18px 24px; overflow-y:auto; max-height:calc(88vh - 76px); }
+  .hero{ margin:0 -18px 0; border-bottom:1px solid var(--rule); }
+  .hero img{ width:100%; aspect-ratio:21/9; object-fit:cover; }
+  .cred{ font-family:var(--f-mono); font-size:.62rem; color:var(--ink-3); padding:5px 0 0; }
+  .sec{ margin-top:22px; }
+  .sec > h3{ font-size:1.1rem; text-transform:uppercase; letter-spacing:.03em; border-bottom:1px solid var(--rule); padding-bottom:5px; margin-bottom:11px; }
+  .spec{ display:grid; gap:1px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); background:var(--rule-soft); border:1px solid var(--rule-soft); }
+  .spec div{ background:var(--strip-2); padding:9px 11px; }
+  .spec .t{ font-family:var(--f-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .spec .v{ font-family:var(--f-mono); font-size:1rem; font-variant-numeric:tabular-nums; }
+  .spec .v.sm{ font-size:.78rem; line-height:1.35; }
+  .calc{ font-family:var(--f-mono); font-size:.82rem; line-height:1.95; font-variant-numeric:tabular-nums; background:var(--strip-2); border-left:3px solid var(--aftn); padding:10px 13px; }
+  .calc .o{ color:var(--ink-3); }
+  .tw{ overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:.84rem; }
+  th,td{ text-align:left; padding:6px 9px; border-bottom:1px solid var(--rule-soft); }
+  th{ font-family:var(--f-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:500; }
+  td.v{ font-family:var(--f-mono); font-variant-numeric:tabular-nums; }
+  .fpl{ font-family:var(--f-mono); font-size:.76rem; line-height:1.65; background:var(--strip-2); border:1px solid var(--rule-soft); border-left:3px solid var(--amber); padding:10px 12px; white-space:pre-wrap; overflow-x:auto; }
+  .note{ font-size:.85rem; color:var(--ink-2); margin-top:9px; }
+
+  /* Cierre */
+  .end{ margin-top:44px; border-top:1px solid var(--rule); padding-top:20px; display:grid; gap:12px; }
+  .end h2{ font-size:1.6rem; text-transform:uppercase; }
+  .end p{ color:var(--ink-2); font-size:.9rem; max-width:72ch; }
+  .disc{ border:1px solid var(--amber); background:var(--amber-soft); padding:11px 13px; font-size:.85rem; color:var(--ink); }
+  .src{ font-family:var(--f-mono); font-size:.68rem; color:var(--ink-3); line-height:1.7; }
+  .src a{ color:var(--aftn); }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <p class="eyebrow">Apéndice 24 · Casillas 9, 15 y 16 · DOF 15–16 SEP 26</p>
+    <h1>Veinticinco strips<span class="thin">y el tiempo que da el tanque</span></h1>
+    <p class="deck">
+      Cada plan declara una velocidad y un tiempo de vuelo. Cada aeronave tiene una autonomía.
+      Aquí están las dos cifras, una al lado de la otra, para los 25 planes.
+    </p>
+    <div class="by">
+      <span class="lbl">Presentan</span>
+      <span class="who">Diana Pachón <span>·</span> Juan Diego Villarreal</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="how">
+    <div>
+      <b>Casilla 15</b>
+      <h3>La velocidad que pidió</h3>
+      <p>N0420 son 420 kt TAS. Se compara contra la velocidad de crucero que EUROCONTROL publica para ese tipo.</p>
+    </div>
+    <div>
+      <b>Ganó o perdió</b>
+      <h3>Volar lento rinde</h3>
+      <p>Por debajo de la velocidad de tablas el tanque dura más; por encima, menos. Esa diferencia es el tiempo ganado o perdido.</p>
+    </div>
+    <div>
+      <b>Casilla 16</b>
+      <h3>Autonomía contra plan</h3>
+      <p>El tiempo estimado de vuelo se resta de la autonomía. Lo que queda, después de reservas, es el margen real.</p>
+    </div>
+  </section>
+
+  <div class="bar">
+    <span class="lbl">Filtrar</span>
+    <button class="chip" aria-pressed="true" data-f="all">Los 25</button>
+    <button class="chip" aria-pressed="false" data-f="com">Comercial y carga</button>
+    <button class="chip" aria-pressed="false" data-f="exe">Ejecutivo</button>
+    <button class="chip" aria-pressed="false" data-f="ga">Aviación general</button>
+    <button class="chip" aria-pressed="false" data-f="heli">Helicópteros</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="end">
+    <h2>Lo que el plan no escribe</h2>
+    <p>
+      El Apéndice 24 no tiene casilla para el combustible. El formulario promete una velocidad y un
+      tiempo; la autonomía vive en la hoja de despacho. Este ejercicio une las dos: si el plan pide
+      más velocidad que la de tablas, el tanque rinde menos horas, y el margen sobre la reserva final
+      es lo primero que se estrecha.
+    </p>
+    <p class="disc">
+      <b>Uso didáctico.</b> EUROCONTROL advierte que su base de performance es indicativa y no debe
+      usarse operacionalmente. Los combustibles útiles y los flujos de crucero son valores típicos del
+      tipo, no de un manual de vuelo específico, y los tiempos a alterno son estimados. El cálculo
+      supone tanques llenos, atmósfera estándar y sin viento.
+    </p>
+    <p class="src" id="src"></p>
+  </section>
+</div>
+
+<dialog id="dlg" aria-labelledby="dt">
+  <div class="dh">
+    <div><h2 id="dt">—</h2><p class="sub" id="ds">—</p></div>
+    <button class="x" id="x" type="button">Cerrar ✕</button>
+  </div>
+  <div class="db" id="dbody"></div>
+</dialog>
+
+<script>
+/* ---------- Performance por tipo ----------
+   apd: EUROCONTROL Aircraft Performance Database.
+   fuel: combustible útil y flujo de crucero típicos del tipo (ejercicio). */
+const A = {
+ A320:{n:"Airbus A320",w:"M",e:"2 × CFM56-5A / IAE V2500",mtow:"73 900 kg",v2:"145 kt",ldg:"1 440 m",dim:"34.1 × 37.6 m",tas:450,mach:"0.79",ceil:"FL390",rng:"2 700 NM",kg:19100,ff:2400,tx:200,src:"23 860 L ≈ 19 100 kg · 2 400 kg/h",ph:"a320.jpg",cr:"Aeroprints.com · CC BY-SA 3.0",px:"150 en dos clases · 180 máximo",pxs:"150–180 pax"},
+ A20N:{n:"Airbus A320neo",w:"M",e:"2 × CFM LEAP-1A / PW1100G",mtow:"79 000 kg",v2:"145 kt",ldg:"1 650 m",dim:"35.8 × 37.6 m",tas:450,mach:"0.78",ceil:"FL390",rng:"3 500 NM",kg:19100,ff:2050,tx:180,src:"23 860 L ≈ 19 100 kg · 2 050 kg/h",ph:"a20n.jpg",cr:"Acroterion · CC BY-SA 4.0",px:"165 en dos clases · 195 máximo",pxs:"165–195 pax"},
+ A319:{n:"Airbus A319",w:"M",e:"2 × CFM56-5A4 / IAE V2524-A5",mtow:"64 000 kg",v2:"135 kt",ldg:"1 350 m",dim:"34.1 × 33.8 m",tas:450,mach:"0.79",ceil:"FL390",rng:"1 800 NM",kg:19400,ff:2300,tx:180,src:"24 210 L ≈ 19 400 kg · 2 300 kg/h",ph:"a319.jpg",cr:"Bernard Gagnon · CC BY-SA 4.0",px:"124 en dos clases · 156 máximo",pxs:"124–156 pax"},
+ B738:{n:"Boeing 737-800",w:"M",e:"2 × CFM56-7B",mtow:"70 530 kg",v2:"145 kt",ldg:"1 600 m",dim:"34.3 × 39.2 m",tas:460,mach:"0.79",ceil:"FL410",rng:"2 000 NM",kg:20900,ff:2550,tx:200,src:"26 020 L ≈ 20 900 kg · 2 550 kg/h",ph:"b738.png",cr:"Nikiforov Konstantin · GFDL 1.2",px:"162 en dos clases · 189 máximo",pxs:"162–189 pax"},
+ B38M:{n:"Boeing 737 MAX 8",w:"M",e:"2 × CFM LEAP-1B",mtow:"82 600 kg",v2:"145 kt",ldg:"1 500 m",dim:"35.9 × 39.5 m",tas:453,mach:"0.79",ceil:"FL410",rng:"3 550 NM",kg:20800,ff:2250,tx:190,src:"25 940 L ≈ 20 800 kg · 2 250 kg/h",ph:"b38m.jpg",cr:"MarcelX42 · CC BY-SA 4.0",px:"162 en dos clases · 210 máximo",pxs:"162–210 pax"},
+ B763:{n:"Boeing 767-300ER",w:"H",e:"2 × PW4062 / CF6-80C2 / RB211-524H",mtow:"186 880 kg",v2:"160 kt",ldg:"1 800 m",dim:"47.6 × 54.9 m",tas:460,mach:"0.80",ceil:"FL450",rng:"6 105 NM",kg:72600,ff:5400,tx:400,src:"90 770 L ≈ 72 600 kg · 5 400 kg/h",ph:"b763.jpg",cr:"Oleg Yunakov · CC BY-SA 4.0",px:"versión carguero: 0 pax · hasta 54 t de carga",pxs:"carguero · 54 t"},
+ B77L:{n:"Boeing 777-200LR",w:"H",e:"2 × GE90-110B1 / -115B1",mtow:"347 500 kg",v2:"123 kt",ldg:"1 700 m",dim:"64.8 × 63.7 m",tas:490,mach:"0.84",ceil:"FL431",rng:"9 380 NM",kg:161800,ff:7400,tx:600,src:"202 290 L ≈ 161 800 kg · 7 400 kg/h",ph:"b77l.jpg",cr:"Churlos · CC BY-SA 4.0",px:"301 en tres clases · 440 máximo",pxs:"301 pax"},
+ B788:{n:"Boeing 787-8",w:"H",e:"2 × GEnx / Trent 1000",mtow:"228 000 kg",v2:"165 kt",ldg:"1 520 m",dim:"52.0 × 56.7 m",tas:470,mach:"0.85",ceil:"FL430",rng:"8 000 NM",kg:101500,ff:5300,tx:400,src:"126 920 L ≈ 101 500 kg · 5 300 kg/h",ph:"b788.jpg",cr:"Julian Herzog · CC BY 4.0",px:"242 en dos clases · 359 máximo",pxs:"242–359 pax"},
+ MD83:{n:"McDonnell Douglas MD-83",w:"M",e:"2 × P&W JT8D-219",mtow:"73 028 kg",v2:"140 kt",ldg:"1 585 m",dim:"32.8 × 45.1 m",tas:440,mach:"0.76",ceil:"FL370",rng:"2 504 NM",kg:30800,ff:3250,tx:250,src:"≈ 38 500 L ≈ 30 800 kg · 3 250 kg/h",ph:"md83.jpg",cr:"Wilfredor · CC0",px:"155 en dos clases · 172 máximo",pxs:"155–172 pax"},
+ AT76:{n:"ATR 72-600",w:"M",e:"2 × PWC PW127, hélice de 6 palas",mtow:"21 500 kg",v2:"110 kt",ldg:"1 100 m",dim:"27.1 × 27.2 m",tas:275,mach:"—",ceil:"FL250",rng:"1 500 NM",kg:5000,ff:640,tx:60,src:"5 000 kg útiles · 640 kg/h",ph:"at76.jpg",cr:"Md Shaifuzzaman Ayon · CC BY-SA 4.0",no:"La base publica la familia bajo AT72.",px:"70 en clase única · 78 máximo",pxs:"70–78 pax"},
+ AT45:{n:"ATR 42-500",w:"M",e:"2 × PWC PW127, hélice de 6 palas",mtow:"18 600 kg",v2:"110 kt",ldg:"1 000 m",dim:"24.6 × 22.7 m",tas:300,mach:"—",ceil:"FL260",rng:"1 000 NM",kg:4500,ff:570,tx:55,src:"4 500 kg útiles · 570 kg/h",ph:"at45.jpg",cr:"Kreuzschnabel · CC BY-SA 3.0",px:"48 en clase única · 50 máximo",pxs:"48–50 pax"},
+ C208:{n:"Cessna 208 Caravan",w:"L",e:"1 × PWC PT6A-114, 600 SHP",mtow:"3 629 kg",v2:"85 kt",ldg:"450 m",dim:"15.9 × 11.5 m",tas:160,mach:"—",ceil:"FL260",rng:"1 000 NM",kg:1020,ff:145,tx:12,src:"≈ 335 gal ≈ 1 020 kg · 145 kg/h",ph:"c208.jpg",cr:"Calistemon · CC BY-SA 4.0",px:"9 pasajeros · 13 en versión alta densidad",pxs:"9–13 pax"},
+ PC12:{n:"Pilatus PC-12",w:"L",e:"1 × P&W PT6A-67B, 1 200 SHP",mtow:"4 500 kg",v2:"110 kt",ldg:"550 m",dim:"16.2 × 14.4 m",tas:270,mach:"—",ceil:"FL300",rng:"2 000 NM",kg:1220,ff:180,tx:15,src:"≈ 2 700 lb ≈ 1 220 kg · 180 kg/h",ph:"pc12.jpg",cr:"Matti Blume · CC BY-SA 4.0",px:"6 en configuración ejecutiva · 9 máximo",pxs:"6–9 pax"},
+ BE9L:{n:"Beechcraft King Air 90",w:"L",e:"2 × P&W PT6A-21 / -34",mtow:"4 581 kg",v2:"100 kt",ldg:"380 m",dim:"15.3 × 10.8 m",tas:220,mach:"—",ceil:"FL290",rng:"1 150 NM",kg:1165,ff:215,tx:15,src:"≈ 2 570 lb ≈ 1 165 kg · 215 kg/h",ph:"be9l.jpg",cr:"Uli Elch · CC BY-SA 4.0",px:"6 pasajeros · 7 máximo",pxs:"6–7 pax"},
+ C402:{n:"Cessna 402",w:"L",e:"2 × Continental TSIO-520, pistón",mtow:"2 860 kg",v2:"95 kt",ldg:"538 m",dim:"13.5 × 11.1 m",tas:230,mach:"—",ceil:"FL270",rng:"500 NM",kg:580,ff:130,tx:10,src:"≈ 213 gal ≈ 580 kg · 130 kg/h",ph:"c402.jpg",cr:"Timothy Quill · CC BY-SA 4.0",px:"8 pasajeros · 9 máximo",pxs:"8–9 pax"},
+ ASTR:{n:"IAI Astra / Gulfstream G100",w:"M",e:"2 × Garrett TFE731-3B",mtow:"11 180 kg",v2:"130 kt",ldg:"900 m",dim:"16.1 × 16.9 m",tas:470,mach:"0.83",ceil:"FL450",rng:"2 500 NM",kg:3430,ff:690,tx:40,src:"≈ 7 560 lb ≈ 3 430 kg · 690 kg/h",ph:"astr.jpg",cr:"Hayden Soloviev · CC BY-SA 4.0",px:"6 en configuración ejecutiva · 9 máximo",pxs:"6–9 pax"},
+ GALX:{n:"Gulfstream G200 Galaxy",w:"M",e:"2 × P&W PW306A",mtow:"15 808 kg",v2:"125 kt",ldg:"1 050 m",dim:"17.7 × 19.0 m",tas:470,mach:"0.81",ceil:"FL450",rng:"3 300 NM",kg:6850,ff:1000,tx:50,src:"≈ 15 100 lb ≈ 6 850 kg · 1 000 kg/h",ph:"galx.jpg",cr:"Peter Bakema · GFDL 1.2",px:"8 en configuración ejecutiva · 10 máximo",pxs:"8–10 pax"},
+ C550:{n:"Cessna 550 Citation II",w:"L",e:"2 × P&W JT15D-4B",mtow:"6 850 kg",v2:"115 kt",ldg:"915 m",dim:"15.9 × 14.4 m",tas:360,mach:"0.63",ceil:"FL430",rng:"1 900 NM",kg:2270,ff:340,tx:30,src:"≈ 5 000 lb ≈ 2 270 kg · 340 kg/h",ph:"c550.jpg",cr:"Chris Lofting · GFDL 1.2",px:"6 en configuración ejecutiva · 9 máximo",pxs:"6–9 pax"},
+ SR20:{n:"Cirrus SR20",w:"L",e:"1 × Continental IO-360-ES, 200 hp",mtow:"1 361 kg",v2:"—",ldg:"260 m",dim:"11.7 × 7.9 m",tas:155,mach:"—",ceil:"FL175",rng:"785 NM",kg:152,ff:33,tx:4,src:"≈ 56 gal ≈ 152 kg · 33 kg/h",ph:"sr20.jpg",cr:"Peter Bakema · GFDL 1.2",px:"3 pasajeros más el piloto",pxs:"3 pax + piloto"},
+ P28A:{n:"Piper PA-28 Cherokee",w:"L",e:"1 × Lycoming O-320 / O-360",mtow:"1 100 kg",v2:"65 kt",ldg:"300 m",dim:"10.7 × 7.2 m",tas:110,mach:"—",ceil:"FL120",rng:"500 NM",kg:130,ff:30,tx:3,src:"≈ 48 gal ≈ 130 kg · 30 kg/h",ph:"p28a.jpg",cr:"Roland Balik · dominio público",px:"3 pasajeros más el piloto",pxs:"3 pax + piloto"},
+ P28R:{n:"Piper PA-28R Arrow",w:"L",e:"1 × Lycoming IO-360",mtow:"1 130 kg",v2:"70 kt",ldg:"300 m",dim:"9.1 × 7.4 m",tas:140,mach:"—",ceil:"FL120",rng:"700 NM",kg:195,ff:37,tx:4,src:"≈ 72 gal ≈ 195 kg · 37 kg/h",ph:"p28r.jpg",cr:"Robbie Klinkenberg · CC BY-SA 4.0",px:"3 pasajeros más el piloto",pxs:"3 pax + piloto"},
+ B412:{n:"Bell 412",w:"L",e:"2 × PWC PT6T-3BE, 900 shp c/u",mtow:"5 397 kg",v2:"—",ldg:"—",dim:"rotor 14.0 m · 17.1 m",tas:125,mach:"—",ceil:"FL200",rng:"402 NM",kg:1000,ff:245,tx:10,src:"≈ 1 250 L ≈ 1 000 kg · 245 kg/h",ph:"b412.png",cr:"Ed Whisenant · CC0",rot:1,px:"13 pasajeros más 2 tripulantes",pxs:"13 pax + 2 trip."},
+ B06:{n:"Bell 206 JetRanger",w:"L",e:"1 × Allison 250-C20B, 317 shp",mtow:"1 451 kg",v2:"—",ldg:"—",dim:"longitud 12.1 m",tas:120,mach:"—",ceil:"FL135",rng:"374 NM",kg:200,ff:62,tx:5,src:"≈ 76 gal ≈ 200 kg · 62 kg/h",ph:"b06.jpg",cr:"Wilfredor · CC0",rot:1,px:"4 pasajeros más el piloto",pxs:"4 pax + piloto"},
+ UH1:{n:"Bell UH-1 Iroquois",w:"L",e:"1 × Lycoming T53-L-11, 1 100 shp",mtow:"4 309 kg",v2:"—",ldg:"—",dim:"longitud 17.4 m",tas:110,mach:"—",ceil:"FL190",rng:"275 NM",kg:600,ff:250,tx:8,src:"≈ 220 gal ≈ 600 kg · 250 kg/h",ph:"uh1.jpg",cr:"Rjcastillo · CC BY-SA 4.0",rot:1,px:"11 a 14 ocupantes según configuración",pxs:"11–14 ocupantes"},
+ H60:{n:"Sikorsky S-70 / UH-60",w:"M",e:"2 × GE T700-GE-701C, 1 890 hp c/u",mtow:"10 660 kg",v2:"—",ldg:"—",dim:"longitud 19.8 m",tas:150,mach:"—",ceil:"FL190",rng:"1 200 NM",kg:1360,ff:550,tx:10,src:"≈ 1 360 kg internos · 550 kg/h",ph:"h60.jpg",cr:"Andrés Ramírez · GFDL 1.2",rot:1,px:"11 a 14 ocupantes según configuración",pxs:"11–14 ocupantes"}
+};
+
+/* ---------- Los 25 planes ---------- */
+const P = [
+ {c:"AVA8532",t:"A320",g:"com",r:"IFR regular",o:"Avianca · N477AV",dep:"SKBO",dt:"0105",des:"SKMR",eet:55,al:"SKRG",am:40,tas:420,lv:"F320",
+  raw:"(FPL-AVA8532-IS\n-A320/M-SDE1E2E3GHIRWXYZ/LB1\n-SKBO0105\n-N0420F320 OSUS4R GIKPU UQ120 PADUD DCT XOGEN XOGE2A\n-SKMR0055 SKRG\n-PBN/A1B1C1D1O1S2T1 NAV/RNP2 SUR/260B DOF/260916 REG/N477AV\n EET/SKEC0032 SEL/CSFK PER/C RMK/TCAS)",
+  nt:"Bogotá–Montería en 55 min con el tanque dando más de nueve horas."},
+ {c:"AVA9796",t:"A20N",g:"com",r:"IFR regular",o:"Avianca · N913AV",dep:"SKBO",dt:"0035",des:"SKBQ",eet:64,al:"SKRG",am:45,tas:419,lv:"F320→F360",
+  raw:"(FPL-AVA9796-IS\n-A20N/M-SDE1E2E3GHIJ4RWXYZ/LB1D1\n-SKBO0035\n-N0419F320 OSUS4R GIKPU UQ120 PADUD/N0451F360 DCT OPNIR UZ002\n LOLUD LOLU1A\n-SKBQ0104 SKRG\n-PBN/A1B1C1D1L1O1S2T1 NAV/RNP2 DOF/260916 REG/N913AV PER/C)",
+  nt:"Cambia de velocidad y nivel en ruta, en PADUD: sube a F360 y acelera a 451 kt."},
+ {c:"AVA8472",t:"A319",g:"com",r:"IFR regular",o:"Avianca · N691AV",dep:"SKBO",dt:"2335",des:"SKCG",eet:63,al:"SKRG",am:40,tas:420,lv:"F380",
+  raw:"(FPL-AVA8472-IS\n-A319/M-SDE1E2E3GHIRWXYZ/LB1\n-SKBO2335\n-N0420F380 OSUS4R GIKPU UQ120 YACAR UQ120 PADUD DCT OPNIR DCT\n UGREB UGRE3B\n-SKCG0103 SKRG\n-PBN/A1B1C1D1O1S2T1 NAV/RNP2 DOF/260915 REG/N691AV PER/C)",
+  nt:"El A319 tiene el menor alcance publicado de la familia y aquí sobra tanque."},
+ {c:"RPB7287",t:"B738",g:"com",r:"IFR regular",o:"Copa Colombia · HP1536",dep:"SKSM",dt:"0301",des:"SKBO",eet:72,al:"SKCL",am:35,tas:437,lv:"F350",
+  raw:"(FPL-RPB7287-IS\n-B738/M-SDE1E2E3GHRWI/HB1\n-SKSM0301\n-N0437F350 SUPL2A LOKOV UG444 EJA UQ119 ILSEV ILSE5E\n-SKBO0112 SKCL\n-PBN/B1C1D1S2O2T1 DOF/260916 REG/HP1536 EET/SKED0029 PER/C)",
+  nt:"Santa Marta–Bogotá, con Cali como alterno a 35 minutos."},
+ {c:"UAL268",t:"B38M",g:"com",r:"IFR regular",o:"United · N47343",dep:"KEWR",dt:"2110",des:"SKBO",eet:303,al:"SKCL",am:35,tas:458,lv:"F300→F370",
+  raw:"(FPL-UAL268-IS\n-B38M/M-SADE3GHIJ4RWXYZ/LB1\n-KEWR2110\n-N0458F300 DCT ELVAE DCT NECCK DCT WHITE Q409 OYVAY/N0464F340\n Q409 CRPLR ... UP525 BAQ UL305 ATANA ATAN5E\n-SKBO0503 SKCL\n-EET/KZDC0010 KZJX0105 KZMA0131 MUFH0220 MKJK0251 SKEC0326\n SKED0425 REG/N47343 PER/D)",
+  nt:"Cinco cambios de velocidad en ruta y siete FIR. El vuelo con el margen más estrecho del lote."},
+ {c:"UPS354",t:"B763",g:"com",r:"IFR regular · carga",o:"UPS · N336UP",dep:"KMIA",dt:"0218",des:"SKBO",eet:185,al:"—",am:0,tas:463,lv:"F350",
+  raw:"(FPL-UPS354-IS\n-B763/H-SDE3FGHIJ2J4J7M3P2RWXYZ/LB1D1\n-KMIA0218\n-N0463F350 GWAVA2 URSUS UP406 AKPEK DCT RNG DCT ISVAT ISVA5E\n-SKBO0305\n-DOF/260916 REG/N336UP EET/MUFH0020 MKJK0051 SKEC0129 SKED0223\n PER/D RVR/075 RMK/TCAS CARGO)",
+  nt:"Único plan sin alterno en la casilla 16: todo el colchón queda del lado del remanente."},
+ {c:"UAE9918",t:"B77L",g:"com",r:"IFR regular · carga",o:"Emirates · A6EFZ",dep:"SEQM",dt:"2240",des:"TJBQ",eet:172,al:"TJSJ",am:15,tas:493,lv:"F340→F370",
+  raw:"(FPL-UAE9918-IS\n-B77L/H-SDE2E3GHIJ1J3J4J5M1P2RWXYZ/B1D1L\n-SEQM2240\n-N0493F340 ARNOK3A ARNOK UP533 BOKAN UP778 RNG/N0490F350 DCT\n MRN/N0488F360 DCT LOKOV ... AMBAS/N0484F370 UL335 AVANI DCT MELLA\n-TJBQ0252 TJSJ\n-DOF/260915 REG/A6EFZ PER/D RMK/CARGO NRP HAR TCAS ADSB)",
+  nt:"Crucero escalonado: sube de F340 a F370 mientras se aligera y baja la TAS de 493 a 484 kt."},
+ {c:"AMX014",t:"B788",g:"com",r:"IFR regular · HAZMAT",o:"Aeroméxico · XAAMX",dep:"MMMX",dt:"0055",des:"SBGR",eet:503,al:"SBGL",am:20,tas:488,lv:"F390→F410",
+  raw:"(FPL-AMX014-IS\n-B788/H-SDE3GHIJ1J2J4J5M1P2RWXYZ/LB1D1\n-MMMX0055\n-N0488F390 ILETO3A ILETO UT109 UGATA UL655 PABON/N0483F410 UL655\n DABUN UZ76 KOGDU UZ82 ANSOK UZ42 ZARES MOLLE1A\n-SBGR0823 SBGL SBKP\n-STS/HAZMAT DOF/260916 REG/XAAMX PER/D RALT/SBEG SBBR)",
+  nt:"El vuelo más largo: 8 h 23 y siete FIR. Declara alternos en ruta (RALT) porque sobrevuela la Amazonía."},
+ {c:"RUC1360",t:"MD83",g:"com",r:"IFR no regular",o:"Rutaca · YV647T",dep:"SVVA",dt:"1900",des:"SVVO",eet:49,al:"SVVA",am:20,tas:421,lv:"F300",
+  raw:"(FPL-RUC1360-IN\n-MD83/M-SDFIGRWZ/S\n-SVVA1900\n-N0421F300 ESBES1 NOSCA UW14 ILNOL UW50 BNS A550 CTN DCT PVA\n-SVVO0049 SVVA SVBM\n-PBN/B3B4C3D3O4 COM/TCAS DOF/260915 REG/YV647T)",
+  nt:"Valencia–Valera en 49 min: el alterno es el propio aeropuerto de salida."},
+ {c:"AVR4853",t:"AT76",g:"com",r:"IFR regular",o:"Clic Air · HK5293",dep:"SKBO",dt:"0110",des:"SKPE",eet:45,al:"SKBO",am:25,tas:275,lv:"A160",
+  raw:"(FPL-AVR4853-IS\n-AT76/M-SRDFGY/EB2\n-SKBO0110\n-N0275A160 ISNO2S ISNOX ISNO2C\n-SKPE0045 SKBO\n-PBN/B2B3B4C2D2O2O3S1 DOF/260916 REG/HK5293 OPR/CLIC AIR\n RMK/FLT FLETAMENTO)",
+  nt:"Vuela exactamente a la velocidad de tablas: el consumo de libro aplica sin corrección."},
+ {c:"NSE6535",t:"AT45",g:"com",r:"IFR regular",o:"Satena · HK5442",dep:"SKPA",dt:"1930",des:"SKMD",eet:60,al:"SKPE",am:25,tas:250,lv:"F140",
+  raw:"(FPL-NSE6535-IS\n-AT45/M-SDGR/LB1\n-SKPA1930\n-N0250F140 DOPL1B DOPLO W82 BUV A567 VULAM W25 MQU B689 RNG RNG1E\n-SKMD0100 SKPE SKRG\n-PBN/B2B3C2C3D2D3O2S2 DOF/260915 REG/HK5442 OPR/SATENA PER/B)",
+  nt:"Dos alternos para un destino de pista corta en plena ciudad."},
+ {c:"YV3456",t:"ASTR",g:"exe",r:"IFR general",o:"Ejecutivo · Bogotá–Charallave",dep:"SKBO",dt:"1930",des:"SVCS",eet:110,al:"SVMI",am:10,tas:440,lv:"F390",
+  raw:"(FPL-YV3456-IG\n-ASTR/M-SDGIRWY/SB1\n-SKBO1930\n-N0440F390 ZIP5H AKROB DCT MAVDA DCT KIKAS UP533 ILNOL UW14 NOSCA\n-SVCS0150 SVMI\n-PBN/B1C1D1S1 DOF/260915 RMK/RVR 600M MENSAJE ARRIBO)",
+  nt:"Alterno a 10 minutos: Maiquetía y Charallave comparten meteorología."},
+ {c:"YV2968",t:"C550",g:"exe",r:"IFR general",o:"Ejecutivo · atiende Helistar",dep:"SKBO",dt:"1900",des:"SVMI",eet:90,al:"SVCS",am:15,tas:400,lv:"F270",
+  raw:"(FPL-YV2968-IG\n-C550/L-SDGR/SB1\n-SKBO1900\n-N0400F270 OSUS4R AKROB DCT MAVDA DCT KIKAS UP553 PBL ALDAK1\n-SVMI0130 SVCS SVVA\n-PBN/B3C3D3O3S1 DOF/260915 RMK/MSG ARR ATIENDE HELISTAR)",
+  nt:"Pide 400 kt cuando el libro da 360: es el que más autonomía pierde por ir rápido."},
+ {c:"N283DJ",t:"GALX",g:"exe",r:"IFR general",o:"Aircraft Fidelity · 2 PAX",dep:"SVMI",dt:"1830",des:"SKBO",eet:84,al:"SKBG",am:30,tas:470,lv:"F380",
+  raw:"(FPL-N283DJ-IG\n-GALX/M-SDFGHRWY/SB2\n-SVMI1830\n-N0470F380 MARES A315 ATONO G427 PBL UW50 ILNOL UW50 BNS UW50 CTN\n UW50 KIKAS UW44 PUKEN UW44 BUV A567 VULAM A567 BOG\n-SKBO0124 SKBG SKCL\n-PBN/B2C2D2S1 DOF/260915 REG/N283DJ RMK/02 PAX ON BOARD)",
+  nt:"Clava la velocidad de tablas, 470 kt: ni gana ni pierde autonomía."},
+ {c:"N686NG",t:"PC12",g:"ga",r:"IFR general",o:"Privado · Cali–Neiva",dep:"SKCL",dt:"2130",des:"SKNV",eet:35,al:"SKIB",am:15,tas:250,lv:"F190",
+  raw:"(FPL-N686NG-IG\n-PC12/L-SDGRW/CB1\n-SKCL2130\n-N0250F190 CLO1D CLO W15 NVA\n-SKNV0035 SKIB SKGI\n-PBN/A1B2C2D2 DOF/260915 RMK/PERMISO DE PERMANENCIA)",
+  nt:"Monoturbina en IFR: 35 minutos de vuelo contra casi ocho horas de tanque."},
+ {c:"N81437",t:"BE9L",g:"ga",r:"IFR general",o:"Agropecuaria Aliar",dep:"SKBG",dt:"2100",des:"SKRG",eet:55,al:"SKMD",am:10,tas:200,lv:"F200",
+  raw:"(FPL-N81437-IG\n-BE9L/L-S/CB1\n-SKBG2100\n-N0200F200 UBMU1A UBMUN G431 EJA W26 DIPRA W26 MRN MRN9A\n-SKRG0055 SKMD SKPE\n-SUR/260B DOF/260915 OPR/AGROPECUARIA ALIAR RMK/AUTH SKBOYAYO)",
+  nt:"Casilla 10 con una sola letra, S: equipo estándar. El alterno queda a 10 minutos."},
+ {c:"PNC0216",t:"C208",g:"ga",r:"VFR estado",o:"Policía Nacional",dep:"SKGY",dt:"1700",des:"SKQU",eet:60,al:"SKPQ",am:20,tas:140,lv:"A115",rs:20,
+  raw:"(FPL-PNC0216-VM\n-C208/L-S/C\n-SKGY1700\n-N0140A115 CISCO2D SANFCO DCT HONDA DCT MQU\n-SKQU0100 SKPQ\n-DOF/260915)",
+  nt:"Casilla 18 con una sola entrada: DOF. Lo mínimo que puede llevar un plan."},
+ {c:"HK5233",t:"C402",g:"ga",r:"VFR · vuelo humanitario",o:"Heligolfo · STS/HUM",dep:"SKUI",dt:"1810",des:"SKBS",eet:20,al:"SKRG",am:35,tas:160,lv:"A045",rs:20,
+  raw:"(FPL-HK5233-VN\n-C402/L-SG/CB1\n-SKUI1810\n-N0160A045 DCT SERRANIA DCT BAHIA SOLANO\n-SKBS0020 SKRG SKMD\n-STS/HUM DOF/260915 OPR/HELIGOLFO COLOMBIA\n RMK/PERMANENCIA EN SKBS 0030MIN POSTERIOR SKMD)",
+  nt:"STS/HUM pide manejo prioritario. El alterno está más lejos que el propio destino."},
+ {c:"HK5463G",t:"SR20",g:"ga",r:"VFR general",o:"Aeronova · instrucción",dep:"SKGI",dt:"2155",des:"SKGI",eet:40,al:"SKIB",am:10,tas:130,lv:"A045",rs:20,
+  raw:"(FPL-HK5463G-VG\n-SR20/L-S/CB1\n-SKGI2155\n-N0130A045 DCT GIR DCT\n-SKGI0040 SKIB SKQU\n-DOF/260915 OPR/AERONOVA)",
+  nt:"Sale y regresa a Girardot. Ruta DCT GIR DCT: el circuito local cabe en una línea."},
+ {c:"HK5213G",t:"P28A",g:"ga",r:"VFR general",o:"Falcón · TGL en SKVV",dep:"SKVV",dt:"2030",des:"SKVV",eet:120,al:"SKVN",am:10,tas:90,lv:"A035",rs:20,
+  raw:"(FPL-HK5213G-VG\n-P28A/L-S/C\n-SKVV2030\n-N0090A035 ACACIAS DCT GUAMAL DCT CUBARRAL SANMARTIN DCT CUBARRAL\n DCT GUAMAL DCT ACACIAS DCT VANGUARDIA\n-SKVV0200 SKVN SQSA\n-DOF/260915 OPR/FALCON RMK/TGL SKVV)",
+  nt:"Dos horas de instrucción en un Cherokee: el plan más largo frente a su propia autonomía."},
+ {c:"HK5158",t:"P28R",g:"ga",r:"VFR no regular",o:"Allas · Cumaribo–Barrancominas",dep:"SKUM",dt:"1625",des:"SKBM",eet:30,al:"SKUV",am:20,tas:115,lv:"A045",rs:20,
+  raw:"(FPL-HK5158-VN\n-P28R/L-S/C\n-SKUM1625\n-N0115A045 CUMARIBO DCT BARRANCOMINAS\n-SKBM0030 SKUV SKPD\n-DOF/260915 OPR/ALLAS RMK/CEL 3114109227)",
+  nt:"Ruta de dos puntos en la Orinoquía, donde el alterno queda a 20 minutos."},
+ {c:"HK4723",t:"B412",g:"heli",r:"VFR no regular",o:"Helistar · traslado a Cabí",dep:"ZZZZ",dt:"1940",des:"SKUI",eet:25,al:"ZZZZ",am:15,tas:120,lv:"A025",rs:20,
+  raw:"(FPL-HK4723-VN\n-B412/L-S/CB1\n-ZZZZ1940\n-N0120A025 COMITA DCT CABI DCT QUIBDO DCT\n-SKUI0025 ZZZZ SKMD\n-DEP/COMITA CHOCO DOF/260915 OPR/HELISTAR SAS\n ALTN/CAMPAMENTOS CHOCO RMK/TOMA DE COMBUSTIBLE EN SKUI)",
+  nt:"ZZZZ en la casilla 13 obliga a nombrar el sitio en DEP/ de la casilla 18."},
+ {c:"HK5455",t:"B06",g:"heli",r:"VFR no regular",o:"SASA · Guatapé",dep:"ZZZZ",dt:"2130",des:"ZZZZ",eet:6,al:"ZZZZ",am:5,tas:90,lv:"A085",rs:20,
+  raw:"(FPL-HK5455-VN\n-B06/L-S/CB2\n-ZZZZ2130\n-N0090A085 FINCA LA ILUSION DCT ISLA DE LA FANTASIA DCT GUATAPE\n DCT PIEDRA DEL PENOL DCT FINCA LA ILUSION\n-ZZZZ0006 ZZZZ SKMD\n-DEP/FINCA LA ILUSION GUATAPE DEST/FINCA LA ILUSION GUATAPE\n DOF/260915 OPR/SASA ALTN/FINCA LA MANUELA GUATAPE)",
+  nt:"Seis minutos de vuelo: salida, destino y alterno son fincas, los tres con ZZZZ."},
+ {c:"EJC5429",t:"UH1",g:"heli",r:"VFR estado",o:"Ejército · Novena Brigada",dep:"ZZZZ",dt:"2010",des:"ZZZZ",eet:70,al:"SKNV",am:10,tas:90,lv:"A025",rs:20,
+  raw:"(FPL-EJC5429-VM\n-UH1/L-S/C\n-ZZZZ2010\n-N0090A025 DCT NVA DCT\n-ZZZZ0110 SKNV ZZZZ\n-DEP/NOVENA BRIGADA NEIVA HUILA DEST/NOVENA BRIGADA NEIVA HUILA\n DOF/260915 ALTN/BASES MILITARES EN RURAL HUILA)",
+  nt:"Una hora y diez sobre el Huila con poco más de dos horas y media de tanque."},
+ {c:"ZULU",t:"H60",g:"heli",r:"VFR estado · STS/STATE",o:"Antinarcóticos · EJC2104",dep:"SKSJ",dt:"1810",des:"ZZZZ",eet:80,al:"SKUW",am:20,tas:120,lv:"A035",rs:20,
+  raw:"(FPL-ZULU-VM\n-H60/M-S/C\n-SKSJ1810\n-N0120A035 SAN JOSE DCT MAPIRIPAN DCT SAN JOSE\n-ZZZZ0120 SKUW SKSJ\n-STS/STATE DEST/BASE ANTINARCOTICOS SAN JOSE DOF/260915\n REG/EJC2104 EJC2190 RMK/OP2)",
+  nt:"Indicativo sin número de vuelo y STS/STATE: aeronave de Estado en misión."}
+];
+
+/* ---------- Cálculo ---------- */
+const cl=(x,a,b)=>Math.min(b,Math.max(a,x));
+const hm=m=>{const s=m<0?"−":"";m=Math.abs(Math.round(m));return s+String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");};
+const kgs=n=>Math.round(n).toLocaleString("es-CO")+" kg";
+
+function calc(p){
+  const a=A[p.t];
+  const idx=p.tas/a.tas;
+  // En ala rotatoria el consumo apenas baja con la velocidad: el margen de ajuste es menor.
+  const k=a.rot?cl(1+2*(idx-1),0.92,1.15):cl(1+2*(idx-1),0.80,1.25);
+  const ff=a.ff*k, rs=p.rs||30;
+  const endBook=a.kg/a.ff*60, endPlan=a.kg/ff*60, delta=endPlan-endBook;
+  const trip=ff*p.eet/60, cont=0.05*trip, altn=ff*p.am/60, res=ff*rs/60;
+  const req=a.tx+trip+cont+altn+res, extra=a.kg-req;
+  const resvMin=(a.tx+cont+altn+res)/ff*60, extraMin=extra/ff*60;
+  return {a,idx,k,ff,rs,endBook,endPlan,delta,trip,cont,altn,res,req,extra,resvMin,extraMin,
+          nm:Math.round(p.tas*p.eet/60)};
+}
+
+/* ---------- Tarjetas ---------- */
+function bar(c,p){
+  const t=c.endPlan, w=m=>(Math.max(m,0)/t*100).toFixed(2)+"%";
+  return `<div class="tri"><i class="s-vue" style="width:${w(p.eet)}"></i><i class="s-res" style="width:${w(c.resvMin)}"></i><i class="s-dis" style="width:${w(c.extraMin)}"></i></div>`;
+}
+function card(p,i){
+  const c=calc(p), a=c.a, d=c.delta;
+  const cls=d>3?"up":d<-3?"down":"flat";
+  const txt=d>3?`Ganó ${hm(d)}`:d<-3?`Perdió ${hm(-d)}`:"Sin cambio";
+  const why=d>3?`vuela ${a.tas-p.tas} kt bajo tablas`:d<-3?`vuela ${p.tas-a.tas} kt sobre tablas`:"va a la velocidad de tablas";
+  return `<button class="card" data-g="${p.g}" data-i="${i}" type="button">
+    <div class="ph">
+      <img src="img/${a.ph}" alt="${a.n}" loading="lazy">
+      <span class="paxb">${a.pxs}</span>
+      <span class="code">${p.t}</span><span class="see">Ver performance</span>
+    </div>
+    <div class="body">
+      <div class="head">
+        <p class="cs">${p.c}</p>
+        <p class="model">${a.n} · ${p.o}</p>
+      </div>
+      <p class="leg">${p.dep} <em>${p.dt}</em> ▸ ${p.des} <em>${p.r}</em></p>
+      <div class="duo">
+        <div><span class="t">Autonomía aeronave</span><span class="n">${hm(c.endPlan)}</span><span class="u">a ${p.tas} kt · tanque lleno</span></div>
+        <div><span class="t">Plan · casilla 16</span><span class="n">${hm(p.eet)}</span><span class="u">${p.lv} · ${c.nm} NM</span></div>
+      </div>
+      <div class="gain ${cls}"><b>${txt}</b><small>${why}</small></div>
+      ${bar(c,p)}
+      <div class="trilab"><span>vuelo</span><span>reservas</span><span>libre ${hm(c.extraMin)}</span></div>
+    </div>
+  </button>`;
+}
+document.getElementById("grid").innerHTML=P.map(card).join("");
+
+document.querySelectorAll(".chip").forEach(ch=>{
+  ch.addEventListener("click",()=>{
+    document.querySelectorAll(".chip").forEach(o=>o.setAttribute("aria-pressed",o===ch));
+    const f=ch.dataset.f;
+    document.querySelectorAll(".card").forEach(s=>{ s.hidden=!(f==="all"||s.dataset.g===f); });
+  });
+});
+
+/* ---------- Detalle ---------- */
+const dlg=document.getElementById("dlg");
+const sp=(t,v,sm)=>`<div><span class="t">${t}</span><span class="v${sm?" sm":""}">${v}</span></div>`;
+
+function detail(p){
+  const c=calc(p), a=c.a, d=c.delta;
+  return `
+  <div class="hero"><img src="img/${a.ph}" alt="${a.n}"></div>
+  <p class="cred">Foto: ${a.cr} · vía Wikimedia Commons</p>
+
+  <div class="sec">
+    <h3>Performance del tipo · EUROCONTROL</h3>
+    <div class="spec">
+      ${sp("TAS de crucero",a.tas+" kt")}
+      ${sp("Mach",a.mach)}
+      ${sp("Techo",a.ceil)}
+      ${sp("Alcance",a.rng)}
+      ${sp("MTOW",a.mtow)}
+      ${sp("Estela",a.w)}
+      ${sp("Pasajeros",a.px,1)}
+      ${sp("V2",a.v2)}
+      ${sp("Aterrizaje",a.ldg)}
+      ${sp("Dimensiones",a.dim,1)}
+      ${sp("Planta motriz",a.e,1)}
+      ${sp("Combustible y flujo",a.src,1)}
+    </div>
+    ${a.no?`<p class="note">${a.no}</p>`:""}
+  </div>
+
+  <div class="sec">
+    <h3>Autonomía para este plan</h3>
+    <p class="calc">
+      <span class="o">velocidad del plan</span> ${p.tas} kt <span class="o">·</span> <span class="o">tablas</span> ${a.tas} kt <span class="o">→ índice</span> ${(c.idx*100).toFixed(0)} %<br>
+      <span class="o">flujo ajustado</span> ${a.ff.toLocaleString("es-CO")} × ${c.k.toFixed(2)} = <b>${Math.round(c.ff).toLocaleString("es-CO")} kg/h</b><br>
+      <span class="o">autonomía a velocidad de tablas</span> ${hm(c.endBook)}<br>
+      <span class="o">autonomía a ${p.tas} kt</span> <b>${hm(c.endPlan)}</b> <span class="o">→</span> <b>${d>0?"ganó "+hm(d):d<0?"perdió "+hm(-d):"igual"}</b>
+    </p>
+  </div>
+
+  <div class="sec">
+    <h3>El plan como se transmitió</h3>
+    <pre class="fpl">${p.raw}</pre>
+    <p class="note">${p.nt}</p>
+  </div>`;
+}
+
+document.getElementById("grid").addEventListener("click",e=>{
+  const b=e.target.closest(".card"); if(!b) return;
+  const p=P[+b.dataset.i], a=A[p.t];
+  document.getElementById("dt").textContent=`${p.t} · ${a.n}`;
+  document.getElementById("ds").textContent=`${p.c} · ${p.dep} ▸ ${p.des} · ${p.o}`;
+  document.getElementById("dbody").innerHTML=detail(p);
+  dlg.showModal(); document.getElementById("dbody").scrollTop=0;
+});
+document.getElementById("x").addEventListener("click",()=>dlg.close());
+dlg.addEventListener("click",e=>{ if(e.target===dlg) dlg.close(); });
+
+/* Créditos fotográficos completos */
+document.getElementById("src").innerHTML =
+ "Performance: EUROCONTROL Aircraft Performance Database · Planes: archivo FPL, DOF 260915–260916 · "+
+ "Fotografías vía Wikimedia Commons — "+
+ Object.entries(A).map(([k,v])=>`${k}: ${v.cr}`).join(" · ");
+</script>
