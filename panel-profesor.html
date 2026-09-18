@@ -184,6 +184,32 @@
   .pct.bajo { color: var(--danger); }
   .pct.nulo { color: var(--text-muted); font-weight: 500; }
 
+  /* === RESULTADOS AGRUPADOS POR ESTUDIANTE === */
+  .est-resultado { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; background: var(--card-bg); transition: border-color 0.15s; }
+  .est-resultado:hover, .est-resultado[open] { border-color: var(--primary); }
+  .est-resultado > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 13px 16px; border-radius: 10px; }
+  .est-resultado > summary::-webkit-details-marker { display: none; }
+  .est-resultado > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .est-resultado .est-nombre { font-weight: 600; font-size: 0.95rem; flex: 1 1 200px; min-width: 0; }
+  .est-resultado .est-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 0.8rem; color: var(--text-muted); }
+  .est-resultado .est-dato { font-family: var(--font-mono); white-space: nowrap; }
+  .est-resultado .est-flecha { color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0; }
+  .est-resultado[open] .est-flecha { transform: rotate(90deg); color: var(--primary); }
+  .est-resultado .est-cuerpo { border-top: 1px solid var(--border-color); padding: 14px 16px 16px; }
+  .est-resultado .est-cuerpo .sub-titulo { margin-top: 6px; }
+  .est-resultado .est-cuerpo .tabla-scroll + .sub-titulo { margin-top: 18px; }
+  .intentos-todos > summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--primary); padding: 4px 0; }
+  .intentos-todos[open] > summary { margin-bottom: 12px; }
+  @media (prefers-reduced-motion: reduce) { .est-resultado .est-flecha { transition: none; } }
+  @media (max-width: 600px) {
+    .est-resultado > summary { gap: 8px 12px; }
+    .est-resultado .est-nombre { flex: 1 1 0; }
+    .est-resultado .est-flecha { order: 2; }
+    .est-resultado .est-meta { order: 3; flex-basis: 100%; }
+    .est-resultado .est-dato { white-space: normal; }
+    .est-resultado .est-cuerpo { padding: 12px; }
+  }
+
   /* === UTILIDADES === */
   .chip { display:inline-block; border:1px solid var(--border-color); background:none; color:var(--text-muted); border-radius:20px; padding:7px 14px; font-size:0.78rem; cursor:pointer; margin:0 6px 6px 0; font-family: var(--font-main); transition: border-color 0.15s, color 0.15s, background-color 0.15s, transform 0.1s; }
   .chip:hover { border-color: var(--primary); color: var(--primary); }
@@ -1573,10 +1599,14 @@ document.getElementById('rGrupo').addEventListener('change', cargarResultados);
 // ---------- CORRECCIÓN DE EXÁMENES Y LECTURAS ----------
 // Se despliega en línea bajo la fila, como el resto del panel: no hay modales
 // en esta interfaz y no vale la pena introducir uno para esto.
-async function abrirCorreccion(resultadoId, tipo) {
-  const fila = document.getElementById('correccion-' + resultadoId);
+// Un mismo intento puede aparecer en la ficha del estudiante y en la lista
+// cronológica, así que la fila de corrección se ubica por su propio id
+// (correccion-<lista>-<resultado>) y los campos internos reutilizan ese sufijo.
+async function abrirCorreccion(resultadoId, tipo, filaId) {
+  const fila = document.getElementById(filaId || ('correccion-' + resultadoId));
   if (!fila) return;
   const celda = fila.querySelector('td');
+  const uid = fila.id.replace(/^correccion-/, '');
 
   // Segundo clic: cerrar.
   if (fila.style.display !== 'none') { fila.style.display = 'none'; celda.innerHTML = ''; return; }
@@ -1612,13 +1642,13 @@ async function abrirCorreccion(resultadoId, tipo) {
         </ol>` : ''}
     </div>
     <div class="campo">
-      <label for="motivo-${esc(resultadoId)}">Comentario para el estudiante</label>
-      <textarea id="motivo-${esc(resultadoId)}" rows="3" placeholder="Lo que quieras que lea junto a su nota."></textarea>
+      <label for="motivo-${esc(uid)}">Comentario para el estudiante</label>
+      <textarea id="motivo-${esc(uid)}" rows="3" placeholder="Lo que quieras que lea junto a su nota."></textarea>
       <div class="ayuda">Obligatorio si sólo dejas comentario o si ajustas la nota global. El estudiante lo verá en su panel.</div>
     </div>
     <div class="campo">
-      <label for="nota-${esc(resultadoId)}">Nota global (opcional)</label>
-      <input type="number" id="nota-${esc(resultadoId)}" min="0" max="${r.total}" placeholder="respuestas correctas de ${r.total}">
+      <label for="nota-${esc(uid)}">Nota global (opcional)</label>
+      <input type="number" id="nota-${esc(uid)}" min="0" max="${r.total}" placeholder="respuestas correctas de ${r.total}">
       <div class="ayuda">Úsalo sólo si prefieres fijar la nota de una vez en vez de marcar pregunta por pregunta. No se pueden hacer las dos cosas a la vez.</div>
     </div>
     ${historial ? `<div class="campo"><label>Historial de correcciones</label><ul class="ayuda">${historial}</ul></div>` : ''}
@@ -1637,8 +1667,8 @@ async function abrirCorreccion(resultadoId, tipo) {
       if (original && !!original.ok !== chk.checked) cambios.push({ i, ok: chk.checked });
     });
 
-    const motivo = document.getElementById('motivo-' + resultadoId).value;
-    const notaCampo = document.getElementById('nota-' + resultadoId).value;
+    const motivo = document.getElementById('motivo-' + uid).value;
+    const notaCampo = document.getElementById('nota-' + uid).value;
 
     const out = await corregirResultado(resultadoId, { cambios, motivo, correctas: notaCampo });
     boton.disabled = false;
@@ -1656,6 +1686,10 @@ async function cargarResultados() {
   if (!grupoId) { cont.innerHTML = '<div class="vacio">Crea un grupo para empezar a ver resultados.</div>'; return; }
 
   const grupo = estado.grupos.find(g => g.id === grupoId);
+  // Conserva abiertas las fichas que el profesor tenía desplegadas cuando
+  // la vista se recarga (p. ej. después de corregir o borrar un intento).
+  const abiertos = new Set(Array.from(cont.querySelectorAll('.est-resultado[open]')).map(d => d.dataset.estudiante));
+  const todosAbierto = !!cont.querySelector('.intentos-todos[open]');
   cont.innerHTML = '<div class="panel-card"><p style="font-size:0.88rem;color:var(--text-muted);">Cargando resultados…</p></div>';
 
   const [estudiantesRes, resultadosRes, incidentesRes] = await Promise.all([
@@ -1682,6 +1716,84 @@ async function cargarResultados() {
   const promedioGrupo = entregas === 0 ? null
     : Math.round(resultadosRes.resultados.reduce((s, r) => s + r.porcentaje, 0) / entregas);
 
+  // Fila de un intento con sus acciones. `lista` distingue la ficha del
+  // estudiante ('e') de la lista cronológica ('t') para no repetir ids.
+  const filaIntento = (r, lista, conEstudiante) => {
+    const columnas = conEstudiante ? 5 : 4;
+    const filaId = `correccion-${lista}-${r.id}`;
+    return `
+      <tr>
+        ${conEstudiante ? `<td>${esc(r.estudiante)}</td>` : ''}
+        <td>${esc(r.actividadTitulo)}${badgeIncidentes(r.estudianteId, r.actividadId)}</td>
+        <td>${fechaCorta(r.fecha)}</td>
+        <td>${r.actividadTipo === 'texto'
+          ? '<span class="badge-estado publicada">✓ Leído</span>'
+          : `<span class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</span>`}${
+          r.corregido ? ' <span class="badge-estado borrador" title="La nota fue ajustada a mano; el detalle está en el historial de la entrega.">corregida</span>' : ''}</td>
+        <td>${r.actividadTipo === 'plan_vuelo'
+          ? `<a class="btn btn-secundario btn-mini" href="simulador-plan-vuelo.html?resultado=${encodeURIComponent(r.id)}">Ver plan / PDF</a> `
+          : `<button class="btn btn-secundario btn-mini" data-corregir="${esc(r.id)}" data-tipo="${esc(r.actividadTipo)}" data-fila="${esc(filaId)}">Corregir / comentar</button> `
+          }<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
+      </tr>
+      <tr class="fila-correccion" id="${esc(filaId)}" style="display:none;"><td colspan="${columnas}"></td></tr>`;
+  };
+
+  // Ficha compacta por estudiante: una línea con el resumen y, al abrirla,
+  // sus actividades y sus intentos. Así el grupo no se vuelve una tabla
+  // estudiantes × actividades imposible de leer.
+  const fichas = estudiantesRes.estudiantes.map(est => {
+    const propias = filas.filter(f => f.estudianteId === est.id);
+    const entregadas = propias.filter(f => f.intentos > 0);
+    const calificadas = entregadas.filter(f => f.tipo !== 'texto');
+    const promedio = calificadas.length === 0 ? null
+      : Math.round(calificadas.reduce((s, f) => s + f.mejor, 0) / calificadas.length);
+    const ultima = entregadas.map(f => f.ultimaFecha).sort().pop() || null;
+    const intentos = resultadosRes.resultados.filter(r => r.estudianteId === est.id);
+    const cambiosPestana = propias.reduce((s, f) => s + (incidentesPorEA[`${est.id}|${f.actividadId}`] || 0), 0);
+    const pendientes = propias.length - entregadas.length;
+    // Primero lo entregado (más reciente arriba) y luego lo pendiente.
+    const ordenadas = entregadas.slice().sort((a, b) => b.ultimaFecha.localeCompare(a.ultimaFecha))
+      .concat(propias.filter(f => f.intentos === 0));
+
+    return `
+      <details class="est-resultado" data-estudiante="${esc(est.id)}">
+        <summary>
+          <span class="est-nombre">${esc(est.nombre)}</span>
+          <span class="est-meta">
+            <span class="est-dato">${entregadas.length}/${propias.length} entregadas</span>
+            ${pendientes > 0
+              ? `<span class="badge-estado borrador">${pendientes} pendiente${pendientes === 1 ? '' : 's'}</span>`
+              : '<span class="badge-estado publicada">Al día</span>'}
+            <span class="est-dato">Prom. <span class="pct ${clasePct(promedio)}">${promedio === null ? '—' : promedio + '%'}</span></span>
+            <span class="est-dato">${ultima ? 'Últ. ' + fechaCorta(ultima) : 'Sin entregas'}</span>
+            ${cambiosPestana > 0 ? `<span class="badge-estado incidente" title="Cambios de pestaña o ventana minimizada durante sus actividades">⚠ ${cambiosPestana}</span>` : ''}
+          </span>
+          <svg class="est-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </summary>
+        <div class="est-cuerpo">
+          <div class="sub-titulo">ACTIVIDADES DEL GRUPO</div>
+          <div class="tabla-scroll"><table class="tabla-datos">
+            <thead><tr><th>Actividad</th><th>Intentos</th><th>Mejor</th><th>Promedio</th><th>Último</th><th>Última entrega</th></tr></thead>
+            <tbody>${ordenadas.map(f => `
+              <tr>
+                <td>${esc(f.actividad)}${badgeIncidentes(f.estudianteId, f.actividadId)}</td>
+                <td>${f.intentos}</td>
+                ${celdaResultado(f.tipo, f.mejor, 'Sin presentar')}
+                ${celdaResultado(f.tipo, f.promedio, '—')}
+                ${celdaResultado(f.tipo, f.ultimo, '—')}
+                <td>${f.ultimaFecha ? fechaCorta(f.ultimaFecha) : '—'}</td>
+              </tr>`).join('')}
+            </tbody></table></div>
+          ${intentos.length === 0 ? '' : `
+          <div class="sub-titulo">INTENTOS ENTREGADOS (${intentos.length})</div>
+          <div class="tabla-scroll"><table class="tabla-datos">
+            <thead><tr><th>Actividad</th><th>Fecha</th><th>Puntaje</th><th></th></tr></thead>
+            <tbody>${intentos.map(r => filaIntento(r, 'e', false)).join('')}</tbody>
+          </table></div>`}
+        </div>
+      </details>`;
+  }).join('');
+
   cont.innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><span class="label">Estudiantes</span><strong>${estudiantesRes.estudiantes.length}</strong></div>
@@ -1692,26 +1804,14 @@ async function cargarResultados() {
 
     <div class="panel-card">
       <h3>Resumen por estudiante</h3>
-      <p class="card-sub">Incluye a quienes todavía no han presentado, para que veas de un vistazo quién va atrasado.</p>
+      <p class="card-sub">Haz clic en un estudiante para ver sus actividades, lo que ya entregó y lo que tiene pendiente. Incluye a quienes todavía no han presentado.</p>
       <div class="acciones" style="margin-bottom:16px;">
         <button class="btn btn-primario btn-mini" id="btnExportarResumen">Descargar resumen (Excel)</button>
         <button class="btn btn-secundario btn-mini" id="btnExportarDetalle">Descargar detalle de intentos (Excel)</button>
       </div>
       ${filas.length === 0
         ? '<div class="vacio">Todavía no hay estudiantes o actividades en este grupo.</div>'
-        : `<div class="tabla-scroll"><table class="tabla-datos">
-            <thead><tr><th>Estudiante</th><th>Actividad</th><th>Intentos</th><th>Mejor</th><th>Promedio</th><th>Último</th><th>Última entrega</th></tr></thead>
-            <tbody>${filas.map(f => `
-              <tr>
-                <td>${esc(f.estudiante)}</td>
-                <td>${esc(f.actividad)}${badgeIncidentes(f.estudianteId, f.actividadId)}</td>
-                <td>${f.intentos}</td>
-                ${celdaResultado(f.tipo, f.mejor, 'Sin presentar')}
-                ${celdaResultado(f.tipo, f.promedio, '—')}
-                ${celdaResultado(f.tipo, f.ultimo, '—')}
-                <td>${f.ultimaFecha ? fechaCorta(f.ultimaFecha) : '—'}</td>
-              </tr>`).join('')}
-            </tbody></table></div>`}
+        : fichas}
     </div>
 
     <div class="panel-card">
@@ -1736,25 +1836,18 @@ async function cargarResultados() {
       <p class="card-sub">Cada entrega registrada, de la más reciente a la más antigua.</p>
       ${resultadosRes.resultados.length === 0
         ? '<div class="vacio">Sin entregas todavía.</div>'
-        : `<div class="tabla-scroll"><table class="tabla-datos">
-            <thead><tr><th>Estudiante</th><th>Actividad</th><th>Fecha</th><th>Puntaje</th><th></th></tr></thead>
-            <tbody>${resultadosRes.resultados.map(r => `
-              <tr>
-                <td>${esc(r.estudiante)}</td>
-                <td>${esc(r.actividadTitulo)}${badgeIncidentes(r.estudianteId, r.actividadId)}</td>
-                <td>${fechaCorta(r.fecha)}</td>
-                <td>${r.actividadTipo === 'texto'
-                  ? '<span class="badge-estado publicada">✓ Leído</span>'
-                  : `<span class="pct ${clasePct(r.porcentaje)}">${r.correctas}/${r.total} · ${r.porcentaje}%</span>`}${
-                  r.corregido ? ' <span class="badge-estado borrador" title="La nota fue ajustada a mano; el detalle está en el historial de la entrega.">corregida</span>' : ''}</td>
-                <td>${r.actividadTipo === 'plan_vuelo'
-                  ? `<a class="btn btn-secundario btn-mini" href="simulador-plan-vuelo.html?resultado=${encodeURIComponent(r.id)}">Ver plan / PDF</a> `
-                  : `<button class="btn btn-secundario btn-mini" data-corregir="${esc(r.id)}" data-tipo="${esc(r.actividadTipo)}">Corregir / comentar</button> `
-                  }<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
-              </tr>
-              <tr class="fila-correccion" id="correccion-${esc(r.id)}" style="display:none;"><td colspan="5"></td></tr>`).join('')}
-            </tbody></table></div>`}
+        : `<details class="intentos-todos">
+            <summary>Ver la lista completa (${resultadosRes.resultados.length} intento${resultadosRes.resultados.length === 1 ? '' : 's'})</summary>
+            <div class="tabla-scroll"><table class="tabla-datos">
+              <thead><tr><th>Estudiante</th><th>Actividad</th><th>Fecha</th><th>Puntaje</th><th></th></tr></thead>
+              <tbody>${resultadosRes.resultados.map(r => filaIntento(r, 't', true)).join('')}</tbody>
+            </table></div>
+          </details>`}
     </div>`;
+
+  cont.querySelectorAll('.est-resultado').forEach(d => { if (abiertos.has(d.dataset.estudiante)) d.open = true; });
+  const listaTodos = cont.querySelector('.intentos-todos');
+  if (listaTodos && todosAbierto) listaTodos.open = true;
 
   document.getElementById('btnExportarResumen').addEventListener('click', () => {
     if (filas.length === 0) { aviso('No hay nada que exportar todavía.', 'error'); return; }
@@ -1767,7 +1860,7 @@ async function cargarResultados() {
     aviso('Archivo descargado. Ábrelo con Excel.', 'ok');
   });
   cont.querySelectorAll('[data-corregir]').forEach(btn => {
-    btn.addEventListener('click', () => abrirCorreccion(btn.dataset.corregir, btn.dataset.tipo));
+    btn.addEventListener('click', () => abrirCorreccion(btn.dataset.corregir, btn.dataset.tipo, btn.dataset.fila));
   });
 
   cont.querySelectorAll('[data-borrar-resultado]').forEach(btn => {
