@@ -2916,13 +2916,27 @@ btnAyuda.addEventListener('click', () => {
   // plan llega con su cabecera (Este IPM, remitente, destinatarios, PRI, FT) y
   // a veces varios seguidos; lo que vale es lo que va entre paréntesis.
   function extraerMensajesATS(texto){
-    return String(texto || '').match(/\((?:FPL|CHG|CNL|DLA|DEP|ARR|CPL|EST|SPL)-[^()]*\)/g) || [];
+    return limpiarImpresion(texto).match(/\((?:FPL|CHG|CNL|DLA|DEP|ARR|CPL|EST|SPL)-[^()]*\)/g) || [];
+  }
+  // Al copiar de la impresión en PDF de la carpeta de mensajes, el encabezado
+  // («Group: … UTC Time: …») y el pie («Source: Carpeta de mensajes 9/65») de
+  // cada página caen en mitad del plan que cruza de una hoja a otra, y se leían
+  // como casillas. Se quitan esas líneas antes de nada.
+  function limpiarImpresion(texto){
+    // Según el visor, cada trozo sale en su propia línea o pegado al plan.
+    return String(texto || '')
+      .replace(/\f/g, '\n')
+      .replace(/Group:[^\n]*?User:[ \t]*\S+/gi, ' ')
+      .replace(/UTC Time:[ \t]*\d{4}\.\d{2}\.\d{2}-\d{2}:\d{2}:\d{2}/gi, ' ')
+      .replace(/Source:[^\n]*?\d+[ \t]*\/[ \t]*\d+/gi, ' ')
+      .replace(/^[ \t]*Source:.*$/gim, '')
+      .replace(/^[ \t]*\d+[ \t]*\/[ \t]*\d+[ \t]*$/gm, '');
   }
 
   function parseFPL(texto){
     const noEntendido = [];
     const valores = {};
-    const pegado = String(texto || '').trim();
+    const pegado = limpiarImpresion(texto).trim();
 
     if(!pegado) return { ok:false, valores, noEntendido:[{campo:'(todo)', texto:'', motivo:'No pegaste ningún mensaje.'}] };
 
@@ -4398,6 +4412,20 @@ btnAyuda.addEventListener('click', () => {
   // Sólo para la redacción; no alimentan a los generadores de escenarios.
   const AERODROMOS_EXTRA = [
     {cod:'SKPV', nom:'Providencia (El Embrujo)'},
+    {cod:'SKQU', nom:'Mariquita (José Celestino Mutis)'},
+    {cod:'SKSG', nom:'San Gil (Los Pozos)'},
+    {cod:'SKAG', nom:'Aguachica (Hacaritama)'},
+    {cod:'SKVG', nom:'Villa Garzón'},
+    {cod:'SKSJ', nom:'San José del Guaviare (Jorge E. González T.)'},
+    {cod:'SKEB', nom:'El Bagre (El Tomín)'},
+    {cod:'SKNA', nom:'La Macarena (El Refugio)'},
+    {cod:'SKSV', nom:'San Vicente del Caguán'},
+    {cod:'SKPA', nom:'Paipa (Juan José Rondón)'},
+    {cod:'SKVN', nom:'Villanueva, Casanare (Capitán RAF)'},
+    {cod:'SKAI', nom:'Las Acacias (Cundinamarca)'},
+    {cod:'SKMA', nom:'My. Justino Mariño (Cundinamarca)'},
+    {cod:'SKBP', nom:'Guaicaramo (Meta)'},
+    {cod:'SKRA', nom:'Tarapacá (Amazonas)'},
     {cod:'SKMD', nom:'Medellín (Enrique Olaya Herrera)'},
     {cod:'SKSM', nom:'Santa Marta (Simón Bolívar)'},
     {cod:'MPTO', nom:'Ciudad de Panamá (Tocumen), Panamá'},
@@ -4589,6 +4617,11 @@ btnAyuda.addEventListener('click', () => {
     {tipo:'BE58', nombre:'Beechcraft Baron 58'},
     {tipo:'SR20', nombre:'Cirrus SR20'},
     {tipo:'SR22', nombre:'Cirrus SR22'},
+    {tipo:'S22T', nombre:'Cirrus SR22T'},
+    {tipo:'SF50', nombre:'Cirrus SF50 Vision Jet'},
+    {tipo:'T206', nombre:'Cessna T206 Turbo Stationair'},
+    {tipo:'C207', nombre:'Cessna 207 Skywagon / Stationair 8'},
+    {tipo:'B36T', nombre:'Beechcraft Bonanza 36 con turbina'},
     {tipo:'DA40', nombre:'Diamond DA40'},
     {tipo:'M20P', nombre:'Mooney M20'},
     {tipo:'TBM7', nombre:'Socata TBM 700'},
@@ -4616,6 +4649,8 @@ btnAyuda.addEventListener('click', () => {
     {tipo:'FA8X', nombre:'Dassault Falcon 8X'},
     // Helicópteros (lista HELICOPTEROS más abajo)
     {tipo:'B06',  nombre:'Bell 206 JetRanger'},
+    {tipo:'B105', nombre:'MBB Bo 105'},
+    {tipo:'H500', nombre:'MD Helicopters 500'},
     {tipo:'B407', nombre:'Bell 407'},
     {tipo:'B429', nombre:'Bell 429'},
     {tipo:'B212', nombre:'Bell 212'},
@@ -4687,6 +4722,14 @@ btnAyuda.addEventListener('click', () => {
     const c = norm(cod);
     return AERODROMOS.concat(INTERNACIONALES, AERODROMOS_EXTRA).find(x => x.cod === c) || null;
   }
+  // «MARIQUITA» escrito en RMK/ → la entrada de Mariquita, si sólo hay una.
+  function aerodromoPorNombre(texto){
+    const plano = t => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().trim();
+    const x = plano(texto);
+    const hits = AERODROMOS.concat(INTERNACIONALES, AERODROMOS_EXTRA)
+      .filter(a => a.cod === x || plano(a.nom.split(' (')[0].split(',')[0]) === x);
+    return new Set(hits.map(a => a.cod)).size === 1 ? hits[0] : null;
+  }
   function nombreAerodromo(cod, literales){
     const c = norm(cod);
     const a = buscarAerodromo(c);
@@ -4742,7 +4785,7 @@ btnAyuda.addEventListener('click', () => {
 
   // Designadores de helicóptero de las tablas (Doc 8643): sirven para decir
   // «en helicóptero» en el contexto sin suponerlo del explotador.
-  const HELICOPTEROS = ['B06','B407','B429','B412','B212','B505','UH1','H60','AS50','AS55','AS65',
+  const HELICOPTEROS = ['B06','B105','H500','B407','B429','B412','B212','B505','UH1','H60','AS50','AS55','AS65',
                         'EC30','EC35','EC45','A109','A139','S76','R22','R44','R66','MI8'];
   const ESPECIALES_8643 = {ULAC:['ultraliviano','ultralivianos'], GLID:['planeador','planeadores'],
                            GYRO:['autogiro','autogiros'], BALL:['globo','globos']};
@@ -4763,10 +4806,17 @@ btnAyuda.addEventListener('click', () => {
     for(const n of [4, 2, 1]) if(PAISES_OACI[c.slice(0, n)]) return PAISES_OACI[c.slice(0, n)];
     return null;
   }
-  // «Cali (Alfonso Bonilla Aragón)» → «Cali». Sin tabla queda el indicador.
+  // «Neiva (Benito Salas)» → «Neiva». Sin tabla queda el indicador. Si otra
+  // entrada de las tablas comparte ciudad (Guaymaral y El Dorado son los dos
+  // «Bogotá»), se deja el nombre del aeródromo para no confundirlos.
   function nombreCorto(cod){
     const a = buscarAerodromo(cod);
-    return a ? a.nom.split(' (')[0].split(',')[0].replace(/\s+Intl\.?$/, '') : norm(cod);
+    if(!a) return norm(cod);
+    const corto = nom => nom.split(' (')[0].split(',')[0].replace(/\s+Intl\.?$/, '');
+    const c = corto(a.nom);
+    const homonimos = new Set(AERODROMOS.concat(INTERNACIONALES, AERODROMOS_EXTRA)
+      .filter(x => corto(x.nom) === c).map(x => x.cod));
+    return homonimos.size > 1 ? a.nom.replace(/,\s*[^,()]+$/, '') : c;
   }
 
   // Estructura de la ruta de la casilla 15, sin interpretar nombres: el
@@ -4864,7 +4914,9 @@ btnAyuda.addEventListener('click', () => {
     const dep = val('f13a'), dest = val('f16d');
     const frases = [];
 
-    const escuela = /\b(ESCUELA|ACADEMIA|AEROCLUB|AERO CLUB|INSTITUTO|FLIGHT SCHOOL|CENTRO DE INSTRUCCION)\b/.test(opr + ' ' + rmk);
+    // «AEROCLUBDECOLOMBIA»: a veces el OPR/ va sin espacios.
+    const escuela = /\b(ESCUELA|ACADEMIA|AEROCLUB|AERO CLUB|INSTITUTO|FLIGHT SCHOOL|CENTRO DE INSTRUCCION)\b/.test(opr + ' ' + rmk) ||
+      /^(ESCUELA|ACADEMIA|AEROCLUB)/.test(opr.replace(/\s+/g, ''));
     const tgl = /\bTGL\b/.test(rmk);
     let proposito = '';
     if(tiene('MEDEVAC')) proposito = 'evacuación médica de emergencia';
@@ -4874,14 +4926,28 @@ btnAyuda.addEventListener('click', () => {
     else if(tiene('FLTCK')) proposito = 'verificación en vuelo de radioayudas';
     else if(tiene('HUM')) proposito = 'misión humanitaria' + (/\bPATRULLA AEREA CIVIL\b/.test(rmk + ' ' + opr) ? ' de la Patrulla Aérea Civil' : '');
     else if(tiene('HEAD')) proposito = 'vuelo con un Jefe de Estado a bordo';
-    else if(val('f8t') === 'M') proposito = 'vuelo militar';
-    else if(tiene('STATE')) proposito = 'vuelo de Estado (militar, de aduanas o de policía)';
+    else if(val('f8t') === 'M' || tiene('STATE')){
+      // Marcas de las aeronaves de Estado en Colombia: PNC (Policía), FAC,
+      // EJC (Ejército) y ARC (Armada). Van en la casilla 7 o en REG/.
+      const marca = (/^(PNC|FAC|EJC|ARC)\d/.exec(norm(d18.REG)) || /^(PNC|FAC|EJC|ARC)\d/.exec(val('f7')) || [])[1];
+      const fuerza = {PNC:'de la Policía Nacional', FAC:'de la Fuerza Aérea Colombiana',
+                      EJC:'del Ejército Nacional', ARC:'de la Armada de Colombia'}[marca];
+      const mision = /\bPATRULL/.test(rmk) ? 'patrullaje aéreo' : /\bVIGILANCIA\b/.test(rmk) ? 'vigilancia aérea' : '';
+      if(fuerza) proposito = `vuelo ${mision ? 'de ' + mision + ' ' : ''}${fuerza}`;
+      else proposito = val('f8t') === 'M' ? (mision ? `vuelo militar de ${mision}` : 'vuelo militar')
+                                          : 'vuelo de Estado (militar, de aduanas o de policía)';
+    }
     else if(escuela) proposito = 'vuelo de instrucción de una escuela de aviación';
     else if(/\bCHEQUEO\b|\bCHECK ?RIDE\b/.test(rmk)) proposito = 'vuelo de chequeo (verificación de competencia) de un piloto';
     else if(/\b(ENTRENAMIENTO|INSTRUCCION|TRAINING)\b/.test(rmk)) proposito = 'vuelo de entrenamiento de un piloto';
     else if(tgl) proposito = 'vuelo de práctica de toques y despegues';
-    else if(/\bTRANSPORTE DE VALORES\b/.test(rmk)) proposito = 'vuelo de transporte de valores';
-    else if(/\bTRA(?:NS|SN)PORTE DE (?:PAX|PASAJEROS)\b/.test(rmk)) proposito = 'vuelo de transporte de pasajeros';
+    else if(/\b(?:TRANSPORTE|VUELO) DE VALORES\b/.test(rmk)) proposito = 'vuelo de transporte de valores';
+    else if(/\bINCENDIOS?\b/.test(rmk) && /\b(?:CONTROL|EXTINCION|COMBATE)\b/.test(rmk))
+      proposito = /\bTRA(?:NS|SN)PORTE (?:DE )?(?:PAX|PASAJEROS|PERSONAL)\b/.test(rmk)
+        ? 'vuelo de transporte de personal para el control de un incendio' : 'vuelo de apoyo a la extinción de incendios';
+    else if(/\bAEROFOTOGRAF/.test(rmk)) proposito = 'vuelo de aerofotografía';
+    else if(/\bRADIOFARMACO/.test(rmk)) proposito = 'vuelo de transporte de un radiofármaco (material radiactivo, mercancía peligrosa)';
+    else if(/\bTRA(?:NS|SN)PORTE (?:DE )?(?:PAX|PASAJEROS)\b/.test(rmk)) proposito = 'vuelo de transporte de pasajeros';
     else if(/\b(RECREATIVO|TURISTICO|PANORAMICO)\b/.test(rmk)) proposito = 'vuelo recreativo';
     else if(/\bFERRY\b/.test(rmk)) proposito = 'vuelo ferry (traslado sin pasajeros ni carga)';
     else if(/\bFLT TRASLADO\b|\bTRANSFER FLT\b/.test(rmk)) proposito = 'vuelo de traslado';
@@ -4934,12 +5000,14 @@ btnAyuda.addEventListener('click', () => {
     if((m = /\bCALLSIGN\s+([A-Z0-9]+)/.exec(rmk)) && m[1] !== val('f7'))
       frases.push(`En radiotelefonía usará el distintivo de llamada ${m[1]}.`);
     if((m = /\b(?:WORKING AREA|AREA DE TRABAJO)\s+([A-Z0-9]+)/.exec(rmk))) frases.push(`Trabajará en el área ${m[1]}.`);
-    if((m = /\b(?:PERMANENCIA|TIEMPO DE ESPERA)(?:\s+DE)?\s+(\d{1,3})\s*MIN/.exec(rmk)))
+    if((m = /\b(?:PERMANENCIA|PERMANECE|TIEMPO DE ESPERA)(?:\s+DE)?\s+(\d{1,3})\s*MIN/.exec(rmk)))
       frases.push(`Tiene prevista una permanencia de ${parseInt(m[1], 10)} min en el destino.`);
     else if((m = /\b(\d{4})\s+PERMANENCIA\b/.exec(rmk)))
       frases.push(`Tiene prevista una permanencia de ${duracion(m[1])} en el destino.`);
     if((m = /\bPERNOCTA\s+(?:EN\s+)?([A-Z]{4})\b/.exec(rmk)) && paisDe(m[1])) frases.push(`Pasará la noche en ${nombreCorto(m[1])}.`);
     if((m = /\bPROX(?:IMO)? DEST(?:INO)?\s+([A-Z]{4})\b/.exec(rmk)) && paisDe(m[1])) frases.push(`Su siguiente destino será ${nombreCorto(m[1])}.`);
+    else if((m = /\bPROCEDE\s+(?:A\s+|HACIA\s+)?([A-Z]{4}|[A-Z]{3,}(?:\s+[A-Z]{3,})?)\b/.exec(rmk)))
+      frases.push(`Después seguirá hacia ${aerodromoPorNombre(m[1]) ? nombreCorto(aerodromoPorNombre(m[1]).cod) : m[1]}.`);
     if((m = /\bFUEL STOP(?:\s+([A-Z]{4})\b)?/.exec(rmk)))
       frases.push(m[1] && paisDe(m[1]) ? `En ${nombreCorto(m[1])} hará una escala técnica para cargar combustible.`
                                        : 'Es una escala técnica para cargar combustible.');
@@ -4947,9 +5015,45 @@ btnAyuda.addEventListener('click', () => {
     if((m = /\bATIENDE\s+([A-Z0-9 ]+?)(\s+FBO\b|$)/.exec(rmk)))
       frases.push(`En tierra lo atiende ${m[1]}, su empresa de servicio de escala${m[2] ? ' (FBO)' : ''}.`);
     if(/\bAUTH(?:ORIZACION)?\s+FAC\b/.test(rmk)) frases.push('Cuenta con autorización de la Fuerza Aérea Colombiana.');
+    else if(/\bPERM(?:ISO)?\s+FAC\b/.test(rmk)) frases.push('Cuenta con permiso de la Fuerza Aérea Colombiana.');
     if((m = /\b(\d{6})\s+SKBOYAYO\b|\bSKBOYAYO\s+(\d{6})\b/.exec(rmk)))
       frases.push(`Las observaciones citan la autorización del vuelo: mensaje ${m[1] || m[2]} de SKBOYAYO (grupo fecha-hora y originador).`);
     return frases;
+  }
+
+  // Errores de digitación de los planes reales que el validador no marca
+  // porque el formato sigue siendo válido, pero que el alumno copiaría. Sólo
+  // se señalan al profesor; el texto y la clave no se tocan.
+  function revisarPlanReal(v, d18, lr){
+    const val = k => norm(v[k]);
+    const out = [];
+    const IND = 'RMK|DOF|REG|OPR|STS|PBN|NAV|COM|DAT|SUR|DEP|DEST|ALTN|RALT|TALT|EET|SEL|CODE|PER|TYP|DLE|ORGN|RIF';
+    const m18 = new RegExp(`(?:^|\\s)\\/(${IND})\\b`).exec(norm(v.f18));
+    if(m18){
+      const dentro = Object.keys(d18).find(k => new RegExp(`\\/${m18[1]}\\b`).test(d18[k]));
+      out.push(`En la casilla 18 aparece «/${m18[1]}» con la barra delante; se escribe ${m18[1]}/. ` +
+        (dentro ? `Así, ese texto queda dentro de ${dentro}/ y la redacción lo presenta como parte de él.` : ''));
+    }
+    const tok = val('f15r').split(' ').filter(Boolean).map(t => t.split('/')[0]);
+    [...new Set(tok.filter(t => /^[A-Z]{3}$/.test(t) && t !== 'DCT' &&
+      (t.split('').sort().join('') === 'CDT' || /^DC[A-Z]$|^D[A-Z]T$/.test(t))))]
+      .forEach(t => out.push(`En la ruta aparece «${t}»: parece DCT mal escrito.`));
+    const dep = val('f13a');
+    const eetFir = (d18.EET || '').split(/\s+/).map(e => /^([A-Z]{4})\d{4}$/.exec(e)).filter(x => x && FIRS[x[1]]).map(x => FIRS[x[1]]);
+    if(dep === val('f16d') && /^[A-Z]{4}$/.test(dep) && dep !== 'ZZZZ' && lr.star && eetFir.length)
+      out.push(`El destino de la casilla 16 es el mismo aeródromo de salida, pero la ruta termina con el procedimiento de llegada ${lr.star} ` +
+        `y el plan estima cruzar la FIR ${eetFir[0]}. Puede que el destino esté mal escrito.`);
+    // F y A en centenas de pies; S y M en decenas de metros (casilla 15).
+    const pies = n => { const m = /^([FASM])(\d{3,4})$/.exec(n);
+      if(!m) return null; const x = parseInt(m[2], 10);
+      return m[1] === 'F' || m[1] === 'A' ? x * 100 : x * 10 * 3.28084; };
+    let previo = val('f15n');
+    lr.cambios.forEach(c => {
+      if(pies(previo) && pies(c.nivel) && pies(c.nivel) < pies(previo) / 4)
+        out.push(`En ${c.punto} el nivel baja de ${nivelProsa(previo)} a ${nivelProsa(c.nivel)}; revisa si es un error de digitación.`);
+      if(pies(c.nivel)) previo = c.nivel;
+    });
+    return out;
   }
 
   // Los planes reales traen en RMK/ teléfonos, cédulas y nombres de pilotos.
@@ -5001,6 +5105,12 @@ btnAyuda.addEventListener('click', () => {
     const REGLAS = {I:'en IFR durante todo el vuelo', V:'en VFR durante todo el vuelo',
       Y:`empezando en IFR y pasando a VFR ${enPunto}`,
       Z:`empezando en VFR y pasando a IFR ${enPunto}`};
+    // Más de un cambio (… IFR … VFR): se cuentan todos, en orden.
+    if(lr.reglas.length > 1 && (val('f8r') === 'Y' || val('f8r') === 'Z')){
+      const ini = val('f8r') === 'Y' ? 'IFR' : 'VFR';
+      const pasos = lr.reglas.map(r => `${r.a === ini ? 'volviendo' : 'pasando'} a ${r.a} en ${r.punto}`);
+      REGLAS[val('f8r')] = `empezando en ${ini}, ${pasos.slice(0, -1).join(', ')} y ${pasos[pasos.length - 1]}`;
+    }
     const TIPOS = {S:'servicio aéreo regular', N:'transporte aéreo no regular', G:'aviación general',
       M:'aviación militar', X:'una categoría distinta de regular, no regular, general o militar'};
     const aeronave = val('f9t') === 'ZZZZ'
@@ -5046,9 +5156,14 @@ btnAyuda.addEventListener('click', () => {
     let ruta = `Velocidad verdadera de crucero: ${b(velocidadProsa(val('f15v')))}; nivel de crucero: ` +
       `${b(nivelProsa(val('f15n')))}. Ruta prevista: ${b(val('f15r'))}` +
       (val('f15r') === 'LOCAL' ? ' (vuelo en las inmediaciones del aeródromo, sin ruta ATS).' : '.');
-    if(lr.sid && lr.star) ruta += ` Empieza con el procedimiento de salida ${b(lr.sid)} y termina con el de llegada ${b(lr.star)}.`;
-    else if(lr.sid) ruta += ` Empieza con el procedimiento de salida ${b(lr.sid)}.`;
-    else if(lr.star) ruta += ` Termina con el procedimiento de llegada ${b(lr.star)}.`;
+    // Un procedimiento volado en VFR no es una SID/STAR: se aclara cuando las
+    // reglas de ese extremo de la ruta son visuales (Guaymaral sale así).
+    const reglasIni = /[VZ]/.test(val('f8r')) ? 'VFR' : 'IFR';
+    const reglasFin = lr.reglas.length ? lr.reglas[lr.reglas.length - 1].a : reglasIni;
+    const enVFR = r => r === 'VFR' ? ', que vuela en VFR' : '';
+    if(lr.sid && lr.star) ruta += ` Empieza con el procedimiento de salida ${b(lr.sid)}${enVFR(reglasIni)}${enVFR(reglasIni) ? ',' : ''} y termina con el de llegada ${b(lr.star)}${enVFR(reglasFin)}.`;
+    else if(lr.sid) ruta += ` Empieza con el procedimiento de salida ${b(lr.sid)}${enVFR(reglasIni)}.`;
+    else if(lr.star) ruta += ` Termina con el procedimiento de llegada ${b(lr.star)}${enVFR(reglasFin)}.`;
     const tramos = lr.cambios.map(c => {
       const r = lr.reglas.find(x => x.punto === c.punto);
       return `en ${b(c.punto)} pasa a ${b(velocidadProsa(c.vel))} y ${b(nivelProsa(c.nivel))}` + (r ? ` y sigue en ${b(r.a)}` : '');
@@ -5176,7 +5291,8 @@ btnAyuda.addEventListener('click', () => {
     if(val('presentadoPor')) parrafos.push(`Presenta el plan ${b(val('presentadoPor'))}` + (val('licencia') ? `, licencia ${b(val('licencia'))}.` : '.'));
     else if(CALIFICAR_INFO_SUPLEMENTARIA) faltan.push('presentado por / licencia');
 
-    return {narrativa: parrafos.join('\n\n'), literales: [...new Set(literales)], faltan, avisos: datosSensibles(v.f18)};
+    return {narrativa: parrafos.join('\n\n'), literales: [...new Set(literales)], faltan, avisos: datosSensibles(v.f18),
+            revisar: revisarPlanReal(v, d18, lr)};
   }
 
   const actRedactar = $('actRedactar');
@@ -5203,6 +5319,7 @@ btnAyuda.addEventListener('click', () => {
     if(r.faltan.length) html += `<br><br>⚠️ <b>El formulario no tiene estos datos</b>, así que el estudiante no podrá responderlos. Complétalos en el formulario y pulsa de nuevo Redacción automática:${lista(r.faltan)}`;
     if(r.literales.length) html += `<br>ℹ️ <b>Van literales en el texto</b> (no se pudieron describir sin inventar):${lista(r.literales)}`;
     if(r.avisos.length) html += `<br>🔒 <b>Datos personales</b>:${lista(r.avisos)}`;
+    if(r.revisar.length) html += `<br>🔎 <b>Revisa el plan original</b> (el formato es válido, pero parece un error de digitación que el estudiante copiaría):${lista(r.revisar)}`;
     // Un plan real puede traer errores (CODE/ de 5 cifras, RMK/ antes de DEST/,
     // L junto a S…). Copiado tal cual, el validador se lo marcaría al alumno.
     if(!r.faltan.length){
