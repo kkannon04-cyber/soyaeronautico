@@ -25,11 +25,12 @@ function limpiarCacheVencido(){
 // ---------- RATE LIMIT BÁSICO (en memoria, por IP) ----------
 // Mismo patrón que taf-historial.js, pero con un intervalo más corto: esta
 // función solo dispara UNA petición saliente por llamada (no un abanico de
-// hasta 40 como taf-historial.js), y el Simulador NALA la llama cada vez que
-// se abre el popup de un aeródromo distinto — un intervalo de 3s ahí
-// bloquearía a un controlador revisando varios aeródromos seguidos. No es
-// robusto entre instancias frías de Netlify, pero frena ráfagas de un mismo
-// cliente variando "icao"/"hours" para saltarse sistemáticamente la caché.
+// hasta 40 como taf-historial.js). No es robusto entre instancias frías de
+// Netlify, pero frena ráfagas de un mismo cliente variando "icao"/"hours"
+// para saltarse sistemáticamente la caché.
+// El Simulador NALA ya NO usa esta función: pedía METAR y TAF en paralelo y
+// este cupo de 1/s le rechazaba la segunda con 429. Ahora tiene la suya,
+// metar-nala.js, que devuelve los dos boletines en una sola respuesta.
 const ultimaLlamadaPorIp = new Map();
 const MIN_INTERVALO_MS = 1000; // máx. 1 solicitud por segundo por IP
 

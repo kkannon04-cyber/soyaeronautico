@@ -71,7 +71,13 @@ const MODULOS_CATALOGO = [
   // no estaba en ninguna lista, así que se perdían en silencio.
   { id: 'simulador-nala', nombre: 'Simulador NALA — CWP', url: 'Simulador-NALA.html',
     tipo: 'simulador', seccion: 'simuladores',
-    desc: 'Plan de vuelo, AFTN y radar en un puesto de trabajo real.', temaPorDefecto: null }
+    desc: 'Plan de vuelo, AFTN y radar en un puesto de trabajo real.', temaPorDefecto: null },
+
+  // Añadido 2026-09-24: prueba de amplitud de memoria. No tiene página teórica
+  // propia (entrena una destreza, no un contenido del AIP), por eso va sin tema.
+  { id: 'simulador-memoria', nombre: 'Memoria y Agilidad Mental', url: 'simulador-memoria.html',
+    tipo: 'simulador', seccion: 'simuladores',
+    desc: 'Secuencias que crecen a cada acierto: memoria de trabajo bajo presión de tiempo.', temaPorDefecto: null }
 ];
 
 // ---------- TEMAS ----------

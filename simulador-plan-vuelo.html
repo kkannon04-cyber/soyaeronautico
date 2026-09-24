@@ -1264,6 +1264,11 @@
       </div>
       <div class="feedback-list" id="feedbackList"></div>
 
+      <!-- Reintento de una actividad asignada, sin pasar por el panel del
+           estudiante: aparece tras entregar y en la revisión de la entrega,
+           sólo si al estudiante todavía le quedan intentos. -->
+      <div class="action-row" id="actReintento" style="display:none; margin-top:16px;"></div>
+
       <!-- Sólo en la revisión de una entrega y sólo para el profesor -->
       <div class="zona-corr" id="zonaCorreccion" style="display:none;">
         <h4>Corregir la calificación</h4>
@@ -4239,6 +4244,7 @@ btnAyuda.addEventListener('click', () => {
   const actLabel     = $('actLabel');
   const actAviso     = $('actAviso');
   const actInfo      = $('actInfo');
+  const actReintento = $('actReintento');
   const actCrear     = $('actCrear');
   const actTitulo    = $('actTitulo');
   const actLimite    = $('actLimite');
@@ -4509,6 +4515,10 @@ btnAyuda.addEventListener('click', () => {
     {cod:'KRSW', nom:'Fort Myers (Southwest Florida), Estados Unidos'},
     {cod:'TJSJ', nom:'San Juan (Luis Muñoz Marín), Puerto Rico'},
     {cod:'LEVC', nom:'Valencia, España'},
+    {cod:'EGLL', nom:'Londres (Heathrow), Reino Unido'},
+    {cod:'EGKK', nom:'Londres (Gatwick), Reino Unido'},
+    {cod:'EINN', nom:'Shannon, Irlanda'},
+    {cod:'EIDW', nom:'Dublín, Irlanda'},
     {cod:'LPLA', nom:'Lajes (isla Terceira, Azores), Portugal'},
     {cod:'LPCS', nom:'Cascais (Tires), Portugal'},
     {cod:'LPFR', nom:'Faro, Portugal'},
@@ -4669,6 +4679,7 @@ btnAyuda.addEventListener('click', () => {
     {tipo:'R44',  nombre:'Robinson R44'},
     {tipo:'R66',  nombre:'Robinson R66'},
     {tipo:'MI8',  nombre:'Mil Mi-8 / Mi-17'},
+    {tipo:'V22',  nombre:'Bell Boeing V-22 Osprey'},
     // Designadores especiales del Doc 8643
     {tipo:'ULAC', nombre:'avión ultraliviano'},
     {tipo:'GLID', nombre:'planeador'},
@@ -4683,6 +4694,8 @@ btnAyuda.addEventListener('click', () => {
     GVSC:'Sal Oceánica', GCCC:'Canarias', MUFH:'La Habana', TJZS:'San Juan', MMFR:'México', MMFO:'Mazatlán Oceánica',
     LPPO:'Santa María Oceánica', LPPC:'Lisboa', LECM:'Madrid', LECB:'Barcelona',
     EGGX:'Shanwick Oceánica', CZQX:'Gander Oceánica',
+    EGTT:'Londres', EGPX:'Escocia', EISN:'Shannon', LFFF:'París', LFRR:'Brest',
+    EHAA:'Ámsterdam', EDGG:'Langen', EDUU:'Rin (UAC)', LIRR:'Roma', LIMM:'Milán',
     SCFZ:'Antofagasta', SCEZ:'Santiago', SLLF:'La Paz', SAEF:'Ezeiza', SACF:'Córdoba', SAMF:'Mendoza',
     SUEO:'Montevideo', SGFA:'Asunción', SOOO:'Rochambeau', SYGC:'Georgetown', SMPM:'Paramaribo'
   };
@@ -4966,11 +4979,14 @@ btnAyuda.addEventListener('click', () => {
     const sitio = (c, libre) => c === 'ZZZZ'
       ? 'un sitio sin indicador de lugar' + (libre ? ` (${libre})` : '')
       : lugar(c);
-    const local = dep === dest && /^[A-Z]{4}$/.test(dep) && dep !== 'ZZZZ' && dep !== 'AFIL';
+    const mismoZZZZ = dep === 'ZZZZ' && dest === 'ZZZZ' && !!d18.DEP && norm(d18.DEP) === norm(d18.DEST);
+    const local = (dep === dest && /^[A-Z]{4}$/.test(dep) && dep !== 'ZZZZ' && dep !== 'AFIL') || mismoZZZZ;
     const internacional = !!(extranjero(dep) || extranjero(dest));
     let alcance;
     if(local){
-      alcance = `: sale de ${nombreCorto(dep)} y regresa al mismo aeródromo` + (val('f15r') === 'LOCAL' ? ', sin ruta definida' : '');
+      alcance = mismoZZZZ
+        ? `: sale de un sitio sin indicador de lugar (${d18.DEP}) y regresa al mismo punto`
+        : `: sale de ${nombreCorto(dep)} y regresa al mismo aeródromo` + (val('f15r') === 'LOCAL' ? ', sin ruta definida' : '');
     } else {
       let o = dep === 'AFIL' ? '' : sitio(dep, d18.DEP), d = sitio(dest, d18.DEST);
       // De Cali a la base aérea de Cali: con el nombre corto parecería local.
@@ -5034,6 +5050,23 @@ btnAyuda.addEventListener('click', () => {
       out.push(`En la casilla 18 aparece «/${m18[1]}» con la barra delante; se escribe ${m18[1]}/. ` +
         (dentro ? `Así, ese texto queda dentro de ${dentro}/ y la redacción lo presenta como parte de él.` : ''));
     }
+    // Doc 4444, Ap. 2: la Z de la casilla 10a se detalla en la 18 con COM/,
+    // NAV/ o DAT/, y la R va con PBN/. SUR/ pertenece a la casilla 10b.
+    const let10a = trocear10a(val('f10a'));
+    const libres = ['COM', 'NAV', 'DAT'].filter(i => d18[i]);
+    if(libres.length && let10a.indexOf('Z') === -1)
+      out.push(`La casilla 18 trae ${libres.map(i => i + '/').join(' y ')} pero la 10a no lleva la Z: ese equipo se anuncia con Z y se detalla ahí (Doc 4444, Ap. 2).`);
+    if(!libres.length && let10a.indexOf('Z') !== -1)
+      out.push('La casilla 10a lleva Z, pero la 18 no trae COM/, NAV/ ni DAT/ que digan de qué equipo se trata (Doc 4444, Ap. 2).');
+    if(d18.PBN && let10a.indexOf('R') === -1)
+      out.push('La casilla 18 trae PBN/ pero la 10a no lleva la R, que es la que declara la aprobación PBN.');
+    if(!d18.PBN && let10a.indexOf('R') !== -1)
+      out.push('La casilla 10a lleva R (aprobación PBN), pero la 18 no trae PBN/ con las especificaciones aprobadas.');
+    // El SELCAL sirve para la escucha selectiva en HF: si se declara la H, el
+    // ATS espera la clave en SEL/ (Doc 4444, Ap. 2, casilla 18).
+    if(let10a.indexOf('H') !== -1 && !d18.SEL)
+      out.push('La casilla 10a declara H (radiotelefonía en HF) pero la 18 no trae SEL/ con la clave SELCAL, que es la que permite la escucha selectiva en HF.');
+
     const tok = val('f15r').split(' ').filter(Boolean).map(t => t.split('/')[0]);
     [...new Set(tok.filter(t => /^[A-Z]{3}$/.test(t) && t !== 'DCT' &&
       (t.split('').sort().join('') === 'CDT' || /^DC[A-Z]$|^D[A-Z]T$/.test(t))))]
@@ -5230,8 +5263,28 @@ btnAyuda.addEventListener('click', () => {
       DAT:'Información de enlace de datos adicional', SUR:'Información de vigilancia adicional',
       TYP:'Tipos de aeronave', DLE:'Demora o espera en ruta', ORGN:'Dirección del originador',
       RIF:'Ruta hacia el destino revisado'};
+    // TYP/ acompaña a la casilla 9 con ZZZZ (formación de tipos distintos):
+    // se desglosa con las tablas en vez de dejarlo literal.
+    if(d18.TYP){
+      const sinTabla = [];
+      const partes = norm(d18.TYP).split(' ').filter(Boolean).map(tok => {
+        const m = /^(\d{0,2})([A-Z][A-Z0-9]{1,3})$/.exec(tok);
+        if(!m){ sinTabla.push(tok); return tok; }
+        const n = m[1] ? parseInt(m[1], 10) : 1;
+        const lista = [];
+        const nom = nombreAeronave(m[2], lista);
+        if(lista.length) sinTabla.push(tok);
+        return `${n} ${nom}`;
+      });
+      otros.push(`Tipos de aeronave de la formación: ${b(d18.TYP)} (${enumerar(partes)}).`);
+      if(sinTabla.length) literales.push(`TYP/${sinTabla.join(' ')} (no está en las tablas: el texto lleva el designador)`);
+    }
+    // Sólo NAV/, COM/, DAT/ y SUR/ llevan texto libre de equipo que se glosa;
+    // DLE/, ORGN/ y RIF/ son horas, direcciones y rutas: van tal cual.
+    const CON_GLOSA = ['NAV', 'COM', 'DAT', 'SUR'];
     Object.keys(LIBRES).forEach(ind => {
-      if(!d18[ind]) return;
+      if(!d18[ind] || ind === 'TYP') return;
+      if(CON_GLOSA.indexOf(ind) === -1){ otros.push(`${LIBRES[ind]}: ${b(d18[ind])}.`); return; }
       const g = glosarLibre(ind, d18[ind]);
       const unica = norm(d18[ind]).split(' ').length === 1;
       const expl = g.glosas.length
@@ -5319,7 +5372,7 @@ btnAyuda.addEventListener('click', () => {
     if(r.faltan.length) html += `<br><br>⚠️ <b>El formulario no tiene estos datos</b>, así que el estudiante no podrá responderlos. Complétalos en el formulario y pulsa de nuevo Redacción automática:${lista(r.faltan)}`;
     if(r.literales.length) html += `<br>ℹ️ <b>Van literales en el texto</b> (no se pudieron describir sin inventar):${lista(r.literales)}`;
     if(r.avisos.length) html += `<br>🔒 <b>Datos personales</b>:${lista(r.avisos)}`;
-    if(r.revisar.length) html += `<br>🔎 <b>Revisa el plan original</b> (el formato es válido, pero parece un error de digitación que el estudiante copiaría):${lista(r.revisar)}`;
+    if(r.revisar.length) html += `<br>🔎 <b>Revisa el plan original</b> (el formato es válido, pero hay algo que no cuadra y el estudiante lo copiaría tal cual):${lista(r.revisar)}`;
     // Un plan real puede traer errores (CODE/ de 5 cifras, RMK/ antes de DEST/,
     // L junto a S…). Copiado tal cual, el validador se lo marcaría al alumno.
     if(!r.faltan.length){
@@ -5461,6 +5514,21 @@ btnAyuda.addEventListener('click', () => {
     btnPDF.style.display = 'inline-flex';
   }
 
+  // Botón para tomar otro intento sin volver al panel del estudiante: recarga
+  // la misma actividad con el formulario en blanco. Se usa al terminar de
+  // entregar y en la revisión de la entrega, y sólo cuando el servidor
+  // confirma que todavía quedan intentos. `restantes` es null o undefined
+  // cuando no se conoce o la actividad no tiene límite.
+  function mostrarReintento(idActividad, restantes){
+    if(!actReintento || !idActividad) return;
+    const cola = (restantes === null || restantes === undefined) ? ''
+      : ` — te ${restantes === 1 ? 'queda 1 intento' : 'quedan ' + restantes + ' intentos'}`;
+    actReintento.innerHTML =
+      `<a class="btn btn-primary" href="simulador-plan-vuelo.html?actividad=${encodeURIComponent(idActividad)}">Intentar de nuevo${esc(cola)}</a>`
+      + '<a class="btn btn-outline" href="Panel_estudiante.html">Volver a mi panel</a>';
+    actReintento.style.display = 'flex';
+  }
+
   // Aviso para cuando la respuesta todavía no se puede mostrar. `restantes` es
   // null si la actividad no tiene límite de intentos.
   function avisoRespuestaPendiente(restantes){
@@ -5544,6 +5612,11 @@ btnAyuda.addEventListener('click', () => {
     bloquearFormulario(true);
     btnValidar.style.display = 'none';
     informar(`Entrega registrada. Tu profesor ya puede verla en su panel.`);
+    // Si el servidor dice que todavía le quedan intentos (o la actividad no
+    // los limita), puede volver a intentarlo desde aquí mismo.
+    if(res.intentos_restantes === null || res.intentos_restantes === undefined || res.intentos_restantes > 0){
+      mostrarReintento(actividadId, res.intentos_restantes === undefined ? null : res.intentos_restantes);
+    }
     feedbackList.scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
@@ -5695,6 +5768,9 @@ btnAyuda.addEventListener('click', () => {
     // Sólo si el servidor confirma que todavía puede entregar (un servidor sin
     // la migración plan_vuelo_clave_al_agotar_intentos no manda ese dato).
     else if(!e.es_profesor && e.puede_reintentar === true) feedbackList.insertAdjacentHTML('afterbegin', avisoRespuestaPendiente(undefined));
+
+    // Otro intento desde la propia entrega, sin devolverlo al panel.
+    if(!e.es_profesor && e.puede_reintentar === true) mostrarReintento(e.actividad_id, null);
     pintarHistorial();
 
     fplUsuarioTexto.textContent = msgFPL(e.valores || {});
