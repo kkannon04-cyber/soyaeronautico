@@ -34,7 +34,7 @@ const MODULOS_CATALOGO = [
     tipo: 'quiz', seccion: 'modulos', badge: '25 preguntas', temaPorDefecto: 'plan-de-vuelo' },
 
   { id: 'quiz-designadores', nombre: 'Designadores de Aeródromos', url: 'quiz-designadores.html',
-    tipo: 'quiz', seccion: 'modulos', badge: 'Modo examen · 20 preguntas', temaPorDefecto: 'designadores' },
+    tipo: 'quiz', seccion: 'modulos', badge: '196 aeródromos · 3 parciales de 20', temaPorDefecto: 'designadores' },
 
   { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html',
     tipo: 'quiz', seccion: 'modulos', badge: '50 preguntas', temaPorDefecto: 'fraseologia-fundamentos' },

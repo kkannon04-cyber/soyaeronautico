@@ -170,6 +170,22 @@
   .cat-tag.controlado{ background:rgba(var(--vfr-rgb),0.14); color:var(--vfr); }
   .cat-tag.no_controlado{ background:rgba(var(--accent-rgb),0.14); color:var(--accent); }
   .cat-tag.estado{ background:rgba(139,92,246,0.14); color:var(--lifr); }
+  /* Etiqueta de región para los aeródromos internacionales: ocupa el mismo
+     hueco visual que la categoría AD 2 de los colombianos. */
+  .cat-tag.region{ background:rgba(62,123,250,0.14); color:var(--mvfr); }
+
+  /* Selección múltiple de regiones: estos pills se activan y desactivan de
+     forma independiente (no son excluyentes como los de categoría o modo),
+     por eso llevan casilla de verificación. */
+  .pill-btn.multi{ display:inline-flex; align-items:center; gap:7px; }
+  .pill-btn.multi .box{ width:13px; height:13px; border-radius:3px; border:1.5px solid currentColor; flex-shrink:0; position:relative; }
+  .pill-btn.multi.active .box{ background:var(--on-accent); border-color:var(--on-accent); }
+  .pill-btn.multi.active .box::after{ content:''; position:absolute; left:3px; top:0; width:4px; height:8px; border:solid var(--accent); border-width:0 2px 2px 0; transform:rotate(40deg); }
+  .pill-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+  .pill-btn:disabled:hover{ border-color:var(--hairline); color:var(--text-muted); }
+  .control-group.grow{ flex:1 1 100%; }
+  .control-group .ghint{ font-size:0.74rem; color:var(--text-muted); line-height:1.5; max-width:640px; }
+  .control-group .ghint b{ color:var(--text); font-weight:600; }
 
   /* ---------- INPUT AREA ---------- */
   .metar-textarea{ width:100%; max-width:280px; background:var(--bg); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Mono'; font-size:1.1rem; letter-spacing:0.12em; padding:14px 16px; border-radius:8px; text-transform:uppercase; }
@@ -214,11 +230,16 @@
   .help-panel.visible{ display:block; }
   .help-search{ width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--text); font-family:'IBM Plex Sans'; font-size:0.9rem; padding:10px 14px; border-radius:8px; margin-bottom:14px; }
   .help-search:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.25); }
-  .help-table-wrap{ max-height:420px; overflow-y:auto; position:relative; z-index:1; border:1px solid var(--hairline); border-radius:8px; }
-  .help-table{ width:100%; border-collapse:collapse; font-size:0.82rem; }
+  /* El listado pasó de 4 a 5 columnas (se sumó la FIR), así que en pantallas
+     estrechas se desplaza en horizontal DENTRO de su caja: la página nunca
+     gana scroll horizontal por su culpa. */
+  .help-table-wrap{ max-height:420px; overflow:auto; position:relative; z-index:1; border:1px solid var(--hairline); border-radius:8px; }
+  .help-table{ width:100%; border-collapse:collapse; font-size:0.82rem; min-width:720px; }
   .help-table th, .help-table td{ text-align:left; padding:8px 12px; border-bottom:1px solid var(--hairline); }
   .help-table th{ position:sticky; top:0; background:var(--panel); color:var(--text-muted); font-family:'IBM Plex Mono'; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.06em; }
   .help-table td.mono{ color:var(--accent); font-weight:600; }
+  .help-table td.fir{ font-family:'IBM Plex Mono', monospace; font-size:0.76rem; color:var(--text-muted); white-space:nowrap; }
+  .help-table .pais{ color:var(--text-muted); font-size:0.74rem; }
   .help-count{ font-size:0.78rem; color:var(--text-muted); margin-top:8px; }
 
   /* ---------- EXAM SUMMARY ---------- */
@@ -381,15 +402,22 @@
   <a class="breadcrumb" href="quizzes.html">← Volver a Quizzes</a><br>
   <div class="eyebrow">Práctica interactiva · AIS</div>
   <h1>Quiz de Designadores de Aeródromos</h1>
-  <p class="lead">Se te presenta un aeródromo colombiano (controlado, no controlado o de aviación de estado). Según el modo elegido, deberás escribir su designador OACI de memoria o identificar su nombre entre varias opciones. Incluye modo práctica libre y modo examen de 20 preguntas.</p>
+  <p class="lead">196 aeródromos: los 73 de Colombia más 123 del resto del mundo, agrupados en Canadá, Estados Unidos, México/Centroamérica/Caribe, Suramérica, Europa región L y Europa del Norte. Elige qué regiones quieres estudiar —una, varias o todas— y practica escribiendo el designador OACI de memoria, identificando el nombre del aeródromo o la FIR que lo contiene. Incluye práctica libre y tres parciales de 20 preguntas: nacional, internacional y mixto.</p>
 </section>
 
 <div class="wrap">
 
   <!-- ================= CONTROLES ================= -->
   <div class="controls">
+    <div class="control-group grow">
+      <div class="glabel">Regiones a estudiar</div>
+      <!-- Los pills se generan en JS a partir de REGIONES para que la etiqueta y
+           el número de aeródromos de cada región salgan siempre de los datos. -->
+      <div class="pill-row" id="regionRow"></div>
+      <div class="ghint" id="regionHint"></div>
+    </div>
     <div class="control-group">
-      <div class="glabel">Categoría</div>
+      <div class="glabel">Categoría (solo Colombia)</div>
       <div class="pill-row" id="catRow">
         <button class="pill-btn active" data-cat="todos" type="button">Todos</button>
         <button class="pill-btn" data-cat="controlado" type="button">Controlados</button>
@@ -402,15 +430,19 @@
       <div class="pill-row" id="typeRow">
         <button class="pill-btn active" data-type="icao" type="button">Escribir código ICAO</button>
         <button class="pill-btn" data-type="nombre" type="button">Identificar nombre (ayuda)</button>
+        <button class="pill-btn" data-type="fir" type="button">Identificar FIR (ayuda)</button>
         <button class="pill-btn" data-type="mixto" type="button">Mixto</button>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group grow">
       <div class="glabel">Modo</div>
       <div class="pill-row" id="modeRow">
         <button class="pill-btn active" data-mode="practica" type="button">Práctica</button>
-        <button class="pill-btn mode-exam" data-mode="examen" type="button">Examen (20 preguntas)</button>
+        <button class="pill-btn mode-exam" data-mode="examen-nacional" type="button">Parcial nacional (20)</button>
+        <button class="pill-btn mode-exam" data-mode="examen-internacional" type="button">Parcial internacional (20)</button>
+        <button class="pill-btn mode-exam" data-mode="examen-mixto" type="button">Parcial mixto (20)</button>
       </div>
+      <div class="ghint" id="modeHint"></div>
     </div>
     <div class="control-group">
       <div class="glabel">&nbsp;</div>
@@ -425,10 +457,10 @@
   <div class="instrument help-panel" id="helpPanel">
     <div class="instrument-label">Listado completo de aeródromos</div>
     <div style="position:relative; z-index:1;">
-      <input type="text" class="help-search" id="helpSearch" placeholder="Buscar por designador, ciudad o nombre...">
+      <input type="text" class="help-search" id="helpSearch" placeholder="Buscar por designador, ciudad, aeródromo, país o FIR...">
       <div class="help-table-wrap">
         <table class="help-table">
-          <thead><tr><th>Designador</th><th>Ciudad</th><th>Aeródromo</th><th>Categoría</th></tr></thead>
+          <thead><tr><th>Designador</th><th>Ciudad</th><th>Aeródromo</th><th>FIR</th><th>Ámbito</th></tr></thead>
           <tbody id="helpTableBody"></tbody>
         </table>
       </div>
@@ -439,7 +471,7 @@
   <!-- ================= PREGUNTA ================= -->
   <div class="instrument" id="scenarioPanel">
     <div class="instrument-label">
-      <span>Identifica el aeródromo</span>
+      <span id="questionLabel">Identifica el aeródromo</span>
       <span class="exam-progress" id="examProgress" style="display:none;"></span>
       <span class="practice-stats" id="practiceStats"></span>
     </div>
@@ -458,31 +490,31 @@
 
       <!-- Entrada tipo opción múltiple -->
       <div id="mcInputArea" style="display:none;">
-        <div class="input-hint" style="margin-bottom:10px;">Selecciona el nombre correcto del aeródromo.</div>
+        <div class="input-hint" style="margin-bottom:10px;" id="mcHint">Selecciona el nombre correcto del aeródromo.</div>
         <div class="mc-grid" id="mcGrid"></div>
       </div>
 
       <div id="examWarning" class="fb-block bad" style="display:none; margin-top:14px;">
         <div class="fb-head"><span class="fb-icon">⚠️</span> Debes responder antes de continuar</div>
-        <div class="fb-body">Escribe el designador y presiona <b>Comprobar</b>, o selecciona una opción, antes de pasar a la siguiente pregunta del examen.</div>
+        <div class="fb-body">Escribe el designador y presiona <b>Comprobar</b>, o selecciona una opción, antes de pasar a la siguiente pregunta del parcial.</div>
       </div>
 
       <div id="scoreBanner" style="display:none;"></div>
       <div class="feedback-list" id="feedbackList" aria-live="polite"></div>
 
       <div id="examSummary" style="display:none; margin-top:18px;">
-        <h3 style="font-size:1.1rem; margin-bottom:10px;">Resultado del examen</h3>
+        <h3 style="font-size:1.1rem; margin-bottom:10px;" id="examSummaryTitle">Resultado del parcial</h3>
         <div class="score-banner" id="examScoreBanner">
           <div class="score-num" id="examScoreNum">0</div>
           <div class="score-text">de 100 puntos, sobre 20 preguntas.</div>
         </div>
         <table class="exam-table">
-          <thead><tr><th>#</th><th>Designador</th><th>Categoría</th><th>Resultado</th></tr></thead>
+          <thead><tr><th>#</th><th>Designador</th><th>Ámbito</th><th>Resultado</th></tr></thead>
           <tbody id="examTableBody"></tbody>
         </table>
         <p id="examResultMsg" class="exam-result-msg">✅ Resultado guardado en tu progreso.</p>
         <div class="action-row" style="margin-top:16px;">
-          <button class="reset-btn" id="btnReiniciarExamen" type="button">Repetir examen</button>
+          <button class="reset-btn" id="btnReiniciarExamen" type="button">Repetir parcial</button>
           <a class="btn-volver-panel" href="Panel_estudiante.html">Volver al Panel del Estudiante</a>
           <a class="btn btn-outline" href="quizzes.html" style="text-decoration:none; display:inline-flex; align-items:center;">Ver todos los quizzes</a>
         </div>
@@ -494,7 +526,7 @@
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Listado de aeródromos según clasificación AD 2 — Aeronáutica Civil de Colombia</span>
+  <span>Colombia: clasificación AD 2 — Aeronáutica Civil. Internacionales: designadores OACI (Doc 7910) y límites de FIR; verifica con el AIP de cada Estado antes de uso operativo.</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -539,10 +571,16 @@ setInterval(updateZuluMini, 1000);
 (function(){
 
   // ---------- Base de datos de aeródromos ----------
+  // Dos listados que se unen más abajo en AERODROMOS:
+  //   · AERODROMOS_CO   — Colombia, clasificados por categoría AD 2 (no llevan
+  //                       FIR porque el listado fuente no la trae por aeródromo
+  //                       y no se inventa: las preguntas de FIR no los usan).
+  //   · AERODROMOS_INTL — resto del mundo, con país y FIR que lo contiene.
+  //
   // Nota: el designador de Carepa (Antonio Roldán Betancourt) se corrigió a
   // SKLC, ya que en el listado fuente aparecía duplicado como SKCG (código
   // que realmente corresponde a Cartagena / Rafael Núñez).
-  const AERODROMOS = [
+  const AERODROMOS_CO = [
     // ---- Controlados ----
     {icao:'SKUC', ciudad:'Arauca', nombre:'Santiago Pérez Quiroz', cat:'controlado'},
     {icao:'SKAR', ciudad:'Armenia', nombre:'El Edén', cat:'controlado'},
@@ -623,13 +661,214 @@ setInterval(updateZuluMini, 1000);
     {icao:'SKTQ', ciudad:'Tres Esquinas', nombre:'CT. Ernesto Esguerra Cubides', cat:'estado'}
   ];
 
+  // Aeródromos internacionales (123). Orden: región → FIR → designador.
+  // `fir` es el designador OACI de la FIR que contiene al aeródromo; en
+  // Estados Unidos corresponde al ARTCC. Los nombres de aeródromo van en el
+  // idioma del AIP del Estado, tal como los publica cada administración.
+  // Una FIR puede cruzar regiones del quiz: KZMA (Miami) cubre la porción
+  // oceánica sobre las Islas Turcas y Caicos (MBGT), que aquí van en la
+  // región M. No es un error de los datos.
+  const AERODROMOS_INTL = [
+
+    // ---- Canadá — FIR de Canadá (prefijo C) ----
+    {icao:'CYEG', ciudad:'Edmonton', nombre:'Edmonton International Airport', pais:'Canadá', fir:'CZEG', firNombre:'Edmonton', region:'canada'},
+    {icao:'CYXY', ciudad:'Whitehorse', nombre:'Erik Nielsen Whitehorse International Airport', pais:'Canadá', fir:'CZEG', firNombre:'Edmonton', region:'canada'},
+    {icao:'CYYC', ciudad:'Calgary', nombre:'Calgary International Airport', pais:'Canadá', fir:'CZEG', firNombre:'Edmonton', region:'canada'},
+    {icao:'CYZF', ciudad:'Yellowknife', nombre:'Yellowknife Airport', pais:'Canadá', fir:'CZEG', firNombre:'Edmonton', region:'canada'},
+    {icao:'CYFC', ciudad:'Fredericton', nombre:'Fredericton International Airport', pais:'Canadá', fir:'CZQM', firNombre:'Moncton', region:'canada'},
+    {icao:'CYHZ', ciudad:'Halifax', nombre:'Halifax Stanfield International Airport', pais:'Canadá', fir:'CZQM', firNombre:'Moncton', region:'canada'},
+    {icao:'CYQX', ciudad:'Gander', nombre:'Gander International Airport', pais:'Canadá', fir:'CZQX', firNombre:'Gander', region:'canada'},
+    {icao:'CYYT', ciudad:'St. John’s', nombre:'St. John’s International Airport', pais:'Canadá', fir:'CZQX', firNombre:'Gander', region:'canada'},
+    {icao:'CYFB', ciudad:'Iqaluit', nombre:'Iqaluit Airport', pais:'Canadá', fir:'CZUL', firNombre:'Montréal', region:'canada'},
+    {icao:'CYOW', ciudad:'Ottawa', nombre:'Ottawa Macdonald-Cartier International Airport', pais:'Canadá', fir:'CZUL', firNombre:'Montréal', region:'canada'},
+    {icao:'CYQB', ciudad:'Québec', nombre:'Aéroport international Jean-Lesage de Québec', pais:'Canadá', fir:'CZUL', firNombre:'Montréal', region:'canada'},
+    {icao:'CYUL', ciudad:'Montréal', nombre:'Aéroport international Montréal-Trudeau', pais:'Canadá', fir:'CZUL', firNombre:'Montréal', region:'canada'},
+    {icao:'CYLW', ciudad:'Kelowna', nombre:'Kelowna International Airport', pais:'Canadá', fir:'CZVR', firNombre:'Vancouver', region:'canada'},
+    {icao:'CYVR', ciudad:'Vancouver', nombre:'Vancouver International Airport', pais:'Canadá', fir:'CZVR', firNombre:'Vancouver', region:'canada'},
+    {icao:'CYYJ', ciudad:'Victoria', nombre:'Victoria International Airport', pais:'Canadá', fir:'CZVR', firNombre:'Vancouver', region:'canada'},
+    {icao:'CYQR', ciudad:'Regina', nombre:'Regina International Airport', pais:'Canadá', fir:'CZWG', firNombre:'Winnipeg', region:'canada'},
+    {icao:'CYWG', ciudad:'Winnipeg', nombre:'Winnipeg Richardson International Airport', pais:'Canadá', fir:'CZWG', firNombre:'Winnipeg', region:'canada'},
+    {icao:'CYXE', ciudad:'Saskatoon', nombre:'Saskatoon John G. Diefenbaker International Airport', pais:'Canadá', fir:'CZWG', firNombre:'Winnipeg', region:'canada'},
+    {icao:'CYHM', ciudad:'Hamilton', nombre:'John C. Munro Hamilton International Airport', pais:'Canadá', fir:'CZYZ', firNombre:'Toronto', region:'canada'},
+    {icao:'CYYZ', ciudad:'Toronto', nombre:'Toronto Pearson International Airport', pais:'Canadá', fir:'CZYZ', firNombre:'Toronto', region:'canada'},
+
+    // ---- Estados Unidos — ARTCC como FIR (prefijos K, PA, PH) ----
+    {icao:'KPHX', ciudad:'Phoenix', nombre:'Phoenix Sky Harbor International Airport', pais:'Estados Unidos', fir:'KZAB', firNombre:'Albuquerque', region:'eeuu'},
+    {icao:'KORD', ciudad:'Chicago', nombre:'Chicago O’Hare International Airport', pais:'Estados Unidos', fir:'KZAU', firNombre:'Chicago', region:'eeuu'},
+    {icao:'KBOS', ciudad:'Boston', nombre:'Boston Logan International Airport', pais:'Estados Unidos', fir:'KZBW', firNombre:'Boston', region:'eeuu'},
+    {icao:'KBWI', ciudad:'Baltimore', nombre:'Baltimore/Washington International Thurgood Marshall Airport', pais:'Estados Unidos', fir:'KZDC', firNombre:'Washington', region:'eeuu'},
+    {icao:'KDCA', ciudad:'Washington', nombre:'Ronald Reagan Washington National Airport', pais:'Estados Unidos', fir:'KZDC', firNombre:'Washington', region:'eeuu'},
+    {icao:'KDEN', ciudad:'Denver', nombre:'Denver International Airport', pais:'Estados Unidos', fir:'KZDV', firNombre:'Denver', region:'eeuu'},
+    {icao:'KDFW', ciudad:'Dallas/Fort Worth', nombre:'Dallas/Fort Worth International Airport', pais:'Estados Unidos', fir:'KZFW', firNombre:'Fort Worth', region:'eeuu'},
+    {icao:'KIAH', ciudad:'Houston', nombre:'George Bush Intercontinental Airport', pais:'Estados Unidos', fir:'KZHU', firNombre:'Houston', region:'eeuu'},
+    {icao:'KMCO', ciudad:'Orlando', nombre:'Orlando International Airport', pais:'Estados Unidos', fir:'KZJX', firNombre:'Jacksonville', region:'eeuu'},
+    {icao:'KSTL', ciudad:'St. Louis', nombre:'St. Louis Lambert International Airport', pais:'Estados Unidos', fir:'KZKC', firNombre:'Kansas City', region:'eeuu'},
+    {icao:'KLAS', ciudad:'Las Vegas', nombre:'Harry Reid International Airport', pais:'Estados Unidos', fir:'KZLA', firNombre:'Los Angeles', region:'eeuu'},
+    {icao:'KLAX', ciudad:'Los Angeles', nombre:'Los Angeles International Airport', pais:'Estados Unidos', fir:'KZLA', firNombre:'Los Angeles', region:'eeuu'},
+    {icao:'KSAN', ciudad:'San Diego', nombre:'San Diego International Airport', pais:'Estados Unidos', fir:'KZLA', firNombre:'Los Angeles', region:'eeuu'},
+    {icao:'KSLC', ciudad:'Salt Lake City', nombre:'Salt Lake City International Airport', pais:'Estados Unidos', fir:'KZLC', firNombre:'Salt Lake City', region:'eeuu'},
+    {icao:'KMIA', ciudad:'Miami', nombre:'Miami International Airport', pais:'Estados Unidos', fir:'KZMA', firNombre:'Miami', region:'eeuu'},
+    {icao:'KMSP', ciudad:'Minneapolis', nombre:'Minneapolis–Saint Paul International Airport', pais:'Estados Unidos', fir:'KZMP', firNombre:'Minneapolis', region:'eeuu'},
+    {icao:'KJFK', ciudad:'Nueva York', nombre:'John F. Kennedy International Airport', pais:'Estados Unidos', fir:'KZNY', firNombre:'New York', region:'eeuu'},
+    {icao:'KPHL', ciudad:'Filadelfia', nombre:'Philadelphia International Airport', pais:'Estados Unidos', fir:'KZNY', firNombre:'New York', region:'eeuu'},
+    {icao:'KSFO', ciudad:'San Francisco', nombre:'San Francisco International Airport', pais:'Estados Unidos', fir:'KZOA', firNombre:'Oakland', region:'eeuu'},
+    {icao:'KDTW', ciudad:'Detroit', nombre:'Detroit Metropolitan Wayne County Airport', pais:'Estados Unidos', fir:'KZOB', firNombre:'Cleveland', region:'eeuu'},
+    {icao:'KPDX', ciudad:'Portland', nombre:'Portland International Airport', pais:'Estados Unidos', fir:'KZSE', firNombre:'Seattle', region:'eeuu'},
+    {icao:'KSEA', ciudad:'Seattle', nombre:'Seattle-Tacoma International Airport', pais:'Estados Unidos', fir:'KZSE', firNombre:'Seattle', region:'eeuu'},
+    {icao:'KATL', ciudad:'Atlanta', nombre:'Hartsfield-Jackson Atlanta International Airport', pais:'Estados Unidos', fir:'KZTL', firNombre:'Atlanta', region:'eeuu'},
+    {icao:'KCLT', ciudad:'Charlotte', nombre:'Charlotte Douglas International Airport', pais:'Estados Unidos', fir:'KZTL', firNombre:'Atlanta', region:'eeuu'},
+    {icao:'PANC', ciudad:'Anchorage', nombre:'Ted Stevens Anchorage International Airport', pais:'Estados Unidos', fir:'PAZA', firNombre:'Anchorage', region:'eeuu'},
+    {icao:'PHNL', ciudad:'Honolulú', nombre:'Daniel K. Inouye International Airport', pais:'Estados Unidos', fir:'PHZH', firNombre:'Honolulu', region:'eeuu'},
+
+    // ---- México, Centroamérica y Caribe (prefijos MB-MZ) ----
+    {icao:'MBGT', ciudad:'Cockburn Town', nombre:'Aeropuerto Internacional JAGS McCartney (Gran Turca)', pais:'Islas Turcas y Caicos', fir:'KZMA', firNombre:'Miami', region:'mexico-caribe'},
+    {icao:'MDPC', ciudad:'Punta Cana', nombre:'Aeropuerto Internacional de Punta Cana', pais:'República Dominicana', fir:'MDCS', firNombre:'Santo Domingo', region:'mexico-caribe'},
+    {icao:'MDPP', ciudad:'Puerto Plata', nombre:'Aeropuerto Internacional Gregorio Luperón', pais:'República Dominicana', fir:'MDCS', firNombre:'Santo Domingo', region:'mexico-caribe'},
+    {icao:'MDSD', ciudad:'Santo Domingo', nombre:'Aeropuerto Internacional de Las Américas', pais:'República Dominicana', fir:'MDCS', firNombre:'Santo Domingo', region:'mexico-caribe'},
+    {icao:'MGGT', ciudad:'Ciudad de Guatemala', nombre:'Aeropuerto Internacional La Aurora', pais:'Guatemala', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MHTG', ciudad:'Tegucigalpa', nombre:'Aeropuerto Internacional Toncontín', pais:'Honduras', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MNMG', ciudad:'Managua', nombre:'Aeropuerto Internacional Augusto C. Sandino', pais:'Nicaragua', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MROC', ciudad:'San José', nombre:'Aeropuerto Internacional Juan Santamaría (Alajuela)', pais:'Costa Rica', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MSLP', ciudad:'San Salvador', nombre:'Aeropuerto Internacional Monseñor Óscar Arnulfo Romero', pais:'El Salvador', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MZBP', ciudad:'Belmopán', nombre:'Pista Hector Silva', pais:'Belice', fir:'MHCC', firNombre:'Centroamérica', region:'mexico-caribe'},
+    {icao:'MKJP', ciudad:'Kingston', nombre:'Aeropuerto Internacional Norman Manley', pais:'Jamaica', fir:'MKJK', firNombre:'Kingston', region:'mexico-caribe'},
+    {icao:'MKJS', ciudad:'Montego Bay', nombre:'Aeropuerto Internacional Sangster', pais:'Jamaica', fir:'MKJK', firNombre:'Kingston', region:'mexico-caribe'},
+    {icao:'MWCR', ciudad:'George Town', nombre:'Aeropuerto Internacional Owen Roberts', pais:'Islas Caimán', fir:'MKJK', firNombre:'Kingston', region:'mexico-caribe'},
+    {icao:'MMGL', ciudad:'Guadalajara', nombre:'Aeropuerto Internacional Miguel Hidalgo y Costilla', pais:'México', fir:'MMFR', firNombre:'México', region:'mexico-caribe'},
+    {icao:'MMMX', ciudad:'Ciudad de México', nombre:'Aeropuerto Internacional Benito Juárez', pais:'México', fir:'MMFR', firNombre:'México', region:'mexico-caribe'},
+    {icao:'MMMY', ciudad:'Monterrey', nombre:'Aeropuerto Internacional Mariano Escobedo', pais:'México', fir:'MMFR', firNombre:'México', region:'mexico-caribe'},
+    {icao:'MMSM', ciudad:'Ciudad de México', nombre:'Aeropuerto Internacional Felipe Ángeles (Santa Lucía)', pais:'México', fir:'MMFR', firNombre:'México', region:'mexico-caribe'},
+    {icao:'MMUN', ciudad:'Cancún', nombre:'Aeropuerto Internacional de Cancún', pais:'México', fir:'MMFR', firNombre:'México', region:'mexico-caribe'},
+    {icao:'MPMG', ciudad:'Ciudad de Panamá', nombre:'Aeropuerto Marcos A. Gelabert (Albrook)', pais:'Panamá', fir:'MPZL', firNombre:'Panamá', region:'mexico-caribe'},
+    {icao:'MPPA', ciudad:'Ciudad de Panamá', nombre:'Aeropuerto Internacional Panamá Pacífico (Howard)', pais:'Panamá', fir:'MPZL', firNombre:'Panamá', region:'mexico-caribe'},
+    {icao:'MPSM', ciudad:'Río Hato', nombre:'Aeropuerto Internacional Scarlett Martínez', pais:'Panamá', fir:'MPZL', firNombre:'Panamá', region:'mexico-caribe'},
+    {icao:'MPTO', ciudad:'Ciudad de Panamá', nombre:'Aeropuerto Internacional de Tocumen', pais:'Panamá', fir:'MPZL', firNombre:'Panamá', region:'mexico-caribe'},
+    {icao:'MTPP', ciudad:'Puerto Príncipe', nombre:'Aeropuerto Internacional Toussaint Louverture', pais:'Haití', fir:'MTEG', firNombre:'Puerto Príncipe', region:'mexico-caribe'},
+    {icao:'MUHA', ciudad:'La Habana', nombre:'Aeropuerto Internacional José Martí', pais:'Cuba', fir:'MUFH', firNombre:'La Habana', region:'mexico-caribe'},
+    {icao:'MYNN', ciudad:'Nassau', nombre:'Aeropuerto Internacional Lynden Pindling', pais:'Bahamas', fir:'MYNA', firNombre:'Nassau', region:'mexico-caribe'},
+
+    // ---- Suramérica (prefijos SA-SY) ----
+    {icao:'SABE', ciudad:'Buenos Aires', nombre:'Aeroparque Jorge Newbery', pais:'Argentina', fir:'SAEF', firNombre:'Ezeiza', region:'suramerica'},
+    {icao:'SAEZ', ciudad:'Buenos Aires', nombre:'Aeropuerto Internacional Ministro Pistarini (Ezeiza)', pais:'Argentina', fir:'SAEF', firNombre:'Ezeiza', region:'suramerica'},
+    {icao:'SBBR', ciudad:'Brasilia', nombre:'Aeroporto Internacional Presidente Juscelino Kubitschek', pais:'Brasil', fir:'SBBS', firNombre:'Brasília', region:'suramerica'},
+    {icao:'SBGL', ciudad:'Río de Janeiro', nombre:'Aeroporto Internacional do Rio de Janeiro/Galeão – Antônio Carlos Jobim', pais:'Brasil', fir:'SBCW', firNombre:'Curitiba', region:'suramerica'},
+    {icao:'SBGR', ciudad:'São Paulo', nombre:'Aeroporto Internacional de São Paulo/Guarulhos – Governador André Franco Montoro', pais:'Brasil', fir:'SBCW', firNombre:'Curitiba', region:'suramerica'},
+    {icao:'SCEL', ciudad:'Santiago', nombre:'Aeropuerto Internacional Comodoro Arturo Merino Benítez', pais:'Chile', fir:'SCEZ', firNombre:'Santiago', region:'suramerica'},
+    {icao:'SEQM', ciudad:'Quito', nombre:'Aeropuerto Internacional Mariscal Sucre', pais:'Ecuador', fir:'SEFG', firNombre:'Guayaquil', region:'suramerica'},
+    {icao:'SGAS', ciudad:'Asunción', nombre:'Aeropuerto Internacional Silvio Pettirossi', pais:'Paraguay', fir:'SGFA', firNombre:'Asunción', region:'suramerica'},
+    {icao:'SLLP', ciudad:'La Paz', nombre:'Aeropuerto Internacional El Alto', pais:'Bolivia', fir:'SLLF', firNombre:'La Paz', region:'suramerica'},
+    {icao:'SLSU', ciudad:'Sucre', nombre:'Aeropuerto Internacional Juana Azurduy de Padilla', pais:'Bolivia', fir:'SLLF', firNombre:'La Paz', region:'suramerica'},
+    {icao:'SMJP', ciudad:'Paramaribo', nombre:'Aeropuerto Internacional Johan Adolf Pengel (Zanderij)', pais:'Suriname', fir:'SMPM', firNombre:'Paramaribo', region:'suramerica'},
+    {icao:'SMZO', ciudad:'Paramaribo', nombre:'Aeropuerto Zorg en Hoop', pais:'Suriname', fir:'SMPM', firNombre:'Paramaribo', region:'suramerica'},
+    {icao:'SPJC', ciudad:'Lima', nombre:'Aeropuerto Internacional Jorge Chávez', pais:'Perú', fir:'SPIM', firNombre:'Lima', region:'suramerica'},
+    {icao:'SUMU', ciudad:'Montevideo', nombre:'Aeropuerto Internacional de Carrasco', pais:'Uruguay', fir:'SUEO', firNombre:'Montevideo', region:'suramerica'},
+    {icao:'SVMI', ciudad:'Caracas', nombre:'Aeropuerto Internacional de Maiquetía Simón Bolívar', pais:'Venezuela', fir:'SVZM', firNombre:'Maiquetía', region:'suramerica'},
+    {icao:'SYCJ', ciudad:'Georgetown', nombre:'Aeropuerto Internacional Cheddi Jagan', pais:'Guyana', fir:'SYGC', firNombre:'Georgetown', region:'suramerica'},
+    {icao:'SYGO', ciudad:'Georgetown', nombre:'Aeropuerto Internacional Eugene F. Correia (Ogle)', pais:'Guyana', fir:'SYGC', firNombre:'Georgetown', region:'suramerica'},
+
+    // ---- Europa región L (prefijos LA-LZ) ----
+    {icao:'LATI', ciudad:'Tirana', nombre:'Aeropuerto Internacional de Tirana Nënë Tereza (Madre Teresa)', pais:'Albania', fir:'LAAA', firNombre:'Tirana', region:'europa-l'},
+    {icao:'LBSF', ciudad:'Sofía', nombre:'Aeropuerto de Sofía Vasil Levski', pais:'Bulgaria', fir:'LBSR', firNombre:'Sofia', region:'europa-l'},
+    {icao:'LCLK', ciudad:'Larnaca', nombre:'Aeropuerto Internacional de Larnaca Glafcos Clerides', pais:'Chipre', fir:'LCCC', firNombre:'Nicosia', region:'europa-l'},
+    {icao:'LDZA', ciudad:'Zagreb', nombre:'Aeropuerto Internacional Franjo Tuđman', pais:'Croacia', fir:'LDZO', firNombre:'Zagreb', region:'europa-l'},
+    {icao:'LEBL', ciudad:'Barcelona', nombre:'Aeropuerto Josep Tarradellas Barcelona-El Prat', pais:'España', fir:'LECB', firNombre:'Barcelona', region:'europa-l'},
+    {icao:'LEVC', ciudad:'Valencia', nombre:'Aeropuerto de Valencia (Manises)', pais:'España', fir:'LECB', firNombre:'Barcelona', region:'europa-l'},
+    {icao:'LEMD', ciudad:'Madrid', nombre:'Aeropuerto Adolfo Suárez Madrid-Barajas', pais:'España', fir:'LECM', firNombre:'Madrid', region:'europa-l'},
+    {icao:'LFPG', ciudad:'París', nombre:'Aéroport Paris-Charles de Gaulle (Roissy)', pais:'Francia', fir:'LFFF', firNombre:'Paris', region:'europa-l'},
+    {icao:'LNMC', ciudad:'Mónaco', nombre:'Héliport de Monaco (Fontvieille)', pais:'Mónaco', fir:'LFMM', firNombre:'Marseille', region:'europa-l'},
+    {icao:'LGAV', ciudad:'Atenas', nombre:'Aeropuerto Internacional de Atenas Eleftherios Venizelos', pais:'Grecia', fir:'LGGG', firNombre:'Athinai', region:'europa-l'},
+    {icao:'LHBP', ciudad:'Budapest', nombre:'Aeropuerto Internacional de Budapest Ferenc Liszt', pais:'Hungría', fir:'LHCC', firNombre:'Budapest', region:'europa-l'},
+    {icao:'LIMC', ciudad:'Milán', nombre:'Aeroporto di Milano Malpensa', pais:'Italia', fir:'LIMM', firNombre:'Milano', region:'europa-l'},
+    {icao:'LIRF', ciudad:'Roma', nombre:'Aeroporto di Roma-Fiumicino Leonardo da Vinci', pais:'Italia', fir:'LIRR', firNombre:'Roma', region:'europa-l'},
+    {icao:'LJLJ', ciudad:'Liubliana', nombre:'Aeropuerto Jože Pučnik de Liubliana (Brnik)', pais:'Eslovenia', fir:'LJLA', firNombre:'Ljubljana', region:'europa-l'},
+    {icao:'LKPR', ciudad:'Praga', nombre:'Aeropuerto Václav Havel de Praga', pais:'Rep. Checa', fir:'LKAA', firNombre:'Praha', region:'europa-l'},
+    {icao:'LLBG', ciudad:'Tel Aviv', nombre:'Aeropuerto Internacional Ben Gurión', pais:'Israel', fir:'LLLL', firNombre:'Tel Aviv', region:'europa-l'},
+    {icao:'LMML', ciudad:'Luqa', nombre:'Aeropuerto Internacional de Malta', pais:'Malta', fir:'LMMM', firNombre:'Malta', region:'europa-l'},
+    {icao:'LOWW', ciudad:'Viena', nombre:'Flughafen Wien-Schwechat', pais:'Austria', fir:'LOVV', firNombre:'Wien', region:'europa-l'},
+    {icao:'LPPT', ciudad:'Lisboa', nombre:'Aeropuerto Humberto Delgado', pais:'Portugal', fir:'LPPC', firNombre:'Lisboa', region:'europa-l'},
+    {icao:'LQSA', ciudad:'Sarajevo', nombre:'Aeropuerto Internacional de Sarajevo (Butmir)', pais:'Bosnia y Herzegovina', fir:'LQSB', firNombre:'Sarajevo', region:'europa-l'},
+    {icao:'LRBS', ciudad:'Bucarest', nombre:'Aeropuerto Internacional Aurel Vlaicu (Băneasa)', pais:'Rumanía', fir:'LRBB', firNombre:'București', region:'europa-l'},
+    {icao:'LSZH', ciudad:'Zúrich', nombre:'Flughafen Zürich (Kloten)', pais:'Suiza', fir:'LSAS', firNombre:'Switzerland', region:'europa-l'},
+    {icao:'LTFM', ciudad:'Estambul', nombre:'Aeropuerto de Estambul (İstanbul Havalimanı)', pais:'Turquía', fir:'LTBB', firNombre:'İstanbul', region:'europa-l'},
+    {icao:'LUKK', ciudad:'Chișinău', nombre:'Aeropuerto Internacional Eugen Doga', pais:'Moldavia', fir:'LUUU', firNombre:'Chișinău', region:'europa-l'},
+    {icao:'LYBE', ciudad:'Belgrado', nombre:'Aeropuerto Nikola Tesla', pais:'Serbia / Montenegro', fir:'LYBA', firNombre:'Beograd', region:'europa-l'},
+    {icao:'LZIB', ciudad:'Bratislava', nombre:'Aeropuerto M. R. Štefánik', pais:'Eslovaquia', fir:'LZBB', firNombre:'Bratislava', region:'europa-l'},
+
+    // ---- Europa del Norte (prefijos BI, EE-EY) ----
+    {icao:'BIKF', ciudad:'Keflavík', nombre:'Aeropuerto Internacional de Keflavík', pais:'Islandia', fir:'BIRD', firNombre:'Reykjavik', region:'europa-norte'},
+    {icao:'BIRK', ciudad:'Reikiavik', nombre:'Aeropuerto de Reikiavik', pais:'Islandia', fir:'BIRD', firNombre:'Reykjavik', region:'europa-norte'},
+    {icao:'EETN', ciudad:'Tallin', nombre:'Aeropuerto de Tallin Lennart Meri', pais:'Estonia', fir:'EETT', firNombre:'Tallinn', region:'europa-norte'},
+    {icao:'EFHK', ciudad:'Helsinki', nombre:'Aeropuerto de Helsinki-Vantaa', pais:'Finlandia', fir:'EFIN', firNombre:'Finland', region:'europa-norte'},
+    {icao:'EKCH', ciudad:'Copenhague', nombre:'Aeropuerto de Copenhague-Kastrup', pais:'Dinamarca', fir:'EKDK', firNombre:'København', region:'europa-norte'},
+    {icao:'ENGM', ciudad:'Oslo', nombre:'Aeropuerto de Oslo-Gardermoen', pais:'Noruega', fir:'ENOR', firNombre:'Norway', region:'europa-norte'},
+    {icao:'ESSA', ciudad:'Estocolmo', nombre:'Aeropuerto de Estocolmo-Arlanda', pais:'Suecia', fir:'ESAA', firNombre:'Sweden', region:'europa-norte'},
+    {icao:'EVRA', ciudad:'Riga', nombre:'Aeropuerto Internacional de Riga', pais:'Letonia', fir:'EVRR', firNombre:'Riga', region:'europa-norte'},
+    {icao:'EYVI', ciudad:'Vilna', nombre:'Aeropuerto de Vilna', pais:'Lituania', fir:'EYVL', firNombre:'Vilnius', region:'europa-norte'}
+  ];
+
+  // Listado único con el que trabaja todo el quiz. A los colombianos se les
+  // añade país y región aquí en vez de repetirlos 73 veces en los datos.
+  const AERODROMOS = AERODROMOS_CO
+    .map(a => Object.assign({}, a, { pais: 'Colombia', region: 'colombia' }))
+    .concat(AERODROMOS_INTL);
+
   const CAT_LABEL = { controlado:'Controlado', no_controlado:'No controlado', estado:'Aviación de Estado' };
 
+  // ---------- Regiones seleccionables ----------
+  // `corto` es la etiqueta que cabe en la píldora de una tarjeta o de una
+  // fila de tabla; `label` es la de los controles y los textos de ayuda.
+  const REGIONES = [
+    { id:'colombia',     label:'Colombia',        corto:'Colombia' },
+    { id:'canada',       label:'Canadá',          corto:'Canadá' },
+    { id:'eeuu',         label:'Estados Unidos',  corto:'EE. UU.' },
+    { id:'mexico-caribe',label:'México, Centroamérica y Caribe', corto:'México y Caribe' },
+    { id:'suramerica',   label:'Suramérica',      corto:'Suramérica' },
+    { id:'europa-l',     label:'Europa región L', corto:'Europa L' },
+    { id:'europa-norte', label:'Europa del Norte',corto:'Europa N' }
+  ];
+  const REGION_LABEL = {};
+  const REGION_CORTO = {};
+  REGIONES.forEach(r => { REGION_LABEL[r.id] = r.label; REGION_CORTO[r.id] = r.corto; });
+
+  // FIR distintas, para armar las opciones de las preguntas de FIR.
+  const FIRS = [];
+  AERODROMOS_INTL.forEach(a => {
+    if (!FIRS.some(f => f.fir === a.fir)) FIRS.push({ fir:a.fir, firNombre:a.firNombre, region:a.region });
+  });
+
+  // Los tres parciales. Cada uno tiene un temario FIJO e independiente de las
+  // regiones marcadas arriba: un parcial debe ser comparable entre intentos.
+  // `modulo` es el id de progreso: los tres guardan en 'quiz-designadores'
+  // (lista blanca de modulos.js) y se distinguen por `nombreIntento`.
+  const PARCIALES = {
+    'examen-nacional': {
+      etiqueta:'Parcial nacional',
+      nombreIntento:'Designadores de Aeródromos',
+      descripcion:'20 preguntas sobre los 73 aeródromos de Colombia. No usa las regiones ni la categoría marcadas arriba.',
+      filtro: a => a.region === 'colombia'
+    },
+    'examen-internacional': {
+      etiqueta:'Parcial internacional',
+      nombreIntento:'Designadores de Aeródromos — Internacional',
+      descripcion:'20 preguntas al azar sobre los 123 aeródromos internacionales, de cualquier región.',
+      filtro: a => a.region !== 'colombia'
+    },
+    'examen-mixto': {
+      etiqueta:'Parcial mixto',
+      nombreIntento:'Designadores de Aeródromos — Mixto',
+      descripcion:'20 preguntas totalmente al azar entre los 196 aeródromos, nacionales e internacionales.',
+      filtro: () => true
+    }
+  };
+
   // ---------- Estado ----------
+  // Arranca solo con Colombia marcada: quien ya usaba el quiz lo encuentra
+  // igual que antes y suma regiones cuando quiera.
+  const regionesActivas = new Set(['colombia']);
   let catActual = 'todos';
   let tipoActual = 'icao';
   let modoActual = 'practica';
-  let preguntaActual = null;   // {aerodromo, tipoEfectivo, opciones?}
+  let preguntaActual = null;   // {aerodromo, tipoEfectivo, respuesta}
   let respondida = false;
 
   // Estadísticas de práctica
@@ -643,6 +882,12 @@ setInterval(updateZuluMini, 1000);
   const RETRASO_RESULTADO_FINAL_MS = 1200; // pausa antes de mostrar el resumen tras la pregunta 20
 
   // ---------- Referencias DOM ----------
+  const regionRow = document.getElementById('regionRow');
+  const regionHint = document.getElementById('regionHint');
+  const modeHint = document.getElementById('modeHint');
+  const questionLabel = document.getElementById('questionLabel');
+  const mcHint = document.getElementById('mcHint');
+  const examSummaryTitle = document.getElementById('examSummaryTitle');
   const catRow = document.getElementById('catRow');
   const typeRow = document.getElementById('typeRow');
   const modeRow = document.getElementById('modeRow');
@@ -675,10 +920,31 @@ setInterval(updateZuluMini, 1000);
   function choice(arr){ return arr[randInt(0, arr.length-1)]; }
   function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-  function poolFiltrado(){
-    if(catActual === 'todos') return AERODROMOS;
-    return AERODROMOS.filter(a => a.cat === catActual);
+  function contarRegion(id){ return AERODROMOS.filter(a => a.region === id).length; }
+
+  // Temario activo ANTES de aplicar el tipo de pregunta.
+  //   · En un parcial manda el temario fijo del parcial (ver PARCIALES).
+  //   · En práctica manda lo que el estudiante marcó: las regiones y, solo
+  //     sobre los colombianos, la categoría AD 2 (los internacionales no
+  //     tienen categoría, así que la categoría nunca los descarta).
+  function poolBase(){
+    if(examEnCurso) return AERODROMOS.filter(PARCIALES[modoActual].filtro);
+    const pool = AERODROMOS.filter(a => regionesActivas.has(a.region));
+    if(catActual === 'todos') return pool;
+    return pool.filter(a => a.region !== 'colombia' || a.cat === catActual);
   }
+
+  // Solo los internacionales traen FIR, así que preguntar la FIR restringe el
+  // temario a ellos. Si en el temario no hay ninguno con FIR se devuelve el
+  // temario tal cual: el tipo efectivo de cada pregunta ya cae a 'nombre'.
+  function poolFiltrado(){
+    const pool = poolBase();
+    if(tipoActual !== 'fir') return pool;
+    const conFir = pool.filter(a => a.fir);
+    return conFir.length ? conFir : pool;
+  }
+
+  function hayFirEnTemario(){ return poolBase().some(a => a.fir); }
 
   // "Bolsa" de aeródromos: se baraja el pool completo y se van sacando uno a
   // uno sin reponerlos, así ninguno se repite hasta que la bolsa se vacía;
@@ -699,20 +965,41 @@ setInterval(updateZuluMini, 1000);
     return aerodromo;
   }
 
+  // ---------- Ámbito de un aeródromo ----------
+  // Categoría AD 2 si es colombiano, región si es internacional. Ocupa el mismo
+  // hueco en el listado, en la pregunta y en el resumen del parcial.
+  function ambitoTexto(a){
+    return a.region === 'colombia' ? CAT_LABEL[a.cat] : REGION_CORTO[a.region];
+  }
+  function ambitoTag(a){
+    return a.region === 'colombia'
+      ? `<span class="cat-tag ${a.cat}">${CAT_LABEL[a.cat]}</span>`
+      : `<span class="cat-tag region">${REGION_CORTO[a.region]}</span>`;
+  }
+  const ORDEN_REGION = {};
+  REGIONES.forEach((r,i) => { ORDEN_REGION[r.id] = i; });
+
   // ---------- Listado de ayuda ----------
+  // Siempre lista los 171: es la hoja de referencia del quiz, no un reflejo de
+  // las regiones marcadas. La búsqueda también entra por país y por FIR.
   function renderHelpTable(filtro){
     const f = (filtro||'').trim().toLowerCase();
     const filas = AERODROMOS.filter(a => {
       if(!f) return true;
-      return a.icao.toLowerCase().includes(f) || a.ciudad.toLowerCase().includes(f) || a.nombre.toLowerCase().includes(f);
-    }).sort((a,b) => a.ciudad.localeCompare(b.ciudad, 'es'));
+      return [a.icao, a.ciudad, a.nombre, a.pais, a.fir, a.firNombre]
+        .some(v => v && v.toLowerCase().includes(f));
+    }).sort((a,b) =>
+      (ORDEN_REGION[a.region] - ORDEN_REGION[b.region]) ||
+      a.ciudad.localeCompare(b.ciudad, 'es')
+    );
 
     helpTableBody.innerHTML = filas.map(a => `
       <tr>
         <td class="mono">${a.icao}</td>
-        <td>${a.ciudad}</td>
+        <td>${a.ciudad}${a.region === 'colombia' ? '' : `<div class="pais">${a.pais}</div>`}</td>
         <td>${a.nombre}</td>
-        <td><span class="cat-tag ${a.cat}">${CAT_LABEL[a.cat]}</span></td>
+        <td class="fir">${a.fir ? a.fir + ' · ' + a.firNombre : '—'}</td>
+        <td>${ambitoTag(a)}</td>
       </tr>
     `).join('');
     helpCount.textContent = `${filas.length} de ${AERODROMOS.length} aeródromos`;
@@ -721,20 +1008,96 @@ setInterval(updateZuluMini, 1000);
   helpSearch.addEventListener('input', () => renderHelpTable(helpSearch.value));
 
   // ---------- Control bar ----------
+  // Pills de región: selección MÚLTIPLE (el estudiante puede estudiar Colombia
+  // y Europa a la vez, o solo Canadá). Nunca se permite quedarse sin ninguna
+  // marcada, porque el temario quedaría vacío.
+  regionRow.innerHTML = REGIONES.map(r => `
+    <button class="pill-btn multi${regionesActivas.has(r.id) ? ' active' : ''}" data-region="${r.id}"
+            type="button" aria-pressed="${regionesActivas.has(r.id)}">
+      <span class="box" aria-hidden="true"></span>${r.label} (${contarRegion(r.id)})
+    </button>
+  `).join('') + `
+    <button class="pill-btn" id="btnTodasRegiones" type="button">Marcar todas</button>
+    <button class="pill-btn" id="btnSoloColombia" type="button">Solo Colombia</button>
+  `;
+
+  function sincronizarRegiones(){
+    regionRow.querySelectorAll('.pill-btn.multi').forEach(b => {
+      const on = regionesActivas.has(b.dataset.region);
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    // Durante un parcial el temario es fijo (ver PARCIALES): sus controles se
+    // bloquean para no dar a entender que cambian las preguntas que faltan.
+    regionRow.querySelectorAll('.pill-btn').forEach(b => { b.disabled = examEnCurso; });
+    catRow.querySelectorAll('.pill-btn').forEach(b => { b.disabled = examEnCurso || !regionesActivas.has('colombia'); });
+
+    // "Identificar FIR" solo tiene sentido si el temario trae aeródromos con
+    // FIR, es decir internacionales. Con Colombia sola se deshabilita.
+    const btnFir = typeRow.querySelector('[data-type="fir"]');
+    const hayFir = hayFirEnTemario();
+    btnFir.disabled = !hayFir;
+    btnFir.title = hayFir ? '' : 'Requiere al menos una región internacional: el listado colombiano no trae FIR por aeródromo.';
+    if(!hayFir && tipoActual === 'fir'){
+      tipoActual = 'icao';
+      typeRow.querySelectorAll('.pill-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'icao'));
+    }
+
+    if(examEnCurso){
+      regionHint.innerHTML = `Temario del parcial: <b>${poolBase().length} aeródromos</b> · ${PARCIALES[modoActual].etiqueta}. Las regiones y la categoría se reactivan al volver a Práctica.`;
+      return;
+    }
+    const seleccion = REGIONES.filter(r => regionesActivas.has(r.id)).map(r => r.label);
+    regionHint.innerHTML = `Temario activo: <b>${poolBase().length} aeródromos</b> · ${seleccion.join(' + ')}.` +
+      (regionesActivas.has('colombia') && regionesActivas.size > 1 && catActual !== 'todos'
+        ? ' La categoría solo filtra los colombianos; los internacionales no tienen categoría AD 2.'
+        : '');
+  }
+
+  function cambiarTemario(){
+    bolsaAerodromos = [];
+    sincronizarRegiones();
+    if(!examEnCurso) nuevaPregunta();
+  }
+
+  regionRow.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn'); if(!btn || btn.disabled) return;
+    if(btn.id === 'btnTodasRegiones'){
+      REGIONES.forEach(r => regionesActivas.add(r.id));
+      cambiarTemario();
+      return;
+    }
+    if(btn.id === 'btnSoloColombia'){
+      regionesActivas.clear();
+      regionesActivas.add('colombia');
+      cambiarTemario();
+      return;
+    }
+    const id = btn.dataset.region; if(!id) return;
+    if(regionesActivas.has(id)){
+      if(regionesActivas.size === 1) return;   // debe quedar al menos una
+      regionesActivas.delete(id);
+    } else regionesActivas.add(id);
+    cambiarTemario();
+  });
+
   catRow.addEventListener('click', e => {
-    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    const btn = e.target.closest('.pill-btn'); if(!btn || btn.disabled) return;
     catRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     catActual = btn.dataset.cat;
-    bolsaAerodromos = [];
-    if(!examEnCurso) nuevaPregunta();
+    cambiarTemario();
   });
 
   typeRow.addEventListener('click', e => {
-    const btn = e.target.closest('.pill-btn'); if(!btn) return;
+    const btn = e.target.closest('.pill-btn'); if(!btn || btn.disabled) return;
     typeRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     tipoActual = btn.dataset.type;
+    // El tipo puede recortar el temario (FIR solo aplica a los internacionales),
+    // así que la bolsa se vuelve a llenar.
+    bolsaAerodromos = [];
     if(!examEnCurso) nuevaPregunta();
   });
 
@@ -743,8 +1106,17 @@ setInterval(updateZuluMini, 1000);
     modeRow.querySelectorAll('.pill-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     modoActual = btn.dataset.mode;
-    if(modoActual === 'examen') iniciarExamen();
-    else { examEnCurso = false; examProgress.style.display='none'; examSummary.style.display='none'; btnAyuda.disabled=false; btnNuevo.textContent='Nueva pregunta'; nuevaPregunta(); }
+    if(PARCIALES[modoActual]) iniciarExamen();
+    else {
+      examEnCurso = false;
+      examProgress.style.display='none';
+      examSummary.style.display='none';
+      btnAyuda.disabled=false;
+      btnNuevo.textContent='Nueva pregunta';
+      modeHint.textContent = 'La práctica usa las regiones, la categoría y el tipo de pregunta que elijas. Ningún aeródromo se repite hasta agotar el temario.';
+      sincronizarRegiones();
+      nuevaPregunta();
+    }
   });
 
   btnAyuda.addEventListener('click', () => {
@@ -758,8 +1130,12 @@ setInterval(updateZuluMini, 1000);
     if(examEnCurso){
       if(!respondida){ examWarning.style.display = 'block'; return; }
       avanzarExamen();
+      return;
     }
-    else nuevaPregunta();
+    // Con el resumen a la vista el botón dice "Intentar nuevamente": debe
+    // arrancar otro parcial del mismo tipo, no una pregunta suelta de práctica.
+    if(PARCIALES[modoActual]){ iniciarExamen(); return; }
+    nuevaPregunta();
   }
 
   btnNuevo.addEventListener('click', avanzarOAvisar);
@@ -799,88 +1175,160 @@ setInterval(updateZuluMini, 1000);
   btnReiniciarExamen.addEventListener('click', () => {
     const mensaje = examResultados.length > 0
       ? `Llevas ${examResultados.length} de ${EXAM_TOTAL} respondidas. ¿Reiniciar de todas formas? Perderás tu avance actual.`
-      : '¿Reiniciar el examen? Perderás tu avance actual.';
+      : '¿Reiniciar el parcial? Perderás tu avance actual.';
     if (!confirm(mensaje)) return;
     iniciarExamen();
   });
 
   // ---------- Construcción de pregunta ----------
-  function elegirTipoEfectivo(){
-    if(tipoActual === 'mixto') return choice(['icao','nombre']);
-    return tipoActual;
+  // El tipo se resuelve CONTRA EL AERÓDROMO sorteado: 'fir' solo es posible si
+  // ese aeródromo trae FIR (los colombianos no), y en 'mixto' la FIR entra al
+  // sorteo únicamente cuando existe. Así un parcial nacional con "Identificar
+  // FIR" marcado pregunta el nombre en vez de quedarse sin pregunta.
+  function elegirTipoEfectivo(aerodromo){
+    let tipo = tipoActual;
+    if(tipo === 'mixto') tipo = choice(aerodromo.fir ? ['icao','nombre','fir'] : ['icao','nombre']);
+    if(tipo === 'fir' && !aerodromo.fir) tipo = 'nombre';
+    return tipo;
   }
 
   function nuevaPregunta(){
     const pool = poolFiltrado();
     const aerodromo = sacarAerodromo(pool);
-    const tipoEfectivo = elegirTipoEfectivo();
-    preguntaActual = { aerodromo, tipoEfectivo };
+    const tipoEfectivo = elegirTipoEfectivo(aerodromo);
+    preguntaActual = {
+      aerodromo,
+      tipoEfectivo,
+      respuesta: tipoEfectivo === 'fir' ? aerodromo.fir : aerodromo.icao
+    };
     respondida = false;
 
     limpiarFeedback();
     renderPregunta();
   }
 
+  // ---------- Tarjetas del enunciado ----------
+  function tileCiudad(a){
+    return `<div class="scenario-tile">
+          <div class="tlabel">Ciudad</div>
+          <div class="tval">${a.ciudad}</div>
+        </div>`;
+  }
+  function tileAmbito(a){
+    return a.region === 'colombia'
+      ? `<div class="scenario-tile">
+          <div class="tlabel">Categoría</div>
+          <div class="tval">${ambitoTag(a)}</div>
+        </div>`
+      : `<div class="scenario-tile">
+          <div class="tlabel">País</div>
+          <div class="tval">${a.pais} ${ambitoTag(a)}</div>
+        </div>`;
+  }
+
+  // ---------- Opciones de la pregunta de opción múltiple ----------
+  // Los distractores se buscan primero entre los aeródromos más parecidos
+  // (misma región y, en Colombia, misma categoría) y se va ampliando si no hay
+  // suficientes. Ningún nombre puede aparecer dos veces en la lista, ni
+  // repitiendo el correcto ni entre distractores: hay nombres compartidos
+  // —'José Celestino Mutis' está en Bahía Solano y en Mariquita— y verlos
+  // duplicados hace la pregunta imposible o parece un error de la página.
+  function opcionesNombre(a){
+    const elegible = o => o.icao !== a.icao && o.nombre !== a.nombre;
+    const mismaCat = o => a.region !== 'colombia' || o.cat === a.cat;
+    const tandas = [
+      AERODROMOS.filter(o => elegible(o) && o.region === a.region && mismaCat(o)),
+      AERODROMOS.filter(o => elegible(o) && o.region === a.region),
+      AERODROMOS.filter(elegible)
+    ];
+    const usados = new Set([a.nombre]);
+    const distractores = [];
+    for(const tanda of tandas){
+      for(const o of shuffle(tanda)){
+        if(distractores.length === 3) break;
+        if(usados.has(o.nombre)) continue;
+        usados.add(o.nombre);
+        distractores.push(o);
+      }
+      if(distractores.length === 3) break;
+    }
+    return shuffle([a, ...distractores])
+      .map(o => ({ valor:o.icao, texto:o.nombre }));
+  }
+
+  function opcionesFir(a){
+    let cand = FIRS.filter(f => f.fir !== a.fir && f.region === a.region);
+    if(cand.length < 3) cand = FIRS.filter(f => f.fir !== a.fir);
+    const correcta = { fir:a.fir, firNombre:a.firNombre };
+    return shuffle([correcta, ...shuffle(cand).slice(0,3)])
+      .map(f => ({ valor:f.fir, texto:`<span class="mono">${f.fir}</span> — ${f.firNombre}` }));
+  }
+
   function renderPregunta(){
     const { aerodromo, tipoEfectivo } = preguntaActual;
 
     if(tipoEfectivo === 'icao'){
-      // Se da ciudad + nombre del aeródromo, hay que escribir el ICAO
-      scenarioGrid.innerHTML = `
-        <div class="scenario-tile">
-          <div class="tlabel">Ciudad</div>
-          <div class="tval">${aerodromo.ciudad}</div>
-        </div>
-        <div class="scenario-tile">
+      // Se da ciudad + nombre del aeródromo, hay que escribir el designador
+      questionLabel.textContent = 'Identifica el aeródromo';
+      scenarioGrid.innerHTML =
+        tileCiudad(aerodromo) +
+        `<div class="scenario-tile">
           <div class="tlabel">Nombre del aeródromo</div>
           <div class="tval">${aerodromo.nombre}</div>
-        </div>
-        <div class="scenario-tile">
-          <div class="tlabel">Categoría</div>
-          <div class="tval"><span class="cat-tag ${aerodromo.cat}">${CAT_LABEL[aerodromo.cat]}</span></div>
-        </div>
-      `;
+        </div>` +
+        tileAmbito(aerodromo);
       icaoInputArea.style.display = 'block';
       mcInputArea.style.display = 'none';
       icaoInput.value = '';
       icaoInput.disabled = false;
       btnComprobar.disabled = false;
+      // Con temario solo colombiano se mantiene la pista 'SKXX'; en cuanto entra
+      // una región internacional el prefijo dejaría de ser una pista válida.
+      icaoInput.placeholder = poolBase().every(a => a.region === 'colombia') ? 'SKXX' : 'XXXX';
       icaoInput.focus();
-    } else {
-      // Se da el ICAO, hay que identificar el nombre correcto (con ayuda: opción múltiple)
-      scenarioGrid.innerHTML = `
-        <div class="scenario-tile">
+      return;
+    }
+
+    // Tipos de opción múltiple: se da el designador y hay que reconocer el
+    // nombre del aeródromo, o la FIR que lo contiene.
+    icaoInputArea.style.display = 'none';
+    mcInputArea.style.display = 'block';
+
+    let opciones;
+    if(tipoEfectivo === 'fir'){
+      questionLabel.textContent = 'Identifica la FIR';
+      mcHint.textContent = 'Selecciona la FIR que contiene este aeródromo.';
+      scenarioGrid.innerHTML =
+        `<div class="scenario-tile">
           <div class="tlabel">Designador OACI</div>
           <div class="tval mono">${aerodromo.icao}</div>
         </div>
         <div class="scenario-tile">
-          <div class="tlabel">Ciudad</div>
-          <div class="tval">${aerodromo.ciudad}</div>
-        </div>
-        <div class="scenario-tile">
-          <div class="tlabel">Categoría</div>
-          <div class="tval"><span class="cat-tag ${aerodromo.cat}">${CAT_LABEL[aerodromo.cat]}</span></div>
-        </div>
-      `;
-      icaoInputArea.style.display = 'none';
-      mcInputArea.style.display = 'block';
+          <div class="tlabel">Aeródromo</div>
+          <div class="tval">${aerodromo.nombre}</div>
+        </div>` +
+        tileAmbito(aerodromo);
+      opciones = opcionesFir(aerodromo);
+    } else {
+      questionLabel.textContent = 'Identifica el aeródromo';
+      mcHint.textContent = 'Selecciona el nombre correcto del aeródromo.';
+      scenarioGrid.innerHTML =
+        `<div class="scenario-tile">
+          <div class="tlabel">Designador OACI</div>
+          <div class="tval mono">${aerodromo.icao}</div>
+        </div>` +
+        tileCiudad(aerodromo) +
+        tileAmbito(aerodromo);
+      opciones = opcionesNombre(aerodromo);
+    }
 
-      // Generar 3 distractores (preferentemente de la misma categoría)
-      let candidatos = AERODROMOS.filter(a => a.icao !== aerodromo.icao && a.cat === aerodromo.cat);
-      if(candidatos.length < 3){
-        candidatos = AERODROMOS.filter(a => a.icao !== aerodromo.icao);
-      }
-      const distractores = shuffle(candidatos).slice(0,3);
-      const opciones = shuffle([aerodromo, ...distractores]);
-
-      mcGrid.innerHTML = opciones.map(op => `
-        <button class="opt-btn" type="button" data-icao="${op.icao}">${op.nombre}</button>
+    mcGrid.innerHTML = opciones.map(op => `
+        <button class="opt-btn" type="button" data-valor="${op.valor}">${op.texto}</button>
       `).join('');
 
-      mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
-        btn.addEventListener('click', () => comprobarNombre(btn));
-      });
-    }
+    mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => comprobarOpcion(btn));
+    });
   }
 
   function limpiarFeedback(){
@@ -903,18 +1351,19 @@ setInterval(updateZuluMini, 1000);
     pintarResultado(ok, aerodromo);
   }
 
-  // ---------- Evaluación: tipo Nombre (opción múltiple) ----------
-  function comprobarNombre(btnSeleccionado){
+  // ---------- Evaluación: opción múltiple (nombre o FIR) ----------
+  // La respuesta correcta viaja en preguntaActual.respuesta: el designador del
+  // aeródromo en las preguntas de nombre, el de la FIR en las de FIR.
+  function comprobarOpcion(btnSeleccionado){
     if(respondida) return;
     respondida = true;
 
-    const { aerodromo } = preguntaActual;
-    const seleccion = btnSeleccionado.dataset.icao;
-    const ok = seleccion === aerodromo.icao;
+    const { aerodromo, respuesta } = preguntaActual;
+    const ok = btnSeleccionado.dataset.valor === respuesta;
 
     mcGrid.querySelectorAll('.opt-btn').forEach(btn => {
       btn.disabled = true;
-      if(btn.dataset.icao === aerodromo.icao) btn.classList.add('correct');
+      if(btn.dataset.valor === respuesta) btn.classList.add('correct');
       else if(btn === btnSeleccionado) btn.classList.add('wrong');
     });
 
@@ -933,13 +1382,20 @@ setInterval(updateZuluMini, 1000);
     scoreBanner.style.display = 'flex';
     scoreBanner.innerHTML = `<div class="score-num">${ok?'✓':'✗'}</div><div class="score-text">${ok ? '¡Correcto!' : 'Incorrecto.'}</div>`;
 
+    // El repaso muestra la ficha completa del aeródromo, no solo lo que se
+    // preguntó: es el momento en que el estudiante fija el dato.
+    const datos = [`Designador: <span class="mono">${aerodromo.icao}</span>`];
+    if(aerodromo.region === 'colombia'){
+      datos.push(`Categoría: <b>${CAT_LABEL[aerodromo.cat]}</b>`);
+    } else {
+      datos.push(`País: <b>${aerodromo.pais}</b>`);
+      datos.push(`FIR: <span class="mono">${aerodromo.fir}</span> (${aerodromo.firNombre})`);
+      datos.push(`Región: <b>${REGION_LABEL[aerodromo.region]}</b>`);
+    }
     feedbackList.innerHTML = `
       <div class="fb-block ${ok?'ok':'bad'}">
         <div class="fb-head"><span class="fb-icon">${ok?'✅':'❌'}</span> ${aerodromo.ciudad} — ${aerodromo.nombre}</div>
-        <div class="fb-body">
-          Designador correcto: <span class="mono">${aerodromo.icao}</span> ·
-          Categoría: <b>${CAT_LABEL[aerodromo.cat]}</b>
-        </div>
+        <div class="fb-body">${datos.join(' · ')}</div>
       </div>
     `;
 
@@ -952,7 +1408,7 @@ setInterval(updateZuluMini, 1000);
     }
   }
 
-  // ---------------- Modo examen ----------------
+  // ---------------- Modo parcial ----------------
   function iniciarExamen(){
     examEnCurso = true;
     examIndice = 1;
@@ -964,6 +1420,8 @@ setInterval(updateZuluMini, 1000);
     btnAyuda.disabled = true;
     if(helpPanel.classList.contains('visible')){ helpPanel.classList.remove('visible'); btnAyuda.textContent = 'Ver listado completo'; }
     btnNuevo.textContent = 'Siguiente pregunta →';
+    modeHint.textContent = PARCIALES[modoActual].descripcion;
+    sincronizarRegiones();
     actualizarProgreso();
     nuevaPregunta();
   }
@@ -973,7 +1431,7 @@ setInterval(updateZuluMini, 1000);
   }
 
   function registrarResultadoExamen(ok, aerodromo){
-    examResultados.push({ icao: aerodromo.icao, cat: aerodromo.cat, ok });
+    examResultados.push({ icao: aerodromo.icao, ambito: ambitoTexto(aerodromo), ok });
   }
 
   function avanzarExamen(){
@@ -996,10 +1454,15 @@ setInterval(updateZuluMini, 1000);
     // eso ocurra, el estudiante alcanza a pulsar Enter o "Siguiente pregunta →". La segunda
     // llamada no hace nada (evita guardar el intento duplicado en el progreso).
     if(!examEnCurso) return;
+    const parcial = PARCIALES[modoActual];
     examEnCurso = false;
     examProgress.style.display = 'none';
     btnAyuda.disabled = false;
     btnNuevo.textContent = 'Intentar nuevamente';
+    examSummaryTitle.textContent = 'Resultado del ' + parcial.etiqueta.toLowerCase();
+    // El temario se desbloquea en cuanto termina el parcial (examEnCurso ya es
+    // false, así que sincronizarRegiones reactiva regiones y categoría).
+    sincronizarRegiones();
     const correctos = examResultados.filter(r=>r.ok).length;
     const notaFinal = Math.round((correctos/examResultados.length)*100);
     examScoreNum.textContent = notaFinal;
@@ -1013,7 +1476,11 @@ setInterval(updateZuluMini, 1000);
     [examScoreNum, examScoreBanner, examResultMsg].forEach(el => el.classList.add(`tier-${tier}`));
     if (typeof guardarIntento === 'function') {
       examResultMsg.textContent = 'Guardando tu resultado…';
-      guardarIntento('quiz-designadores', 'Designadores de Aeródromos', correctos, examResultados.length).then(res => {
+      // Los tres parciales guardan bajo el mismo id de módulo ('quiz-designadores',
+      // el que valida modulos.js) para no partir el progreso histórico; el nombre
+      // del intento es lo que distingue nacional / internacional / mixto en el
+      // historial del Panel del Estudiante.
+      guardarIntento('quiz-designadores', parcial.nombreIntento, correctos, examResultados.length).then(res => {
         examResultMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
       });
     } else {
@@ -1023,7 +1490,7 @@ setInterval(updateZuluMini, 1000);
       <tr>
         <td>${i+1}</td>
         <td class="mono">${r.icao}</td>
-        <td>${CAT_LABEL[r.cat]}</td>
+        <td>${r.ambito}</td>
         <td class="${r.ok?'result-ok':'result-bad'}">${r.ok?'Correcto':'Incorrecto'}</td>
       </tr>
     `).join('');
@@ -1037,6 +1504,8 @@ setInterval(updateZuluMini, 1000);
   }
 
   // ---------------- Inicio ----------------
+  modeHint.textContent = 'La práctica usa las regiones, la categoría y el tipo de pregunta que elijas. Ningún aeródromo se repite hasta agotar el temario.';
+  sincronizarRegiones();
   nuevaPregunta();
 
 })();
