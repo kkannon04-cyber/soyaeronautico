@@ -59,6 +59,13 @@ const MODULOS_CATALOGO = [
   { id: 'quiz-ais-com', nombre: 'Entrenamiento AIS/COM', url: 'quiz-ais-com.html',
     tipo: 'quiz', seccion: 'modulos', badge: '173 preguntas · a tu medida', temaPorDefecto: null },
 
+  // Añadido 2026-09-25: examen de 194 preguntas de Meteorología Aeronáutica,
+  // con la misma mecánica configurable del entrenamiento AIS/COM. Recorre los
+  // tres ejes del módulo MET y además METAR/TAF/SIGMET, así que no apunta a una
+  // sola página teórica: sin tema por defecto.
+  { id: 'quiz-meteorologia', nombre: 'Quiz Meteorología', url: 'quiz-meteorologia.html',
+    tipo: 'quiz', seccion: 'modulos', badge: '194 preguntas · a tu medida', temaPorDefecto: null },
+
   { id: 'simulador-plan-vuelo', nombre: 'Simulador Plan de Vuelo', url: 'simulador-plan-vuelo.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Llenado de FPL campo por campo con validación.', temaPorDefecto: 'plan-de-vuelo' },
