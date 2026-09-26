@@ -78,7 +78,31 @@ const PLANTILLAS = {
   reauthentication:      { subject: 'Código de verificación — SoyAeronáutico',   heading: 'Verifica tu identidad',       cuerpo: 'Usa el siguiente código para confirmar esta acción en tu cuenta:',                                                boton: null,                    usaLink: false },
 };
 
+// Dominios propios: si el correo debe volver a uno de ellos, el botón apunta
+// directamente a soyaeronautico.com/login.html?token_hash=…&type=… y la página
+// verifica el token con supabase.auth.verifyOtp(). Dos motivos:
+//  1. Un correo de no-reply@soyaeronautico.com cuyo enlace lleva a otro dominio
+//     (*.supabase.co) es una señal típica de phishing para Outlook y Gmail.
+//  2. Los analizadores de enlaces del correo (Outlook Safe Links, antivirus
+//     corporativos) «visitan» el enlace antes que el usuario. Con el enlace de
+//     /auth/v1/verify esa visita gastaba el token de un solo uso y el
+//     estudiante recibía «enlace caducado»; en login.html la verificación
+//     necesita JavaScript, que esos analizadores no ejecutan.
+// Para cualquier otro destino (vista previa de Netlify, localhost) se mantiene
+// el enlace de verificación de Supabase de siempre.
+const ORIGENES_PROPIOS = ['https://soyaeronautico.com', 'https://www.soyaeronautico.com'];
+
 function construirLink(tokenHash, redirectTo, verifyType) {
+  let destino = null;
+  try { destino = redirectTo ? new URL(redirectTo) : null; } catch { destino = null; }
+  if (destino && ORIGENES_PROPIOS.includes(destino.origin)) {
+    const propio = new URL('/login.html', destino.origin);
+    const next = destino.searchParams.get('next');
+    if (next) propio.searchParams.set('next', next);
+    propio.searchParams.set('token_hash', tokenHash);
+    propio.searchParams.set('type', verifyType);
+    return propio.toString();
+  }
   const url = new URL(`${SUPABASE_URL}/auth/v1/verify`);
   // El endpoint GET /auth/v1/verify espera el hash en el parámetro "token"
   // (no "token_hash" — ese nombre es solo el del campo de origen en el
@@ -111,6 +135,19 @@ function armarHtml({ heading, cuerpo, link, boton, codigo }) {
       <p style="font-size:12px;color:#5B6B7F;margin-top:32px;">Si no solicitaste esto, puedes ignorar este correo.</p>
     </div>
   `;
+}
+
+// Versión en texto plano del mismo correo. Un correo solo-HTML puntúa peor en
+// los filtros antispam, y algunos clientes (o lectores de pantalla) la prefieren.
+function armarTexto({ heading, cuerpo, link, codigo }) {
+  return [
+    'SoyAeronáutico',
+    heading,
+    cuerpo,
+    codigo || '',
+    link ? `Abre este enlace para continuar:\n${link}` : '',
+    'Si no solicitaste esto, puedes ignorar este correo.',
+  ].filter(Boolean).join('\n\n');
 }
 
 exports.handler = async (event) => {
@@ -166,6 +203,12 @@ exports.handler = async (event) => {
           cuerpo: plantilla.cuerpo,
           link,
           boton: plantilla.boton,
+          codigo: plantilla.usaLink ? null : emailData.token,
+        }),
+        text: armarTexto({
+          heading: plantilla.heading,
+          cuerpo: plantilla.cuerpo,
+          link,
           codigo: plantilla.usaLink ? null : emailData.token,
         }),
       }),

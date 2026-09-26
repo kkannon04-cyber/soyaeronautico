@@ -1289,6 +1289,12 @@
       <div id="salidaMensajes" style="margin-top:14px;">
         <div class="instrument-label" style="margin-bottom:6px;">Tu mensaje FPL — casillas 3 a 18 (lo que realmente se transmite)</div>
         <div class="fpl-raw-box mono" id="fplUsuarioTexto">—</div>
+        <!-- Lleva este mensaje FPL al Simulador NALA, donde queda PROGRAMADO y despega por su EOBT.
+             Sólo aparece cuando hay un mensaje (ver prepararActivacionNala). -->
+        <div class="action-row" id="nalaActivarRow" style="display:none; margin-top:10px; align-items:center;">
+          <button class="btn btn-primary" id="btnActivarNala" type="button">✈ Activar en NALA</button>
+          <span class="bhint" id="nalaActivarEstado">Abre el Simulador NALA con este plan en la lista de vuelos. Si NALA no lo acepta, llega al ARCHIVE con el motivo.</span>
+        </div>
         <div class="instrument-label" style="margin:14px 0 6px;">Casilla 19 — información suplementaria (viaja en el SPL, no en el FPL)</div>
         <div class="fpl-raw-box mono" id="splUsuarioTexto">—</div>
       </div>
@@ -2627,6 +2633,39 @@ btnAyuda.addEventListener('click', () => {
   const salidaMensajes = $('salidaMensajes');
   const scoreBanner = $('scoreBanner');
   const feedbackList = $('feedbackList');
+
+  // ---------- ACTIVAR EN NALA ----------
+  // El mensaje que se muestra en «Tu mensaje FPL» (msgFPL) se encola en localStorage y se abre el
+  // Simulador NALA, que lo consume al cargar (consumirEntradasFPL) con su propio validador AFTN.
+  // Va por localStorage y no por la URL: si hay que iniciar sesión por el camino, login.html sólo
+  // devuelve a páginas exactas de su lista y un parámetro haría perder el plan. La clave es propia
+  // y no se cruza con los borradores (aisFplBorrador_*) ni con las actividades.
+  (function prepararActivacionNala(){
+    const CLAVE = 'aisNalaEntrada', MAX_EN_COLA = 10;
+    const fila = $('nalaActivarRow'), btn = $('btnActivarNala'), estado = $('nalaActivarEstado');
+    const mensaje = () => (fplUsuarioTexto.textContent || '').trim();
+    // Sólo hay algo que activar cuando el recuadro tiene un mensaje FPL; se sigue su contenido en
+    // vez de tocar cada función que lo rellena o lo limpia.
+    const actualizar = () => { fila.style.display = mensaje().startsWith('(FPL-') ? 'flex' : 'none'; };
+    new MutationObserver(actualizar).observe(fplUsuarioTexto, { childList:true, characterData:true, subtree:true });
+    actualizar();
+
+    btn.addEventListener('click', () => {
+      const msg = mensaje();
+      if(!msg.startsWith('(FPL-')) return;
+      try{
+        let cola = [];
+        try{ cola = JSON.parse(localStorage.getItem(CLAVE) || '[]'); }catch(e){ cola = []; }
+        if(!Array.isArray(cola)) cola = [];
+        cola.push({ v:1, ts: Date.now(), origen:'simulador-plan-vuelo', msg });
+        localStorage.setItem(CLAVE, JSON.stringify(cola.slice(-MAX_EN_COLA)));
+      }catch(e){
+        estado.textContent = 'No se pudo guardar el plan para NALA: el navegador bloquea el almacenamiento local (¿modo privado?).';
+        return;
+      }
+      window.location.href = 'Simulador-NALA.html';
+    });
+  })();
 
   // ---------- Cambio de modo ----------
   modeTabs.addEventListener('click', e => {
