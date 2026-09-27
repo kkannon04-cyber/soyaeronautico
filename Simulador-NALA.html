@@ -4317,6 +4317,9 @@ function resolverRuta(depCode, routeStr, destCode){
   const tokens = (routeStr || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
   let pendingAirway = null, ultimo = null;   // «ultimo»: último punto de RUTA (no el aeródromo)
   tokens.forEach((tok, idx) => {
+    // Cambio de velocidad o nivel en un punto (Doc 4444, Ap. 2, casilla 15: «PADUD/N0449F380»): se
+    // vuela por el punto; el cambio no se simula.
+    tok = tok.replace(/^([A-Z0-9]{2,11})\/(N\d{4}|K\d{4}|M\d{3})(F\d{3}|A\d{3}|S\d{4}|M\d{4})$/, '$1');
     if(tok === 'DCT'){ pendingAirway = null; return; }
     if(esAerovia(tok)){ pendingAirway = tok; return; }
     const cerca = pts.length ? pts[pts.length - 1] : null;
