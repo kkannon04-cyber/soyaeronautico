@@ -4330,6 +4330,12 @@ function resolverRuta(depCode, routeStr, destCode){
         invalidos.push(`${tok} (designador de ${idx === 0 ? 'SID' : 'STAR'}: máximo ${PROC_MAX_CARACTERES} caracteres)`);
         return;
       }
+      // Punto de enlace de la SID o de la STAR: donde termina la salida o empieza la llegada, y
+      // del que el procedimiento toma su nombre (Anexo 11, Ap. 3): «ILMI2A ILMIK», «TOSAV TOSA2A».
+      // Algunos solo figuran en la carta del AD 2, no en ENR 4.4. Pegado a su procedimiento se
+      // acepta sin coordenadas, y la trayectoria sigue directa, como con la propia SID o STAR.
+      const proc = idx === 1 ? tokens[0] : idx === tokens.length - 2 ? tokens[idx + 1] : null;
+      if(proc && !pendingAirway && /^[A-Z]{5}$/.test(tok) && esDesignadorProcedimiento(proc) && proc.startsWith(tok.slice(0, 4))) return;
       invalidos.push(tok);
       return;
     }
@@ -6793,7 +6799,10 @@ function flashAFTN(kind, html){ const el = document.getElementById('aftnFlash');
 function parseICAOText(raw){
   const errors = []; let text = raw.trim().toUpperCase();
   if(!text.startsWith('(FPL-') || !text.endsWith(')')) return {ok:false, errors:['El mensaje debe iniciar con (FPL- y terminar con )']};
-  const rawLines = text.slice(5, text.length-1).trim().split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  // Una línea que no empieza con guion continúa la casilla anterior: el texto AFTN va en líneas
+  // de 69 caracteres como máximo (Anexo 10, Vol. II, 4.4.9.1.1) y una ruta larga llega partida.
+  const rawLines = text.slice(5, text.length-1).trim().split('\n').map(l=>l.trim()).filter(l=>l.length>0)
+    .reduce((acc, l, i) => { if(i > 0 && !l.startsWith('-')) acc[acc.length - 1] += ' ' + l; else acc.push(l); return acc; }, []);
   if(rawLines.length < 5) return {ok:false, errors:['Faltan líneas obligatorias en el formato.']};
 
   const fp = { id: idSeq++, eobd: todayYYMMDD(), star:'', sid:'', rvsm:'', cssr:'', cfl:'', ecl:'', sfield:'', reg:'', sts:'', modes:'', freetext:'', status:'PROGRAMADO', departed:false };

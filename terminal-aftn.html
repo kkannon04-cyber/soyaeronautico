@@ -879,13 +879,117 @@ const TA = {};
     { dir:'SKECZQZX', nombre:'Centro de control de Barranquilla (FIR SKEC)', tipo:'acc' }
   ];
   // FIR de cada aeródromo, para dirigir el tráfico simulado al centro que
-  // corresponde y para la línea Q) de los NOTAM. Sólo los de FIR inequívoca:
-  // el interior y el sur en Bogotá (SKED), la costa Caribe y San Andrés en
-  // Barranquilla (SKEC). Los cercanos al límite entre ambas (Cúcuta, Montería,
-  // Valledupar, Yopal, Quibdó, Barrancabermeja) se dejaron fuera a propósito:
-  // no hay en el repositorio datos de los límites para verificarlos.
+  // corresponde y para la línea Q) de los NOTAM. Límites de ENR 2.1 (eAIP,
+  // AIRAC AMDT 73/26): Bogotá (SKED) y Barranquilla (SKEC) se separan por la
+  // línea 08°34'50"N 077°25'W – 07°37'50"N 074°51'48"W – 08°37'50"N 072°39'17"W.
+  // San Andrés y Providencia quedan al oeste de 077°25'W, fuera de las FIR
+  // colombianas: el TMA San Andrés lo controla Colombia, pero la FIR es la de
+  // Panamá (MPZL), y así lo declaran los planes presentados (EET/MPZL…).
   TA.FIR_DE = { SKBO:'SKED', SKCL:'SKED', SKRG:'SKED', SKBG:'SKED', SKPE:'SKED', SKLT:'SKED', SKAR:'SKED', SKMD:'SKED', SKPS:'SKED', SKNV:'SKED', SKIB:'SKED', SKVV:'SKED', SKMZ:'SKED',
-                SKBQ:'SKEC', SKCG:'SKEC', SKSM:'SKEC', SKRH:'SKEC', SKSP:'SKEC', SKPV:'SKEC' };
+                SKCC:'SKED', SKYP:'SKED', SKUI:'SKED', SKEJ:'SKED',
+                SKBQ:'SKEC', SKCG:'SKEC', SKSM:'SKEC', SKRH:'SKEC', SKMR:'SKEC', SKVP:'SKEC',
+                SKSP:'MPZL', SKPV:'MPZL' };
+  TA.NOMBRE_FIR = { SKED:'Bogotá', SKEC:'Barranquilla', MPZL:'Panamá' };
+
+  // ---------- Rutas reales ----------
+  // Casilla 15 como la presentan los explotadores en Colombia (SID, aerovías y
+  // STAR), sacada de planes de vuelo presentados en septiembre de 2026 y
+  // comprobada en el Simulador NALA contra el eAIP (puntos, aerovías y sentido
+  // de niveles publicado). Por fila: salida, destino, J (jet) o T (turbohélice),
+  // ruta, niveles presentados en esa ruta (el sentido lo fija la aerovía, no
+  // siempre la regla semicircular), velocidad (kt), EET total (min), límites de
+  // FIR que cruza con su EET (casilla 18, EET/) y alternativos más presentados.
+  // No guarda datos de ningún vuelo concreto.
+  TA.RUTAS = [
+    ['SKBO','SKRG','J','TOBK4R VASIL W36 NIRSO NIRS3C','F200 F220',368,29,'','SKBO SKCL'],
+    ['SKBO','SKCL','J','VAPO4R OREGA OREG5A','F220',387,35,'','SKBO SKRG'],
+    ['SKBO','SKBQ','J','OSUS4R GIKPU UQ120 PADUD DCT OPNIR UZ002 LOLUD LOLU1A','F360 F380 F340',446,65,'SKEC31','SKCG SKRG'],
+    ['SKBO','SKCG','J','OSUS4R GIKPU UQ120 PADUD DCT OPNIR DCT UGREB UGRE3B','F360 F340 F380',449,63,'SKEC31','SKBQ SKRG'],
+    ['SKBO','SKSM','J','OSUS4R GIKPU UQ120 DIBAM UW9 EDVAR EDVA2D','F360 F380',451,64,'SKEC31','SKRG SKBQ'],
+    ['SKBO','SKSP','J','TOBK4R VASIL UL423 PULOX DCT ARORO DCT PML UN653 SEKMA DCT TOSAV TOSA2A','F360 F340',452,104,'MPZL40','SKBQ SKCG'],
+    ['SKBO','SKSP','J','TOBK1S VASIL DCT PULOX DCT ARORO DCT PML DCT SEKMA DCT TOSAV TOSA2A','F340 F360',446,105,'MPZL43','SKCG'],
+    ['SKBO','SKBG','J','OSUS4R KOVBU A567 OPROG OPRO1B','F230',378,33,'','SKBO SKRG'],
+    ['SKBO','SKBG','T','OSUS4R KOVBU A567 OPROG OPRO1B','A170',275,40,'','SKBO'],
+    ['SKBO','SKPE','J','ISNO2S ISNOX ISNO2C','A180',368,29,'','SKRG SKCL'],
+    ['SKBO','SKPE','T','ISNO2S ISNOX ISNO1C','A160',275,35,'','SKCL'],
+    ['SKBO','SKAR','J','ISNO2S ISNOX ISNO1K','A180 A160',374,27,'','SKBO SKCL'],
+    ['SKBO','SKMD','T','VASI4U VASIL W36 NIRSO W25 RNG RNG1E','A180',275,40,'','SKRG'],
+    ['SKBO','SKNV','T','LIXA4U LIXAG LIXA2A','A180',287,40,'','SKBO SKCL SKPE'],
+    ['SKBO','SKCC','J','OSUS4R KOVBU UW1 PIE DCT ESNUT ESNU3A','F290',423,45,'','SKBO'],
+    ['SKCL','SKBO','J','TOLI1F TOLIM TOLI5E','F230 F210',389,41,'','SKRG SKCL'],
+    ['SKCL','SKBO','J','ULQ1K ULQ W1 TOLIM TOLI5E','F230 F210',378,44,'','SKCL SKRG'],
+    ['SKCL','SKBO','T','TOLI1F TOLIM TOLI5E','F190',287,45,'','SKNV'],
+    ['SKCL','SKRG','J','ULQ1K ULQ W3 ISVON ISVO4A','F210 F230',370,34,'','SKCL SKBO'],
+    ['SKCL','SKRG','J','ULQ1B ULQ W3 ISVON ISVO4A','F230',394,33,'','SKBO'],
+    ['SKCL','SKCG','J','ULQ1K ULQ DCT BUTBA DCT BUTAL DCT AKPAM AKPA2A','F380 F360',449,69,'SKEC39','SKBO SKBQ'],
+    ['SKCL','SKSM','J','ULQ1K ULQ DCT BUTBA DCT BUTAL DCT MGN DCT DARNI DARN2C','F380 F360',455,76,'SKEC39','SKBO'],
+    ['SKCL','SKSP','J','ULQ1K ULQ DCT ASIKO UW90 BUSMO UN420 MORLI DCT BIXOX BIXO2C','F380',449,101,'MPZL36','SKBQ'],
+    ['SKCL','SKMD','T','ULQ1K ULQ W3 RNG RNG1E','F190',287,50,'','SKRG'],
+    ['SKCL','SKPS','J','CLO1C CLO G675 MER DCT','F200 F220',383,33,'','SKBO SKCL'],
+    ['SKCL','SKPS','T','CLO1D ISOPA G675 SEKTA DCT','A180',287,50,'','SKCL'],
+    ['SKRG','SKBO','J','ISVA2B ISVAT ISVA5E','F190 F210 F230',366,32,'','SKRG SKCL'],
+    ['SKRG','SKCL','J','RNG2B RNG W3 ULQ ULQ4E','F220 F200',395,40,'','SKBO'],
+    ['SKRG','SKCG','J','LATI1B LATIS DCT BUTAL DCT AKPAM AKPA2A','F300 F280 F340',425,47,'SKEC17','SKBQ SKBO'],
+    ['SKRG','SKCG','J','BUTA3A BUTAL DCT AKPAM AKPA2A','F340 F320 F300',433,45,'SKEC16','SKBO'],
+    ['SKRG','SKBQ','J','BIVI1B BIVIG UW3 VOVLU DCT LOLUD LOLU1A','F320 F300 F280',426,52,'SKEC16','SKCG'],
+    ['SKRG','SKSM','J','BIVI1B BIVIG UW3 MGN DCT ISOTO DCT DARNI DARN2C','F360 F380',447,54,'SKEC16','SKBO SKRG'],
+    ['SKRG','SKSP','J','LLIX2A KOTIN UN653 SEKMA DCT TOSAV TOSA2A','F360',451,93,'MPZL28','SKBQ'],
+    ['SKRG','SKSP','J','MRN1C RNG UN653 KOTIN DCT ARORO DCT PML DCT SEKMA DCT TOSAV TOSA2A','F340 F360',444,92,'MPZL29','SKCG'],
+    ['SKRG','SKPE','J','RNG2B RNG W3 MATRO MATR2G','A180',373,27,'','SKBO'],
+    ['SKRG','SKPE','T','RNG2B RNG W3 MATRO MATR1G','A160',275,36,'','SKBO'],
+    ['SKRG','SKBG','T','DIPR1C DIPRA W26 UMKAG UMKA2C','A170',287,45,'','SKBO'],
+    ['SKRG','SKCC','J','DIPR1C DIPRA UW26 EJA DCT PIE DCT ESNUT ESNU3A','F290',406,43,'','SKBO'],
+    ['SKBQ','SKBO','J','NINL3A LOKOV UM218 EJA DCT ILSEV ILSE5E','F370 F350',447,68,'SKED28','SKRG SKCL'],
+    ['SKBQ','SKRG','J','VOVL2D VOVLU UW3 MGN UL305 UGALU DCT OBLUL OBLU1A','F330 F310',427,60,'SKED34','SKBO'],
+    ['SKBQ','SKRG','J','NINL3A UGALU DCT OBLUL OBLU1A','F350',437,58,'SKED31','SKBO SKCL'],
+    ['SKCG','SKBO','J','ILMI2A UGALU UL305 ATANA ATAN5E','F370 F350 F330',447,66,'SKED27','SKRG SKCL'],
+    ['SKCG','SKRG','J','ESKA2A AKPEK AKPE4C','F310 F290 F330',429,52,'SKED25','SKBO SKCL'],
+    ['SKCG','SKCL','J','ESKA2A AKPEK DCT RNG DCT PEI DCT ULQ ULQ4E','F370',445,74,'SKED25','SKBO'],
+    ['SKCG','SKSP','J','KOPG2A KOPGI DCT AGUJA UL667 DAGAS DCT ENVEL ENVE2A','F340 F360 F320',438,70,'MPZL22','SKCG SKBQ'],
+    ['SKCG','SKBG','J','ILMI2A ILMIK DCT LOKOV DCT IVRIK IVRI1B','F290 F310',433,49,'SKED28','SKBO SKRG'],
+    ['SKCG','SKBG','J','ILMI2A LOKOV UM218 EJA DCT UMKAG UMKA2C','F330',430,50,'SKED28','SKBO SKRG'],
+    ['SKSM','SKBO','J','SUPL2A LOKOV DCT EJA DCT ILSEV ILSE5E','F370',449,70,'SKED30','SKRG SKCL'],
+    ['SKSM','SKRG','J','SUPL2A UGALU DCT OBLUL OBLU1A','F350 F310 F370',432,58,'SKED33','SKBO SKCL'],
+    ['SKSM','SKCL','J','SUPL2A UGALU DCT OBLUL DCT PEI DCT ULQ ULQ4E','F370',445,81,'SKED33','SKBO'],
+    ['SKSP','SKBO','J','BODE2B BODED DCT VUNIB UP530 KAKOL DCT RNG UQ121 ISVAT ISVA5E','F370 F350',442,104,'SKED51','SKRG'],
+    ['SKSP','SKRG','J','BODE2B BODED DCT VUNIB UP530 KAKOL UP530 REMUK DCT OPMEL OPME4A','F390 F350',441,86,'SKED50','SKCL SKBO'],
+    ['SKSP','SKCG','J','DAGA3B DAGAS UL667 AGUJA DCT KOPGI KOPG2B','F350 F370',434,65,'SKEC40','SKBQ'],
+    ['SKSP','SKBQ','J','TIMR3B TIMRO UP671 ALPON DCT VARON VARO2C','F350',430,69,'SKEC39','SKCG'],
+    ['SKSP','SKCL','J','BIXO2B BIXOX DCT MORLI UN420 BUSMO DCT ASIKO ASIK1C','F370 F390',439,101,'SKED58','SKRG'],
+    ['SKBG','SKBO','J','UMKA1A UMKAG Z010 AKSOK G431 ILSEV ILSE5E','F220',378,42,'','SKRG SKCL'],
+    ['SKBG','SKBO','T','UMKA1A UMKAG Z010 AKSOK G431 ILSEV ILSE5E','A180',275,45,'','SKRG'],
+    ['SKBG','SKRG','T','EJA2F EJA W26 DIPRA DIPR3B','A180 A160',275,40,'','SKBO'],
+    ['SKBG','SKMD','T','EJA2F EJA W26 RNG RNG1E','A180',275,50,'','SKRG'],
+    ['SKPE','SKBO','J','TOLI2D TOLIM TOLI5E','F190 F210',382,35,'','SKRG SKCL'],
+    ['SKPE','SKBO','T','IRIG3E IRIGI W42 TOLIM TOLI5E','A170',275,40,'','SKRG'],
+    ['SKPE','SKMD','T','NEBO3B MATRO W3 RNG RNG1E','A150',275,35,'','SKRG'],
+    ['SKPE','SKCG','J','NEBO3B AKSIM DCT BUTBA DCT BUTAL DCT AKPAM AKPA2A','F360 F320',450,58,'SKEC29','SKBO SKRG'],
+    ['SKAR','SKBO','J','TOLI2B TOLIM TOLI5E','F190 F210',373,40,'','SKRG SKCL'],
+    ['SKNV','SKBO','J','NVA2A NVA W16 GIR GIR5E','F230',374,44,'','SKRG'],
+    ['SKNV','SKBO','T','NVA2C NVA W16 GIR GIR5E','A170',287,50,'','SKNV SKPE'],
+    ['SKPS','SKBO','J','TITG2A TITGU DCT GIR GIR5E','F360',448,58,'','SKRG'],
+    ['SKPS','SKCL','T','ANKA2B ANKAS ANKA3A','A170',287,50,'','SKRG'],
+    ['SKCC','SKBO','J','TORA2M TORAT DCT LLIVO DCT PIE DCT DOPLO DOPL5E','F280 F300',433,56,'','SKCL'],
+    ['SKCC','SKRG','J','TORA2J TORAT DCT EJA UW26 DIPRA DIPR3B','F300',412,43,'','SKCL']
+  ].map(([adep, ades, clase, ruta, niveles, vel, eet, lim, altn]) => {
+    const limites = lim ? lim.split(' ').map(x => ({ fir:x.slice(0, 4), min:+x.slice(4) })) : [];
+    return { adep, ades, clase, ruta, niveles:niveles.split(' '), vel, eet, limites, altn:altn.split(' '), firs:[TA.FIR_DE[adep], ...limites.map(l => l.fir)] };
+  });
+  // Flota de las rutas: equipo (casilla 10) y datos de la casilla 18 anteriores
+  // a DOF/, los más presentados por cada explotador y tipo. Números de vuelo en
+  // el rango habitual de cada uno.
+  TA.FLOTA = [
+    { op:'AVA', num:[8400, 9899], clase:'J', tipo:'A320', estela:'M', eq:'SDE1E2E3GHIRWXYZ/LB1', c18:'PBN/A1B1C1D1O1S2T1 NAV/RNP2 DAT/PDC1 SUR/260B' },
+    { op:'AVA', num:[8400, 9899], clase:'J', tipo:'A319', estela:'M', eq:'SDE1E2E3GHIRWXYZ/LB1', c18:'PBN/A1B1C1D1O1S2T1 NAV/RNP2 DAT/PDC1 SUR/260B' },
+    { op:'AVA', num:[8400, 9899], clase:'J', tipo:'A20N', estela:'M', eq:'SDE1E2E3GIJ4RWXYZ/LB1D1', c18:'PBN/A1B1C1D1L1O1S2T1 NAV/RNP2 DAT/1FANS2PDC SUR/RSP180 260B' },
+    { op:'ARE', num:[4000, 4499], clase:'J', tipo:'A320', estela:'M', eq:'SDE1E2E3FGHIRWYZ/SB1', c18:'PBN/A1B1C1D1O1S2T1 DAT/1PDC SUR/260B' },
+    { op:'RPB', num:[7200, 7699], clase:'J', tipo:'B738', estela:'M', eq:'SDE1E2E3GHRWI/HB1', c18:'PBN/B1C1D1S2O2T1 SUR/260B' },
+    { op:'JEC', num:[5100, 5899], clase:'J', tipo:'A20N', estela:'M', eq:'SDFGIRWY/EB1', c18:'PBN/A1B1C1D1O1S2T1 SUR/260B' },
+    { op:'JEC', num:[5100, 5899], clase:'J', tipo:'A320', estela:'M', eq:'SDFGIRWY/EB1', c18:'PBN/A1B1C1D1O1S2T1 SUR/260B' },
+    { op:'EFY', num:[6900, 9199], clase:'T', tipo:'AT76', estela:'M', eq:'SDFGRY/EB2', c18:'PBN/B2C2D2O2O3S1S2 SUR/260B' },
+    { op:'EFY', num:[6900, 9199], clase:'T', tipo:'AT45', estela:'M', eq:'SDFGRY/EB2', c18:'PBN/B2C2D2O2O3S1S2 SUR/260B' },
+    { op:'NSE', num:[8300, 8999], clase:'T', tipo:'AT76', estela:'M', eq:'SDGR/LB1', c18:'PBN/B2B3C2C3D2D3O2S1 SUR/260B' }
+  ];
 
   // ---------- Utilidades de texto ----------
   // Igual que aftn_norm() en Supabase: mayúsculas y todo bloque de espacios o
@@ -1041,7 +1145,7 @@ const TA = {};
         [9, /^(\d{1,2})?[A-Z][A-Z0-9]{1,3}\/[LMHJ]$/, 'tipo de aeronave / categoría de estela, p. ej. A320/M'],
         [10, /^[A-Z0-9]+\/[A-Z0-9]+$/, 'equipo COM/NAV / equipo de vigilancia'],
         [13, /^[A-Z]{4}\d{4}$/, 'aeródromo de salida y hora HHMM, p. ej. SKBO1330'],
-        [15, /^(N\d{4}|K\d{4}|M\d{3})(F\d{3}|A\d{3}|S\d{4}|M\d{4}|VFR)( \S.*)?$/, 'velocidad, nivel y ruta, p. ej. N0450F350 DCT'],
+        [15, /^(N\d{4}|K\d{4}|M\d{3})(F\d{3}|A\d{3}|S\d{4}|M\d{4}|VFR)( \S.*)?$/, 'velocidad, nivel y ruta, p. ej. N0385F220 VAPO4R OREGA OREG5A'],
         [16, /^[A-Z]{4}\d{4}( [A-Z]{4}){0,2}$/, 'destino y EET total, y hasta dos alternativos'],
         [18, /^(0|[A-Z]{3,4}\/\S.*)$/, 'otros datos (INDICADOR/dato) o 0']
       ];
@@ -1273,20 +1377,26 @@ const TA = {};
   TA.plantillas = (estacion) => {
     const loc = (estacion || 'SKBO').slice(0, 4);
     const ad = TA.AERODROMOS[loc] ? loc : 'SKBO';
-    const otro = ad === 'SKBO' ? 'SKCL' : 'SKBO';
+    const ruta = TA.RUTAS.find(r => r.adep === ad && r.clase === 'J') || TA.RUTAS[0];
+    const otro = ruta.ades;
     const dof = TA.dofHoy();
     const d = TA.diaHoy();
     const h = TA.horaUTC().slice(2);
-    const a = TA.AERODROMOS[ad];
-    const fir = TA.FIR_DE[ad] || 'SKED';
+    // El NOTAM de ejemplo, de un aeródromo de las FIR colombianas.
+    const adn = ['SKED','SKEC'].includes(TA.FIR_DE[ad]) ? ad : 'SKBO';
+    const a = TA.AERODROMOS[adn];
+    const fir = TA.FIR_DE[adn];
+    const fl = TA.FLOTA[0];
+    const hm = m => pad(Math.floor(m / 60)) + pad(m % 60);
+    const eetFir = ruta.limites.map(l => l.fir + hm(l.min)).join(' ');
     return [
-      { id:'fpl', nombre:'FPL', prio:'FF', texto:`(FPL-AVA9431-IS\n-A320/M-SDE3FGHIRWY/LB1\n-${ad}${h}\n-N0450F310 DCT\n-${otro}0045 SKRG\n-PBN/B2C2D2S1 DOF/${dof})` },
-      { id:'dep', nombre:'DEP', prio:'FF', texto:`(DEP-AVA9431/A2345-${ad}${h}-${otro}-DOF/${dof})` },
-      { id:'arr', nombre:'ARR', prio:'FF', texto:`(ARR-AVA9431/A2345-${otro}1200-${ad}${h})` },
-      { id:'dla', nombre:'DLA', prio:'FF', texto:`(DLA-AVA9431-${ad}${h}-${otro}-DOF/${dof})` },
-      { id:'chg', nombre:'CHG', prio:'FF', texto:`(CHG-AVA9431-${ad}${h}-${otro}-DOF/${dof}-7/AVA9431/A4521)` },
-      { id:'cnl', nombre:'CNL', prio:'FF', texto:`(CNL-AVA9431-${ad}${h}-${otro}-DOF/${dof})` },
-      { id:'notam', nombre:'NOTAM', prio:'GG', texto:`(A0001/${dof.slice(0,2)} NOTAMN\nQ) ${fir}/QMRLC/IV/NBO/A/000/999/${TA.coordNotam(a.lat, a.lon)}005\nA) ${ad} B) ${dof}0300 C) ${dof}0600\nE) RWY ${a.pistas[0]} CLSD DUE MAINT)` },
+      { id:'fpl', nombre:'FPL', prio:'FF', texto:`(FPL-AVA9431-IS\n-${fl.tipo}/${fl.estela}-${fl.eq}\n-${ruta.adep}${h}\n-N0${ruta.vel}${ruta.niveles[0]} ${ruta.ruta}\n-${otro}${hm(ruta.eet)} ${ruta.altn[0]}\n-${fl.c18} DOF/${dof}${eetFir ? ' EET/' + eetFir : ''})` },
+      { id:'dep', nombre:'DEP', prio:'FF', texto:`(DEP-AVA9431/A2345-${ruta.adep}${h}-${otro}-DOF/${dof})` },
+      { id:'arr', nombre:'ARR', prio:'FF', texto:`(ARR-AVA9431/A2345-${ruta.adep}1200-${otro}${h})` },
+      { id:'dla', nombre:'DLA', prio:'FF', texto:`(DLA-AVA9431-${ruta.adep}${h}-${otro}-DOF/${dof})` },
+      { id:'chg', nombre:'CHG', prio:'FF', texto:`(CHG-AVA9431-${ruta.adep}${h}-${otro}-DOF/${dof}-7/AVA9431/A4521)` },
+      { id:'cnl', nombre:'CNL', prio:'FF', texto:`(CNL-AVA9431-${ruta.adep}${h}-${otro}-DOF/${dof})` },
+      { id:'notam', nombre:'NOTAM', prio:'GG', texto:`(A0001/${dof.slice(0,2)} NOTAMN\nQ) ${fir}/QMRLC/IV/NBO/A/000/999/${TA.coordNotam(a.lat, a.lon)}005\nA) ${adn} B) ${dof}0300 C) ${dof}0600\nE) RWY ${a.pistas[0]} CLSD DUE MAINT)` },
       { id:'metar', nombre:'METAR', prio:'GG', texto:`SACO20 ${ad} ${d}${h.slice(0,2)}00\nMETAR ${ad} ${d}${h.slice(0,2)}00Z 00000KT 9999 FEW020 20/12 Q1020=` },
       { id:'rpt', nombre:'SVC QTA RPT', prio:null, texto:'SVC QTA RPT ' },
       { id:'mis', nombre:'SVC QTA MIS', prio:null, texto:'SVC QTA MIS ' },
@@ -1849,50 +1959,44 @@ const TA = {};
   TA.CENTRO = 'SKBOYFYX';
   // Sólo aeródromos con FIR en TA.FIR_DE (ver la nota allí).
   const PRINCIPALES = ['SKBO','SKCL','SKRG','SKBQ','SKCG','SKSP','SKSM','SKBG','SKPE','SKLT'];
-  const EMPRESAS = ['AVA','ARE','NSE'];
-  const TIPOS = [['A320','M','SDE3FGHIRWY/LB1'],['A20N','M','SDE3FGHIRWY/LB1'],['A319','M','SDE3FGHIRWY/LB1'],['AT76','M','SDFGRY/S'],['B738','M','SDE2E3FGHIRWXY/LB1']];
   const TOPE_TAREAS = 6;
 
   // ---------- Generador de tráfico ----------
-  const acid = () => azar(EMPRESAS) + entero(1000, 9899);
+  // Vuelos sobre las rutas reales de TA.RUTAS con la flota de TA.FLOTA.
+  const flota = clase => TA.FLOTA.filter(f => !clase || f.clase === clase);
+  const acidDe = f => f.op + entero(f.num[0], f.num[1]);
+  const acid = clase => acidDe(azar(flota(clase)));
   const ssr = () => 'A' + [0,0,0,0].map(() => entero(0, 7)).join('');
   const hhmmAhora = (min) => { const d = new Date(Date.now() + (min || 0) * 60000); return pad(d.getUTCHours()) + pad(d.getUTCMinutes()); };
+  const hhmm = m => pad(Math.floor(m / 60)) + pad(m % 60);
   const centroDe = ad => (TA.FIR_DE[ad] || 'SKED') + 'ZQZX';
   const otroAD = (excepto) => azar(PRINCIPALES.filter(a => a !== excepto));
   const dofEn = min => TA.dofHoy(new Date(Date.now() + min * 60000));
-  // Derrota verdadera y distancia (NM) entre dos aeródromos, por círculo máximo.
-  const RAD = Math.PI / 180;
-  const derrota = (a, b) => {
-    const A = TA.AERODROMOS[a], B = TA.AERODROMOS[b];
-    const f1 = A.lat * RAD, f2 = B.lat * RAD, dl = (B.lon - A.lon) * RAD;
-    const rumbo = (Math.atan2(Math.sin(dl) * Math.cos(f2), Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl)) / RAD + 360) % 360;
-    const nm = 3440.065 * 2 * Math.asin(Math.sqrt(Math.sin((f2 - f1) / 2) ** 2 + Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2));
-    return { rumbo, nm };
+  const rutas = f => { const l = TA.RUTAS.filter(f); return l.length ? l : TA.RUTAS; };
+  const rutaDesde = (ad, clase) => azar(rutas(r => r.adep === ad && (!clase || r.clase === clase)));
+  const rutaHacia = ad => azar(rutas(r => r.ades === ad));
+  // 0 = nivel par, 1 = impar (F230 → 23 → impar).
+  const paridad = n => Math.round(parseInt(n.slice(1), 10) / 10) % 2;
+  // Plan de vuelo completo: un nivel de los presentados en la ruta, velocidad
+  // y EET del orden de los presentados, y EET/ en cada límite de FIR.
+  function planDe(r, min, f){
+    f = f || azar(flota(r.clase));
+    const vuelo = acidDe(f), nivel = azar(r.niveles), vel = 'N' + pad(r.vel + entero(-6, 6), 4);
+    const eet = hhmm(r.eet + entero(0, 3)), altn = azar(r.altn);
+    const eetFir = r.limites.map(l => l.fir + hhmm(l.min + entero(0, 1))).join(' ');
+    const campos = { 7:vuelo, 8:'IS', 9:`${f.tipo}/${f.estela}`, 10:f.eq, 13:r.adep + hhmmAhora(min), 15:`${vel}${nivel} ${r.ruta}`, 16:`${r.ades}${eet} ${altn}`,
+      18:`${f.c18} DOF/${dofEn(min)}${eetFir ? ' EET/' + eetFir : ''}` };
+    return { r, f, vuelo, nivel, vel, eet, altn, campos, texto:TA.partir69(`(FPL-${campos[7]}-${campos[8]}\n-${campos[9]}-${campos[10]}\n-${campos[13]}\n-${campos[15]}\n-${campos[16]}\n-${campos[18]})`).join('\n') };
+  }
+  // Destinatarios de los mensajes de plan de vuelo en esta práctica: torre de
+  // salida, centro(s) de control de las FIR que cruza la ruta y torre de
+  // destino (los mismos de los casos de estudio). La consigna siempre los nombra.
+  const nombreFIR = f => TA.NOMBRE_FIR[f] || f;
+  const destinosPlan = r => [...new Set([r.adep + 'ZTZX', ...r.firs.map(f => f + 'ZQZX'), r.ades + 'ZTZX'])];
+  const consignaDestinos = r => {
+    const firs = [...new Set(r.firs)].map(f => `${nombreFIR(f)} (${f})`);
+    return `a la <b>torre de control de ${TA.ciudad(r.adep)}</b>, ${firs.length > 1 ? `a los <b>centros de control de las FIR ${firs.slice(0, -1).join(', ')} y ${firs[firs.length - 1]}</b>` : `al <b>centro de control de la FIR ${firs[0]}</b>`} y a la <b>torre de control de ${TA.ciudad(r.ades)}</b>`;
   };
-  // Destino con una derrota clara (lejos de 000 y 180): así el sentido del
-  // nivel no depende de la declinación exacta (en Colombia ~5° a 10° W). Se
-  // descartan los tramos de menos de 120 NM (p. ej. SKBQ–SKCG), impropios de
-  // un plan en ruta a nivel de crucero de jet.
-  const destinoClaro = (adep) => {
-    for(let i = 0; i < 30; i++){
-      const d = otroAD(adep), q = derrota(adep, d);
-      if(Math.min(q.rumbo, 360 - q.rumbo, Math.abs(q.rumbo - 180)) > 20 && q.nm >= 120) return d;
-    }
-    return otroAD(adep);
-  };
-  // Nivel de crucero según el sentido (Anexo 2, Ap. 3): derrota magnética
-  // 000-179 niveles impares, 180-359 pares. Los turbohélice, por debajo de FL250.
-  const turbohelice = t => t === 'AT76';
-  const nivelesPara = (adep, ades, tipo) => {
-    const este = (derrota(adep, ades).rumbo + 8) % 360 < 180;
-    if(turbohelice(tipo)) return este ? ['170','190','210','230'] : ['180','200','220','240'];
-    return este ? ['290','310','330','350'] : ['300','320','340','360'];
-  };
-  const velocidadPara = tipo => turbohelice(tipo) ? 'N0' + entero(260, 280) : 'N0' + entero(420, 460);
-  // EET total: distancia a la velocidad de crucero más ~12 min de ascenso y descenso.
-  const eetPara = (adep, ades, vel) => { const t = Math.round(derrota(adep, ades).nm / Number(vel.slice(1)) * 60 + 12); return pad(Math.floor(t / 60)) + pad(t % 60); };
-  const equipoDe = tipo => TIPOS.find(x => x[0] === tipo);
-  function campos15(adep, ades, tipo){ const v = velocidadPara(tipo); return { vel:v, nivel:azar(nivelesPara(adep, ades, tipo)), eet:eetPara(adep, ades, v) }; }
 
   function metar(ad){
     const costa = ['SKSP','SKBQ','SKCG','SKSM','SKPV','SKRH','SKMR','SKCO'].includes(ad);
@@ -1928,39 +2032,39 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
     const enAD = est.tipo !== 'acc';   // torre u oficina ARO: trabaja para su aeródromo
     const deMiFIR = PRINCIPALES.filter(a => centroDe(a) === est.dir);
     const miAD = () => enAD ? loc : azar(deMiFIR.length ? deMiFIR : PRINCIPALES);
-    // Planes que ORIGINA una oficina ARO: si la estación es la ARO del
-    // aeródromo, recibe los de los vuelos que llegan a él (los suyos los redacta).
-    const parPlan = () => { if(est.tipo === 'aro'){ const ades = miAD(); return [destinoClaro(ades), ades]; } const adep = miAD(); return [adep, destinoClaro(adep)]; };
+    // Vuelos que atañen a la estación: los que llegan a su aeródromo o salen
+    // de él; para un centro, los que cruzan su FIR.
+    const cruza = r => r.firs.includes(loc);
+    const llega = () => enAD ? rutaHacia(loc) : azar(rutas(cruza));
+    const sale = () => enAD ? rutaDesde(loc) : azar(rutas(cruza));
+    // Planes que recibe: una oficina ARO, los de los vuelos que llegan a su
+    // aeródromo (los suyos los redacta ella); una torre, los que salen o llegan.
+    const rutaPlan = () => est.tipo === 'aro' ? llega() : enAD ? azar(rutas(r => r.adep === loc || r.ades === loc)) : azar(rutas(cruza));
     const dof = TA.dofHoy();
     const r = Math.random();
-    const vuelo = acid();
     let m;
     if(r < 0.22){
       // Salida desde otro aeródromo hacia el mío (DEP de la torre de salida).
-      const ades = miAD(), adep = otroAD(ades);
-      m = { prio:'FF', orig: adep + 'ZTZX', dest:[ades + 'ZTZX', centroDe(adep)],
-            texto:`(DEP-${vuelo}/${ssr()}-${adep}${hhmmAhora(-entero(1, 4))}-${ades}-DOF/${dof})` };
+      const ru = llega();
+      m = { prio:'FF', orig: ru.adep + 'ZTZX', dest:[ru.ades + 'ZTZX', centroDe(ru.adep)],
+            texto:`(DEP-${acid(ru.clase)}/${ssr()}-${ru.adep}${hhmmAhora(-entero(1, 4))}-${ru.ades}-DOF/${dof})` };
     } else if(r < 0.40){
-      const [tipo, cat, eq] = azar(TIPOS);
-      const [adep, ades] = parPlan(), alt = azar(PRINCIPALES.filter(a => a !== adep && a !== ades));
-      const min = entero(30, 90), c15 = campos15(adep, ades, tipo);
-      m = { prio:'FF', orig: adep + 'ZPZX', dest:[adep + 'ZTZX', centroDe(adep), centroDe(ades), ades + 'ZTZX'],
-            texto:`(FPL-${vuelo}-IS\n-${tipo}/${cat}-${eq}\n-${adep}${hhmmAhora(min)}\n-${c15.vel}F${c15.nivel} DCT\n-${ades}${c15.eet} ${alt}\n-PBN/B2C2D2S1 DOF/${dofEn(min)})` };
+      const ru = rutaPlan();
+      m = { prio:'FF', orig: ru.adep + 'ZPZX', dest:destinosPlan(ru), texto: planDe(ru, entero(30, 90)).texto };
     } else if(r < 0.55){
       // Llegada de un vuelo que salió de mi aeródromo (ARR de la torre de llegada).
-      const adep = miAD(), ades = otroAD(adep);
-      m = { prio:'FF', orig: ades + 'ZTZX', dest:[adep + 'ZTZX', centroDe(ades)],
-            texto:`(ARR-${vuelo}/${ssr()}-${adep}${hhmmAhora(-entero(60, 110))}-${ades}${hhmmAhora(-entero(1, 5))})` };
+      const ru = sale();
+      m = { prio:'FF', orig: ru.ades + 'ZTZX', dest:[ru.adep + 'ZTZX', centroDe(ru.ades)],
+            texto:`(ARR-${acid(ru.clase)}/${ssr()}-${ru.adep}${hhmmAhora(-(ru.eet + entero(12, 30)))}-${ru.ades}${hhmmAhora(-entero(1, 5))})` };
     } else if(r < 0.63){
-      const [adep, ades] = parPlan(), min = entero(40, 120);
-      m = { prio:'FF', orig: adep + 'ZPZX', dest:[adep + 'ZTZX', centroDe(adep), centroDe(ades), ades + 'ZTZX'],
-            texto:`(${azar(['DLA','CNL'])}-${vuelo}-${adep}${hhmmAhora(min)}-${ades}-DOF/${dofEn(min)})` };
-    } else if(r < 0.80){
-      const ad = miAD();
-      m = { prio:'GG', orig: ad + 'YMYX', dest:[ad + 'ZTZX', centroDe(ad)], texto: metar(ad) };
+      const ru = rutaPlan(), min = entero(40, 120);
+      m = { prio:'FF', orig: ru.adep + 'ZPZX', dest:destinosPlan(ru),
+            texto:`(${azar(['DLA','CNL'])}-${acid(ru.clase)}-${ru.adep}${hhmmAhora(min)}-${ru.ades}-DOF/${dofEn(min)})` };
     } else if(r < 0.92){
+      // METAR o NOTAM; el NOTAM, sólo de aeródromos de las FIR colombianas.
       const ad = miAD();
-      m = { prio:'GG', orig:'SKBOYNYX', dest:[ad + 'ZTZX', centroDe(ad)], texto: notam(ad) };
+      if(r < 0.80 || !['SKED','SKEC'].includes(TA.FIR_DE[ad])) m = { prio:'GG', orig: ad + 'YMYX', dest:[ad + 'ZTZX', centroDe(ad)], texto: metar(ad) };
+      else m = { prio:'GG', orig:'SKBOYNYX', dest:[ad + 'ZTZX', centroDe(ad)], texto: notam(ad) };
     } else {
       m = { prio:'FF', orig:'SKBOYMYX', dest:['SKEDZQZX','SKBOZTZX'], texto: sigmet() };
     }
@@ -1973,22 +2077,13 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
 
   // ---------- Situaciones (tareas) ----------
   const TIPOS_TAREA = { torre:['ss','rpt','mis','redaccion'], acc:['ss','rpt','mis'], aro:['fpl','chg','redaccion','rpt','mis'] };
-  // Destinatarios de los mensajes de plan de vuelo en esta práctica: torre de
-  // salida, centro(s) de control de las FIR del vuelo y torre de destino (los
-  // mismos de los casos de estudio). La consigna siempre los nombra.
-  const nombreFIR = f => f === 'SKED' ? 'Bogotá' : 'Barranquilla';
-  const destinosPlan = (adep, ades) => [...new Set([adep + 'ZTZX', centroDe(adep), centroDe(ades), ades + 'ZTZX'])];
-  const consignaDestinos = (adep, ades) => {
-    const firs = [...new Set([TA.FIR_DE[adep] || 'SKED', TA.FIR_DE[ades] || 'SKED'])];
-    return `a la <b>torre de control de ${TA.ciudad(adep)}</b>, ${firs.length > 1 ? `a los <b>centros de control de las FIR ${firs.map(f => `${nombreFIR(f)} (${f})`).join(' y ')}</b>` : `al <b>centro de control de la FIR ${nombreFIR(firs[0])}</b> (${firs[0]})`} y a la <b>torre de control de ${TA.ciudad(ades)}</b>`;
-  };
   function nuevaTarea(red, tipo){
     const est = red.est;
     const loc = est.dir.slice(0, 4);
     const t = { id:'T' + Date.now(), tipo, hecha:false, fallos:0 };
     if(tipo === 'ss'){
       const ad = est.tipo !== 'acc' ? otroAD(loc) : azar(PRINCIPALES);
-      const vuelo = acid();
+      const vuelo = acid('J');
       const orig = ad + 'ZTZX';
       const hora = TA.horaUTC();
       const pista = TA.AERODROMOS[ad].pistas[0].split('/')[0];
@@ -2023,80 +2118,84 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       t.silenciosa = true;
     }
     if(tipo === 'fpl'){
-      const [tipoAc, estela, eq] = azar(TIPOS);
-      const vuelo = acid(), ades = destinoClaro(loc);
-      const altn = azar(PRINCIPALES.filter(a => a !== loc && a !== ades));
-      const min = entero(50, 120), c15 = campos15(loc, ades, tipoAc);
-      const f = { 7:vuelo, 8:'IS', 9:`${tipoAc}/${estela}`, 10:eq, 13:loc + hhmmAhora(min), 15:`${c15.vel}F${c15.nivel} DCT`, 16:`${ades}${c15.eet} ${altn}`, 18:`PBN/B2C2D2S1 DOF/${dofEn(min)}` };
-      t.titulo = `Plan de vuelo presentado: ${vuelo} ${loc}–${ades}`;
-      t.consigna = `El piloto de <b>${vuelo}</b> entregó el plan de vuelo del formulario. Transmite el mensaje FPL ${consignaDestinos(loc, ades)}.`;
-      t.formulario = f;
-      t.ref = { clave:{ prio:'FF', dest:destinosPlan(loc, ades), orig:est.dir, hora:'', texto:`(FPL-${f[7]}-${f[8]}\n-${f[9]}-${f[10]}\n-${f[13]}\n-${f[15]}\n-${f[16]}\n-${f[18]})` }, vuelo, variante:'FPL' };
-      TA.toast(`<b>Plan de vuelo presentado:</b> ${vuelo} ${loc}–${ades}. Transmite el FPL.`, '', 7000);
+      const r = rutaDesde(loc), p = planDe(r, entero(50, 120));
+      t.titulo = `Plan de vuelo presentado: ${p.vuelo} ${loc}–${r.ades}`;
+      t.consigna = `El piloto de <b>${p.vuelo}</b> entregó el plan de vuelo del formulario. Transmite el mensaje FPL ${consignaDestinos(r)}.`;
+      t.formulario = p.campos;
+      t.ref = { clave:{ prio:'FF', dest:destinosPlan(r), orig:est.dir, hora:'', texto:p.texto }, vuelo:p.vuelo, variante:'FPL' };
+      TA.toast(`<b>Plan de vuelo presentado:</b> ${p.vuelo} ${loc}–${r.ades}. Transmite el FPL.`, '', 7000);
     }
     if(tipo === 'chg'){
-      const [tipoAc, estela] = azar(TIPOS.filter(x => x[0] !== 'AT76'));
-      const vuelo = acid(), ades = destinoClaro(loc);
-      const min = entero(50, 110), eobt = hhmmAhora(min);
-      const c15 = campos15(loc, ades, tipoAc);
-      const variante = azar(['nivel','ssr','tipo']);
+      const r = rutaDesde(loc, 'J'), min = entero(50, 110), p = planDe(r, min);
+      const vuelo = p.vuelo, eobt = p.campos[13].slice(4), ades = r.ades;
+      // Otro nivel presentado en la ruta con la misma paridad (así respeta el
+      // sentido publicado de la aerovía); si no hay, 2000 ft más o menos.
+      const nivelesOtros = r.niveles.filter(n => n !== p.nivel && n[0] === p.nivel[0] && paridad(n) === paridad(p.nivel));
+      const n0 = parseInt(p.nivel.slice(1), 10);
+      const otroNivel = nivelesOtros.length ? azar(nivelesOtros) : p.nivel[0] === 'F' ? 'F' + pad(n0 >= 390 ? n0 - 20 : n0 + 20, 3) : null;
+      const gemelo = TA.FLOTA.find(o => o !== p.f && o.op === p.f.op && o.eq === p.f.eq && o.c18 === p.f.c18);
+      const altnOtros = r.altn.filter(a => a !== p.altn);
+      const variante = azar(['ssr', ...(otroNivel ? ['nivel', 'nivel'] : []), ...(altnOtros.length ? ['altn'] : []), ...(gemelo ? ['tipo'] : [])]);
       let pide, c22;
       if(variante === 'nivel'){
-        const nuevo = azar(nivelesPara(loc, ades, tipoAc).filter(n => n !== c15.nivel));
-        pide = `Su FPL se transmitió con <b>${c15.vel}F${c15.nivel} DCT</b>; el piloto pide ahora el nivel <b>F${nuevo}</b> con la misma velocidad y ruta.`;
-        c22 = `15/${c15.vel}F${nuevo} DCT`;
+        pide = `Su FPL se transmitió con la casilla 15 <b>${p.campos[15]}</b>; el piloto pide ahora el nivel <b>${otroNivel}</b> con la misma velocidad y ruta.`;
+        c22 = `15/${p.vel}${otroNivel} ${r.ruta}`;
+      } else if(variante === 'altn'){
+        const nuevo = azar(altnOtros);
+        pide = `Su FPL se transmitió con la casilla 16 <b>${p.campos[16]}</b>; el explotador cambia el aeródromo de alternativa por <b>${TA.ciudad(nuevo)} (${nuevo})</b>.`;
+        c22 = `16/${ades}${p.eet} ${nuevo}`;
       } else if(variante === 'ssr'){
         const code = ssr();
         pide = `Se le asignó el código SSR <b>${code.slice(1)}</b>.`;
         c22 = `7/${vuelo}/${code}`;
       } else {
-        const otro = tipoAc === 'A20N' ? 'A320' : 'A20N';
-        pide = `La empresa cambia la aeronave: vuela un <b>${otro}</b> (estela ${estela}) en lugar del ${tipoAc}.`;
-        c22 = `9/${otro}/${estela}`;
+        pide = `La empresa cambia la aeronave: vuela un <b>${gemelo.tipo}</b> (estela ${gemelo.estela}, mismo equipo) en lugar del ${p.f.tipo}.`;
+        c22 = `9/${gemelo.tipo}/${gemelo.estela}`;
       }
       t.titulo = `Modificación del plan de ${vuelo} (CHG)`;
-      t.consigna = `${vuelo} (${TA.ciudad(loc)} → ${TA.ciudad(ades)}, EOBT ${eobt} UTC). ${pide} Transmite la modificación ${consignaDestinos(loc, ades)}. Incluye DOF y el campo modificado.`;
-      t.ref = { clave:{ prio:'FF', dest:destinosPlan(loc, ades), orig:est.dir, hora:'', texto:`(CHG-${vuelo}-${loc}${eobt}-${ades}-DOF/${dofEn(min)}-${c22})` }, vuelo, variante:'CHG' };
+      t.consigna = `${vuelo} (${TA.ciudad(loc)} → ${TA.ciudad(ades)}, EOBT ${eobt} UTC). ${pide} Transmite la modificación ${consignaDestinos(r)}. Incluye DOF y el campo modificado.`;
+      t.ref = { clave:{ prio:'FF', dest:destinosPlan(r), orig:est.dir, hora:'', texto:TA.partir69(`(CHG-${vuelo}-${loc}${eobt}-${ades}-DOF/${dofEn(min)}-${c22})`).join('\n') }, vuelo, variante:'CHG' };
       TA.toast(`<b>Nueva situación:</b> ${t.titulo}.`, '', 7000);
     }
     if(tipo === 'redaccion' && est.tipo === 'aro'){
-      const vuelo = acid(), ades = otroAD(loc);
+      const r = rutaDesde(loc), vuelo = acid(r.clase), ades = r.ades;
       const variante = azar(['DLA','CNL']);
       let texto;
       if(variante === 'DLA'){
         const antes = hhmmAhora(entero(15, 35)), min = entero(70, 110), nueva = hhmmAhora(min);
-        t.consigna = `La salida de ${vuelo} (${TA.ciudad(loc)} → ${TA.ciudad(ades)}), prevista fuera calzos a las ${antes} UTC, se demora: la nueva hora estimada fuera calzos es <b>${nueva}</b> UTC. Transmite el mensaje de demora ${consignaDestinos(loc, ades)}. Incluye DOF.`;
+        t.consigna = `La salida de ${vuelo} (${TA.ciudad(loc)} → ${TA.ciudad(ades)}), prevista fuera calzos a las ${antes} UTC, se demora: la nueva hora estimada fuera calzos es <b>${nueva}</b> UTC. Transmite el mensaje de demora ${consignaDestinos(r)}. Incluye DOF.`;
         texto = `(DLA-${vuelo}-${loc}${nueva}-${ades}-DOF/${dofEn(min)})`;
       } else {
         const min = entero(40, 100), eobt = hhmmAhora(min);
-        t.consigna = `La empresa cancela ${vuelo} de ${TA.ciudad(loc)} (EOBT ${eobt} UTC) a ${TA.ciudad(ades)}. Transmite la cancelación ${consignaDestinos(loc, ades)}. Incluye DOF.`;
+        t.consigna = `La empresa cancela ${vuelo} de ${TA.ciudad(loc)} (EOBT ${eobt} UTC) a ${TA.ciudad(ades)}. Transmite la cancelación ${consignaDestinos(r)}. Incluye DOF.`;
         texto = `(CNL-${vuelo}-${loc}${eobt}-${ades}-DOF/${dofEn(min)})`;
       }
       t.titulo = `Transmite un ${variante} de ${vuelo}`;
-      t.ref = { clave:{ prio:'FF', dest:destinosPlan(loc, ades), orig:est.dir, hora:'', texto }, vuelo, variante };
+      t.ref = { clave:{ prio:'FF', dest:destinosPlan(r), orig:est.dir, hora:'', texto }, vuelo, variante };
       TA.toast(`<b>Nueva situación:</b> ${t.titulo}.`, '', 7000);
     }
     if(tipo === 'redaccion' && est.tipo !== 'aro'){
       if(est.tipo !== 'torre') return nuevaTarea(red, azar(['ss','rpt','mis']));
-      const vuelo = acid();
-      const dest = otroAD(loc);
+      const r = rutaDesde(loc);
+      const vuelo = acid(r.clase);
+      const dest = r.ades;
       const dof = TA.dofHoy();
       const code = ssr();
       const variante = azar(['DEP','DEP','DLA','CNL']);
       const fir = TA.FIR_DE[loc] || 'SKED';
-      const nombreFIR = fir === 'SKED' ? 'Bogotá' : 'Barranquilla';
+      const nomFIR = nombreFIR(fir);
       let consigna, texto;
       if(variante === 'DEP'){
         const atd = hhmmAhora(-1);
-        consigna = `${vuelo} (código SSR ${code.slice(1)}) acaba de despegar de ${TA.ciudad(loc)} a las ${atd} UTC con destino ${TA.ciudad(dest)}. Transmite el mensaje de salida a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nombreFIR}</b> (${fir}). Incluye la fecha del vuelo (DOF).`;
+        consigna = `${vuelo} (código SSR ${code.slice(1)}) acaba de despegar de ${TA.ciudad(loc)} a las ${atd} UTC con destino ${TA.ciudad(dest)}. Transmite el mensaje de salida a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nomFIR}</b> (${fir}). Incluye la fecha del vuelo (DOF).`;
         texto = `(DEP-${vuelo}/${code}-${loc}${atd}-${dest}-DOF/${dof})`;
       } else if(variante === 'DLA'){
         const eobt = hhmmAhora(entero(50, 90));
-        consigna = `La salida de ${vuelo} de ${TA.ciudad(loc)} a ${TA.ciudad(dest)} se demora: la nueva hora estimada fuera calzos es ${eobt} UTC. Transmite el mensaje de demora a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nombreFIR}</b> (${fir}). Incluye DOF.`;
+        consigna = `La salida de ${vuelo} de ${TA.ciudad(loc)} a ${TA.ciudad(dest)} se demora: la nueva hora estimada fuera calzos es ${eobt} UTC. Transmite el mensaje de demora a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nomFIR}</b> (${fir}). Incluye DOF.`;
         texto = `(DLA-${vuelo}-${loc}${eobt}-${dest}-DOF/${dof})`;
       } else {
         const eobt = hhmmAhora(entero(40, 100));
-        consigna = `La empresa cancela el vuelo ${vuelo} de ${TA.ciudad(loc)} (EOBT ${eobt} UTC) a ${TA.ciudad(dest)}. Transmite la cancelación a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nombreFIR}</b> (${fir}). Incluye DOF.`;
+        consigna = `La empresa cancela el vuelo ${vuelo} de ${TA.ciudad(loc)} (EOBT ${eobt} UTC) a ${TA.ciudad(dest)}. Transmite la cancelación a la <b>torre de control de ${TA.ciudad(dest)}</b> y al <b>centro de control de la FIR ${nomFIR}</b> (${fir}). Incluye DOF.`;
         texto = `(CNL-${vuelo}-${loc}${eobt}-${dest}-DOF/${dof})`;
       }
       t.titulo = `Transmite un ${variante} de ${vuelo}`;
@@ -2451,9 +2550,9 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
     return [
       c('dep-sp', 'Salida desde San Andrés (DEP)',
         `Trabajas en la torre de control de San Andrés (SKSP). Hoy es el día ${DD} (UTC).`, 'SKSPZTZX', [{
-          consigna:`ARE4312 (código SSR 5231) despegó a las 1341 UTC hacia Bogotá (El Dorado). A las 1342 UTC deposita el mensaje de salida para la torre de control de Bogotá y para el centro de control de la FIR Barranquilla (SKEC). Incluye la fecha del vuelo (DOF).`,
-          clave:k('FF', ['SKBOZTZX','SKECZQZX'], 'SKSPZTZX', DD + '1342', `(DEP-ARE4312/A5231-SKSP1341-SKBO-DOF/${DOF})`),
-          explica:'El DEP es un mensaje de movimiento y control: prioridad FF (4.4.1.1.3 a). Destinatarios: SKBO + ZTZ + X y SKEC + ZQZ + X. Formato (Doc 4444, Ap. 3): campos 3, 7 con el código SSR, 13 con la hora real de salida, 16 y 18 (DOF).' }]),
+          consigna:`ARE4312 (código SSR 5231) despegó a las 1341 UTC hacia Bogotá (El Dorado). A las 1342 UTC deposita el mensaje de salida para la torre de control de Bogotá y para el centro de control de la FIR Panamá (MPZL), la FIR en la que está San Andrés. Incluye la fecha del vuelo (DOF).`,
+          clave:k('FF', ['SKBOZTZX','MPZLZQZX'], 'SKSPZTZX', DD + '1342', `(DEP-ARE4312/A5231-SKSP1341-SKBO-DOF/${DOF})`),
+          explica:'El DEP es un mensaje de movimiento y control: prioridad FF (4.4.1.1.3 a). Destinatarios: SKBO + ZTZ + X y MPZL + ZQZ + X: San Andrés queda al oeste del límite de la FIR Barranquilla (077°25′ W, ENR 2.1), en la FIR Panamá. Formato (Doc 4444, Ap. 3): campos 3, 7 con el código SSR, 13 con la hora real de salida, 16 y 18 (DOF).' }]),
       c('arr-cl', 'Llegada a Cali (ARR)',
         `Trabajas en la torre de control de Cali (SKCL). Hoy es el día ${DD} (UTC).`, 'SKCLZTZX', [{
           consigna:`AVA9435 (código SSR 2141), que salió de Rionegro a las 1405 UTC, aterrizó en Cali a las 1448 UTC. A las 1450 UTC deposita el mensaje de llegada para la torre de control de Rionegro y para el centro de control de la FIR Bogotá (SKED).`,
@@ -2461,30 +2560,30 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
           explica:'ARR: prioridad FF (4.4.1.1.3 a). Campos 3, 7, 13 (aeródromo y hora de salida) y 17 (aeródromo y hora de llegada).' }]),
       c('dla-bo', 'Demora de una salida (DLA)',
         `Trabajas en la oficina de notificación de los servicios de tránsito aéreo (ARO) de Bogotá. Hoy es el día ${DD} (UTC).`, 'SKBOZPZX', [{
-          consigna:`La salida de NSE8341 de Bogotá (El Dorado) a Leticia, prevista fuera calzos a las 1600 UTC, se demora hasta las 1645 UTC. A las 1535 UTC deposita el mensaje de demora para la torre de control de Bogotá, el centro de control de la FIR Bogotá (SKED) y la torre de control de Leticia. Incluye DOF.`,
-          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKLTZTZX'], 'SKBOZPZX', DD + '1535', `(DLA-NSE8341-SKBO1645-SKLT-DOF/${DOF})`),
+          consigna:`La salida de NSE8341 de Bogotá (El Dorado) a Neiva, prevista fuera calzos a las 1600 UTC, se demora hasta las 1645 UTC. A las 1535 UTC deposita el mensaje de demora para la torre de control de Bogotá, el centro de control de la FIR Bogotá (SKED) y la torre de control de Neiva. Incluye DOF.`,
+          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKNVZTZX'], 'SKBOZPZX', DD + '1535', `(DLA-NSE8341-SKBO1645-SKNV-DOF/${DOF})`),
           explica:'DLA: prioridad FF. El campo 13 lleva la NUEVA hora estimada fuera calzos (1645). El remitente es la oficina ARO: SKBO + ZPZ + X.' }]),
       c('cnl-cg', 'Cancelación de un vuelo (CNL)',
         `Trabajas en la oficina ARO de Cartagena. Hoy es el día ${DD} (UTC).`, 'SKCGZPZX', [{
-          consigna:`La empresa cancela AVA9570 de Cartagena a Bogotá (EOBT 1830 UTC). A las 1702 UTC deposita el mensaje de cancelación para la torre de control de Cartagena, el centro de control de la FIR Barranquilla (SKEC) y la torre de control de Bogotá. Incluye DOF.`,
-          clave:k('FF', ['SKCGZTZX','SKECZQZX','SKBOZTZX'], 'SKCGZPZX', DD + '1702', `(CNL-AVA9570-SKCG1830-SKBO-DOF/${DOF})`),
+          consigna:`La empresa cancela AVA9570 de Cartagena a Bogotá (EOBT 1830 UTC). A las 1702 UTC deposita el mensaje de cancelación para la torre de control de Cartagena, los centros de control de las FIR Barranquilla (SKEC) y Bogotá (SKED), que cruza la ruta, y la torre de control de Bogotá. Incluye DOF.`,
+          clave:k('FF', ['SKCGZTZX','SKECZQZX','SKEDZQZX','SKBOZTZX'], 'SKCGZPZX', DD + '1702', `(CNL-AVA9570-SKCG1830-SKBO-DOF/${DOF})`),
           explica:'CNL: prioridad FF. Campos 3, 7, 13 (salida y EOBT), 16 y 18 (DOF).' }]),
       c('chg-ssr', 'Cambio del código SSR (CHG)',
         `Trabajas en la oficina ARO de Bogotá. Hoy es el día ${DD} (UTC).`, 'SKBOZPZX', [{
-          consigna:`A ARE4417 (Bogotá → Barranquilla, EOBT 1910 UTC) se le asignó el nuevo código SSR 3627. A las 1820 UTC deposita el mensaje de modificación para la torre de control de Bogotá, el centro de control de la FIR Bogotá (SKED) y la torre de control de Barranquilla. Incluye DOF y el campo 7 modificado con el código.`,
-          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKBQZTZX'], 'SKBOZPZX', DD + '1820', `(CHG-ARE4417-SKBO1910-SKBQ-DOF/${DOF}-7/ARE4417/A3627)`),
+          consigna:`A ARE4417 (Bogotá → Barranquilla, EOBT 1910 UTC) se le asignó el nuevo código SSR 3627. A las 1820 UTC deposita el mensaje de modificación para la torre de control de Bogotá, los centros de control de las FIR Bogotá (SKED) y Barranquilla (SKEC), que cruza la ruta, y la torre de control de Barranquilla. Incluye DOF y el campo 7 modificado con el código.`,
+          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKECZQZX','SKBQZTZX'], 'SKBOZPZX', DD + '1820', `(CHG-ARE4417-SKBO1910-SKBQ-DOF/${DOF}-7/ARE4417/A3627)`),
           explica:'CHG: prioridad FF. Tras los campos 7, 13, 16 y 18 va el campo 22 con la enmienda: número del campo, barra y el campo completo (7/ARE4417/A3627).' }]),
       c('fpl-bo', 'Plan de vuelo presentado (FPL)',
         `Trabajas en la oficina ARO de Bogotá (SKBOZPZX). Hoy es el día ${DD} (UTC).`, 'SKBOZPZX', [{
-          consigna:`El piloto de AVA9362 presentó este plan de vuelo. Casilla 7: AVA9362 · 8: IFR, vuelo regular (IS) · 9: A320, estela media · 10: SDE3FGHIRWY/LB1 · 13: SKBO, 1530 · 15: velocidad N0450, nivel F320, ruta DCT · 16: destino SKCL, EET 0035, alternativo SKRG · 18: PBN/B2C2D2S1 DOF/${DOF}. A las 1420 UTC deposita el FPL para la torre de control de Bogotá, el centro de control de la FIR Bogotá (SKED) y la torre de control de Cali.`,
-          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKCLZTZX'], 'SKBOZPZX', DD + '1420', `(FPL-AVA9362-IS\n-A320/M-SDE3FGHIRWY/LB1\n-SKBO1530\n-N0450F320 DCT\n-SKCL0035 SKRG\n-PBN/B2C2D2S1 DOF/${DOF})`,
-            { textoModo:'claves', claves:['(FPL-AVA9362-IS', 'A320/M', 'SDE3FGHIRWY/LB1', 'SKBO1530', 'N0450F320 DCT', 'SKCL0035 SKRG', `PBN/B2C2D2S1 DOF/${DOF}`] }),
-          explica:'FPL: mensaje de movimiento y control, prioridad FF (4.4.1.1.3 a). Remitente: la oficina ARO (SKBO + ZPZ + X). Las casillas 7, 8, 9, 10, 13, 15, 16 y 18 van separadas por guiones (Doc 4444, Ap. 3); con R en la casilla 10, la 18 lleva PBN/. Se califica por grupos: da igual dónde partas las líneas.' }]),
+          consigna:`El piloto de AVA9362 presentó este plan de vuelo. Casilla 7: AVA9362 · 8: IFR, vuelo regular (IS) · 9: A320, estela media · 10: SDE1E2E3GHIRWXYZ/LB1 · 13: SKBO, 1530 · 15: velocidad N0385, nivel F220, ruta VAPO4R OREGA OREG5A · 16: destino SKCL, EET 0035, alternativo SKRG · 18: PBN/A1B1C1D1O1S2T1 NAV/RNP2 DAT/PDC1 SUR/260B DOF/${DOF}. A las 1420 UTC deposita el FPL para la torre de control de Bogotá, el centro de control de la FIR Bogotá (SKED) y la torre de control de Cali.`,
+          clave:k('FF', ['SKBOZTZX','SKEDZQZX','SKCLZTZX'], 'SKBOZPZX', DD + '1420', `(FPL-AVA9362-IS\n-A320/M-SDE1E2E3GHIRWXYZ/LB1\n-SKBO1530\n-N0385F220 VAPO4R OREGA OREG5A\n-SKCL0035 SKRG\n-PBN/A1B1C1D1O1S2T1 NAV/RNP2 DAT/PDC1 SUR/260B DOF/${DOF})`,
+            { textoModo:'claves', claves:['(FPL-AVA9362-IS', 'A320/M', 'SDE1E2E3GHIRWXYZ/LB1', 'SKBO1530', 'N0385F220 VAPO4R OREGA OREG5A', 'SKCL0035 SKRG', `PBN/A1B1C1D1O1S2T1 NAV/RNP2 DAT/PDC1 SUR/260B DOF/${DOF}`] }),
+          explica:'FPL: mensaje de movimiento y control, prioridad FF (4.4.1.1.3 a). Remitente: la oficina ARO (SKBO + ZPZ + X). Las casillas 7, 8, 9, 10, 13, 15, 16 y 18 van separadas por guiones (Doc 4444, Ap. 3); con R en la casilla 10, la 18 lleva PBN/, y con Z, NAV/, COM/ o DAT/. La ruta empieza con la SID (VAPO4R) y termina con la STAR (OREG5A), como en los planes que se presentan en Colombia. Se califica por grupos: da igual dónde partas las líneas.' }]),
       c('chg-nivel', 'Cambio de nivel de crucero (CHG)',
         `Trabajas en la oficina ARO de Cali (SKCLZPZX). Hoy es el día ${DD} (UTC).`, 'SKCLZPZX', [{
-          consigna:`ARE4152 (Cali → Bogotá, EOBT 1640 UTC) ya tiene su FPL transmitido con N0440F330 DCT. El piloto pide ahora el nivel F350 con la misma velocidad y ruta. A las 1552 UTC deposita la modificación para la torre de control de Cali, el centro de control de la FIR Bogotá (SKED) y la torre de control de Bogotá. Incluye DOF y el campo modificado.`,
-          clave:k('FF', ['SKCLZTZX','SKEDZQZX','SKBOZTZX'], 'SKCLZPZX', DD + '1552', `(CHG-ARE4152-SKCL1640-SKBO-DOF/${DOF}-15/N0440F350 DCT)`),
-          explica:'CHG: prioridad FF. El campo 22 lleva el número de la casilla que cambia y la casilla completa: 15/N0440F350 DCT (velocidad, nivel y ruta). F350 es un nivel impar, el que corresponde a una derrota hacia el nordeste.' }]),
+          consigna:`ARE4152 (Cali → Bogotá, EOBT 1640 UTC) ya tiene su FPL transmitido con la casilla 15 N0385F230 TOLI1F TOLIM TOLI5E. El piloto pide ahora el nivel F210 con la misma velocidad y ruta. A las 1552 UTC deposita la modificación para la torre de control de Cali, el centro de control de la FIR Bogotá (SKED) y la torre de control de Bogotá. Incluye DOF y el campo modificado.`,
+          clave:k('FF', ['SKCLZTZX','SKEDZQZX','SKBOZTZX'], 'SKCLZPZX', DD + '1552', `(CHG-ARE4152-SKCL1640-SKBO-DOF/${DOF}-15/N0385F210 TOLI1F TOLIM\nTOLI5E)`),
+          explica:'CHG: prioridad FF. El campo 22 lleva el número de la casilla que cambia y la casilla completa: 15/N0385F210 TOLI1F TOLIM TOLI5E (velocidad, nivel y ruta, con la SID y la STAR). F210, como F230, es un nivel impar: los que se presentan de Cali a Bogotá, hacia el nordeste.' }]),
       c('metar-bq', 'Difusión de un METAR',
         `Trabajas en la oficina meteorológica de Barranquilla (SKBQ). Hoy es el día ${DD} (UTC).`, 'SKBQYMYX', [{
           consigna:`A las 1502 UTC deposita este informe para la torre de control de Barranquilla y el centro de control de la FIR Barranquilla (SKEC). Texto:\nSACO20 SKBQ ${DD}1500\nMETAR SKBQ ${DD}1500Z 04012KT 9999 SCT020 31/24 Q1011=`,
@@ -2601,7 +2700,7 @@ TEMPO ${DD}18/${DD}22 4000 SHRA BKN015=`),
     const DD = TA.diaHoy(), DOF = TA.dofHoy();
     return [
       { t:`(DEP-AVA9152/A3314-SKBO1422-SKCL-DOF/${DOF})`, r:'FF', e:'Mensaje de movimiento y control (Doc 4444, Cap. 11)', ref:'4.4.1.1.3 a)' },
-      { t:`(FPL-NSE8360-IS\n-AT76/M-SDFGRY/S\n-SKBO1600\n-N0270F170 DCT\n-SKIB0035 SKBO\n-DOF/${DOF})`, r:'FF', e:'El FPL es un mensaje de movimiento y control', ref:'4.4.1.1.3 a)' },
+      { t:`(FPL-NSE8360-IS\n-AT76/M-SDGR/LB1\n-SKBO1600\n-N0275A180 LIXA4U LIXAG LIXA2A\n-SKNV0040 SKBO\n-PBN/B2B3C2C3D2D3O2S1 SUR/260B DOF/${DOF})`, r:'FF', e:'El FPL es un mensaje de movimiento y control', ref:'4.4.1.1.3 a)' },
       { t:`(CNL-ARE4410-SKRG1745-SKSM-DOF/${DOF})`, r:'FF', e:'Mensaje de movimiento y control', ref:'4.4.1.1.3 a)' },
       { t:`SACO20 SKCL ${DD}1200\nMETAR SKCL ${DD}1200Z 36006KT 9999 FEW025 27/19 Q1015=`, r:'GG', e:'Observación meteorológica ordinaria (METAR)', ref:'4.4.1.1.4 b)' },
       { t:`TAF SKRG ${DD}1100Z ${DD}12/${DD}24 VRB03KT 9999 SCT020 BKN100=`, r:'GG', e:'Pronóstico de aeródromo ordinario', ref:'4.4.1.1.4 a)' },
