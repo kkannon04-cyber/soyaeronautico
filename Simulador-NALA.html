@@ -1230,6 +1230,7 @@
           <div class="map-status-bar">
             <span class="map-hint">Click en una aeronave (o en su ruta) para instruirla · Click en un aeródromo para pistas, elevación y METAR · La nariz apunta al <b>rumbo</b>; la estela marca la <b>derrota</b>. Todo en grados magnéticos (°M)</span>
             <span class="map-hint" id="navDataStatus"></span>
+            <span class="map-hint" id="navDataStatusAip"></span>
           </div>
         </details>
         </div><!-- /#mapChrome -->
@@ -3962,16 +3963,29 @@ const NAV_MAX_POR_CAPA = 1200;                     // tope de objetos dibujados 
 const NAV_ZOOM = {                                  // zoom mínimo al que aparece cada cosa
   adL: 2, adM: 5, adS: 7,                           // aeródromos grandes / medianos / pequeños
   vor: 6, ndb: 8, awy: 5, fix: 7, awyLbl: 8, awyRumbo: 9,
+  awyAip: 6,                                        // redes de fuera de Colombia (EE.UU. es muy densa): un zoom más cerca
 };
 const AIRWAYS_FUENTE = 'Colombia: eAIP Colombia ENR 3, ENR 4.1 y ENR 4.4, AIRAC AMDT 73/26 (en vigor desde el 01 OCT 2026)';
 const navCapas = { ad: true, nav: true, awyInf: true, awySup: false };   // al abrir: solo rutas inferiores
 const navMundo = { ad: [], nav: [], fecha: '' };
 let navRenderer = null;
 const navGrupos = {};
-const navDibujados = { ad: new Map(), nav: new Map(), navCol: new Map(), fix: new Map(), awyLbl: new Map(), awyRumbo: new Map() };
+const navDibujados = { ad: new Map(), nav: new Map(), navCol: new Map(), fix: new Map(), awyLbl: new Map(), awyRumbo: new Map(), awyAip: new Map() };
 let navAerovias = null;   // { lineas: [polyline], etiquetas: [{key, lat, lon, rutas: [{aw, nivel}]}] }
 let nivelesDeFijo = null;  // código de fijo -> Set('inf' | 'sup') según las aerovías a las que pertenece
-const verNivel = nivel => nivel === 'sup' ? navCapas.awySup : navCapas.awyInf;
+// «ambos»: tramos cuyos límites publicados abarcan las dos estructuras (p. ej. las rutas oceánicas
+// de EE.UU., de MEA baja y MAA alta). En Colombia cada ruta es de un solo nivel.
+const verNivel = nivel => nivel === 'ambos' ? navCapas.awyInf || navCapas.awySup : nivel === 'sup' ? navCapas.awySup : navCapas.awyInf;
+const nivelVisto = nivel => nivel === 'ambos' ? (navCapas.awyInf ? 'inf' : 'sup') : nivel;
+
+/* Aerovías OFICIALES de fuera de Colombia, una región por archivo en BasesDeDatos/nav/aerovias/
+   (índice en indice.json). Cada archivo sale del AIP o de la base de datos oficial del Estado con
+   los generadores de BasesDeDatos/nav/ y lleva su fuente, su vigencia y la verificación de sus
+   distancias. El límite entre rutas inferiores y superiores es el de cada región (FL245 en
+   Colombia, FL180 en EE.UU., FL195 en Centroamérica…) y cada archivo trae su propio texto.
+   Dentro de los países de una región, sus radioayudas sustituyen a las de OurAirports. */
+const navAip = { regiones: [], tramos: [], paises: new Set(), clavesNav: new Set() };
+const NAV_MAX_AWY_AIP = 5000;                      // tope de tramos dibujados por vista
 
 // Símbolos de radioayuda y de punto significativo, en un cuadro fijo de 20×20 centrado en la
 // posición. Siguen la simbología habitual de las cartas en ruta (Anexo 4): hexágono VOR, caja
@@ -4077,6 +4091,86 @@ function tramoAeroviaHtml(aw, desde, hasta, seg){
   return html + (datos ? `<br>${datos}` : '') + (niveles ? `<br>Niveles: ${escapeHtml(niveles)}${unico.length === 1 ? ' (sentido único)' : ''}` : '');
 }
 
+/* ---------- Aerovías oficiales de otras regiones (BasesDeDatos/nav/aerovias/) ---------- */
+const coordTxt = (lat, lon) => `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'} · ${Math.abs(lon).toFixed(4)}° ${lon >= 0 ? 'E' : 'W'}`;
+const fuenteAip = reg => `${escapeHtml(reg.region)}: ${escapeHtml(reg.fuente)} · ${escapeHtml(reg.vigencia)}.`;
+
+// Ficha de un tramo: cada aerovía que lo publica, con los datos tal como los da su AIP.
+function tramoAipHtml(t){
+  const regiones = new Set();
+  const partes = t.rutas.map(({ aw, sub, nivel, seg, reg }) => {
+    regiones.add(reg);
+    const [ia, ib, d, tr, rr, , datos, iObs] = seg;
+    const desde = reg.puntos[ia][0], hasta = reg.puntos[ib][0];
+    const cabecera = [
+      tr != null ? `${String(tr).padStart(3, '0')}°${rr != null ? '/' + String(rr).padStart(3, '0') + '°' : ''} MAG` : '',
+      d != null ? d + ' NM' : '',
+    ].filter(Boolean).join(' · ');
+    return `<b>${escapeHtml(aw)}</b>${sub ? ' (' + escapeHtml(sub) + ')' : ''} · ${escapeHtml(desde)}–${escapeHtml(hasta)} · ${escapeHtml(reg.textoNiveles[nivel])}`
+      + (cabecera ? `<br>${cabecera}` : '') + (datos ? `<br>${escapeHtml(datos)}` : '')
+      + (iObs != null ? `<br><i>${escapeHtml(reg.observaciones[iObs])}</i>` : '');
+  });
+  return partes.join('<hr style="margin:4px 0;border:0;border-top:1px solid var(--hairline)">')
+    + [...regiones].map(reg => `<br><span style="font-size:.9em;opacity:.75">${fuenteAip(reg)}</span>`).join('');
+}
+
+function fixAipPopupHtml(reg, idx){
+  const [id, lat, lon, clase, nota, pais] = reg.puntos[idx];
+  const tipo = clase === 'C' ? `▲ Notificación <b>obligatoria</b>${nota ? ' (' + escapeHtml(nota) + ')' : ''}`
+    : clase === 'R' ? '∆ Notificación a solicitud'
+    : clase === 'K' ? 'Fijo de navegación computarizado (CNF): solo para los sistemas de navegación; no se usa en planes de vuelo ni en autorizaciones ATC'
+    : 'Tipo de notificación: ver el AIP';
+  const rutas = [...new Set((reg.rutasPorPunto.get(idx) || []).map(r => r.aw + (r.sub ? ` (${r.sub})` : '')))];
+  return `<div class="ap-popup nav-pop"><div class="np-title">${escapeHtml(id)}${pais && !reg.paises.includes(pais) ? ' (' + escapeHtml(pais) + ')' : ''}</div>`
+    + `<div>${coordTxt(lat, lon)}</div><div>${tipo}</div>`
+    + (rutas.length ? `<div>Aerovías: ${rutas.map(escapeHtml).join(', ')}</div>` : '')
+    + `<div class="np-src">${fuenteAip(reg)}</div></div>`;
+}
+
+function navAipPopupHtml(reg, r){
+  const [ident, nombre, tipo, frec, lat, lon, canal, varMag, lugar, estado, nota] = r;
+  const vm = varMag != null ? `Declinación de la estación: ${Math.abs(varMag)}° ${varMag < 0 ? 'W' : 'E'}` : '';
+  return `<div class="ap-popup nav-pop"><div class="np-title">${escapeHtml(ident)} — ${escapeHtml(nombre)}${lugar ? ' (' + escapeHtml(lugar) + ')' : ''}</div>`
+    + `<div>${[escapeHtml(tipo), escapeHtml(frec), canal ? 'CH ' + escapeHtml(canal) : ''].filter(Boolean).join(' · ')}</div>`
+    + `<div>${[vm, estado ? 'Horario/estado: ' + escapeHtml(estado) : '', escapeHtml(nota || '')].filter(Boolean).join(' · ')}</div>`
+    + `<div>${coordTxt(lat, lon)}</div><div class="np-src">${fuenteAip(reg)}</div></div>`;
+}
+
+// Prepara una región: un objeto por tramo único (los que comparten varias aerovías se dibujan una
+// sola vez, con todas en la ficha), con su caja de coordenadas para descartar deprisa lo que queda
+// fuera de la vista. Los tramos largos se trazan por la ortodrómica.
+function prepararRegionAip(j){
+  const reg = { ...j, rutasPorPunto: new Map(), nivelesPunto: new Map() };
+  const P = reg.puntos, porTramo = new Map();
+  j.rutas.forEach(([aw, sub, segs]) => segs.forEach(seg => {
+    const [ia, ib, d, tr, rr, nivel] = seg;
+    [ia, ib].forEach(i => {
+      const l = reg.rutasPorPunto.get(i) || []; l.push({ aw, sub }); reg.rutasPorPunto.set(i, l);
+      const s = reg.nivelesPunto.get(i) || new Set(); s.add(nivel); reg.nivelesPunto.set(i, s);
+    });
+    const clave = reg.codigo + '|' + [ia, ib].sort((x, y) => x - y).join('|');
+    let t = porTramo.get(clave);
+    if(!t){
+      const a = { lat: P[ia][1], lon: P[ia][2] }, b = { lat: P[ib][1], lon: P[ib][2] };
+      const m = gcIntermedio(a, b, .5);
+      const pts = getDistanceNM(a.lat, a.lon, b.lat, b.lon) > 100 ? densifyGC([a, b]) : [[a.lat, a.lon], [b.lat, b.lon]];
+      const lats = pts.map(p => p[0]), lons = pts.map(p => lonMapa(p[1]));
+      const costura = Math.max(...lons) - Math.min(...lons) > 180;
+      // a → b en el orden de la primera aerovía que publica el tramo: «t» es su derrota en ese
+      // sentido y «r» la recíproca, como en Colombia.
+      t = { key: clave, lat: m.lat, lon: m.lon, a, b, pts, d, t: tr, r: rr, rutas: [],
+        caja: [Math.min(...lats), Math.max(...lats), costura ? -Infinity : Math.min(...lons), costura ? Infinity : Math.max(...lons)] };
+      porTramo.set(clave, t);
+    }
+    t.rutas.push({ aw, sub, nivel, seg, reg });
+  }));
+  navAip.regiones.push(reg);
+  navAip.tramos.push(...porTramo.values());
+  reg.paises.forEach(p => navAip.paises.add(p));
+  // Radioayudas publicadas por el AIP: la misma estación de OurAirports ya no se dibuja.
+  reg.radioayudas.forEach(r => navAip.clavesNav.add(`${r[0]}|${r[4].toFixed(1)}|${r[5].toFixed(1)}`));
+}
+
 // Aerovías de Colombia: un trazo por tramo (con su tooltip de límites, MEA, clase y sentido de
 // niveles publicados) y una etiqueta con el designador en el punto medio. Cada trazo va al grupo
 // de su nivel (inferior o superior) para poder mostrarlos por separado. Los tramos que comparten
@@ -4161,12 +4255,23 @@ function actualizarCapasNav(){
       if(nav.size >= NAV_MAX_POR_CAPA) break;
       const [ident, nombre, tipo, khz, lat, lon, pais, , canal] = r;
       const esNdb = tipo.startsWith('NDB'), esDme = tipo === 'DME';
-      // Las radioayudas de Colombia salen de ENR 4.1 (capa navCol, más abajo).
-      if(pais === 'CO' || z < (esNdb || esDme ? NAV_ZOOM.ndb : NAV_ZOOM.vor) || !enVista(lat, lon)) continue;
+      // Las radioayudas de Colombia salen de ENR 4.1 (capa navCol, más abajo) y las de los países
+      // con AIP cargado, de ese AIP (bucle siguiente).
+      if(pais === 'CO' || navAip.paises.has(pais) || z < (esNdb || esDme ? NAV_ZOOM.ndb : NAV_ZOOM.vor) || !enVista(lat, lon)) continue;
+      if(navAip.clavesNav.has(`${ident}|${lat.toFixed(1)}|${lon.toFixed(1)}`)) continue;
       nav.set(`${ident}|${lat}|${lon}`, () => L.marker(llMapa(lat, lon), {
         pane: 'navPane', icon: navDivIcon(tipo, escapeHtml(ident), 8),   // frecuencia: en la ficha, al hacer clic
         title: `${ident} — ${nombre} (${tipo})`, keyboard: false,
       }).bindPopup(() => navMundoPopupHtml(r)));
+    }
+    for(const reg of navAip.regiones) for(const r of reg.radioayudas){
+      if(nav.size >= NAV_MAX_POR_CAPA) break;
+      const [ident, nombre, tipo, , lat, lon] = r;
+      const clave = `AIP|${ident}|${lat.toFixed(2)}|${lon.toFixed(2)}`;   // la misma estación en dos AIP, una vez
+      if(nav.has(clave) || z < (tipo.startsWith('NDB') || tipo === 'DME' ? NAV_ZOOM.ndb : NAV_ZOOM.vor) || !enVista(lat, lon)) continue;
+      nav.set(clave, () => L.marker(llMapa(lat, lon), {
+        pane: 'navPane', icon: navDivIcon(tipo, escapeHtml(ident), 8), title: `${ident} — ${nombre} (${tipo})`, keyboard: false,
+      }).bindPopup(() => navAipPopupHtml(reg, r)));
     }
   }
   sincronizarCapa(navDibujados.nav, navGrupos.nav, nav);
@@ -4192,21 +4297,41 @@ function actualizarCapasNav(){
     if(verAwy[nivel] && !flightMap.hasLayer(g)) g.addTo(flightMap);
     if(!verAwy[nivel] && flightMap.hasLayer(g)) flightMap.removeLayer(g);
   }
+  // Aerovías oficiales de otras regiones: solo los tramos que cruzan la vista, con un nivel visible.
+  const awyAip = new Map();
+  if((navCapas.awyInf || navCapas.awySup) && z >= NAV_ZOOM.awyAip && navAip.tramos.length){
+    const s = vista.getSouth(), n = vista.getNorth(), w = vista.getWest(), e = vista.getEast();
+    for(const t of navAip.tramos){
+      if(awyAip.size >= NAV_MAX_AWY_AIP) break;
+      const [la0, la1, lo0, lo1] = t.caja;
+      if(la1 < s || la0 > n || lo1 < w || lo0 > e) continue;
+      const visibles = t.rutas.filter(r => verNivel(r.nivel));
+      if(!visibles.length) continue;
+      const nivel = visibles.every(r => nivelVisto(r.nivel) === 'sup') ? 'sup' : 'inf';
+      awyAip.set(t.key + '|' + nivel, () => L.polyline(trazoMapa(t.pts), {
+        renderer: navRenderer, pane: 'navPane', color: colorAerovia(nivel), weight: 1.4, opacity: .85,
+      }).bindTooltip(() => tramoAipHtml(t), { sticky: true, className: 'fp-tooltip' })
+        .on('mouseover', function(){ this.setStyle({ weight: 3.2, opacity: 1 }); })
+        .on('mouseout', function(){ this.setStyle({ weight: 1.4, opacity: .85 }); }));
+    }
+  }
+  sincronizarCapa(navDibujados.awyAip, navGrupos.awyAip, awyAip);
+
   const lbl = new Map(), fix = new Map(), rumbos = new Map();
   if((navCapas.awyInf || navCapas.awySup) && z >= NAV_ZOOM.fix){
     // Designadores sin amontonarse: se reparte la pantalla en celdas y en cada una cabe una sola
     // etiqueta, como en una carta. Las celdas se calculan en píxeles absolutos del zoom actual,
     // así que al desplazar el mapa las etiquetas no cambian ni parpadean.
     const celdas = new Set();
-    if(z >= NAV_ZOOM.awyLbl) navAerovias.etiquetas.forEach(t => {
-      const txt = t.rutas.filter(r => verNivel(r.nivel)).map(r => r.aw);
+    if(z >= NAV_ZOOM.awyLbl) [...navAerovias.etiquetas, ...navAip.tramos].forEach(t => {
+      const txt = [...new Set(t.rutas.filter(r => verNivel(r.nivel)).map(r => r.aw))];
       if(!txt.length || !enVista(t.lat, t.lon)) return;
       const px = flightMap.project(llMapa(t.lat, t.lon), z);
       const celda = Math.floor(px.x / 150) + ',' + Math.floor(px.y / 40);   // una etiqueta por celda de 150×40 px
       if(celdas.has(celda)) return;
       celdas.add(celda);
       // La clave incluye el texto: si se oculta un nivel, la etiqueta compartida se rehace.
-      const soloSup = t.rutas.filter(r => verNivel(r.nivel)).every(r => r.nivel === 'sup');
+      const soloSup = t.rutas.filter(r => verNivel(r.nivel)).every(r => nivelVisto(r.nivel) === 'sup');
       // Geometría del tramo en pantalla. En Mercator los ángulos no cambian con el zoom, así que el
       // giro del rótulo es fijo; solo la longitud en píxeles decide si cabe cada texto.
       const pa = flightMap.project(llMapa(t.a.lat, t.a.lon), z), pb = flightMap.project(llMapa(t.b.lat, t.b.lon), z);
@@ -4248,6 +4373,20 @@ function actualizarCapasNav(){
       fix.set(code, () => L.marker(llMapa(p.lat, p.lon), {
         pane: 'navPane', icon: navDivIcon(tipo, escapeHtml(code), 8), title: code, keyboard: false,
       }).bindPopup(() => fixPopupHtml(code, p)));
+    });
+    // Fijos de las aerovías de otras regiones (las radioayudas ya salen en su capa). Un punto de
+    // límite que publican dos AIP se dibuja una vez, y si es de Colombia manda el eAIP colombiano.
+    for(const reg of navAip.regiones) reg.puntos.forEach((p, idx) => {
+      const [id, lat, lon, clase] = p;
+      if(clase === 'N' || fix.size >= NAV_MAX_POR_CAPA || !enVista(lat, lon)) return;
+      if(![...(reg.nivelesPunto.get(idx) || [])].some(verNivel)) return;
+      const col = WAYPOINTS[id];
+      if(col && Math.abs(col.lat - lat) < .05 && Math.abs(col.lon - lon) < .05) return;
+      const clave = `AIP|${id}|${lat.toFixed(2)}|${lon.toFixed(2)}`;
+      if(fix.has(clave)) return;
+      fix.set(clave, () => L.marker(llMapa(lat, lon), {
+        pane: 'navPane', icon: navDivIcon(clase === 'C' ? 'FIX-C' : 'FIX-R', escapeHtml(id), 8), title: id, keyboard: false,
+      }).bindPopup(() => fixAipPopupHtml(reg, idx)));
     });
   }
   sincronizarCapa(navDibujados.awyLbl, navGrupos.awyLbl, lbl);
@@ -4292,8 +4431,8 @@ function crearSelectorNivel(){
       d.setAttribute('role', 'group');
       d.setAttribute('aria-label', 'Rutas ATS por nivel');
       d.innerHTML = '<span class="nivel-tit">RUTAS</span>'
-        + `<button type="button" data-nivel="inf" aria-pressed="${navCapas.awyInf}" title="Rutas ATS inferiores: hasta FL245 (eAIP ENR 3.1 y RNAV inferiores)">INF<small>hasta FL245</small></button>`
-        + `<button type="button" data-nivel="sup" aria-pressed="${navCapas.awySup}" title="Rutas ATS superiores: desde FL245 (eAIP ENR 3.2 y RNAV superiores)">SUP<small>desde FL245</small></button>`;
+        + `<button type="button" data-nivel="inf" aria-pressed="${navCapas.awyInf}" title="Rutas ATS inferiores: en Colombia hasta FL245 (eAIP ENR 3.1 y RNAV inferiores); en otras regiones, según el límite de su AIP (EE.UU. bajo FL180; Centroamérica y Curazao hasta FL195)">INF<small>hasta FL245</small></button>`
+        + `<button type="button" data-nivel="sup" aria-pressed="${navCapas.awySup}" title="Rutas ATS superiores: en Colombia desde FL245 (eAIP ENR 3.2 y RNAV superiores); en otras regiones, según el límite de su AIP (EE.UU. desde FL180; Centroamérica y Curazao desde FL195)">SUP<small>desde FL245</small></button>`;
       L.DomEvent.disableClickPropagation(d);
       L.DomEvent.disableScrollPropagation(d);
       d.addEventListener('click', e => {
@@ -4309,12 +4448,29 @@ function crearSelectorNivel(){
 function refrescarTemaNav(){
   if(!navAerovias) return;
   navAerovias.lineas.forEach(l => l.setStyle({ color: colorAerovia(l.__nivel) }));
+  navDibujados.awyAip.forEach((l, k) => l.setStyle({ color: colorAerovia(k.endsWith('|sup') ? 'sup' : 'inf') }));
   navDibujados.ad.forEach(m => m.setStyle({ color: PAL.magenta, fillColor: PAL.magenta }));
 }
 
 async function cargarDatosMundo(){
   const estado = document.getElementById('navDataStatus');
   const pedir = f => fetch(NAV_DATA_URL + f).then(r => { if(!r.ok) throw new Error(f + ' HTTP ' + r.status); return r.json(); });
+  // Aerovías oficiales de otras regiones: van aparte, y cada región por su cuenta. Si un archivo
+  // no llega, el resto del mapa se carga igual.
+  const avisoAip = () => {
+    const aviso = document.getElementById('navDataStatusAip');
+    if(!aviso) return;
+    const regs = navAip.regiones.slice().sort((a, b) => a.region.localeCompare(b.region, 'es'));
+    aviso.textContent = regs.length
+      ? 'Aerovías oficiales fuera de Colombia: ' + regs.map(r => `${r.region} (${r.fuente}; ${r.vigencia})`).join(' · ') + '. El límite entre rutas inferiores y superiores es el de cada región.'
+      : 'No se pudieron cargar las aerovías de fuera de Colombia.';
+  };
+  pedir('aerovias/indice.json').then(indice => Promise.allSettled(indice.regiones.map(r =>
+    pedir('aerovias/' + r.archivo).then(j => { prepararRegionAip(j); avisoAip(); actualizarCapasNav(); })
+  ))).then(() => {
+    if(navAip.regiones.length) flightMap.attributionControl.addAttribution('Aerovías: AIP oficiales (detalle bajo el mapa)');
+    avisoAip();
+  }).catch(avisoAip);
   try{
     const [ad, nav] = await Promise.all([pedir('aerodromos.json'), pedir('radioayudas.json')]);
     // Orden de importancia: si una vista llega al tope de objetos, lo que queda fuera son los
@@ -4334,8 +4490,8 @@ async function cargarDatosMundo(){
 function iniciarCapasNav(){
   flightMap.createPane('navPane').style.zIndex = 350;   // bajo overlayPane (400): rutas, zonas y aeronaves conservan el clic
   navRenderer = L.canvas({ pane: 'navPane', padding: 0.3 });
-  ['ad', 'nav', 'navCol', 'awy_inf', 'awy_sup', 'awyLbl', 'awyRumbo', 'fix'].forEach(k => navGrupos[k] = L.layerGroup());
-  ['ad', 'nav', 'navCol', 'awyLbl', 'awyRumbo', 'fix'].forEach(k => navGrupos[k].addTo(flightMap));
+  ['ad', 'nav', 'navCol', 'awy_inf', 'awy_sup', 'awyAip', 'awyLbl', 'awyRumbo', 'fix'].forEach(k => navGrupos[k] = L.layerGroup());
+  ['ad', 'nav', 'navCol', 'awyAip', 'awyLbl', 'awyRumbo', 'fix'].forEach(k => navGrupos[k].addTo(flightMap));
   construirAerovias();
   navAerovias.lineas.forEach(l => navGrupos['awy_' + l.__nivel].addLayer(l));
   crearSelectorNivel();

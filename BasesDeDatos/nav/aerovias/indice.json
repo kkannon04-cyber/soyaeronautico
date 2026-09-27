@@ -1,0 +1,88 @@
+{
+ "regiones": [
+  {
+   "archivo": "argentina.json",
+   "codigo": "argentina",
+   "region": "Argentina (FIR Ezeiza, Córdoba, Mendoza, Resistencia y Comodoro Rivadavia)",
+   "fuente": "AIP de Argentina, ANAC — ENR 3.1 y ENR 3.2 (PDF)",
+   "vigencia": "ENR 3.1 y 3.2 de la AMDT AIRAC 01/26 (11 JUN 2026)"
+  },
+  {
+   "archivo": "centroamerica.json",
+   "codigo": "centroamerica",
+   "region": "Centroamérica (FIR CENAMER)",
+   "fuente": "eAIP de Centroamérica, COCESNA — ENR 3.1, ENR 3.2 y ENR 4.1 de cada Estado",
+   "vigencia": "NON AIRAC AMDT 59/26, en vigor desde el 01 OCT 2026"
+  },
+  {
+   "archivo": "chile.json",
+   "codigo": "chile",
+   "region": "Chile (FIR Santiago, Antofagasta, Puerto Montt y Punta Arenas)",
+   "fuente": "AIP de Chile, DGAC — ENR 3, rutas convencionales y RNAV (PDF)",
+   "vigencia": "ENR 3 vigente en el sitio de la DGAC (cada página lleva su fecha)"
+  },
+  {
+   "archivo": "cuba.json",
+   "codigo": "cuba",
+   "region": "Cuba (FIR Habana)",
+   "fuente": "AIP de Cuba, IACC — ENR 3.1, 3.2 y 3.3 (PDF)",
+   "vigencia": "AIRAC AIP AMDT 1/25, páginas del 04 SEP 2025"
+  },
+  {
+   "archivo": "curazao.json",
+   "codigo": "curazao",
+   "region": "Curazao, Aruba y Bonaire (FIR Curazao)",
+   "fuente": "eAIP Dutch Caribbean, DC-ANSP — ENR 3 y ENR 4.1",
+   "vigencia": "AIRAC AMDT 03-26, en vigor desde el 01 OCT 2026"
+  },
+  {
+   "archivo": "ecuador.json",
+   "codigo": "ecuador",
+   "region": "Ecuador (FIR Guayaquil)",
+   "fuente": "AIP de Ecuador, DGAC (IFIS3) — ENR 3.1, 3.2 y 3.3, transcritas de las tablas publicadas como imagen",
+   "vigencia": "última enmienda del AIP en IFIS3 al transcribir: AIRAC AIP AMDT 01-26"
+  },
+  {
+   "archivo": "eeuu.json",
+   "codigo": "eeuu",
+   "region": "Estados Unidos",
+   "fuente": "FAA NASR 28 Day Subscription — Aeronautical Information Services (dominio público)",
+   "vigencia": "aerovías vigentes desde el 03 SEP 2026; fijos y radioayudas de la suscripción del 01 OCT 2026"
+  },
+  {
+   "archivo": "panama.json",
+   "codigo": "panama",
+   "region": "Panamá (FIR Panamá)",
+   "fuente": "AIP de Panamá, AAC — ENR 3 Rutas ATS (PDF)",
+   "vigencia": "ENR 3 publicado por la AAC, páginas con fecha hasta el 30 JUN 26"
+  },
+  {
+   "archivo": "paraguay.json",
+   "codigo": "paraguay",
+   "region": "Paraguay (FIR Asunción)",
+   "fuente": "AIP del Paraguay, DINAC — ENR 3 (PDF de la AMDT AIRAC 01/2026)",
+   "vigencia": "AMDT AIRAC 01/2026; cada página lleva su fecha"
+  },
+  {
+   "archivo": "peru.json",
+   "codigo": "peru",
+   "region": "Perú (FIR Lima)",
+   "fuente": "AIP del Perú, CORPAC — ENR 3.1, 3.2 y 3.3 (PDF del servidor oficial de respaldo)",
+   "vigencia": "PDF publicados por CORPAC en su servidor de contingencia (actualizados el 17 SEP 2026); cada página lleva su fecha"
+  },
+  {
+   "archivo": "dominicana.json",
+   "codigo": "dominicana",
+   "region": "República Dominicana (FIR Santo Domingo)",
+   "fuente": "AIP de la República Dominicana, IDAC — ENR 3.1, 3.2 y 3.3 (PDF)",
+   "vigencia": "ENR 3 en vigor desde el 30 OCT 25 (fecha de sus páginas)"
+  },
+  {
+   "archivo": "uruguay.json",
+   "codigo": "uruguay",
+   "region": "Uruguay (FIR Montevideo)",
+   "fuente": "AIP de Uruguay, DINACIA — ENR 3 Rutas ATS (PDF)",
+   "vigencia": "ENR 3 publicado el 13 MAY 2026"
+  }
+ ]
+}
