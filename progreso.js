@@ -749,3 +749,32 @@ async function obtenerPlanEntregado(resultadoId) {
   if (error) return { ok: false, error: error.message };
   return { ok: true, entrega: data };
 }
+
+// ---------- ACTIVIDADES DE MENSAJERÍA AFTN ----------
+// El estudiante entrega los mensajes que redactó en terminal-aftn.html y el
+// servidor los califica contra la clave del profesor (calificar_aftn en
+// supabase-schema.sql), cinco puntos por mensaje. Mismo contrato que
+// calificarPlanDeVuelo(): la clave sólo vuelve cuando ya no quedan intentos.
+async function calificarActividadAftn(actividadId, mensajes) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('calificar_aftn', {
+    p_actividad_id: actividadId,
+    p_mensajes: mensajes
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, resultado: data };
+}
+
+// Una entrega AFTN ya calificada, para el profesor o para el propio estudiante.
+async function obtenerEntregaAftn(resultadoId) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('obtener_resultado_aftn', { p_resultado_id: resultadoId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, entrega: data };
+}

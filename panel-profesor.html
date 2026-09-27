@@ -513,7 +513,7 @@
     <section class="seccion" id="seccion-actividades">
       <div class="seccion-head">
         <h2>Actividades</h2>
-        <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión. Un <strong>plan de vuelo</strong> es una situación que el estudiante resuelve diligenciando el formulario OACI completo.</p>
+        <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión. Un <strong>plan de vuelo</strong> es una situación que el estudiante resuelve diligenciando el formulario OACI completo. Una actividad de <strong>mensajería AFTN</strong> le pide redactar uno o varios mensajes completos en la terminal AFTN/AMHS.</p>
       </div>
 
       <!-- El plan de vuelo no sale del banco de preguntas: se arma en el
@@ -528,6 +528,22 @@
           </div>
           <div class="campo" style="display:flex;align-items:flex-end;">
             <button class="btn btn-primario" id="btnCrearPlanVuelo" type="button">Armar la situación en el simulador</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- La mensajería AFTN tampoco sale del banco: se arma en la terminal,
+           donde está el compositor de mensajes con la revisión del Anexo 10. -->
+      <div class="panel-card">
+        <h3>Actividad de mensajería AFTN</h3>
+        <p class="card-sub">Describes la situación y dejas redactado cada mensaje correcto (puedes partir de un caso de estudio). El servidor califica prioridad, destinatarios, remitente, hora de depósito y texto de cada mensaje.</p>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="afGrupo">Grupo</label>
+            <select id="afGrupo"></select>
+          </div>
+          <div class="campo" style="display:flex;align-items:flex-end;">
+            <button class="btn btn-primario" id="btnCrearAftn" type="button">Armar la actividad en la terminal</button>
           </div>
         </div>
       </div>
@@ -909,7 +925,7 @@ document.getElementById('btnCrearGrupo').addEventListener('click', async (e) => 
 function renderSelectoresDeGrupo() {
   const opciones = estado.grupos.map(g => `<option value="${esc(g.id)}">${esc(g.nombre)}</option>`).join('');
   const vacio = '<option value="">Crea un grupo primero</option>';
-  ['aGrupo', 'rGrupo', 'pvGrupo'].forEach(id => {
+  ['aGrupo', 'rGrupo', 'pvGrupo', 'afGrupo'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     const valor = sel.value;
@@ -924,6 +940,12 @@ document.getElementById('btnCrearPlanVuelo').addEventListener('click', () => {
   const grupoId = document.getElementById('pvGrupo').value;
   if (!grupoId) { aviso('Crea un grupo antes de asignarle una actividad.', 'error'); return; }
   location.href = 'simulador-plan-vuelo.html?crear=' + encodeURIComponent(grupoId);
+});
+
+document.getElementById('btnCrearAftn').addEventListener('click', () => {
+  const grupoId = document.getElementById('afGrupo').value;
+  if (!grupoId) { aviso('Crea un grupo antes de asignarle una actividad.', 'error'); return; }
+  location.href = 'terminal-aftn.html?crear=' + encodeURIComponent(grupoId);
 });
 
 // ============================================================
@@ -1513,12 +1535,14 @@ function renderActividades() {
     item.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:240px;">
-          <span class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</span>
+          <span class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura'}</span>
           <span class="badge-estado ${a.activa ? 'publicada' : 'borrador'}">${a.activa ? 'Publicada' : 'Sin publicar'}</span>
           <h4 style="margin-top:8px;">${esc(a.titulo)}</h4>
           <p>
             ${esc(a.grupoNombre)}${a.tipo === 'plan_vuelo'
               ? ' · formulario OACI, se califican las casillas 7 a 18'
+              : a.tipo === 'aftn'
+              ? ' · mensajes AFTN redactados en la terminal'
               : ` · ${a.numPreguntas} pregunta${a.numPreguntas === 1 ? '' : 's'}`}
             ${a.intentosMax ? ` · máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}` : ' · intentos ilimitados'}
             ${a.fechaLimite ? ` · ${vencida ? 'cerró' : 'cierra'} el ${fechaCorta(a.fechaLimite)}` : ''}
@@ -1528,7 +1552,7 @@ function renderActividades() {
       </div>
       <div class="acciones" style="margin-top:14px;">
         <button class="btn btn-secundario btn-mini" data-publicar>${a.activa ? 'Despublicar' : 'Publicar'}</button>
-        ${a.tipo === 'plan_vuelo' ? '' : `
+        ${a.tipo === 'plan_vuelo' || a.tipo === 'aftn' ? '' : `
         <button class="btn btn-secundario btn-mini" data-editar>Editar</button>
         <button class="btn btn-secundario btn-mini" data-previa>Vista previa</button>
         <button class="btn btn-secundario btn-mini" data-duplicar>Duplicar</button>`}
@@ -1542,7 +1566,7 @@ function renderActividades() {
       aviso(a.activa ? 'Actividad despublicada: ya no la ven tus estudiantes.' : 'Actividad publicada: ya la ven tus estudiantes.', 'ok');
       cargarActividades();
     });
-    if (a.tipo !== 'plan_vuelo') {
+    if (a.tipo !== 'plan_vuelo' && a.tipo !== 'aftn') {
     item.querySelector('[data-editar]').addEventListener('click', () => editarActividad(a));
     item.querySelector('[data-duplicar]').addEventListener('click', async () => {
       const destino = estado.grupos.length > 1
@@ -1732,6 +1756,8 @@ async function cargarResultados() {
           r.corregido ? ' <span class="badge-estado borrador" title="La nota fue ajustada a mano; el detalle está en el historial de la entrega.">corregida</span>' : ''}</td>
         <td>${r.actividadTipo === 'plan_vuelo'
           ? `<a class="btn btn-secundario btn-mini" href="simulador-plan-vuelo.html?resultado=${encodeURIComponent(r.id)}">Ver plan / PDF</a> `
+          : r.actividadTipo === 'aftn'
+          ? `<a class="btn btn-secundario btn-mini" href="terminal-aftn.html?resultado=${encodeURIComponent(r.id)}">Ver mensajes / corregir</a> `
           : `<button class="btn btn-secundario btn-mini" data-corregir="${esc(r.id)}" data-tipo="${esc(r.actividadTipo)}" data-fila="${esc(filaId)}">Corregir / comentar</button> `
           }<button class="btn btn-peligro btn-mini" data-borrar-resultado="${esc(r.id)}">Borrar</button></td>
       </tr>

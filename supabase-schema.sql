@@ -2279,3 +2279,1030 @@ as $$
 $$;
 revoke execute on function public.mis_entregas_de_grupos_anteriores() from public, anon;
 grant execute on function public.mis_entregas_de_grupos_anteriores() to authenticated;
+
+-- ============================================================
+-- MIGRACIÓN — TERMINAL AFTN / AMHS (2026-09-27)
+--
+-- Dos cosas nuevas para terminal-aftn.html:
+--
+--  A) Un cuarto tipo de actividad del profesor, 'aftn': el profesor
+--     plantea una situación y la clave de uno o varios mensajes AFTN; el
+--     estudiante los redacta y el servidor los califica. Mismo patrón que
+--     'plan_vuelo': la clave vive en una tabla aparte (actividad_aftn) que
+--     sólo lee el profesor, y la nota sólo se escribe desde una función.
+--
+--  B) Salas en vivo para practicar entre compañeros: cada participante
+--     opera una estación (dirección de 8 letras) y los mensajes se
+--     entregan a quien tenga esa dirección. Las tablas tienen RLS sin
+--     policies y sin privilegios para los clientes: TODO pasa por
+--     funciones security definer que comprueban auth.uid(), el remitente
+--     lo pone el servidor (nadie puede firmar como otra estación) y el
+--     texto se valida con el juego de caracteres del Anexo 10 (4.1.2.1).
+-- ============================================================
+
+-- ------------------------------------------------------------
+-- A) ACTIVIDADES DE MENSAJERÍA AFTN
+-- ------------------------------------------------------------
+
+alter table public.actividades drop constraint if exists actividades_tipo_check;
+alter table public.actividades add constraint actividades_tipo_check
+  check (tipo in ('examen', 'texto', 'plan_vuelo', 'aftn'));
+
+-- enunciado: { titulo, contexto, estacion, tareas:[{consigna}] } — lo que ve el alumno.
+-- clave:     { mensajes:[{prio, dest[], orig, hora, texto, textoModo, claves[]}] }
+create table if not exists public.actividad_aftn (
+  actividad_id uuid primary key references public.actividades(id) on delete cascade,
+  enunciado jsonb not null,
+  clave jsonb not null,
+  creado_en timestamptz not null default now()
+);
+alter table public.actividad_aftn enable row level security;
+revoke all on public.actividad_aftn from anon;
+
+drop policy if exists "El profesor gestiona los mensajes AFTN de sus actividades" on public.actividad_aftn;
+create policy "El profesor gestiona los mensajes AFTN de sus actividades"
+  on public.actividad_aftn for all
+  using (exists (
+    select 1 from public.actividades a
+    where a.id = actividad_id and a.profesor_id = auth.uid()
+  ))
+  with check (exists (
+    select 1 from public.actividades a
+    where a.id = actividad_id and a.profesor_id = auth.uid()
+  ));
+
+-- obtener_actividad(): igual que antes, más el enunciado AFTN (nunca la clave).
+create or replace function public.obtener_actividad(p_actividad_id uuid)
+returns jsonb
+language plpgsql
+stable security definer
+set search_path to 'public'
+as $function$
+declare
+  v_act public.actividades%rowtype;
+  v_preguntas jsonb;
+  v_plan jsonb;
+  v_aftn jsonb;
+  v_intentos integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select a.* into v_act
+  from public.actividades a
+  join public.inscripciones i on i.grupo_id = a.grupo_id
+  where a.id = p_actividad_id and i.estudiante_id = auth.uid() and a.activa;
+
+  if not found then
+    raise exception 'Esta actividad no está disponible para tu cuenta.';
+  end if;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = p_actividad_id and estudiante_id = auth.uid();
+
+  select coalesce(jsonb_agg(
+           jsonb_build_object('id', p.id, 'enunciado', p.enunciado, 'opciones', p.opciones)
+           order by ap.orden, p.creado_en
+         ), '[]'::jsonb)
+    into v_preguntas
+  from public.actividad_preguntas ap
+  join public.preguntas p on p.id = ap.pregunta_id
+  where ap.actividad_id = p_actividad_id;
+
+  -- Sólo el enunciado. La columna "clave" se queda en el servidor.
+  if v_act.tipo = 'plan_vuelo' then
+    select ap.enunciado into v_plan
+    from public.actividad_plan ap
+    where ap.actividad_id = p_actividad_id;
+  end if;
+
+  if v_act.tipo = 'aftn' then
+    select aa.enunciado into v_aftn
+    from public.actividad_aftn aa
+    where aa.actividad_id = p_actividad_id;
+  end if;
+
+  return jsonb_build_object(
+    'id', v_act.id,
+    'titulo', v_act.titulo,
+    'descripcion', v_act.descripcion,
+    'tipo', v_act.tipo,
+    'texto_lectura', v_act.texto_lectura,
+    'barajar', v_act.barajar,
+    'fecha_limite', v_act.fecha_limite,
+    'intentos_max', v_act.intentos_max,
+    'intentos_usados', v_intentos,
+    'cerrada', (v_act.fecha_limite is not null and now() > v_act.fecha_limite),
+    'sin_intentos', (v_act.intentos_max is not null and v_intentos >= v_act.intentos_max),
+    'preguntas', v_preguntas,
+    'plan', v_plan,
+    'aftn', v_aftn
+  );
+end;
+$function$;
+
+-- Normalización idéntica a la del navegador (aftnNorm en terminal-aftn.html):
+-- mayúsculas y cualquier secuencia de espacios o saltos de línea como un espacio.
+-- El trim va DESPUÉS del regexp: trim() sólo quita espacios, y un salto de
+-- línea final quedaba convertido en un espacio sobrante (migración
+-- terminal_aftn_norm_saltos_finales).
+create or replace function public.aftn_norm(p_valor text)
+returns text language sql immutable set search_path = public as $$
+  select upper(trim(regexp_replace(coalesce(p_valor, ''), '\s+', ' ', 'g')));
+$$;
+
+-- Conjunto de destinatarios: sin orden ni repetidos (el Anexo 10 no impone
+-- un orden obligatorio; 4.4.3.1.2.3.1 sólo recomienda el que minimice
+-- retransmisiones).
+create or replace function public.aftn_dest_set(p_valor jsonb)
+returns text[] language sql immutable set search_path = public as $$
+  select coalesce((
+    select array_agg(distinct aftn_norm(x) order by aftn_norm(x))
+    from jsonb_array_elements_text(case when jsonb_typeof(p_valor) = 'array' then p_valor else '[]'::jsonb end) x
+    where aftn_norm(x) <> ''
+  ), '{}'::text[]);
+$$;
+
+-- Califica los mensajes entregados contra la clave. Cinco revisiones por
+-- mensaje, en el mismo orden y con las mismas etiquetas que
+-- revisarContraClave() del navegador.
+create or replace function public.calificar_aftn(p_actividad_id uuid, p_mensajes jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_act public.actividades%rowtype;
+  v_clave jsonb;
+  v_intentos integer;
+  v_total integer := 0;
+  v_correctas integer := 0;
+  v_detalle jsonb := '[]'::jsonb;
+  v_porcentaje integer;
+  v_restantes integer;
+  v_k jsonb;
+  v_e jsonb;
+  v_i integer;
+  v_n integer;
+  v_ok boolean;
+  v_clave_txt text;
+  v_texto text;
+  v_etq text;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  if p_mensajes is null or jsonb_typeof(p_mensajes) <> 'array' then
+    raise exception 'La entrega no tiene el formato esperado.';
+  end if;
+  if length(p_mensajes::text) > 60000 then
+    raise exception 'La entrega es demasiado grande.';
+  end if;
+
+  select a.* into v_act
+  from public.actividades a
+  join public.inscripciones i on i.grupo_id = a.grupo_id
+  where a.id = p_actividad_id and i.estudiante_id = auth.uid() and a.activa;
+
+  if not found then
+    raise exception 'Esta actividad no está disponible para tu cuenta.';
+  end if;
+  if v_act.tipo <> 'aftn' then
+    raise exception 'Esta actividad no es de mensajería AFTN.';
+  end if;
+  if v_act.fecha_limite is not null and now() > v_act.fecha_limite then
+    raise exception 'La fecha límite de esta actividad ya pasó.';
+  end if;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = p_actividad_id and estudiante_id = auth.uid();
+
+  if v_act.intentos_max is not null and v_intentos >= v_act.intentos_max then
+    raise exception 'Ya usaste todos los intentos permitidos para esta actividad.';
+  end if;
+
+  select aa.clave into v_clave from public.actividad_aftn aa where aa.actividad_id = p_actividad_id;
+  if v_clave is null or jsonb_typeof(v_clave -> 'mensajes') <> 'array'
+     or jsonb_array_length(v_clave -> 'mensajes') = 0 then
+    raise exception 'Esta actividad todavía no tiene sus mensajes cargados.';
+  end if;
+
+  v_n := jsonb_array_length(v_clave -> 'mensajes');
+  for v_i in 0 .. v_n - 1 loop
+    v_k := v_clave -> 'mensajes' -> v_i;
+    v_e := coalesce(p_mensajes -> v_i, '{}'::jsonb);
+    v_etq := 'Mensaje ' || (v_i + 1)::text || ' — ';
+
+    -- 1) Prioridad
+    v_ok := aftn_norm(v_e ->> 'prio') <> '' and aftn_norm(v_e ->> 'prio') = aftn_norm(v_k ->> 'prio');
+    v_detalle := v_detalle || jsonb_build_array(jsonb_build_object('cas', (v_i + 1)::text, 'label', v_etq || 'Indicador de prioridad', 'ok', v_ok));
+
+    -- 2) Destinatarios (como conjunto)
+    v_ok := cardinality(aftn_dest_set(v_e -> 'dest')) > 0 and aftn_dest_set(v_e -> 'dest') = aftn_dest_set(v_k -> 'dest');
+    v_detalle := v_detalle || jsonb_build_array(jsonb_build_object('cas', (v_i + 1)::text, 'label', v_etq || 'Indicadores de destinatario', 'ok', v_ok));
+
+    -- 3) Remitente
+    v_ok := aftn_norm(v_e ->> 'orig') <> '' and aftn_norm(v_e ->> 'orig') = aftn_norm(v_k ->> 'orig');
+    v_detalle := v_detalle || jsonb_build_array(jsonb_build_object('cas', (v_i + 1)::text, 'label', v_etq || 'Indicador de remitente', 'ok', v_ok));
+
+    -- 4) Hora de depósito: exacta si la clave la fija; si no, basta un
+    --    grupo fecha-hora válido de seis cifras (4.4.15.2.2.1).
+    if aftn_norm(v_k ->> 'hora') <> '' then
+      v_ok := aftn_norm(v_e ->> 'hora') = aftn_norm(v_k ->> 'hora');
+    else
+      v_ok := aftn_norm(v_e ->> 'hora') ~ '^(0[1-9]|[12][0-9]|3[01])([01][0-9]|2[0-3])[0-5][0-9]$';
+    end if;
+    v_detalle := v_detalle || jsonb_build_array(jsonb_build_object('cas', (v_i + 1)::text, 'label', v_etq || 'Hora de depósito', 'ok', v_ok));
+
+    -- 5) Texto: idéntico (normalizado) o con todos los grupos clave.
+    v_texto := aftn_norm(v_e ->> 'texto');
+    if coalesce(v_k ->> 'textoModo', 'exacto') = 'claves' then
+      v_ok := v_texto <> '';
+      if jsonb_typeof(v_k -> 'claves') = 'array' then
+        for v_clave_txt in select aftn_norm(c) from jsonb_array_elements_text(v_k -> 'claves') c loop
+          if v_clave_txt <> '' and position(v_clave_txt in v_texto) = 0 then
+            v_ok := false;
+          end if;
+        end loop;
+      end if;
+    else
+      v_ok := v_texto <> '' and v_texto = aftn_norm(v_k ->> 'texto');
+    end if;
+    v_detalle := v_detalle || jsonb_build_array(jsonb_build_object('cas', (v_i + 1)::text, 'label', v_etq || 'Texto', 'ok', v_ok));
+  end loop;
+
+  select count(*)::integer, count(*) filter (where (c ->> 'ok')::boolean)::integer
+    into v_total, v_correctas
+  from jsonb_array_elements(v_detalle) c;
+
+  v_porcentaje := round(v_correctas * 100.0 / v_total);
+
+  insert into public.resultados_actividad
+    (actividad_id, estudiante_id, correctas, total, porcentaje, leido, detalle)
+  values
+    (p_actividad_id, auth.uid(), v_correctas, v_total, v_porcentaje, true,
+     jsonb_build_object('tipo', 'aftn', 'valores', p_mensajes, 'casillas', v_detalle));
+
+  v_restantes := case when v_act.intentos_max is null then null
+                      else greatest(v_act.intentos_max - (v_intentos + 1), 0) end;
+
+  -- La clave sólo se entrega cuando ya no puede volver a intentarlo
+  -- (mismo criterio que calificar_plan_vuelo).
+  return jsonb_build_object(
+    'correctas', v_correctas,
+    'total', v_total,
+    'porcentaje', v_porcentaje,
+    'casillas', v_detalle,
+    'intentos_restantes', v_restantes,
+    'clave', case when v_restantes = 0 then v_clave else null end
+  );
+end;
+$$;
+
+-- Leer una entrega AFTN ya calificada (profesor de la actividad o el
+-- propio estudiante). Copia del contrato de obtener_resultado_plan.
+create or replace function public.obtener_resultado_aftn(p_resultado_id uuid)
+returns jsonb
+language plpgsql
+stable security definer
+set search_path to 'public'
+as $$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_enunciado jsonb;
+  v_clave jsonb;
+  v_nombre text;
+  v_correcciones jsonb;
+  v_es_profesor boolean;
+  v_intentos integer;
+  v_puede_reintentar boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  v_es_profesor := (v_act.profesor_id = auth.uid());
+
+  if not v_es_profesor and v_res.estudiante_id <> auth.uid() then
+    raise exception 'Esta entrega no está disponible para tu cuenta.';
+  end if;
+  if v_act.tipo <> 'aftn' then
+    raise exception 'Esa entrega no es de mensajería AFTN.';
+  end if;
+
+  select aa.enunciado, aa.clave into v_enunciado, v_clave
+  from public.actividad_aftn aa where aa.actividad_id = v_res.actividad_id;
+
+  select nullif(trim(coalesce(p.nombre, '') || ' ' || coalesce(p.apellido, '')), '')
+    into v_nombre
+  from public.perfiles p where p.id = v_res.estudiante_id;
+
+  select count(*)::integer into v_intentos
+  from public.resultados_actividad
+  where actividad_id = v_res.actividad_id and estudiante_id = v_res.estudiante_id;
+
+  v_puede_reintentar := v_act.activa
+    and (v_act.fecha_limite is null or now() <= v_act.fecha_limite)
+    and (v_act.intentos_max is null or v_intentos < v_act.intentos_max);
+
+  select coalesce(jsonb_agg(
+           jsonb_build_object(
+             'id', c.id, 'fecha', c.fecha, 'motivo', c.motivo, 'cambios', c.cambios,
+             'correctas_antes', c.correctas_antes, 'correctas_despues', c.correctas_despues,
+             'porcentaje_antes', c.porcentaje_antes, 'porcentaje_despues', c.porcentaje_despues,
+             'profesor', coalesce(nullif(trim(coalesce(pr.nombre, '') || ' ' || coalesce(pr.apellido, '')), ''), 'El profesor')
+           ) order by c.fecha desc
+         ), '[]'::jsonb)
+    into v_correcciones
+  from public.correcciones_resultado c
+  left join public.perfiles pr on pr.id = c.profesor_id
+  where c.resultado_id = p_resultado_id;
+
+  return jsonb_build_object(
+    'id', v_res.id,
+    'actividad_id', v_res.actividad_id,
+    'actividad_titulo', v_act.titulo,
+    'actividad_activa', v_act.activa,
+    'actividad_fecha_limite', v_act.fecha_limite,
+    'actividad_cerrada', (not v_act.activa)
+                         or (v_act.fecha_limite is not null and now() > v_act.fecha_limite),
+    'estudiante', coalesce(v_nombre, 'Estudiante'),
+    'correctas', v_res.correctas,
+    'total', v_res.total,
+    'porcentaje', v_res.porcentaje,
+    'fecha', v_res.fecha,
+    'valores', v_res.detalle -> 'valores',
+    'casillas', v_res.detalle -> 'casillas',
+    'correcciones', v_correcciones,
+    'enunciado', v_enunciado,
+    'es_profesor', v_es_profesor,
+    'puede_reintentar', v_puede_reintentar,
+    'clave', case when v_es_profesor or not v_puede_reintentar then v_clave else null end
+  );
+end;
+$$;
+
+grant execute on function public.calificar_aftn(uuid, jsonb) to authenticated;
+grant execute on function public.obtener_resultado_aftn(uuid) to authenticated;
+revoke execute on function public.calificar_aftn(uuid, jsonb) from public, anon;
+revoke execute on function public.obtener_resultado_aftn(uuid) from public, anon;
+revoke execute on function public.aftn_norm(text) from public, anon;
+revoke execute on function public.aftn_dest_set(jsonb) from public, anon;
+
+-- corregir_resultado(): las entregas AFTN guardan su detalle igual que las
+-- de plan de vuelo ({tipo, valores, casillas}), así que se corrigen por la
+-- misma rama. Único cambio respecto de la versión anterior: 'aftn' se suma a
+-- los tipos admitidos y a la rama de "casillas en detalle->'casillas'".
+create or replace function public.corregir_resultado(p_resultado_id uuid, p_cambios jsonb default '[]'::jsonb, p_motivo text default null::text, p_correctas integer default null::integer)
+ returns jsonb
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+declare
+  v_res public.resultados_actividad%rowtype;
+  v_act public.actividades%rowtype;
+  v_es_plan boolean;
+  v_items jsonb;
+  v_cambio jsonb;
+  v_actual jsonb;
+  v_i integer;
+  v_ok boolean;
+  v_ok_auto boolean;
+  v_etiqueta text;
+  v_registro jsonb := '[]'::jsonb;
+  v_correctas integer;
+  v_porcentaje integer;
+  v_motivo text;
+  v_modo text;
+  v_hay_cambios boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión.';
+  end if;
+
+  select * into v_res from public.resultados_actividad where id = p_resultado_id;
+  if not found then
+    raise exception 'No encontramos esa entrega.';
+  end if;
+
+  select * into v_act from public.actividades where id = v_res.actividad_id;
+  if v_act.profesor_id is distinct from auth.uid() then
+    raise exception 'Sólo el profesor de la actividad puede corregir esta entrega.';
+  end if;
+  if v_act.tipo not in ('examen', 'texto', 'plan_vuelo', 'aftn') then
+    raise exception 'Ese tipo de actividad no admite corrección.';
+  end if;
+
+  v_motivo      := nullif(trim(coalesce(p_motivo, '')), '');
+  -- "Plan" aquí significa: el detalle es un objeto con sus casillas en
+  -- detalle->'casillas' (plan de vuelo y mensajería AFTN).
+  v_es_plan     := (v_act.tipo in ('plan_vuelo', 'aftn'));
+  v_hay_cambios := (jsonb_typeof(p_cambios) = 'array' and jsonb_array_length(p_cambios) > 0);
+
+  -- Los tres modos son mutuamente excluyentes.
+  if v_hay_cambios and p_correctas is not null then
+    raise exception 'Indica casillas o una nota global, no las dos cosas a la vez.';
+  elsif v_hay_cambios then
+    v_modo := 'casillas';
+  elsif p_correctas is not null then
+    v_modo := 'nota';
+  else
+    v_modo := 'comentario';
+  end if;
+
+  if v_modo <> 'casillas' and v_motivo is null then
+    raise exception 'Escribe un comentario para el estudiante.';
+  end if;
+  if v_act.tipo = 'texto' and v_modo <> 'comentario' then
+    raise exception 'En una lectura sólo se puede dejar un comentario.';
+  end if;
+
+  -- ---------- MODO COMENTARIO: no toca la nota ni el detalle ----------
+  if v_modo = 'comentario' then
+    insert into public.correcciones_resultado
+      (resultado_id, profesor_id, cambios, motivo,
+       correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+    values
+      (p_resultado_id, auth.uid(), '[]'::jsonb, v_motivo,
+       v_res.correctas, v_res.correctas, v_res.porcentaje, v_res.porcentaje);
+
+    return jsonb_build_object(
+      'correctas',  v_res.correctas,
+      'total',      v_res.total,
+      'porcentaje', v_res.porcentaje,
+      'casillas',   case when v_es_plan then v_res.detalle -> 'casillas' else null end,
+      'cambios',    '[]'::jsonb,
+      'modo',       'comentario'
+    );
+  end if;
+
+  -- ---------- MODO NOTA: ajuste global, no toca el detalle ----------
+  if v_modo = 'nota' then
+    if p_correctas < 0 or p_correctas > v_res.total then
+      raise exception 'La nota debe estar entre 0 y % .', v_res.total;
+    end if;
+    if p_correctas = v_res.correctas then
+      raise exception 'Esa entrega ya tiene esa nota.';
+    end if;
+
+    v_correctas  := p_correctas;
+    v_porcentaje := round(v_correctas * 100.0 / v_res.total);
+    v_registro   := jsonb_build_array(jsonb_build_object(
+      'i', null, 'label', 'Nota global',
+      'antes', v_res.correctas, 'despues', v_correctas
+    ));
+
+    update public.resultados_actividad
+       set correctas = v_correctas, porcentaje = v_porcentaje
+     where id = p_resultado_id;
+
+    insert into public.correcciones_resultado
+      (resultado_id, profesor_id, cambios, motivo,
+       correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+    values
+      (p_resultado_id, auth.uid(), v_registro, v_motivo,
+       v_res.correctas, v_correctas, v_res.porcentaje, v_porcentaje);
+
+    return jsonb_build_object(
+      'correctas',  v_correctas,
+      'total',      v_res.total,
+      'porcentaje', v_porcentaje,
+      'casillas',   case when v_es_plan then v_res.detalle -> 'casillas' else null end,
+      'cambios',    v_registro,
+      'modo',       'nota'
+    );
+  end if;
+
+  -- ---------- MODO CASILLAS ----------
+  -- Plan de vuelo y AFTN: las casillas cuelgan de detalle->'casillas'.
+  -- Examen: el detalle ES el array de respuestas.
+  if v_es_plan then
+    v_items := coalesce(v_res.detalle -> 'casillas', '[]'::jsonb);
+  else
+    v_items := case when jsonb_typeof(v_res.detalle) = 'array'
+                    then v_res.detalle else '[]'::jsonb end;
+  end if;
+
+  if jsonb_array_length(v_items) = 0 then
+    raise exception 'Esta entrega no tiene detalle, así que no se puede corregir punto por punto.';
+  end if;
+
+  for v_cambio in select * from jsonb_array_elements(p_cambios)
+  loop
+    v_i  := (v_cambio ->> 'i')::integer;
+    v_ok := (v_cambio ->> 'ok')::boolean;
+
+    if v_i is null or v_ok is null or v_i < 0 or v_i >= jsonb_array_length(v_items) then
+      raise exception 'Uno de los puntos indicados no existe en esta entrega.';
+    end if;
+
+    v_actual := v_items -> v_i;
+
+    -- Sólo se registra lo que de verdad cambia de valor.
+    if (v_actual ->> 'ok')::boolean is distinct from v_ok then
+      v_ok_auto := coalesce((v_actual ->> 'ok_auto')::boolean, (v_actual ->> 'ok')::boolean);
+      v_items := jsonb_set(v_items, array[v_i::text, 'ok'], to_jsonb(v_ok));
+      v_items := jsonb_set(v_items, array[v_i::text, 'ok_auto'], to_jsonb(v_ok_auto));
+      -- Deja de estar "corregida" si el profesor la devuelve a su valor automático.
+      v_items := jsonb_set(v_items, array[v_i::text, 'corregida'],
+                           to_jsonb(v_ok is distinct from v_ok_auto));
+
+      -- El plan de vuelo y AFTN traen 'label'; el examen no, así que se numera.
+      v_etiqueta := coalesce(v_actual ->> 'label', 'Pregunta ' || (v_i + 1)::text);
+
+      v_registro := v_registro || jsonb_build_array(jsonb_build_object(
+        'i', v_i,
+        'label', v_etiqueta,
+        'antes', (v_actual ->> 'ok')::boolean,
+        'despues', v_ok
+      ));
+    end if;
+  end loop;
+
+  if jsonb_array_length(v_registro) = 0 then
+    raise exception 'Los puntos que enviaste ya estaban calificados así.';
+  end if;
+
+  select count(*)::integer into v_correctas
+  from jsonb_array_elements(v_items) c
+  where (c ->> 'ok')::boolean;
+
+  v_porcentaje := round(v_correctas * 100.0 / v_res.total);
+
+  update public.resultados_actividad
+     set correctas  = v_correctas,
+         porcentaje = v_porcentaje,
+         detalle    = case when v_es_plan
+                           then jsonb_set(coalesce(v_res.detalle, '{}'::jsonb), '{casillas}', v_items)
+                           else v_items   -- el examen SIGUE siendo un array
+                      end
+   where id = p_resultado_id;
+
+  insert into public.correcciones_resultado
+    (resultado_id, profesor_id, cambios, motivo,
+     correctas_antes, correctas_despues, porcentaje_antes, porcentaje_despues)
+  values
+    (p_resultado_id, auth.uid(), v_registro, v_motivo,
+     v_res.correctas, v_correctas, v_res.porcentaje, v_porcentaje);
+
+  return jsonb_build_object(
+    'correctas',  v_correctas,
+    'total',      v_res.total,
+    'porcentaje', v_porcentaje,
+    'casillas',   case when v_es_plan then v_items else null end,
+    'cambios',    v_registro,
+    'modo',       'casillas'
+  );
+end;
+$function$;
+
+-- ------------------------------------------------------------
+-- B) SALAS EN VIVO ENTRE COMPAÑEROS
+-- ------------------------------------------------------------
+
+create table if not exists public.aftn_salas (
+  id uuid primary key default gen_random_uuid(),
+  codigo text not null unique,
+  nombre text not null check (length(trim(nombre)) between 1 and 60),
+  creador_id uuid not null references public.perfiles(id) on delete cascade,
+  -- abierta = admite puestos nuevos. El supervisor la cierra cuando ya
+  -- entraron todos, para que el código filtrado no sirva a un extraño.
+  abierta boolean not null default true,
+  creado_en timestamptz not null default now(),
+  expira_en timestamptz not null default now() + interval '24 hours'
+);
+
+create table if not exists public.aftn_puestos (
+  id bigint generated always as identity primary key,
+  sala_id uuid not null references public.aftn_salas(id) on delete cascade,
+  usuario_id uuid not null references public.perfiles(id) on delete cascade,
+  estacion text not null check (estacion ~ '^[A-Z]{8}$'),
+  alias text not null,
+  unido_en timestamptz not null default now(),
+  visto_en timestamptz not null default now(),
+  unique (sala_id, usuario_id),
+  unique (sala_id, estacion)
+);
+create index if not exists aftn_puestos_usuario_idx on public.aftn_puestos (usuario_id);
+
+create table if not exists public.aftn_mensajes (
+  id bigint generated always as identity primary key,
+  sala_id uuid not null references public.aftn_salas(id) on delete cascade,
+  usuario_id uuid references public.perfiles(id) on delete set null,
+  prioridad text not null check (prioridad in ('SS', 'DD', 'FF', 'GG', 'KK')),
+  destinatarios text[] not null check (cardinality(destinatarios) between 1 and 21),
+  hora_deposito text not null check (hora_deposito ~ '^[0-9]{6}$'),
+  remitente text not null check (remitente ~ '^[A-Z]{8}$'),
+  ohi text,
+  texto text not null check (length(texto) between 1 and 1800),
+  creado_en timestamptz not null default now()
+);
+create index if not exists aftn_mensajes_sala_idx on public.aftn_mensajes (sala_id, id);
+
+create table if not exists public.aftn_consignas (
+  id bigint generated always as identity primary key,
+  sala_id uuid not null references public.aftn_salas(id) on delete cascade,
+  autor_id uuid references public.perfiles(id) on delete set null,
+  para_estacion text check (para_estacion is null or para_estacion ~ '^[A-Z]{8}$'),
+  texto text not null check (length(trim(texto)) between 1 and 3000),
+  creado_en timestamptz not null default now()
+);
+create index if not exists aftn_consignas_sala_idx on public.aftn_consignas (sala_id, id);
+
+-- RLS sin policies + sin privilegios: los clientes no leen ni escriben estas
+-- tablas directamente. Todo pasa por las funciones de abajo.
+alter table public.aftn_salas enable row level security;
+alter table public.aftn_puestos enable row level security;
+alter table public.aftn_mensajes enable row level security;
+alter table public.aftn_consignas enable row level security;
+revoke all on public.aftn_salas, public.aftn_puestos, public.aftn_mensajes, public.aftn_consignas from anon, authenticated;
+
+-- Juego de caracteres del Anexo 10, 4.1.2.1 (más espacio y salto de línea).
+create or replace function public.aftn_texto_valido(p_texto text, p_multilinea boolean)
+returns boolean language sql immutable set search_path = public as $$
+  select coalesce(p_texto, '') ~ ('^[A-Z0-9 ' || case when p_multilinea then chr(10) else '' end || '?:().,''=/+-]*$');
+$$;
+
+-- Nombre corto que ven los compañeros: nombre y la inicial del apellido.
+create or replace function public.aftn_alias(p_usuario uuid)
+returns text language sql stable security definer set search_path = public as $$
+  select coalesce(nullif(trim(coalesce(p.nombre, '') || ' ' ||
+           coalesce(left(nullif(trim(p.apellido), ''), 1) || '.', '')), ''), 'Operador')
+  from public.perfiles p where p.id = p_usuario;
+$$;
+
+create or replace function public.aftn_crear_sala(p_nombre text, p_estacion text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_estacion text := upper(trim(coalesce(p_estacion, '')));
+  v_nombre text := trim(coalesce(p_nombre, ''));
+  v_codigo text;
+  v_sala uuid;
+  v_alfabeto text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  v_intento integer := 0;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  if length(v_nombre) = 0 or length(v_nombre) > 60 then
+    raise exception 'Ponle a la sala un nombre de 1 a 60 caracteres.';
+  end if;
+  if v_estacion !~ '^[A-Z]{8}$' then
+    raise exception 'Tu estación debe ser una dirección de 8 letras (Anexo 10, 4.4.3.1.2).';
+  end if;
+
+  -- Limpieza de salas vencidas hace más de 7 días (sin cron: se hace aquí).
+  delete from public.aftn_salas where expira_en < now() - interval '7 days';
+
+  if (select count(*) from public.aftn_salas where creador_id = auth.uid() and expira_en > now()) >= 5 then
+    raise exception 'Ya tienes 5 salas activas. Finaliza alguna antes de crear otra.';
+  end if;
+
+  loop
+    v_intento := v_intento + 1;
+    v_codigo := '';
+    for i in 1..6 loop
+      v_codigo := v_codigo || substr(v_alfabeto, 1 + floor(random() * length(v_alfabeto))::integer, 1);
+    end loop;
+    exit when not exists (select 1 from public.aftn_salas where codigo = v_codigo);
+    if v_intento > 20 then raise exception 'No se pudo generar un código de sala. Intenta de nuevo.'; end if;
+  end loop;
+
+  insert into public.aftn_salas (codigo, nombre, creador_id)
+  values (v_codigo, v_nombre, auth.uid())
+  returning id into v_sala;
+
+  insert into public.aftn_puestos (sala_id, usuario_id, estacion, alias)
+  values (v_sala, auth.uid(), v_estacion, public.aftn_alias(auth.uid()));
+
+  return jsonb_build_object('sala_id', v_sala, 'codigo', v_codigo);
+end;
+$$;
+
+create or replace function public.aftn_unirse_sala(p_codigo text, p_estacion text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_estacion text := upper(trim(coalesce(p_estacion, '')));
+  v_sala public.aftn_salas%rowtype;
+  v_mio bigint;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  if v_estacion !~ '^[A-Z]{8}$' then
+    raise exception 'Tu estación debe ser una dirección de 8 letras (Anexo 10, 4.4.3.1.2).';
+  end if;
+
+  select * into v_sala from public.aftn_salas
+  where codigo = upper(trim(coalesce(p_codigo, ''))) and expira_en > now();
+  if not found then raise exception 'No existe una sala activa con ese código.'; end if;
+
+  select id into v_mio from public.aftn_puestos where sala_id = v_sala.id and usuario_id = auth.uid();
+
+  if v_mio is null then
+    if not v_sala.abierta then
+      raise exception 'El supervisor cerró el ingreso a esta sala.';
+    end if;
+    if (select count(*) from public.aftn_puestos where sala_id = v_sala.id) >= 40 then
+      raise exception 'La sala ya tiene el máximo de 40 puestos.';
+    end if;
+  end if;
+
+  if exists (select 1 from public.aftn_puestos
+             where sala_id = v_sala.id and estacion = v_estacion and usuario_id <> auth.uid()) then
+    raise exception 'La estación % ya la opera otro compañero en esta sala. Elige otra.', v_estacion;
+  end if;
+
+  if v_mio is null then
+    insert into public.aftn_puestos (sala_id, usuario_id, estacion, alias)
+    values (v_sala.id, auth.uid(), v_estacion, public.aftn_alias(auth.uid()));
+  else
+    update public.aftn_puestos set estacion = v_estacion, visto_en = now() where id = v_mio;
+  end if;
+
+  return jsonb_build_object('sala_id', v_sala.id, 'codigo', v_sala.codigo);
+end;
+$$;
+
+-- Salas en las que el usuario tiene puesto, para volver a entrar tras recargar.
+create or replace function public.aftn_mis_salas()
+returns jsonb
+language sql
+stable security definer
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'sala_id', s.id, 'codigo', s.codigo, 'nombre', s.nombre,
+           'estacion', p.estacion, 'supervisor', s.creador_id = auth.uid(),
+           'expira_en', s.expira_en) order by s.creado_en desc), '[]'::jsonb)
+  from public.aftn_puestos p
+  join public.aftn_salas s on s.id = p.sala_id
+  where p.usuario_id = auth.uid() and s.expira_en > now();
+$$;
+
+-- Sondeo: devuelve lo nuevo desde los últimos ids que ya tiene el navegador
+-- y marca al usuario como conectado.
+create or replace function public.aftn_sincronizar(p_sala uuid, p_desde_msg bigint, p_desde_cons bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_sala public.aftn_salas%rowtype;
+  v_yo public.aftn_puestos%rowtype;
+  v_super boolean;
+  v_puestos jsonb;
+  v_mensajes jsonb;
+  v_consignas jsonb;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+
+  select * into v_sala from public.aftn_salas where id = p_sala;
+  if not found then raise exception 'La sala ya no existe.'; end if;
+
+  select * into v_yo from public.aftn_puestos where sala_id = p_sala and usuario_id = auth.uid();
+  if not found then raise exception 'Ya no tienes un puesto en esta sala.'; end if;
+
+  v_super := (v_sala.creador_id = auth.uid());
+  update public.aftn_puestos set visto_en = now() where id = v_yo.id;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'id', p.id, 'estacion', p.estacion, 'alias', p.alias,
+           'supervisor', p.usuario_id = v_sala.creador_id,
+           'yo', p.usuario_id = auth.uid(),
+           'en_linea', p.visto_en > now() - interval '30 seconds') order by p.unido_en), '[]'::jsonb)
+    into v_puestos
+  from public.aftn_puestos p where p.sala_id = p_sala;
+
+  -- Cada quien ve lo que envió y lo dirigido a su estación. El supervisor
+  -- ve todo el tráfico de la sala (monitor), como un jefe de turno.
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'id', m.id, 'prio', m.prioridad, 'dest', to_jsonb(m.destinatarios),
+           'hora', m.hora_deposito, 'orig', m.remitente, 'ohi', m.ohi, 'texto', m.texto,
+           'creado_en', m.creado_en,
+           'propio', m.usuario_id = auth.uid(),
+           'para_mi', v_yo.estacion = any (m.destinatarios)) order by m.id), '[]'::jsonb)
+    into v_mensajes
+  from (
+    select * from public.aftn_mensajes m
+    where m.sala_id = p_sala and m.id > coalesce(p_desde_msg, 0)
+      and (v_super or m.usuario_id = auth.uid() or v_yo.estacion = any (m.destinatarios))
+    order by m.id
+    limit 200
+  ) m;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'id', c.id, 'texto', c.texto, 'para', c.para_estacion, 'creado_en', c.creado_en) order by c.id), '[]'::jsonb)
+    into v_consignas
+  from (
+    select * from public.aftn_consignas c
+    where c.sala_id = p_sala and c.id > coalesce(p_desde_cons, 0)
+      and (v_super or c.para_estacion is null or c.para_estacion = v_yo.estacion)
+    order by c.id
+    limit 100
+  ) c;
+
+  return jsonb_build_object(
+    'sala', jsonb_build_object('id', v_sala.id, 'codigo', v_sala.codigo, 'nombre', v_sala.nombre,
+                               'abierta', v_sala.abierta, 'expira_en', v_sala.expira_en,
+                               'vencida', v_sala.expira_en <= now()),
+    'yo', jsonb_build_object('puesto_id', v_yo.id, 'estacion', v_yo.estacion, 'supervisor', v_super),
+    'puestos', v_puestos,
+    'mensajes', v_mensajes,
+    'consignas', v_consignas
+  );
+end;
+$$;
+
+create or replace function public.aftn_enviar(p_sala uuid, p_prioridad text, p_destinatarios text[],
+                                              p_hora text, p_texto text, p_ohi text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_sala public.aftn_salas%rowtype;
+  v_yo public.aftn_puestos%rowtype;
+  v_prio text := upper(trim(coalesce(p_prioridad, '')));
+  v_hora text := trim(coalesce(p_hora, ''));
+  v_texto text := replace(coalesce(p_texto, ''), chr(13), '');
+  v_ohi text := nullif(upper(trim(coalesce(p_ohi, ''))), '');
+  v_dest text[];
+  v_d text;
+  v_id bigint;
+  v_sin_entrega text[];
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+
+  select * into v_sala from public.aftn_salas where id = p_sala;
+  if not found or v_sala.expira_en <= now() then raise exception 'La sala ya no está activa.'; end if;
+
+  select * into v_yo from public.aftn_puestos where sala_id = p_sala and usuario_id = auth.uid();
+  if not found then raise exception 'No tienes un puesto en esta sala.'; end if;
+
+  if (select count(*) from public.aftn_mensajes
+      where sala_id = p_sala and usuario_id = auth.uid() and creado_en > now() - interval '60 seconds') >= 20 then
+    raise exception 'Demasiados mensajes en un minuto. Espera un momento.';
+  end if;
+
+  if v_prio not in ('SS', 'DD', 'FF', 'GG', 'KK') then
+    raise exception 'Indicador de prioridad no válido: usa SS, DD, FF, GG o KK (Anexo 10, 4.4.3.1.1).';
+  end if;
+
+  -- Destinatarios: mayúsculas, sin repetidos y conservando el orden.
+  select coalesce(array_agg(d order by n), '{}') into v_dest
+  from (
+    select upper(trim(x)) d, min(n) n
+    from unnest(coalesce(p_destinatarios, '{}'::text[])) with ordinality u(x, n)
+    where trim(coalesce(x, '')) <> ''
+    group by upper(trim(x))
+  ) s;
+
+  if cardinality(v_dest) = 0 then raise exception 'El mensaje necesita al menos un destinatario.'; end if;
+  if cardinality(v_dest) > 21 then
+    raise exception 'Más de 21 destinatarios no caben en tres líneas de dirección: divide el mensaje (Anexo 10, 4.4.3.1.2.3.1).';
+  end if;
+  foreach v_d in array v_dest loop
+    if v_d !~ '^[A-Z]{8}$' then
+      raise exception 'Indicador de destinatario sin validez: % (debe tener 8 letras).', v_d;
+    end if;
+  end loop;
+
+  if v_hora !~ '^(0[1-9]|[12][0-9]|3[01])([01][0-9]|2[0-3])[0-5][0-9]$' then
+    raise exception 'La hora de depósito debe ser un grupo fecha-hora de 6 cifras DDHHMM (Anexo 10, 4.4.15.2.2.1).';
+  end if;
+
+  v_texto := trim(both chr(10) from v_texto);
+  if length(v_texto) = 0 then raise exception 'El texto está vacío.'; end if;
+  if length(v_texto) > 1800 then
+    raise exception 'El texto supera 1 800 caracteres (Anexo 10, 4.4.15.3.11).';
+  end if;
+  if not public.aftn_texto_valido(v_texto, true) then
+    raise exception 'El texto tiene caracteres fuera del Anexo 10, 4.1.2.1 (sólo A-Z, 0-9 y - ? : ( ) . , '' = / +).';
+  end if;
+  if v_ohi is not null and (length(v_ohi) > 50 or not public.aftn_texto_valido(v_ohi, false)) then
+    raise exception 'La información optativa de encabezamiento no es válida.';
+  end if;
+
+  insert into public.aftn_mensajes (sala_id, usuario_id, prioridad, destinatarios, hora_deposito, remitente, ohi, texto)
+  values (p_sala, auth.uid(), v_prio, v_dest, v_hora, v_yo.estacion, v_ohi, v_texto)
+  returning id into v_id;
+
+  select coalesce(array_agg(d), '{}') into v_sin_entrega
+  from unnest(v_dest) d
+  where not exists (select 1 from public.aftn_puestos p where p.sala_id = p_sala and p.estacion = d);
+
+  return jsonb_build_object('id', v_id, 'remitente', v_yo.estacion, 'sin_entrega', to_jsonb(v_sin_entrega));
+end;
+$$;
+
+create or replace function public.aftn_consignar(p_sala uuid, p_texto text, p_para text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_para text := nullif(upper(trim(coalesce(p_para, ''))), '');
+  v_id bigint;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  if not exists (select 1 from public.aftn_salas where id = p_sala and creador_id = auth.uid() and expira_en > now()) then
+    raise exception 'Sólo el supervisor de la sala publica consignas.';
+  end if;
+  if length(trim(coalesce(p_texto, ''))) = 0 or length(p_texto) > 3000 then
+    raise exception 'La consigna debe tener entre 1 y 3000 caracteres.';
+  end if;
+  if v_para is not null and v_para !~ '^[A-Z]{8}$' then
+    raise exception 'La estación destinataria debe tener 8 letras.';
+  end if;
+  if (select count(*) from public.aftn_consignas
+      where sala_id = p_sala and creado_en > now() - interval '60 seconds') >= 10 then
+    raise exception 'Demasiadas consignas en un minuto.';
+  end if;
+
+  insert into public.aftn_consignas (sala_id, autor_id, para_estacion, texto)
+  values (p_sala, auth.uid(), v_para, trim(p_texto))
+  returning id into v_id;
+  return jsonb_build_object('id', v_id);
+end;
+$$;
+
+-- Acciones del supervisor: cerrar/abrir el ingreso, retirar un puesto o
+-- finalizar la sala. Salir de la sala (cualquiera que no sea supervisor).
+create or replace function public.aftn_gestionar_sala(p_sala uuid, p_accion text, p_puesto bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_sala public.aftn_salas%rowtype;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  select * into v_sala from public.aftn_salas where id = p_sala;
+  if not found then raise exception 'La sala ya no existe.'; end if;
+
+  if p_accion = 'salir' then
+    if v_sala.creador_id = auth.uid() then
+      raise exception 'El supervisor no sale de la sala: finalízala.';
+    end if;
+    delete from public.aftn_puestos where sala_id = p_sala and usuario_id = auth.uid();
+    return jsonb_build_object('ok', true);
+  end if;
+
+  if v_sala.creador_id <> auth.uid() then
+    raise exception 'Sólo el supervisor de la sala puede hacer eso.';
+  end if;
+
+  if p_accion = 'cerrar_ingreso' then
+    update public.aftn_salas set abierta = false where id = p_sala;
+  elsif p_accion = 'abrir_ingreso' then
+    update public.aftn_salas set abierta = true where id = p_sala;
+  elsif p_accion = 'retirar' then
+    delete from public.aftn_puestos
+    where sala_id = p_sala and id = p_puesto and usuario_id <> v_sala.creador_id;
+  elsif p_accion = 'finalizar' then
+    update public.aftn_salas set expira_en = now(), abierta = false where id = p_sala;
+  else
+    raise exception 'Acción desconocida.';
+  end if;
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+revoke execute on function public.aftn_texto_valido(text, boolean) from public, anon;
+revoke execute on function public.aftn_alias(uuid) from public, anon, authenticated;
+revoke execute on function public.aftn_crear_sala(text, text) from public, anon;
+revoke execute on function public.aftn_unirse_sala(text, text) from public, anon;
+revoke execute on function public.aftn_mis_salas() from public, anon;
+revoke execute on function public.aftn_sincronizar(uuid, bigint, bigint) from public, anon;
+revoke execute on function public.aftn_enviar(uuid, text, text[], text, text, text) from public, anon;
+revoke execute on function public.aftn_consignar(uuid, text, text) from public, anon;
+revoke execute on function public.aftn_gestionar_sala(uuid, text, bigint) from public, anon;
+grant execute on function public.aftn_crear_sala(text, text) to authenticated;
+grant execute on function public.aftn_unirse_sala(text, text) to authenticated;
+grant execute on function public.aftn_mis_salas() to authenticated;
+grant execute on function public.aftn_sincronizar(uuid, bigint, bigint) to authenticated;
+grant execute on function public.aftn_enviar(uuid, text, text[], text, text, text) to authenticated;
+grant execute on function public.aftn_consignar(uuid, text, text) to authenticated;
+grant execute on function public.aftn_gestionar_sala(uuid, text, bigint) to authenticated;

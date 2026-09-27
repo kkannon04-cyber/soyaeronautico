@@ -433,6 +433,11 @@
       location.replace('simulador-plan-vuelo.html?actividad=' + encodeURIComponent(actividadId));
       return;
     }
+    // Lo mismo con la mensajería AFTN: se redacta en la terminal.
+    if (actividad.tipo === 'aftn') {
+      location.replace('terminal-aftn.html?actividad=' + encodeURIComponent(actividadId));
+      return;
+    }
 
     preguntas = actividad.preguntas || [];
 

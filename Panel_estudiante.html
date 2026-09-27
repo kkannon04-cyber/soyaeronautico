@@ -1209,7 +1209,7 @@
       <div class="venc-item">
         <div>
           <h5>${escaparHTML(a.titulo)}</h5>
-          <p>${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'} · cierra el ${formatFecha(a.fechaLimite)}</p>
+          <p>${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura'} · cierra el ${formatFecha(a.fechaLimite)}</p>
         </div>
         <span class="venc-chip ${clasePlazo(a.dias)}">${textoPlazo(a.dias)}</span>
       </div>`).join('');
@@ -1250,7 +1250,7 @@
           titulo: 'Actividad pendiente',
           texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} — tu profesor la publicó y aún no la has presentado.`,
           fecha: a.fechaLimite || null,
-          url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+          url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
         });
       }
       // Y si además está a punto de cerrarse, un aviso aparte y más urgente.
@@ -1263,7 +1263,7 @@
             titulo: d <= 0 ? 'Cierra hoy' : (d === 1 ? 'Cierra mañana' : `Cierra en ${d} días`),
             texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} deja de admitir entregas el ${formatFecha(a.fechaLimite)}.`,
             fecha: a.fechaLimite,
-            url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+            url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
           });
         }
       }
@@ -1285,6 +1285,8 @@
         fecha: c.fecha,
         url: act && act.tipo === 'plan_vuelo'
           ? 'simulador-plan-vuelo.html?resultado=' + encodeURIComponent(c.resultadoId)
+          : act && act.tipo === 'aftn'
+          ? 'terminal-aftn.html?resultado=' + encodeURIComponent(c.resultadoId)
           : 'revision-actividad.html?resultado=' + encodeURIComponent(c.resultadoId)
       });
     });
@@ -1654,6 +1656,7 @@
     if (!a.completada || !a.ultimoResultadoId) return '';
     const destino = a.tipo === 'plan_vuelo'
       ? 'simulador-plan-vuelo.html?resultado='
+      : a.tipo === 'aftn' ? 'terminal-aftn.html?resultado='
       : (a.tipo === 'examen' || a.tipo === 'texto') ? 'revision-actividad.html?resultado=' : null;
     if (!destino) return '';
     return `<a href="${destino}${encodeURIComponent(a.ultimoResultadoId)}"><button class="btn-launch secundario">Ver mi entrega</button></a>`;
@@ -1674,12 +1677,12 @@
     const accion = a.deGrupoAnterior ? ''
       : a.bloqueada
         ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-        : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
+        : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
 
     return `
       <div class="module-item">
         <div class="module-info">
-          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Lectura'}</div>
+          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura'}</div>
           <span class="badge-estado ${estado}">${textoEstado}</span>
           ${mostrarGrupo && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
           <h4>${escaparHTML(a.titulo)}</h4>

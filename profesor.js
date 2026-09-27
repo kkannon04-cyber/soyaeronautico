@@ -756,7 +756,7 @@ function exportarDetalleCSV(nombreGrupo, resultados) {
     ['Estudiante', 'Actividad', 'Tipo', 'Fecha', 'Correctas', 'Total', 'Porcentaje'],
     resultados.map(r => [
       r.estudiante, r.actividadTitulo,
-      r.actividadTipo === 'examen' ? 'Examen' : r.actividadTipo === 'plan_vuelo' ? 'Plan de vuelo' : 'Texto',
+      r.actividadTipo === 'examen' ? 'Examen' : r.actividadTipo === 'plan_vuelo' ? 'Plan de vuelo' : r.actividadTipo === 'aftn' ? 'Mensajería AFTN' : 'Texto',
       _fechaLegible(r.fecha), r.correctas, r.total, r.porcentaje
     ])
   );
@@ -831,6 +831,56 @@ function _validarActividadPlan(datos) {
     return { ok: false, error: 'Falta la clave de respuestas: diligencia el formulario antes de publicar.' };
   }
   return { ok: true };
+}
+
+// ============================================================
+// ACTIVIDADES DE MENSAJERÍA AFTN
+//
+// Se arman en terminal-aftn.html?crear=<grupoId>: el profesor escribe la
+// situación, la consigna de cada mensaje y el mensaje correcto, que queda
+// como clave en actividad_aftn (sólo él la lee). Mismo esquema que el plan
+// de vuelo: si la clave no se guarda, se deshace la actividad.
+// ============================================================
+
+async function crearActividadAftn(datos) {
+  const sesion = await _sesionProfesor();
+  if (!sesion) return { ok: false, error: 'Necesitas iniciar sesión.' };
+
+  if (!datos.grupoId) return { ok: false, error: 'Falta el grupo: vuelve al panel del profesor y entra desde allí.' };
+  if (!datos.titulo || !datos.titulo.trim()) return { ok: false, error: 'Ponle un título a la actividad.' };
+  if (!datos.clave || !Array.isArray(datos.clave.mensajes) || datos.clave.mensajes.length === 0) {
+    return { ok: false, error: 'La actividad necesita al menos un mensaje con su clave.' };
+  }
+
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente
+    .from('actividades')
+    .insert({
+      profesor_id: sesion.user.id,
+      grupo_id: datos.grupoId,
+      tipo: 'aftn',
+      titulo: datos.titulo.trim(),
+      descripcion: (datos.descripcion || '').trim() || null,
+      activa: datos.activa !== false,
+      fecha_limite: datos.fechaLimite || null,
+      intentos_max: datos.intentosMax || null,
+      barajar: false
+    })
+    .select('id')
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+
+  const { error: errorAftn } = await cliente
+    .from('actividad_aftn')
+    .insert({ actividad_id: data.id, enunciado: datos.enunciado, clave: datos.clave });
+
+  if (errorAftn) {
+    await cliente.from('actividades').delete().eq('id', data.id);
+    return { ok: false, error: errorAftn.message };
+  }
+
+  return { ok: true, actividadId: data.id };
 }
 
 // Enunciado y clave de una actividad ya publicada, para revisarla.

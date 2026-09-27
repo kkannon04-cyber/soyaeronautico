@@ -1365,6 +1365,7 @@
   <button type="button" class="tb-btn" onclick="openReplay()" title="Vuelve a ver la sesión grabada con una barra de tiempo">REPLAY</button>
   <button type="button" class="tb-btn" onclick="openDebrief()">DEBRIEF</button>
   <a class="tb-btn" href="notam.html" target="_blank" rel="noopener" style="text-decoration:none;" title="Abre el módulo NOTAM del portal en una pestaña nueva">NOTAM ↗</a>
+  <a class="tb-btn" href="terminal-aftn.html" target="_blank" rel="noopener" style="text-decoration:none;" title="Abre la terminal AFTN/AMHS del portal en una pestaña nueva: todos los tipos de mensaje, mensajes de servicio y salas con compañeros">TERMINAL AFTN ↗</a>
   <button type="button" class="tb-btn" onclick="closeAll()">CLOSE ALL</button>
 </div>
 
@@ -2571,7 +2572,17 @@ const POINT_NAMES = {
    unos −4° en San Andrés, −8° sobre Bogotá y −11° en la Amazonía oriental. Es válido dentro de
    las FIR colombianas y para la época de la publicación; la declinación deriva con los años. */
 const MAG_VAR_FIT = { a: -56.6213, b: -0.12367, c: -0.66366 };
-function magVar(lat, lon){ return MAG_VAR_FIT.a + MAG_VAR_FIT.b * lat + MAG_VAR_FIT.c * lon; }
+function magVarColombia(lat, lon){ return MAG_VAR_FIT.a + MAG_VAR_FIT.b * lat + MAG_VAR_FIT.c * lon; }
+// Fuera de las FIR colombianas el ajuste extrapola sin sentido: allí se usa la declinación
+// deducida de los AIP de cada región (declinacionPublicada, en la red de navegación).
+function magVar(lat, lon){
+  const c = DECL_COLOMBIA;
+  if(lat >= c.s && lat <= c.n && lon >= c.w && lon <= c.e) return magVarColombia(lat, lon);
+  if(!navGlobal.listo) return magVarColombia(lat, lon);
+  const k = Math.round(lat * 2) + '|' + Math.round(normLon(lon) * 2);
+  if(!declCache.has(k)){ const v = declinacionPublicada(lat, lon); declCache.set(k, v != null ? v : magVarColombia(lat, lon)); }
+  return declCache.get(k);
+}
 // Verdadero -> magnético y viceversa. Con declinación oeste (negativa), el rumbo magnético es
 // mayor que el verdadero: RM = RV − VAR.
 function trueToMag(deg, lat, lon){ return normalizeDeg(deg - magVar(lat, lon)); }
@@ -2614,42 +2625,18 @@ function esDesignadorProcedimiento(tok){ return tok.length <= PROC_MAX_CARACTERE
 // SID y STAR que trae la casilla 15 (cadena vacía si no hay).
 function procedimientosRuta(routeStr){
   const t = (routeStr || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
-  const es = tok => !!tok && !AIRWAYS[tok] && !VALID_ROUTE_POINTS.includes(tok) && esDesignadorProcedimiento(tok);
+  const es = tok => !!tok && !esAerovia(tok) && !resolverPunto(tok) && !VALID_ROUTE_POINTS.includes(tok) && esDesignadorProcedimiento(tok);
   return { sid: es(t[0]) ? t[0] : '', star: t.length > 1 && es(t[t.length - 1]) ? t[t.length - 1] : '' };
 }
 
-function checkRouteTokens(routeStr) {
+// Elementos de la casilla 15 que no se pueden interpretar. «dep» sirve de referencia para
+// elegir entre identificadores repetidos fuera de Colombia (ver resolverRuta).
+function checkRouteTokens(routeStr, dep) {
   if (!routeStr) return [];
-  const tokens = routeStr.trim().toUpperCase().split(/\s+/);
-  const invalidTokens = [];
-  let lastPoint = null;
-  let pendingAirway = null;
-  for (let idx = 0; idx < tokens.length; idx++) {
-    const token = tokens[idx];
-    if (token === "DCT") { pendingAirway = null; continue; }
-    if (AIRWAYS[token]) { pendingAirway = token; continue; }
-    if (VALID_ROUTE_POINTS.includes(token)) {
-      if (pendingAirway) {
-        const seq = AIRWAYS[pendingAirway];
-        if (!lastPoint || !seq.includes(lastPoint) || !seq.includes(token)) {
-          invalidTokens.push(`${pendingAirway}(${lastPoint || '?'}-${token} no pertenece a esa aerovía)`);
-        }
-      }
-      lastPoint = token;
-      pendingAirway = null;
-      continue;
-    }
-    // SID al inicio o STAR al final de la ruta (ver PROC_MAX_CARACTERES).
-    const extremo = idx === 0 || idx === tokens.length - 1;
-    if (extremo && esDesignadorProcedimiento(token)) continue;
-    if (extremo && /^[A-Z]{2,}[1-9][A-Z]?$/.test(token)) {
-      invalidTokens.push(`${token} (designador de ${idx === 0 ? 'SID' : 'STAR'}: máximo ${PROC_MAX_CARACTERES} caracteres)`);
-      continue;
-    }
-    invalidTokens.push(token);
-  }
-  return invalidTokens;
+  return resolverRuta(dep, routeStr, null).invalidos;
 }
+// Aviso para los mensajes de error mientras las bases de fuera de Colombia terminan de cargar.
+function avisoCargaNav(){ return navGlobal.listo ? '' : ' (las bases de fuera de Colombia aún se están cargando: inténtalo en unos segundos)'; }
 
 /* ===================== CÁLCULO FÍSICO DE ETA (HAVERSINE) ===================== */
 // Fuente: aeropuertos.json (coordenadas ARP en formato DMS, convertidas a decimal).
@@ -2920,9 +2907,9 @@ const AIRPORT_DETAILS = {
 // Un DEP/DEST es válido si aparece en AIRPORTS. Hasta el 2026-08-16 existía un segundo
 // objeto, AIRPORTS_SIN_COORD, para aeródromos reconocidos sin ARP publicado; sus 28
 // entradas ya tienen coordenadas (tomadas del eAIP) y se fusionaron en AIRPORTS arriba.
+// Fuera de Colombia también vale un aeródromo de OurAirports (posición de referencia).
 function isKnownAirport(code){
-  code = (code || '').trim().toUpperCase();
-  return !!AIRPORTS[code];
+  return !!aeropuertoPorCodigo(code);
 }
 
 /* ===================== ZONAS PROHIBIDAS / RESTRINGIDAS / PELIGROSAS (ENR 5.1) ===================== */
@@ -3034,8 +3021,8 @@ function speedLabel(speedStr) {
 // un SKCC–SKBO se anunciaba a las 0046Z y aterrizaba a las 0033Z, y el estudiante veía siempre
 // una desviación de más de 10 minutos que no era culpa suya.
 function calculateRealisticETA(dep, dest, speedStr, levelStr) {
-  const origin = AIRPORTS[(dep || '').toUpperCase()];
-  const destination = AIRPORTS[(dest || '').toUpperCase()];
+  const origin = aeropuertoPorCodigo(dep);
+  const destination = aeropuertoPorCodigo(dest);
   if (!origin || !destination) return 45; // Default genérico si no están en base de datos
   const distanceNM = getDistanceNM(origin.lat, origin.lon, destination.lat, destination.lon);
 
@@ -4171,6 +4158,243 @@ function prepararRegionAip(j){
   reg.radioayudas.forEach(r => navAip.clavesNav.add(`${r[0]}|${r[4].toFixed(1)}|${r[5].toFixed(1)}`));
 }
 
+/* ===================== RED DE NAVEGACIÓN PARA LOS PLANES DE VUELO =====================
+   Con esto los planes de vuelo pueden salir, llegar y pasar por fuera de Colombia:
+   · Puntos de ruta: los del eAIP de Colombia y, además, los puntos significativos y radioayudas
+     de los AIP cargados en BasesDeDatos/nav/aerovias/ y las radioayudas de OurAirports.
+   · Aerovías: las de Colombia se expanden EXACTAMENTE como siempre (AIRWAYS + AIRWAY_SEGMENTS).
+     Solo cuando el tramo no está en el eAIP colombiano se busca en una red única que junta las
+     aerovías de todas las regiones: un punto de límite que publican dos Estados es un mismo
+     nodo, así que una aerovía que sigue al otro lado de la frontera se recorre sin corte.
+   · Aeródromos de salida y destino: los 74 del eAIP de Colombia; fuera de Colombia, los de
+     OurAirports (posición de referencia, no del AIP: así lo avisa el historial del plan).
+   Muchos identificadores se repiten en el mundo (hay decenas de VOR con el mismo código de tres
+   letras): se elige el que queda más cerca del punto anterior de la ruta, como hace cualquier
+   sistema de proceso de planes de vuelo. */
+const navGlobal = {
+  listo: false, version: 0,
+  puntos: new Map(),       // ident -> [{lat, lon, oficial, fuente}]
+  aeropuertos: new Map(),  // OACI -> {lat, lon, elevFt, nombre, ciudad, pais}  (fuera de Colombia)
+  aerovias: new Map(),     // designador -> {nodos: [{code, lat, lon}], ady: [[{j, leg}]]}
+  decl: new Map(),         // celda de 2° -> [{lat, lon, v}]  declinación deducida de los AIP
+  declNav: new Map(),      // celda de 2° -> [{lat, lon, v}]  declinación de estación (OurAirports)
+};
+let resolverNavListo;
+const navGlobalListo = new Promise(r => { resolverNavListo = r; });
+const NAV_PENALIZA_REFERENCIA_NM = 50;   // a igual distancia, manda el dato del AIP sobre OurAirports
+
+function difAngulo(a){ return ((a % 360) + 540) % 360 - 180; }
+const celdaNav = (lat, lon) => Math.floor(lat / 2) + '|' + Math.floor(normLon(lon) / 2);
+
+function construirRedGlobal(){
+  const P = navGlobal.puntos;
+  P.clear(); navGlobal.aeropuertos.clear(); navGlobal.aerovias.clear(); navGlobal.decl.clear(); navGlobal.declNav.clear();
+  const addP = (id, lat, lon, oficial, fuente) => {
+    if(!id || lat == null || lon == null) return;
+    const l = P.get(id) || [];
+    if(l.some(c => Math.abs(c.lat - lat) < .02 && Math.abs(c.lon - lon) < .02 && (c.oficial || !oficial))) return;
+    l.push({ lat, lon, oficial, fuente });
+    P.set(id, l);
+  };
+  const addCelda = (mapa, lat, lon, v) => { const k = celdaNav(lat, lon); (mapa.get(k) || mapa.set(k, []).get(k)).push({ lat, lon, v }); };
+
+  for(const reg of navAip.regiones){
+    reg.puntos.forEach(p => addP(p[0], p[1], p[2], true, reg.region));
+    reg.radioayudas.forEach(r => addP(r[0], r[4], r[5], true, reg.region));
+  }
+  for(const r of navMundo.nav){
+    if(r[6] === 'CO') continue;   // en Colombia solo el eAIP
+    addP(r[0], r[4], r[5], false, 'OurAirports');
+    if(r[7] != null) addCelda(navGlobal.declNav, r[4], r[5], r[7]);
+  }
+  for(const r of navMundo.ad){
+    if(r[4] === 'CO' || AIRPORTS[r[0]]) continue;
+    navGlobal.aeropuertos.set(r[0], { lat: r[5], lon: r[6], elevFt: r[7], nombre: r[2], ciudad: r[3], pais: r[4] });
+  }
+
+  // Red de aerovías: un grafo por designador. Los nodos se funden por identificador y cercanía
+  // (5 NM), que es lo que une el punto de límite que publican los dos Estados vecinos.
+  const grafo = aw => navGlobal.aerovias.get(aw) || navGlobal.aerovias.set(aw, { nodos: [], ady: [] }).get(aw);
+  const nodo = (g, code, lat, lon) => {
+    for(let i = 0; i < g.nodos.length; i++){
+      const n = g.nodos[i];
+      if(n.code === code && getDistanceNM(n.lat, n.lon, lat, lon) < 5) return i;
+    }
+    g.nodos.push({ code, lat, lon }); g.ady.push([]);
+    return g.nodos.length - 1;
+  };
+  Object.keys(AIRWAYS).forEach(aw => {
+    const seq = AIRWAYS[aw];
+    for(let i = 0; i + 1 < seq.length; i++){
+      const a = findPoint(seq[i]), b = findPoint(seq[i+1]);
+      if(!a || !b) continue;
+      const g = grafo(aw), ia = nodo(g, seq[i], a.lat, a.lon), ib = nodo(g, seq[i+1], b.lat, b.lon);
+      const seg = (AIRWAY_SEGMENTS[aw] || [])[i] || null;
+      g.ady[ia].push({ j: ib, leg: { airway: aw, seg, sentido: '↓' } });
+      g.ady[ib].push({ j: ia, leg: { airway: aw, seg, sentido: '↑' } });
+    }
+  });
+  for(const reg of navAip.regiones) for(const [aw, , tramos] of reg.rutas) for(const t of tramos){
+    const a = reg.puntos[t[0]], b = reg.puntos[t[1]];
+    const g = grafo(aw), ia = nodo(g, a[0], a[1], a[2]), ib = nodo(g, b[0], b[1], b[2]);
+    const leg = { airway: aw, seg: null, sentido: null, region: reg.region };
+    g.ady[ia].push({ j: ib, leg }); g.ady[ib].push({ j: ia, leg });
+    // Declinación deducida del propio AIP, como la de Colombia: rumbo verdadero − derrota MAG.
+    const m = gcIntermedio({ lat: a[1], lon: a[2] }, { lat: b[1], lon: b[2] }, .5);
+    if(t[3] != null) addCelda(navGlobal.decl, m.lat, m.lon, difAngulo(bearingBetween(a[1], a[2], b[1], b[2]) - t[3]));
+    if(t[4] != null) addCelda(navGlobal.decl, m.lat, m.lon, difAngulo(bearingBetween(b[1], b[2], a[1], a[2]) - t[4]));
+  }
+  declCache.clear();
+  navGlobal.version++;
+}
+
+// Punto de la ruta por su identificador. «cerca» es la posición de referencia (el punto anterior
+// de la ruta o la aeronave): entre homónimos gana el más cercano, y a igual distancia el del AIP.
+// Dentro de Colombia manda siempre el eAIP. Devuelve {code, lat, lon, oficial, fuente} o null.
+function resolverPunto(code, cerca){
+  code = (code || '').trim().toUpperCase();
+  const colValido = VALID_ROUTE_POINTS.includes(code) || !!VOR_STATIONS[code] || !!WAYPOINTS[code];
+  const col = colValido ? findPoint(code) : null;
+  const cands = navGlobal.puntos.get(code) || [];
+  const deCol = () => ({ code, lat: col.lat, lon: col.lon, oficial: true, fuente: 'eAIP Colombia' });
+  if(!cands.length) return col ? deCol() : null;
+  const ref = cerca || col || null;
+  const dist = p => ref ? getDistanceNM(ref.lat, ref.lon, p.lat, p.lon) : 0;
+  let mejor = null, coste = Infinity;
+  for(const c of cands){
+    const k = dist(c) + (c.oficial ? 0 : NAV_PENALIZA_REFERENCIA_NM);
+    if(k < coste){ coste = k; mejor = c; }
+  }
+  if(col && dist(col) <= coste + 5) return deCol();
+  return { code, lat: mejor.lat, lon: mejor.lon, oficial: mejor.oficial, fuente: mejor.fuente };
+}
+
+// Aeródromo por su indicador OACI: el eAIP de Colombia o, fuera de Colombia, OurAirports.
+function aeropuertoPorCodigo(code){
+  code = (code || '').trim().toUpperCase();
+  if(AIRPORTS[code]) return { code, lat: AIRPORTS[code].lat, lon: AIRPORTS[code].lon, oficial: true, fuente: 'eAIP Colombia' };
+  const w = navGlobal.aeropuertos.get(code);
+  return w ? { code, lat: w.lat, lon: w.lon, elevFt: w.elevFt, oficial: false, fuente: 'OurAirports', nombre: w.nombre, ciudad: w.ciudad, pais: w.pais } : null;
+}
+
+function esAerovia(tok){ return !!AIRWAYS[tok] || navGlobal.aerovias.has(tok); }
+
+// Recorre una aerovía de la red única desde el punto «prev» hasta el identificador «tok», por el
+// camino con menos tramos. Devuelve [{nodo, leg}] (sin el punto de partida) o null.
+function expandirAeroviaGlobal(aw, prev, tok){
+  const g = navGlobal.aerovias.get(aw);
+  if(!g) return null;
+  const inicio = [];
+  g.nodos.forEach((n, i) => { if(n.code === prev.code && getDistanceNM(n.lat, n.lon, prev.lat, prev.lon) < 10) inicio.push(i); });
+  if(!inicio.length) return null;
+  const previo = new Map(inicio.map(i => [i, null]));
+  const cola = inicio.slice();
+  while(cola.length){
+    const i = cola.shift();
+    if(g.nodos[i].code === tok && !inicio.includes(i)){
+      const camino = [];
+      for(let k = i; previo.get(k); k = previo.get(k).desde) camino.unshift({ nodo: g.nodos[k], leg: previo.get(k).leg });
+      return camino;
+    }
+    for(const e of g.ady[i]) if(!previo.has(e.j)){ previo.set(e.j, { desde: i, leg: e.leg }); cola.push(e.j); }
+  }
+  return null;
+}
+
+/* Resuelve la casilla 15 completa: puntos con coordenadas (para volarla), el tramo publicado de
+   cada paso y los elementos que no se pueden interpretar. La usan tanto la validación del plan
+   como la trayectoria del vuelo, para que lo que se acepta sea exactamente lo que se vuela. */
+function resolverRuta(depCode, routeStr, destCode){
+  const pts = [], legs = [], invalidos = [], referencia = [];
+  const anotar = leg => { legs[pts.length - 2] = leg || null; };
+  const empujar = (p, leg) => {
+    pts.push({ code: p.code, lat: p.lat, lon: p.lon });
+    if(pts.length > 1) anotar(leg);
+    if(p.oficial === false && !referencia.includes(p.code)) referencia.push(p.code);
+  };
+  const dep = depCode ? aeropuertoPorCodigo(depCode) : null;
+  if(dep) empujar(dep);
+  const tokens = (routeStr || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+  let pendingAirway = null, ultimo = null;   // «ultimo»: último punto de RUTA (no el aeródromo)
+  tokens.forEach((tok, idx) => {
+    if(tok === 'DCT'){ pendingAirway = null; return; }
+    if(esAerovia(tok)){ pendingAirway = tok; return; }
+    const cerca = pts.length ? pts[pts.length - 1] : null;
+    const colSinCoord = VALID_ROUTE_POINTS.includes(tok) && !findPoint(tok);
+    const p = resolverPunto(tok, cerca);
+    if(!p && !colSinCoord){
+      // SID al inicio o STAR al final de la ruta (ver PROC_MAX_CARACTERES).
+      const extremo = idx === 0 || idx === tokens.length - 1;
+      if(extremo && esDesignadorProcedimiento(tok)) return;
+      if(extremo && /^[A-Z]{2,}[1-9][A-Z]?$/.test(tok)){
+        invalidos.push(`${tok} (designador de ${idx === 0 ? 'SID' : 'STAR'}: máximo ${PROC_MAX_CARACTERES} caracteres)`);
+        return;
+      }
+      invalidos.push(tok);
+      return;
+    }
+    const aw = pendingAirway;
+    pendingAirway = null;
+    if(aw){
+      // 1) Colombia: la expansión de siempre, con los datos de tramo del eAIP.
+      const seq = AIRWAYS[aw];
+      if(seq && ultimo && seq.includes(ultimo.code) && seq.includes(tok)){
+        const seg = airwaySegmentIndices(seq, ultimo.code, tok);
+        if(seg){
+          const step = seg.from < seg.to ? 1 : -1;
+          for(let i = seg.from; i !== seg.to; i += step){
+            const destino = seq[i+step], mid = findPoint(destino);
+            if(!mid) continue;
+            // Los tramos se publican en el sentido de la secuencia: al recorrerla al revés, el
+            // tramo que corresponde es el que arranca en el punto de menor índice.
+            empujar({ code: destino, lat: mid.lat, lon: mid.lon, oficial: true },
+              { airway: aw, seg: (AIRWAY_SEGMENTS[aw] || [])[step > 0 ? i : i - 1] || null, sentido: step > 0 ? '↓' : '↑' });
+          }
+          ultimo = { code: tok, lat: pts[pts.length-1].lat, lon: pts[pts.length-1].lon };
+          return;
+        }
+      }
+      // 2) Red única de todas las regiones (también cruza fronteras).
+      const camino = ultimo ? expandirAeroviaGlobal(aw, ultimo, tok) : null;
+      if(camino){
+        camino.forEach(({ nodo, leg }) => empujar({ code: nodo.code, lat: nodo.lat, lon: nodo.lon, oficial: true }, leg));
+        ultimo = camino[camino.length - 1].nodo;
+        return;
+      }
+      invalidos.push(`${aw}(${ultimo ? ultimo.code : '?'}-${tok} no pertenece a esa aerovía)`);
+    }
+    if(p){ empujar(p); ultimo = { code: p.code, lat: p.lat, lon: p.lon }; }
+  });
+  const dest = destCode ? aeropuertoPorCodigo(destCode) : null;
+  if(dest) empujar(dest);
+  return { pts, legs, invalidos, referencia };
+}
+
+/* ---------- DECLINACIÓN FUERA DE COLOMBIA ----------
+   Mismo método que en Colombia (ver MAG_VAR_FIT): la declinación se deduce de lo publicado. Aquí,
+   de las derrotas MAG de los AIP cargados, promediadas por cercanía (inversa del cuadrado de la
+   distancia, hasta 250 NM). Donde no hay aerovías cargadas se usa la declinación de estación de
+   la radioayuda más cercana (OurAirports). Dentro de Colombia no cambia nada. */
+const DECL_COLOMBIA = { s: -4.3, n: 16.5, w: -82.2, e: -66.8 };
+const declCache = new Map();
+function declinacionPublicada(lat, lon){
+  const [ci, cj] = celdaNav(lat, lon).split('|').map(Number);
+  const cercanas = (mapa, r) => { const out = []; for(let i = -r; i <= r; i++) for(let j = -r; j <= r; j++) out.push(...(mapa.get((ci + i) + '|' + (cj + j)) || [])); return out; };
+  let suma = 0, peso = 0;
+  for(const s of cercanas(navGlobal.decl, 2)){
+    const d = getDistanceNM(lat, lon, s.lat, s.lon);
+    if(d > 250) continue;
+    const w = 1 / Math.max(d, 5) ** 2;
+    suma += w * s.v; peso += w;
+  }
+  if(peso > 0) return suma / peso;
+  let mejor = null, dm = Infinity;
+  const buscar = lista => lista.forEach(s => { const d = getDistanceNM(lat, lon, s.lat, s.lon); if(d < dm){ dm = d; mejor = s; } });
+  buscar(cercanas(navGlobal.declNav, 3));
+  if(!mejor) for(const lista of navGlobal.declNav.values()) buscar(lista);
+  return mejor ? mejor.v : null;
+}
+
 // Aerovías de Colombia: un trazo por tramo (con su tooltip de límites, MEA, clase y sentido de
 // niveles publicados) y una etiqueta con el designador en el punto medio. Cada trazo va al grupo
 // de su nivel (inferior o superior) para poder mostrarlos por separado. Los tramos que comparten
@@ -4465,7 +4689,7 @@ async function cargarDatosMundo(){
       ? 'Aerovías oficiales fuera de Colombia: ' + regs.map(r => `${r.region} (${r.fuente}; ${r.vigencia})`).join(' · ') + '. El límite entre rutas inferiores y superiores es el de cada región.'
       : 'No se pudieron cargar las aerovías de fuera de Colombia.';
   };
-  pedir('aerovias/indice.json').then(indice => Promise.allSettled(indice.regiones.map(r =>
+  const cargaAip = pedir('aerovias/indice.json').then(indice => Promise.allSettled(indice.regiones.map(r =>
     pedir('aerovias/' + r.archivo).then(j => { prepararRegionAip(j); avisoAip(); actualizarCapasNav(); })
   ))).then(() => {
     if(navAip.regiones.length) flightMap.attributionControl.addAttribution('Aerovías: AIP oficiales (detalle bajo el mapa)');
@@ -4485,6 +4709,12 @@ async function cargarDatosMundo(){
   }catch(e){
     if(estado) estado.textContent = `${AIRWAYS_FUENTE}. No se pudieron cargar los aeródromos y radioayudas de fuera de Colombia.`;
   }
+  // Con todo cargado (o fallado), la red de los planes de vuelo. Los planes que esperaban
+  // (navGlobalListo) se validan a partir de aquí.
+  await cargaAip;
+  construirRedGlobal();
+  navGlobal.listo = true;
+  resolverNavListo();
 }
 
 function iniciarCapasNav(){
@@ -4583,8 +4813,10 @@ function populateMapSearch(){
 }
 function searchMapPoint(value){
   const code = (value||'').trim().toUpperCase().split(/[\s—-]/)[0];
-  const p = findPoint(code);
-  if(!p || !flightMap) return;
+  if(!flightMap) return;
+  const centro = flightMap.getCenter();
+  const p = findPoint(code) || resolverPunto(code, { lat: centro.lat, lon: centro.lng }) || aeropuertoPorCodigo(code);
+  if(!p) return;
   flightMap.setView(llMapa(p.lat, p.lon), Math.max(flightMap.getZoom(), 8));
   L.popup({ className:'fp-tooltip' })
     .setLatLng(llMapa(p.lat, p.lon))
@@ -4719,44 +4951,10 @@ function refreshMapTheme(){
 // Devuelve la lista ordenada de puntos y, en paralelo, de qué aerovía y qué tramo publicado
 // procede cada trecho: es lo que permite después conocer la MEA, la clase de espacio aéreo y el
 // sentido de niveles vigentes en el punto exacto donde va la aeronave.
+// Trayectoria del plan: la misma resolución de la casilla 15 que valida el plan (resolverRuta),
+// con los tramos publicados de cada paso para las comprobaciones de MEA y sentido de niveles.
 function buildRoutePoints(fp){
-  const pts = [];
-  const legs = [];   // legs[i] describe el trecho entre pts[i] y pts[i+1]
-  const dep = findPoint(fp.dep); if(dep) pts.push({code:fp.dep, ...dep});
-  let pendingAirway = null;
-
-  // Anota de qué aerovía y con qué índice de tramo se voló el paso que acaba de añadirse, y en
-  // qué sentido: "↓" si se recorre en el orden de la tabla del AIP (el de AIRWAYS), "↑" al revés.
-  const anotar = (aw, idx, sentido) => { legs[pts.length - 2] = aw ? { airway: aw, seg: (AIRWAY_SEGMENTS[aw] || [])[idx] || null, sentido } : null; };
-
-  (fp.route||'').trim().split(/\s+/).forEach(tok=>{
-    if(!tok || tok === 'DCT'){ pendingAirway = null; return; }
-    if(AIRWAYS[tok]){ pendingAirway = tok; return; }
-    const p = findPoint(tok);
-    if(!p) return;
-    if(pendingAirway && pts.length){
-      const seq = AIRWAYS[pendingAirway];
-      const seg = airwaySegmentIndices(seq, pts[pts.length-1].code, tok);
-      if(seg){
-        const step = seg.from < seg.to ? 1 : -1;
-        for(let i=seg.from; i!==seg.to; i+=step){
-          const destino = seq[i+step];
-          const mid = findPoint(destino);
-          if(!mid) continue;
-          pts.push({code:destino, ...mid});
-          // Los tramos se publican en el sentido de la secuencia: al recorrerla al revés, el
-          // tramo que corresponde es el que arranca en el punto de menor índice.
-          anotar(pendingAirway, step > 0 ? i : i - 1, step > 0 ? '↓' : '↑');
-        }
-        pendingAirway = null;
-        return;   // el punto de salida ya se añadió dentro del bucle
-      }
-    }
-    pts.push({code:tok, ...p});
-    anotar(null);
-    pendingAirway = null;
-  });
-  const dest = findPoint(fp.dest); if(dest){ pts.push({code:fp.dest, ...dest}); anotar(null); }
+  const { pts, legs } = resolverRuta(fp.dep, fp.route, fp.dest);
   return { pts, legs };
 }
 
@@ -5047,7 +5245,9 @@ function updatePlaneTooltip(fp){
 // repetido para un resultado que solo cambia si cambia la ruta. Se recalcula solo si el string
 // de ruta (o el par DEP/DEST) es distinto al que se usó la última vez.
 function getRouteGeometry(fp){
-  const key = `${fp.dep}|${fp.route}|${fp.dest}`;
+  // La versión de la red entra en la clave: un plan que se resolvió antes de terminar de cargar
+  // las bases de fuera de Colombia se vuelve a resolver cuando llegan.
+  const key = `${fp.dep}|${fp.route}|${fp.dest}|${navGlobal.version}`;
   if(!fp._geo || fp._geo.key !== key){
     const { pts, legs } = buildRoutePoints(fp);
     const cumDist = segDistances(pts);
@@ -5372,7 +5572,9 @@ const ARRIVAL_CAPTURE_NM = 0.8; // margen para dar por alcanzado un punto o el d
 
 function airportElevFt(code){
   const d = AIRPORT_DETAILS[(code||'').toUpperCase()];
-  return d && typeof d.elevFt === 'number' ? d.elevFt : 0;
+  if(d && typeof d.elevFt === 'number') return d.elevFt;
+  const w = AIRPORTS[(code||'').toUpperCase()] ? null : navGlobal.aeropuertos.get((code||'').toUpperCase());
+  return w && typeof w.elevFt === 'number' ? w.elevFt : 0;
 }
 // Nivel autorizado vigente: el CFL (cleared flight level) manda sobre el nivel solicitado en
 // el plan, igual que en la operación real. Si ninguno de los dos declara nivel (casilla 15b en
@@ -5436,7 +5638,7 @@ function tickSimulation(){
       if(step > 0) pos = offsetLatLon(pos.lat, pos.lon, track, step);
     } else if(fp.directTo){
       // ---- DIRECTO A UN PUNTO: navegación propia hacia un fix autorizado ----
-      const tgt = findPoint(fp.directTo);
+      const tgt = puntoDirecto(fp, fp.directTo, pos);
       if(!tgt){ fp.directTo = null; }
       else {
         const desired = bearingBetween(pos.lat, pos.lon, tgt.lat, tgt.lon);
@@ -5845,6 +6047,14 @@ function openAtcEditModal(flightId){
   openWindow('win-atcedit');
 }
 
+// Punto de un DIRECTO: si está en la ruta del plan, ese mismo (evita homónimos lejanos); si no,
+// el homónimo más cercano a la aeronave, o un aeródromo.
+function puntoDirecto(fp, code, pos){
+  const geo = getRouteGeometry(fp);
+  const enRuta = geo.pts.find(p => p.code === code);
+  return enRuta || resolverPunto(code, pos || fp._pos) || aeropuertoPorCodigo(code);
+}
+
 // Solo se ofrecen como DIRECTO los puntos de su ruta que la aeronave todavía no ha sobrevolado.
 function renderDirectToOptions(fp){
   const dl = document.getElementById('directToList');
@@ -5876,8 +6086,8 @@ function applyAtcEdit(){
     if(hdg < 1 || hdg > 360) return flashAtc('err','Rumbo inválido: debe estar entre 001 y 360 grados.');
     if(hdg === 360) hdg = 0;
   }
-  if(directRaw && !findPoint(directRaw)){
-    return flashAtc('err',`El punto ${escapeHtml(directRaw)} no existe en la base ENR 4.1 / 4.4 o no tiene coordenadas publicadas.`);
+  if(directRaw && !puntoDirecto(fp, directRaw)){
+    return flashAtc('err',`El punto ${escapeHtml(directRaw)} no existe en las bases de puntos significativos y radioayudas (eAIP de Colombia, AIP cargados u OurAirports).`);
   }
   if(directRaw && hdg != null){
     return flashAtc('err','Emite una cosa a la vez: o un rumbo asignado, o un directo a un punto.');
@@ -6367,9 +6577,9 @@ function fpUpdate(){
   if(!acInfo){ ok = false; document.getElementById('f_acType').classList.add('f-invalid'); errors.push('A/C TYPE'); }
   else if(v('f_wake') !== acInfo.wtc){ ok = false; document.getElementById('f_wake').classList.add('f-invalid'); errors.push('W (Estela)'); }
 
-  const invRoutes = checkRouteTokens(v('f_route'));
+  const invRoutes = checkRouteTokens(v('f_route'), v('f_dep'));
   if(invRoutes.length > 0){
-    ok = false; document.getElementById('f_route').classList.add('f-invalid'); errors.push('Ruta (' + invRoutes.join(', ') + ')');
+    ok = false; document.getElementById('f_route').classList.add('f-invalid'); errors.push('Ruta (' + invRoutes.join(', ') + ')' + avisoCargaNav());
     setTimeout(()=>document.getElementById('f_route').classList.remove('f-invalid'), 600);
   }
 
@@ -6378,7 +6588,7 @@ function fpUpdate(){
     const code = v(id);
     if(checks[id].test(code) && !isKnownAirport(code)){
       ok = false; document.getElementById(id).classList.add('f-invalid');
-      errors.push(labels[id] + ' (' + code + ' no existe en la base de datos)');
+      errors.push(labels[id] + ' (' + code + ' no existe en la base de datos)' + avisoCargaNav());
       setTimeout(()=>document.getElementById(id).classList.remove('f-invalid'), 600);
     }
   });
@@ -6474,6 +6684,12 @@ function registerFlightPlan(fp, viaForm){
   const entry = { ts: nowStampHeader(), text: buildICAOText(fp), source: viaForm ? 'FP OPERATION' : 'FREE AFTN' };
   if(existing){ fp.history = existing.history; fp.history.push(entry); flightPlans[flightPlans.indexOf(existing)] = fp; }
   else { fp.history = [entry]; flightPlans.push(fp); }
+  // Procedencia de lo que no sale de un AIP: el estudiante debe saber qué posiciones son de referencia.
+  const r = resolverRuta(fp.dep, fp.route, fp.dest);
+  if(r.referencia.length){
+    fp.history.push({ ts: nowStampHeader(), source: 'SISTEMA',
+      text: `Posición de referencia (OurAirports, no del AIP) para: ${r.referencia.join(', ')}. El resto de la ruta sale del eAIP de Colombia y de los AIP cargados.` });
+  }
   renderSidebar(); renderHistoryWindow(fp.flightId); openWindow('win-hist');
 }
 
@@ -6605,13 +6821,13 @@ function parseICAOText(raw){
   m = rawLines[2] && rawLines[2].match(/^-([A-Z]{4})(\d{4})$/);
   if(!m) errors.push('Línea 3: Formato incorrecto.'); else {
     fp.dep = m[1]; fp.eobt = m[2];
-    if(!isKnownAirport(fp.dep)) errors.push(`Línea 3: DEP ${fp.dep} no existe en la base de datos.`);
+    if(!isKnownAirport(fp.dep)) errors.push(`Línea 3: DEP ${fp.dep} no existe en la base de datos.${avisoCargaNav()}`);
   }
 
   m = rawLines[3] && rawLines[3].match(/^-(N\d{4}|K\d{4}|M\d{3})(F\d{3}|A\d{3}|S\d{4}|M\d{4}|VFR)\s+(.+)$/);
   if(!m) errors.push('Línea 4: Formato incorrecto (SPEED/LEVEL debe ser Nnnnn/Knnnn/Mnnn + Fnnn/Annn/Snnnn/Mnnnn/VFR).'); else {
     fp.speed = m[1]; fp.level = m[2]; fp.route = m[3];
-    const inv = checkRouteTokens(fp.route); if(inv.length>0) errors.push('Línea 4 (Ruta): Puntos inválidos ' + inv.join(', '));
+    const inv = checkRouteTokens(fp.route, fp.dep); if(inv.length>0) errors.push('Línea 4 (Ruta): Puntos inválidos ' + inv.join(', ') + avisoCargaNav());
     // La SID y la STAR viajan dentro de la ruta; se copian también a sus casillas de FP OPERATION.
     const proc = procedimientosRuta(fp.route); fp.sid = proc.sid; fp.star = proc.star;
   }
@@ -6620,7 +6836,7 @@ function parseICAOText(raw){
   m = rawLines[4] && rawLines[4].match(/^-([A-Z]{4})(\d{4})?\s*([A-Z]{4}(?:\s[A-Z]{4})*)?$/);
   if(!m) errors.push('Línea 5: Formato incorrecto.'); else {
     fp.dest = m[1]; fp.eet = m[2]||''; fp.altn = m[3]||'';
-    if(!isKnownAirport(fp.dest)) errors.push(`Línea 5: DEST ${fp.dest} no existe en la base de datos.`);
+    if(!isKnownAirport(fp.dest)) errors.push(`Línea 5: DEST ${fp.dest} no existe en la base de datos.${avisoCargaNav()}`);
     // El EET es un tiempo transcurrido: sus dos primeras cifras son horas de vuelo, no una hora
     // del reloj, así que "2145" en un vuelo doméstico delata que se escribió la ETA por error.
     if(fp.eet && parseInt(fp.eet.slice(2),10) > 59){
@@ -7986,8 +8202,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   activarMapaFondo();
 
   // Planes que el estudiante activó desde el Simulador de Plan de Vuelo (después de initMap, para
-  // que un DESPEGUE inmediato ya tenga el mapa donde dibujarse).
-  consumirEntradasFPL();
+  // que un DESPEGUE inmediato ya tenga el mapa donde dibujarse). Esperan a la red de navegación:
+  // un plan con aeródromos o puntos de fuera de Colombia no se puede validar antes. Si la carga
+  // se atasca (sin conexión), a los 20 s se procesan con lo que haya.
+  Promise.race([navGlobalListo, new Promise(r => setTimeout(r, 20000))]).then(consumirEntradasFPL);
 
   // Desbloquea el audio del STCA en el primer click (los navegadores exigen un gesto del
   // usuario antes de permitir que suene cualquier audio).
