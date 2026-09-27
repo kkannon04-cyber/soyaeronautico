@@ -136,7 +136,9 @@
   .carpeta .n{ font-size:.66rem; color:var(--text-muted); font-weight:500; }
   .tareas, .lateral-bloque{ margin-top:14px; border-top:1px solid var(--hairline); padding-top:10px; }
   .tareas h4, .lateral-bloque h4{ font:600 .64rem var(--font-ui); color:var(--text-muted); letter-spacing:.12em; margin:0 4px 8px; }
-  .tarea{ display:flex; gap:6px; align-items:flex-start; padding:6px 7px; margin-bottom:4px; font-size:.66rem; line-height:1.4; color:var(--text-muted); border-radius:8px; border:1px solid transparent; }
+  .tarea{ display:flex; gap:6px; align-items:flex-start; width:100%; text-align:left; padding:6px 7px; margin-bottom:4px; font:inherit; font-size:.66rem; line-height:1.4; color:var(--text-muted); background:none; border-radius:8px; border:1px solid transparent; cursor:pointer; }
+  .tarea:hover{ border-color:var(--carta-ambar); }
+  .tarea:focus-visible{ outline:2px solid var(--carta-ambar); outline-offset:1px; }
   .tarea.hecha{ color:var(--vfr); }
   .tarea.pend{ color:var(--text); background:rgba(var(--carta-ambar-rgb),.12); border-color:rgba(var(--carta-ambar-rgb),.45); }
   .tarea small{ color:var(--text-muted); }
@@ -151,14 +153,27 @@
   .term-filtro{ display:flex; gap:6px; align-items:center; margin-left:auto; flex-wrap:wrap; }
   .term-filtro .inp, .term-filtro .sel{ width:auto; }
   .term-filtro .inp{ width:150px; }
-  .term-lista{ flex:0 0 42%; overflow:auto; min-height:120px; border-bottom:1px solid var(--hairline); }
+  .term-lista{ flex:0 0 42%; overflow:auto; min-height:90px; }
+  .term-lista:focus-visible{ outline:2px solid var(--carta-ambar); outline-offset:-2px; }
+  /* Divisor arrastrable entre la lista y el mensaje abierto. */
+  .term-split{ flex:0 0 7px; cursor:row-resize; background:var(--panel); border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); position:relative; touch-action:none; }
+  .term-split::before{ content:''; position:absolute; inset:0; margin:auto; width:46px; height:3px; border-radius:2px; background:var(--hairline); }
+  .term-split:hover::before, .term-split.arrastrando::before{ background:var(--carta-ambar); }
+  .term-split:focus-visible{ outline:2px solid var(--carta-ambar); outline-offset:-2px; }
+  body.redim-fila, body.redim-fila *{ cursor:row-resize !important; user-select:none; }
   table.msgs{ width:100%; border-collapse:collapse; font-size:.74rem; }
   table.msgs th{ position:sticky; top:0; background:var(--panel); text-align:left; font-weight:600; color:var(--text-muted); padding:6px 8px; border-bottom:1px solid var(--hairline); white-space:nowrap; z-index:1; font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; }
   table.msgs td{ padding:5px 8px; border-bottom:1px solid var(--hairline); white-space:nowrap; vertical-align:middle; }
   table.msgs tr{ cursor:pointer; }
   table.msgs tr:hover td{ background:var(--panel-alt); }
   table.msgs tr.sel td{ background:rgba(var(--accent-rgb),0.14); }
-  table.msgs tr.nuevo td{ font-weight:600; }
+  /* Sin leer: fondo distinto y una barra en el borde izquierdo. */
+  table.msgs tr.nuevo td{ font-weight:600; color:var(--text); background:var(--panel-alt); }
+  table.msgs tr.nuevo td:first-child{ box-shadow:inset 3px 0 0 var(--carta-ambar); }
+  table.msgs tr.nuevo:hover td{ background:var(--panel); }
+  table.msgs tr.sel td, table.msgs tr.nuevo.sel td{ background:rgba(var(--accent-rgb),0.14); }
+  table.msgs tr.leido td{ color:var(--text-muted); }
+  table.msgs tr.leido td.cuerpo, table.msgs tr.leido td.m{ color:var(--text-muted); }
   table.msgs td.cuerpo{ max-width:1px; width:100%; overflow:hidden; text-overflow:ellipsis; font-size:.72rem; }
   table.msgs td.m{ font-size:.72rem; }
   .prio{ font-weight:700; display:inline-flex; align-items:center; gap:5px; }
@@ -403,7 +418,8 @@
     .side-est{ width:100%; margin-bottom:4px; }
     .carpeta{ width:auto; margin:0; gap:8px; }
     .tareas, .lateral-bloque{ width:100%; }
-    .term-lista{ flex:none; max-height:45vh; }
+    .term-lista{ flex:none !important; max-height:45vh; border-bottom:1px solid var(--hairline); }
+    .term-split{ display:none; }
     .term-detalle{ flex:none; overflow:visible; }
     .term-filtro{ margin-left:0; width:100%; }
     .term-filtro .inp{ flex:1; }
@@ -1612,6 +1628,8 @@ const TA = {};
     terminales[tipo] = term ? { term, red } : null;
     TA.pintarBarraPuesto();
   };
+  // Puesto a la vista ({ term, red }); lo usan la barra del puesto y las pruebas.
+  TA.puesto = () => terminales[TA.redActiva] || null;
   TA.activarRed = tipo => {
     TA.redActiva = tipo;
     $('termLocal').hidden = tipo !== 'local';
@@ -1889,7 +1907,8 @@ const TA = {};
               <input class="inp" data-filtro-txt placeholder="BUSCAR…" aria-label="Buscar en los mensajes">
             </div>
           </div>
-          <div class="term-lista"><table class="msgs"><thead><tr><th>Prio</th><th class="col-id">Id. transm.</th><th>Hora</th><th>Tipo</th><th data-col-quien>De</th><th>Cuerpo</th><th class="col-tam">Tamaño</th></tr></thead><tbody data-lista></tbody></table></div>
+          <div class="term-lista" tabindex="0" role="listbox" aria-label="Mensajes de la bandeja"><table class="msgs"><thead><tr><th>Prio</th><th class="col-id">Id. transm.</th><th>Hora</th><th>Tipo</th><th data-col-quien>De</th><th>Cuerpo</th><th class="col-tam">Tamaño</th></tr></thead><tbody data-lista></tbody></table></div>
+          <div class="term-split" data-split tabindex="0" role="separator" aria-orientation="horizontal" aria-label="Alto de la lista de mensajes (arrastra o usa las flechas)" title="Arrastra para repartir el espacio"></div>
           <div class="term-detalle" data-detalle></div>
           <div class="term-estado"><span data-pend></span><span data-canal></span><span data-red2></span></div>
         </div>
@@ -1946,7 +1965,7 @@ const TA = {};
         const tp = TA.tipoMensaje(m.texto);
         const quien = carpeta === 'out' ? (m.dest || []).join(' ') : m.orig;
         const nuevo = carpeta === 'in' && !m.leido;
-        return `<tr data-id="${esc(m.id)}" class="${m.id === selId ? 'sel' : ''} ${nuevo ? 'nuevo' : ''}">
+        return `<tr data-id="${esc(m.id)}" aria-selected="${m.id === selId}" class="${m.id === selId ? 'sel' : ''} ${nuevo ? 'nuevo' : (carpeta === 'in' ? 'leido' : '')}">
           <td><span class="prio prio-${esc(m.prio)}">${esc(m.prio)}</span>${m.acusado ? ' <span title="Tratado">✓</span>' : ''}</td>
           <td class="m col-id">${esc(m.transm || '—')}</td>
           <td class="m">${fechaCorta(m.recibido)}</td>
@@ -1955,14 +1974,85 @@ const TA = {};
           <td class="cuerpo" title="${esc(TA.resumenCuerpo(m.texto))}">${esc(TA.resumenCuerpo(m.texto))}</td>
           <td class="m col-tam">${TA.bytes(m)}</td></tr>`;
       }).join('') : `<tr><td colspan="7" class="det-vacio">${carpeta === 'in' ? 'ENTRADA VACÍA' : carpeta === 'out' ? 'SIN MENSAJES TRANSMITIDOS' : 'PAPELERA VACÍA'}</td></tr>`;
-      qa('[data-lista] tr[data-id]').forEach(tr => tr.addEventListener('click', () => {
-        selId = tr.dataset.id;
-        const m = seleccionado();
-        if(m && m.carpeta === 'in' && !m.leido) red.marcarLeido(m.id);
-        mostrarRev = false; mostrarDec = false;
-        pintar();
-      }));
+      qa('[data-lista] tr[data-id]').forEach(tr => tr.addEventListener('click', () => abrirMensaje(tr.dataset.id)));
+      const sel = q('[data-lista] tr.sel');
+      if(sel && traerALaVista){ sel.scrollIntoView({ block:'nearest' }); traerALaVista = false; }
     }
+
+    // Abre un mensaje: lo marca leído y lo trae a la vista en la lista.
+    let traerALaVista = false;
+    function abrirMensaje(id, conTeclado){
+      selId = id;
+      const m = seleccionado();
+      if(m && m.carpeta === 'in' && !m.leido) red.marcarLeido(m.id);
+      mostrarRev = false; mostrarDec = false;
+      traerALaVista = !!conTeclado;
+      pintar();
+    }
+    // Flechas arriba y abajo: recorren la bandeja como en un cliente de correo.
+    function mover(paso){
+      const lista = visibles();
+      if(!lista.length) return;
+      const i = lista.findIndex(m => m.id === selId);
+      const j = i < 0 ? (paso > 0 ? 0 : lista.length - 1) : Math.min(Math.max(i + paso, 0), lista.length - 1);
+      if(lista[j] && lista[j].id !== selId) abrirMensaje(lista[j].id, true);
+      else if(i < 0) abrirMensaje(lista[j].id, true);
+    }
+    const escribiendo = el => !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);
+    function teclado(e){
+      if(e.ctrlKey || e.metaKey || e.altKey) return;
+      // Sólo cuando esta terminal se está viendo y no se está escribiendo.
+      if(!cont.offsetParent || escribiendo(document.activeElement) || e.target === q('[data-split]')) return;
+      if(document.querySelector('.sim-window.open .comp')) return;   // hay un mensaje en redacción
+      const paso = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : e.key === 'PageDown' ? 10 : e.key === 'PageUp' ? -10 : 0;
+      if(paso){ e.preventDefault(); mover(paso); return; }
+      if(e.key === 'Home' || e.key === 'End'){ e.preventDefault(); mover(e.key === 'Home' ? -9999 : 9999); }
+    }
+    document.addEventListener('keydown', teclado);
+
+    // Divisor: reparte el alto entre la lista y el mensaje abierto. Se guarda
+    // como fracción del espacio libre, para que valga en cualquier pantalla.
+    const divisor = q('[data-split]'), zonaLista = q('.term-lista'), der = q('.term-der');
+    let fraccion = (() => { const v = parseFloat(localStorage.getItem('aisAftnSplit')); return v > 0.1 && v < 0.9 ? v : 0.42; })();
+    const libre = () => der.clientHeight - q('.term-bar').offsetHeight - divisor.offsetHeight - q('.term-estado').offsetHeight;
+    function aplicarSplit(){
+      if(window.innerWidth <= 900){ zonaLista.style.flex = ''; return; }
+      const h = libre();
+      if(h < 200) return;
+      zonaLista.style.flex = '0 0 ' + Math.round(Math.min(Math.max(fraccion * h, 90), h - 110)) + 'px';
+    }
+    function fijarFraccion(f){
+      fraccion = Math.min(Math.max(f, 0.12), 0.88);
+      try{ localStorage.setItem('aisAftnSplit', String(fraccion)); }catch(e){}
+      aplicarSplit();
+    }
+    divisor.addEventListener('pointerdown', e => {
+      if(window.innerWidth <= 900) return;
+      e.preventDefault();
+      divisor.setPointerCapture(e.pointerId);
+      divisor.classList.add('arrastrando');
+      document.body.classList.add('redim-fila');
+      const arriba = zonaLista.getBoundingClientRect().top, h = libre();
+      const mover = ev => fijarFraccion((ev.clientY - arriba) / h);
+      const soltar = () => {
+        divisor.removeEventListener('pointermove', mover);
+        divisor.removeEventListener('pointerup', soltar);
+        divisor.removeEventListener('pointercancel', soltar);
+        divisor.classList.remove('arrastrando');
+        document.body.classList.remove('redim-fila');
+      };
+      divisor.addEventListener('pointermove', mover);
+      divisor.addEventListener('pointerup', soltar);
+      divisor.addEventListener('pointercancel', soltar);
+    });
+    divisor.addEventListener('keydown', e => {
+      const paso = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
+      if(!paso) return;
+      e.preventDefault();
+      fijarFraccion(fraccion + paso * 0.03);
+    });
+    divisor.addEventListener('dblclick', () => fijarFraccion(0.42));
+    window.addEventListener('resize', aplicarSplit);
 
     function pintarDetalle(){
       const det = q('[data-detalle]');
@@ -2000,8 +2090,9 @@ const TA = {};
       const t = red.tareas ? red.tareas() : null;
       if(!t || !t.length){ zona.hidden = true; return; }
       zona.hidden = false;
-      zona.innerHTML = `<h4>SITUACIONES ${t.filter(x => x.hecha).length}/${t.length}</h4>` + t.map((x, i) =>
-        `<div class="tarea ${x.hecha ? 'hecha' : 'pend'}" ${x.consigna ? `data-consigna="${i}" style="cursor:pointer" title="Ver la consigna"` : ''}><span>${x.hecha ? '✓' : (x.fallos ? '✗' : '•')}</span><span>${x.titulo}${x.consigna && !x.hecha ? ' <small>(ver)</small>' : ''}${x.fallos && !x.hecha ? ` <small>(${x.fallos} intento${x.fallos === 1 ? '' : 's'} fallido${x.fallos === 1 ? '' : 's'})</small>` : ''}</span></div>`).join('');
+      const resueltas = (red.estado && red.estado.resueltas || 0) + t.filter(x => x.hecha).length;
+      zona.innerHTML = `<h4>SITUACIONES ${resueltas}/${resueltas + t.filter(x => !x.hecha).length}</h4>` + t.map((x, i) =>
+        `<button type="button" class="tarea ${x.hecha ? 'hecha' : 'pend'}" data-consigna="${i}" title="Ver qué hay que hacer"><span>${x.hecha ? '✓' : (x.fallos ? '✗' : '•')}</span><span>${x.titulo}${x.hecha ? '' : ' <small>(ver)</small>'}${x.fallos && !x.hecha ? ` <small>(${x.fallos} intento${x.fallos === 1 ? '' : 's'} fallido${x.fallos === 1 ? '' : 's'})</small>` : ''}</span></button>`).join('');
       zona.querySelectorAll('[data-consigna]').forEach(el => el.addEventListener('click', () => TA.mostrarSituacion(t[Number(el.dataset.consigna)])));
     }
 
@@ -2036,9 +2127,10 @@ const TA = {};
 
     const desuscribir = red.suscribir(pintar);
     pintar();
+    aplicarSplit();
     return {
       pintar,
-      destruir(){ if(desuscribir) desuscribir(); cont.innerHTML = ''; },
+      destruir(){ if(desuscribir) desuscribir(); document.removeEventListener('keydown', teclado); window.removeEventListener('resize', aplicarSplit); cont.innerHTML = ''; },
       nuevo: abrirNuevo,
       seleccionado,
       lateral: q('[data-lateral]')
@@ -2063,7 +2155,10 @@ const TA = {};
   TA.CENTRO = 'SKBOYFYX';
   // Sólo aeródromos con FIR en TA.FIR_DE (ver la nota allí).
   const PRINCIPALES = ['SKBO','SKCL','SKRG','SKBQ','SKCG','SKSP','SKSM','SKBG','SKPE','SKLT'];
-  const TOPE_TAREAS = 6;
+  // Situaciones resueltas que siguen a la vista; las anteriores se archivan
+  // (cuentan en el marcador) para que el panel no crezca sin fin y para que
+  // nunca se deje de proponer una situación nueva.
+  const TOPE_HECHAS = 3;
 
   // ---------- Generador de tráfico ----------
   // Vuelos sobre las rutas reales de TA.RUTAS con la flota de TA.FLOTA.
@@ -2226,6 +2321,7 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       const m = red.recibir({ prio:'SS', orig, dest:[est.dir, centroDe(ad)].filter((v, i, s) => s.indexOf(v) === i), hora,
         texto:`${vuelo} A320 DECLARO MAYDAY FALLA DE MOTOR\n${entero(15, 40)}NM N ${ad} DESCENSO PARA ATERRIZAJE INMEDIATO\nRWY ${pista} SERVICIOS DE SALVAMENTO ALERTADOS` });
       t.titulo = `Mensaje de socorro de ${orig}: acusa recibo`;
+      t.consigna = `Llegó un <b>mensaje de socorro (SS)</b> de <b>${orig}</b>, depositado a las ${hora.slice(2)} UTC del día ${hora.slice(0, 2)}. Está en tu bandeja de entrada. Como estación de destino tienes que <b>acusar recibo</b>: con la misma prioridad SS, dirigido al remitente, y en el texto la señal <b>R</b> seguida del origen del mensaje que acusas (su hora de depósito y su remitente).`;
       t.ref = { hora, orig, msgId: m.id };
       TA.toast(`<b>Mensaje SS recibido de ${orig}.</b> Como estación de destino debes acusar recibo (Anexo 10, 4.4.15.6).`, 'ss', 9000);
     }
@@ -2237,6 +2333,7 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       const mutilado = txt.slice(0, corte).replace(/[A-Z0-9]/g, (c, i) => (i % 5 === 3 ? '?' : c)) + '\nCHECK\n   TEXT\n      NEW ENDING ADDED ' + TA.CENTRO;
       const m = red.recibir({ ...base, hora, texto: mutilado });
       t.titulo = `Mensaje mutilado de ${base.orig}: pide la repetición al remitente`;
+      t.consigna = `El mensaje de <b>${base.orig}</b> depositado a las ${hora.slice(2)} UTC del día ${hora.slice(0, 2)} llegó con el <b>texto mutilado</b> (ábrelo en la bandeja de entrada). Pide su repetición al remitente con un <b>mensaje de servicio</b>: el texto empieza por <b>SVC QTA RPT</b> y sigue con el origen del mensaje que pides, es decir su hora de depósito y su remitente. Se recomienda darle la misma prioridad que tenía ese mensaje (${base.prio}).`;
       t.ref = { hora, orig: base.orig, prio: base.prio, limpio: { ...base, hora }, msgId: m.id };
       TA.toast(`Llegó un mensaje de <b>${base.orig}</b> con el texto mutilado. Pide su repetición al remitente con un mensaje de servicio.`, '', 8000);
     }
@@ -2249,13 +2346,16 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       const perdidos = faltan.map(() => trafico(est));
       red.recibir(trafico(est));
       const id = n => red.circuito + pad(n % 1000 === 0 ? 0 : n % 1000, 3);
+      const ids = faltan.map(id);
       t.titulo = `Continuidad del canal ${red.circuito} (desde ${TA.CENTRO})`;
-      t.ref = { faltan: faltan.map(id), perdidos };
+      t.consigna = `Se cortó la continuidad de los números de orden del canal <b>${red.circuito}</b>: no llegó${ids.length === 1 ? '' : 'n'} <b>${ids.join(' y ')}</b>. Recláma${ids.length === 1 ? 'lo' : 'los'} a la estación anterior del canal, <b>${TA.CENTRO}</b>, con un mensaje de servicio cuyo texto empieza por <b>SVC QTA MIS</b> y sigue con ${ids.length === 1 ? 'ese número' : 'los números que faltan (con un guion entre el primero y el último, que significa «hasta, inclusive»)'}.`;
+      t.ref = { faltan: ids, perdidos };
       t.silenciosa = true;
     }
     if(tipo === 'fpl'){
       const p = conReales(x => x.adep === loc && firsDePlan(x).length <= 3, () => planDe(rutaDesde(loc), entero(50, 120))), r = p.r;
       t.titulo = `Plan de vuelo presentado: ${p.vuelo} ${loc}–${r.ades}`;
+      t.abrir = true;
       t.consigna = `El piloto de <b>${p.vuelo}</b> entregó el plan de vuelo del formulario${p.real ? ' (un plan real presentado en Colombia, con otro indicativo)' : ''}. Transmite el mensaje FPL ${consignaDestinos(r)}.`;
       t.real = !!p.real;
       t.formulario = p.campos;
@@ -2290,6 +2390,7 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
         c22 = `9/${gemelo.tipo}/${gemelo.estela}`;
       }
       t.titulo = `Modificación del plan de ${vuelo} (CHG)`;
+      t.abrir = true;
       t.consigna = `${vuelo} (${TA.ciudad(loc)} → ${TA.ciudad(ades)}, EOBT ${eobt} UTC). ${pide} Transmite la modificación ${consignaDestinos(r)}. Incluye DOF y el campo modificado.`;
       t.ref = { clave:{ prio:'FF', dest:destinosPlan(r), orig:est.dir, hora:'', texto:TA.partir69(`(CHG-${vuelo}-${loc}${eobt}-${ades}-DOF/${dofEn(min)}-${c22})`).join('\n') }, vuelo, variante:'CHG' };
       TA.toast(`<b>Nueva situación:</b> ${t.titulo}.`, '', 7000);
@@ -2308,6 +2409,7 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
         texto = `(CNL-${vuelo}-${loc}${eobt}-${ades}-DOF/${dofEn(min)})`;
       }
       t.titulo = `Transmite un ${variante} de ${vuelo}`;
+      t.abrir = true;
       t.ref = { clave:{ prio:'FF', dest:destinosPlan(r), orig:est.dir, hora:'', texto }, vuelo, variante };
       TA.toast(`<b>Nueva situación:</b> ${t.titulo}.`, '', 7000);
     }
@@ -2337,13 +2439,14 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       }
       t.titulo = `Transmite un ${variante} de ${vuelo}`;
       t.consigna = consigna;
+      t.abrir = true;
       t.ref = { clave:{ prio:'FF', dest:[dest + 'ZTZX', fir + 'ZQZX'], orig: est.dir, hora:'', texto, textoModo:'exacto' }, vuelo, variante };
       TA.toast(`<b>Nueva situación:</b> ${t.titulo}.`, '', 7000);
     }
     red.estado.tareas.push(t);
     red.guardar();
     red.emitir();
-    if(t.consigna) TA.mostrarSituacion(t);
+    if(t.abrir) TA.mostrarSituacion(t);
   }
 
   // Revisa un mensaje enviado contra las situaciones pendientes.
@@ -2545,8 +2648,16 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`;
       red.recibir(trafico(est));
       proximoTrafico = ahora + entero(35, 60) * 1000;
     }
+    const hechas = red.estado.tareas.filter(t => t.hecha);
+    if(hechas.length > TOPE_HECHAS){
+      const archivar = hechas.slice(0, hechas.length - TOPE_HECHAS);
+      red.estado.resueltas = (red.estado.resueltas || 0) + archivar.length;
+      red.estado.tareas = red.estado.tareas.filter(t => !archivar.includes(t));
+      if(archivar.some(t => TA.situacionAbierta() === t.id)) TA.cerrarVentana('win-tarea');
+      red.guardar(); red.emitir();
+    }
     const tareas = red.estado.tareas;
-    if(ahora >= proximaTarea && tareas.length < TOPE_TAREAS && tareas.filter(t => !t.hecha).length < 2){
+    if(ahora >= proximaTarea && tareas.filter(t => !t.hecha).length < 2){
       const hechosTipos = tareas.map(t => t.tipo);
       const tipos = TIPOS_TAREA[est.tipo] || TIPOS_TAREA.torre;
       const faltan = tipos.filter(t => !hechosTipos.includes(t));
