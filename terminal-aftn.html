@@ -318,6 +318,10 @@
   .plantillas{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; align-items:center; }
   .plantillas .btn{ padding:4px 9px; font-size:.64rem; }
   .plantillas-tit{ font-size:.6rem; letter-spacing:.1em; color:var(--text-muted); margin-right:4px; }
+  /* Los campos van en el orden del mensaje (4.4.2): línea de dirección
+     (prioridad y destinatarios) y debajo línea de origen (hora y remitente). */
+  .comp-grupo{ font-size:.6rem; letter-spacing:.1em; color:var(--text-muted); margin:2px 0 6px; padding-top:6px; border-top:1px solid var(--hairline); }
+  .comp-grupo:first-child{ border-top:none; padding-top:0; }
 
   /* ---------- ejercicios ---------- */
   .ej-marcador{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
@@ -1696,17 +1700,21 @@ const TA = {};
       <div class="comp">
         <div>
           ${o.plantillas === false ? '' : `<div class="plantillas" data-plantillas><span class="plantillas-tit">PLANTILLAS</span></div>`}
+          <div class="comp-grupo">LÍNEA DE DIRECCIÓN</div>
           <div class="fila">
             <div class="campo" style="flex:0 0 100px;"><label for="${idp}p">Prioridad</label>
               <select class="sel" id="${idp}p" data-f="prio"><option value="">—</option>${Object.keys(TA.PRIORIDADES).map(p => `<option value="${p}">${p}</option>`).join('')}</select></div>
+            <div class="campo" style="flex:1 1 220px;"><label for="${idp}d">Destinatarios <span>(separados por espacio)</span></label>
+              <input class="inp upper" id="${idp}d" data-f="dest" autocomplete="off" spellcheck="false" placeholder="${o.sinPistas ? '8 letras cada uno' : 'SKBOZTZX SKEDZQZX'}">
+              <div class="dir-chips" data-chips></div></div>
+          </div>
+          <div class="comp-grupo">LÍNEA DE ORIGEN</div>
+          <div class="fila">
             <div class="campo" style="flex:1 1 160px;"><label for="${idp}h">Hora de depósito <span>(DDHHMM UTC)</span></label>
               <div style="display:flex;gap:6px;"><input class="inp" id="${idp}h" data-f="hora" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="${TA.horaUTC()}"><button type="button" class="btn sec mini" data-ahora>AHORA</button></div></div>
             <div class="campo" style="flex:1 1 130px;"><label for="${idp}o">Remitente</label>
               <input class="inp upper" id="${idp}o" data-f="orig" maxlength="8" autocomplete="off" ${o.remitenteEditable ? '' : 'disabled'}></div>
           </div>
-          <div class="campo"><label for="${idp}d">Destinatarios <span>(separados por espacio)</span></label>
-            <input class="inp upper" id="${idp}d" data-f="dest" autocomplete="off" spellcheck="false" placeholder="${o.sinPistas ? '8 letras cada uno' : 'SKBOZTZX SKEDZQZX'}">
-            <div class="dir-chips" data-chips></div></div>
           <div class="campo"><label for="${idp}i">Información optativa de encabezamiento <span>(opcional)</span></label>
             <input class="inp upper" id="${idp}i" data-f="ohi" maxlength="40" autocomplete="off"></div>
           <div class="campo"><label for="${idp}t">Texto</label>
