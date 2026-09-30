@@ -322,6 +322,41 @@
      (prioridad y destinatarios) y debajo línea de origen (hora y remitente). */
   .comp-grupo{ font-size:.6rem; letter-spacing:.1em; color:var(--text-muted); margin:2px 0 6px; padding-top:6px; border-top:1px solid var(--hairline); }
   .comp-grupo:first-child{ border-top:none; padding-top:0; }
+  /* Formulario por casillas (Doc 4444, Ap. 3), como la plantilla de la AMHS:
+     sólo las casillas del mensaje elegido y ✗ en las obligatorias vacías. */
+  .plantillas .sel-form{ width:auto; padding:4px 6px; font-size:.66rem; font-weight:600; }
+  .fa{ border:1px solid var(--hairline); border-radius:8px; padding:8px 10px 4px; margin-bottom:10px; background:var(--bg); }
+  .fa-cab{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:6px; font-size:.64rem; color:var(--text-muted); }
+  .fa-cab b{ color:var(--accent); font-size:.72rem; letter-spacing:.06em; }
+  .fa-cab .btn{ padding:4px 9px; font-size:.62rem; }
+  .fa-cab .fa-esp{ flex:1; }
+  .fa-fila{ display:grid; grid-template-columns:104px minmax(0,1fr); gap:4px 8px; align-items:start; padding:6px 0; border-top:1px dashed var(--hairline); }
+  .fa-rot{ font-size:.66rem; font-weight:700; padding-top:16px; line-height:1.3; }
+  .fa-cuerpo{ display:flex; flex-wrap:wrap; gap:6px 8px; align-items:flex-end; min-width:0; }
+  .fa-in{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .fa-in > span{ font-size:.56rem; letter-spacing:.04em; color:var(--text-muted); text-transform:uppercase; white-space:nowrap; }
+  .fa-in .inp, .fa-in .sel{ padding:4px 6px; font-size:.76rem; text-transform:uppercase; }
+  .fa-in .txt{ min-height:46px; font-size:.76rem; text-transform:uppercase; }
+  .fa-in.ancho{ flex:1 1 100%; }
+  .fa-in.medio{ flex:1 1 160px; }
+  .fa-in.falta > span::before{ content:'✗ '; color:var(--danger); font-weight:700; }
+  .fa-in.falta .inp, .fa-in.falta .sel, .fa-in.falta .txt{ border-color:var(--danger); }
+  .fa-in.mal .inp, .fa-in.mal .txt{ border-color:var(--warn); }
+  .fa-chks{ display:flex; flex-wrap:wrap; gap:4px; }
+  .fa-chk{ display:inline-flex; align-items:center; gap:4px; border:1px solid var(--hairline); border-radius:6px; padding:3px 7px; font-size:.66rem; cursor:pointer; background:var(--panel); }
+  .fa-chk input{ margin:0; accent-color:var(--accent); }
+  .fa-chk b{ font-family:monospace; font-size:.74rem; }
+  .fa-quitar{ background:none; border:1px solid var(--hairline); color:var(--text-muted); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:.7rem; }
+  .fa-quitar:hover{ border-color:var(--danger); color:var(--danger); }
+  .fa-nota{ font-size:.62rem; color:var(--text-muted); flex:1 1 100%; line-height:1.4; }
+  .fa-estado{ font-size:.66rem; line-height:1.5; padding:6px 0 2px; border-top:1px solid var(--hairline); margin-top:4px; }
+  .fa-estado.ok{ color:var(--vfr); }
+  .fa-estado.mal{ color:var(--danger); }
+  .comp .txt[readonly]{ background:var(--panel-alt); cursor:default; }
+  @media (max-width:600px){
+    .fa-fila{ grid-template-columns:1fr; }
+    .fa-rot{ padding-top:0; }
+  }
 
   /* ---------- ejercicios ---------- */
   .ej-marcador{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
@@ -609,7 +644,11 @@
           <h3>Crear sala <span class="etq">supervisor</span></h3>
           <div class="fila">
             <div class="campo" style="flex:2 1 200px;"><label for="salaNombre">Nombre</label><input class="inp" id="salaNombre" maxlength="60" placeholder="AIS/COM grupo 2"></div>
-            <div class="campo"><label for="salaEstacionCrear">Tu estación</label><input class="inp upper" id="salaEstacionCrear" maxlength="8" placeholder="SKEDZQZX" autocomplete="off"></div>
+          </div>
+          <div class="fila">
+            <div class="campo"><label for="salaRolCrear">Tu rol</label><select class="sel" id="salaRolCrear"></select></div>
+            <div class="campo"><label for="salaLugarCrear" id="salaLugarCrearLbl">Lugar</label><select class="sel" id="salaLugarCrear"></select>
+              <input class="inp upper" id="salaEstacionCrear" maxlength="8" placeholder="SKEDZQZX" autocomplete="off" hidden aria-label="Dirección de 8 letras"></div>
           </div>
           <span class="campo"><span class="ayuda" id="salaEstacionCrearDec"></span></span>
           <button class="btn" type="button" id="btnCrearSala">CREAR</button>
@@ -619,7 +658,11 @@
           <h3>Unirse</h3>
           <div class="fila">
             <div class="campo"><label for="salaCodigo">Código</label><input class="inp upper" id="salaCodigo" maxlength="6" placeholder="K7M2QX" autocomplete="off"></div>
-            <div class="campo"><label for="salaEstacionUnir">Tu estación</label><input class="inp upper" id="salaEstacionUnir" maxlength="8" placeholder="SKSPZTZX" autocomplete="off"></div>
+          </div>
+          <div class="fila">
+            <div class="campo"><label for="salaRolUnir">Tu rol</label><select class="sel" id="salaRolUnir"></select></div>
+            <div class="campo"><label for="salaLugarUnir" id="salaLugarUnirLbl">Lugar</label><select class="sel" id="salaLugarUnir"></select>
+              <input class="inp upper" id="salaEstacionUnir" maxlength="8" placeholder="SKSPZTZX" autocomplete="off" hidden aria-label="Dirección de 8 letras"></div>
           </div>
           <span class="campo"><span class="ayuda" id="salaEstacionUnirDec"></span></span>
           <button class="btn" type="button" id="btnUnirSala">ENTRAR</button>
@@ -639,7 +682,7 @@
 
   <!-- ============ REFERENCIA ============ -->
   <div class="sim-window" id="win-ref" role="dialog" aria-label="Referencia" data-centrar style="top:24px; width:min(880px, calc(100% - 28px)); height:min(680px, calc(100% - 28px));">
-    <div class="win-head" data-drag><span>REFERENCIA · ANEXO 10, VOL. II</span><button class="win-close" type="button" data-cerrar aria-label="Cerrar">X</button></div>
+    <div class="win-head" data-drag><span>REFERENCIA · ANEXO 10, VOL. II · DOC 4444</span><button class="win-close" type="button" data-cerrar aria-label="Cerrar">X</button></div>
     <div class="win-body ref">
       <h3>Partes del mensaje</h3>
       <pre class="copia muestra"><span class="zc">ZCZC LPA183</span>        <span class="ctl">← encabezamiento (circuito LPA, n.º 183)</span>
@@ -658,9 +701,9 @@ NNNN                  <span class="ctl">← fin (ITA-2)</span></pre>
       <div class="tabla-scroll"><table class="tref">
         <thead><tr><th>Ind.</th><th>Categoría</th><th>Ejemplos</th><th>Párrafo</th></tr></thead>
         <tbody>
-          <tr><td><code>SS</code></td><td>Socorro</td><td>Peligro grave e inminente y ayuda inmediata.</td><td>4.4.1.1.1</td></tr>
-          <tr><td><code>DD</code></td><td>Urgencia</td><td>Seguridad de una aeronave o de una persona a bordo o a la vista.</td><td>4.4.1.1.2</td></tr>
-          <tr><td><code>FF</code></td><td>Seguridad de vuelo</td><td>FPL, DEP, ARR, DLA, CHG, CNL · SIGMET, AIRMET · pronósticos enmendados.</td><td>4.4.1.1.3</td></tr>
+          <tr><td><code>SS</code></td><td>Socorro</td><td>Peligro grave e inminente y ayuda inmediata · ALR en DETRESFA (Doc 4444, 11.1.2).</td><td>4.4.1.1.1</td></tr>
+          <tr><td><code>DD</code></td><td>Urgencia</td><td>Seguridad de una aeronave o de una persona a bordo o a la vista · ALR en INCERFA o ALERFA (Doc 4444, 11.1.2).</td><td>4.4.1.1.2</td></tr>
+          <tr><td><code>FF</code></td><td>Seguridad de vuelo</td><td>FPL, DEP, ARR, DLA, CHG, CNL, CPL, EST, CDN, ACP, RQP, RQS, SPL · RCF (o más alta) · SIGMET, AIRMET · pronósticos enmendados.</td><td>4.4.1.1.3</td></tr>
           <tr><td><code>GG</code></td><td>Meteorológicos</td><td>TAF, METAR, SPECI.</td><td>4.4.1.1.4</td></tr>
           <tr><td><code>GG</code></td><td>Regularidad de vuelo</td><td>Carga y centrado, horarios, servicios a la aeronave.</td><td>4.4.1.1.5</td></tr>
           <tr><td><code>GG</code></td><td>Información aeronáutica</td><td>NOTAM y SNOWTAM.</td><td>4.4.1.1.6</td></tr>
@@ -700,6 +743,16 @@ NNNN                  <span class="ctl">← fin (ITA-2)</span></pre>
       </table></div>
       <p><b>Acuse de un SS</b> (4.4.15.6): prioridad <code>SS</code>, a la estación de origen, texto <code>R 121319 LECBZRZX</code> (R + origen del mensaje acusado).</p>
 
+      <h3>Mensajes ATS · Doc 4444, Ap. 3</h3>
+      <p>Los datos ATS van entre <code>(</code> y <code>)</code>; cada casilla empieza con guion y, dentro de ella, los elementos se separan con <code>/</code> o espacio (1.5). Hay que incluir todas las casillas de la composición (1.3).</p>
+      <div class="tabla-scroll"><table class="tref"><thead><tr><th>Tipo</th><th>Mensaje</th><th>Casillas</th><th>Prioridad</th></tr></thead><tbody id="tablaATS"></tbody></table></div>
+      <div class="tabla-scroll"><table class="tref"><thead><tr><th>Casilla</th><th>Contenido</th></tr></thead><tbody id="tablaCamposATS"></tbody></table></div>
+      <ul>
+        <li>Centro de una FIR: <b>ZQZ</b> si el vuelo es IFR y <b>ZFZ</b> si es VFR · torre <b>ZTZ</b> · oficina ARO <b>ZPZ</b> (Doc 4444, 11.2.1.2.3.3).</li>
+        <li>FPL: al centro de la FIR de salida, a los centros a lo largo de la ruta y a la torre de destino (11.4.2.2.2.2). DLA, CNL y DEP: a los mismos destinatarios del FPL; CHG: a los destinatarios del FPL afectados por el cambio (11.4.2.2.3 a 11.4.2.2.6).</li>
+        <li>Casilla 18 sin datos: <code>0</code>. En las casillas 20 y 21, lo que no se conoce va como <code>NIL</code>.</li>
+      </ul>
+
       <h3>AMHS</h3>
       <p>Mismos mensajes sobre X.400 (4.6): <code>/C=XX/ADMD=ICAO/PRMD=COLOMBIA/O=SKED/OU1=SKSP/CN=SKSPZTZX/</code></p>
 
@@ -734,7 +787,7 @@ NNNN                  <span class="ctl">← fin (ITA-2)</span></pre>
 
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
-  <span>Anexo 10, Vol. II (Cap. 4 y 5) · tráfico y direcciones simulados</span>
+  <span>Anexo 10, Vol. II (Cap. 4 y 5) · Doc 4444 (Cap. 11 y Ap. 3) · tráfico y direcciones simulados</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -747,12 +800,12 @@ NNNN                  <span class="ctl">← fin (ITA-2)</span></pre>
     <ol class="help-steps">
       <li><b>ESTACIÓN</b>: elige tu puesto: oficina ARO (plan de vuelo), torre o centro de control.</li>
       <li>Atiende las <b>SITUACIONES</b> del panel izquierdo. En una oficina ARO: planes de vuelo presentados (FPL), modificaciones (CHG), demoras y cancelaciones. En una torre: SS que acusar, DEP, DLA y CNL. En todas: mensajes mutilados y números que faltan en el canal.</li>
-      <li><b>NUEVO MENSAJE</b> para redactar; la revisión del Anexo 10 aparece mientras escribes. <b>TRANS</b> lo transmite.</li>
+      <li><b>NUEVO MENSAJE</b> para redactar; la revisión del Anexo 10 aparece mientras escribes. <b>TRANS</b> lo transmite. Para FPL, DLA, CHG, ALR y los demás mensajes ATS elige un <b>FORMULARIO ATS</b>: muestra sólo las casillas de ese mensaje, marca con ✗ las que faltan y arma el texto. Si tienes un mensaje seleccionado en la bandeja, puedes copiar sus casillas.</li>
       <li><b>TERMINAR TURNO</b> guarda tu resultado.</li>
     </ol>
     <h3>Más</h3>
-    <p><b>EJERCICIOS</b>: rondas de 10 autocorregidas. <b>SALA EN VIVO</b>: con compañeros y profesor, con sesión iniciada y código de sala. <kbd>Esc</kbd> cierra la ventana activa.</p>
-    <div class="help-foot">Fuentes: OACI, Anexo 10, Vol. II, Cap. 4 y 5; Doc 4444, Ap. 3; material del curso <i>Sistemas de comunicaciones AFTN/AMHS</i>. Todo el tráfico es inventado; las direcciones siguen la regla del 4.4.3.1.2 y no son la lista oficial.</div>
+    <p><b>EJERCICIOS</b>: rondas de 10 autocorregidas. <b>SALA EN VIVO</b>: con compañeros y profesor, con sesión iniciada y código de sala; ahí hay más roles (aproximación, NOTAM, MET, SAR…) o cualquier dirección a mano. <kbd>Esc</kbd> cierra la ventana activa.</p>
+    <div class="help-foot">Fuentes: OACI, Anexo 10, Vol. II, Cap. 4 y 5; Doc 4444, Cap. 11 y Ap. 3; material del curso <i>Sistemas de comunicaciones AFTN/AMHS</i>. Todo el tráfico es inventado; las direcciones siguen la regla del 4.4.3.1.2 y no son la lista oficial.</div>
   </div>
 </div>
 
@@ -1165,7 +1218,8 @@ const TA = {};
   TA.tipoMensaje = (texto) => {
     const t = TA.limpiarTexto(texto);
     const cuerpo = t.replace(TA.CABECERA_OMM, '');
-    let m = cuerpo.match(/^\((\w{3})-/);
+    // La casilla 3 puede llevar número y datos de referencia: (CHGA/B234A/B231- (Ap. 3, tipo de campo 3).
+    let m = cuerpo.match(/^\(([A-Z]{3})(?:[A-Z]{1,4}\/[A-Z]{1,4}\d{3}){0,2}[-)]/);
     if(m && ATS.includes(m[1])) return { codigo:m[1], clase:'t-' + (['FPL','DEP','ARR','DLA','CHG','CNL'].includes(m[1]) ? m[1] : 'FPL'), etiqueta:m[1] };
     m = cuerpo.match(/^\([A-Z]\d{4}\/\d{2} NOTAM([NRC])/);
     if(m) return { codigo:'NOTAM', clase:'t-NOTAM', etiqueta:'NOTAM ' + m[1] };
@@ -1180,18 +1234,28 @@ const TA = {};
     return { codigo:'LIBRE', clase:'t-LIBRE', etiqueta:'Texto libre' };
   };
 
-  // Prioridad que corresponde por el contenido, sólo cuando el Anexo la deja
-  // clara. ALR y RCF (mensajes de emergencia del Doc 4444) se dejan fuera a
-  // propósito: el Anexo 10 no les fija una prioridad en 4.4.1.1.3.
+  // Prioridad que corresponde por el contenido, sólo cuando la norma la deja
+  // clara. Los mensajes de emergencia la toman del Doc 4444, 11.1.2: el ALR
+  // lleva SS en fase de socorro (DETRESFA) y DD en incertidumbre o alerta; el
+  // RCF, FF o más alta (minimo). bloquea: la diferencia impide transmitir.
   TA.prioridadSugerida = (texto) => {
     const tp = TA.tipoMensaje(texto);
+    if(tp.codigo === 'ALR'){
+      const f = TA.normATS(TA.limpiarTexto(texto)).match(/^\(ALR[A-Z0-9\/]*-(INCERFA|ALERFA|DETRESFA)\b/);
+      if(!f) return null;
+      return f[1] === 'DETRESFA'
+        ? { prio:'SS', ref:'Doc 4444, 11.1.2 a)', porque:'un ALR en fase de socorro (DETRESFA) es un mensaje de socorro' }
+        : { prio:'DD', ref:'Doc 4444, 11.1.2 b)', porque:`un ALR en ${f[1]} es un mensaje de urgencia` };
+    }
+    if(tp.codigo === 'RCF')
+      return { prio:'FF', minimo:true, ref:'Doc 4444, 11.1.2 c)', porque:'un RCF va con FF o una prioridad más alta' };
     if(MOV_CONTROL.includes(tp.codigo))
       return { prio:'FF', ref:'4.4.1.1.3 a)', porque:`un ${tp.codigo} es un mensaje de movimiento y control (Doc 4444, Cap. 11)` };
     if(tp.codigo === 'SIGMET') return { prio:'FF', ref:'4.4.1.1.3 c)', porque:'SIGMET y AIRMET van como seguridad de vuelo' };
     if(tp.codigo === 'TAFAMD') return { prio:'FF', ref:'4.4.1.1.3 c)', porque:'un pronóstico enmendado (TAF AMD) va como seguridad de vuelo' };
     if(tp.codigo === 'METAR' || tp.codigo === 'TAF') return { prio:'GG', ref:'4.4.1.1.4', porque:'observaciones y pronósticos ordinarios son mensajes meteorológicos' };
     if(['NOTAM','SNOWTAM','ASHTAM'].includes(tp.codigo)) return { prio:'GG', ref:'4.4.1.1.6', porque:'los mensajes relativos a los NOTAM (incluidas sus series especiales) son mensajes AIS' };
-    if(tp.codigo === 'ACUSE') return { prio:'SS', ref:'4.4.15.6', porque:'el acuse de recibo de un mensaje de socorro lleva prioridad SS' };
+    if(tp.codigo === 'ACUSE') return { prio:'SS', bloquea:true, ref:'4.4.15.6', porque:'el acuse de recibo de un mensaje de socorro lleva prioridad SS' };
     return null;
   };
 
@@ -1236,9 +1300,11 @@ const TA = {};
   // ---------- Estructura de los mensajes ATS más usados (Doc 4444, Ap. 3) ----------
   const ACID = '[A-Z0-9]{2,7}';
   TA.revisarATS = (texto) => {
-    const t = TA.norm(texto).replace(/\s*-\s*/g, '-');
+    // Sin el número de mensaje de la casilla 3 (sólo entre computadoras ATC).
+    const t = TA.norm(texto).replace(/\s*-\s*/g, '-').replace(/^\(([A-Z]{3})(?:[A-Z]{1,4}\/[A-Z]{1,4}\d{3}){1,2}-/, '($1-');
     const out = [];
     const tp = TA.tipoMensaje(texto).codigo;
+    if(TA.ATS_COMPOSICION[tp]) TA.revisarComposicion(texto).forEach(x => out.push(x));
     if(!['FPL','DEP','ARR','DLA','CHG','CNL'].includes(tp)) return out;
     if(!/\)$/.test(t)) out.push({ nivel:'warn', txt:`El mensaje ${tp} debe cerrar con paréntesis «)».`, ref:'Doc 4444 Ap. 3' });
     const hora = s => TA.hhmmValido(s);
@@ -1249,12 +1315,14 @@ const TA = {};
       else if(!hora(m[4])) out.push({ nivel:'warn', txt:`La hora de salida ${m[4]} no es una hora HHMM válida.`, ref:'Doc 4444 Ap. 3' });
     }
     if(tp === 'ARR'){
-      m = t.match(new RegExp(`^\\(ARR-(${ACID})(\\/[AC]\\d{4})?-([A-Z]{4})(\\d{4})?-([A-Z]{4})(\\d{4})( .*)?\\)$`));
+      // La casilla 16 (destino previsto) sólo va si aterrizó en otro aeródromo.
+      m = t.match(new RegExp(`^\\(ARR-(${ACID})(\\/[AC]\\d{4})?-([A-Z]{4})(\\d{4})?(-[A-Z]{4})?-([A-Z]{4})(\\d{4})( .*)?\\)$`));
       if(!m) out.push({ nivel:'warn', txt:'Estructura del ARR: <b>(ARR-identificación[/código SSR]-salida y hora-aeródromo de llegada y hora de llegada)</b>.', ref:'Doc 4444 Ap. 3' });
-      else if(!hora(m[6]) || (m[4] && !hora(m[4]))) out.push({ nivel:'warn', txt:'Alguna de las horas del ARR no es una hora HHMM válida.', ref:'Doc 4444 Ap. 3' });
+      else if(!hora(m[7]) || (m[4] && !hora(m[4]))) out.push({ nivel:'warn', txt:'Alguna de las horas del ARR no es una hora HHMM válida.', ref:'Doc 4444 Ap. 3' });
     }
     if(tp === 'DLA' || tp === 'CNL' || tp === 'CHG'){
-      m = t.match(new RegExp(`^\\(${tp}-(${ACID})-([A-Z]{4})(\\d{4})-([A-Z]{4})(-.*)?\\)$`));
+      // La casilla 7 puede llevar el código SSR también aquí (Ap. 3, tipo de campo 7).
+      m = t.match(new RegExp(`^\\(${tp}-(${ACID})(?:\\/[AC]\\d{4})?-([A-Z]{4})(\\d{4})-([A-Z]{4})(-.*)?\\)$`));
       if(!m) out.push({ nivel:'warn', txt:`Estructura del ${tp}: <b>(${tp}-identificación-salida y ${tp === 'DLA' ? 'nueva EOBT' : 'EOBT'}-destino-DOF/AAMMDD${tp === 'CHG' ? '-campo modificado' : ''})</b>.`, ref:'Doc 4444 Ap. 3' });
       else if(!hora(m[3])) out.push({ nivel:'warn', txt:`La hora ${m[3]} no es una hora HHMM válida.`, ref:'Doc 4444 Ap. 3' });
       else if(tp === 'CHG' && !/-\d{1,2}\//.test(m[5] || '')) out.push({ nivel:'warn', txt:'El CHG debe terminar con el campo que cambia (campo 22), p. ej. <b>-7/AVA123/A4521</b>.', ref:'Doc 4444 Ap. 3' });
@@ -1278,6 +1346,221 @@ const TA = {};
       else if(/R/.test((c[10] || '').split('/')[0]) && !/PBN\//.test(c[18] || '')) out.push({ nivel:'warn', txt:'Con <b>R</b> en la casilla 10 la casilla 18 lleva <b>PBN/</b>.', ref:'Doc 4444 Ap. 2' });
     }
     return out;
+  };
+
+  // ---------- Mensajes ATS normalizados (Doc 4444, Ap. 3) ----------
+  // Tipos por categoría (Ap. 3, 1.1) y composición de cada uno (tabla de la
+  // página A3-35). En el ARR la casilla 16 sólo va cuando la aeronave aterrizó
+  // en un aeródromo distinto del de destino; en CHG y CDN la 22 se repite.
+  TA.ATS_GRUPOS = [
+    { nombre:'Emergencia', tipos:{ ALR:'Alerta', RCF:'Falla de radiocomunicaciones' } },
+    { nombre:'Plan de vuelo presentado y actualización', tipos:{ FPL:'Plan de vuelo presentado', CHG:'Modificación', CNL:'Cancelación', DLA:'Demora', DEP:'Salida', ARR:'Llegada' } },
+    { nombre:'Coordinación', tipos:{ CPL:'Plan de vuelo actualizado', EST:'Estimación', CDN:'Coordinación', ACP:'Aceptación', LAM:'Acuse de recibo lógico' } },
+    { nombre:'Suplementarios', tipos:{ RQP:'Solicitud de plan de vuelo', RQS:'Solicitud de plan de vuelo suplementario', SPL:'Plan de vuelo suplementario' } }
+  ];
+  TA.ATS_NOMBRE = Object.assign({}, ...TA.ATS_GRUPOS.map(g => g.tipos));
+  TA.ATS_COMPOSICION = {
+    ALR:[3,5,7,8,9,10,13,15,16,18,19,20], RCF:[3,7,21],
+    FPL:[3,7,8,9,10,13,15,16,18], CHG:[3,7,13,16,18,22], CNL:[3,7,13,16,18], DLA:[3,7,13,16,18], DEP:[3,7,13,16,18], ARR:[3,7,13,16,17],
+    CPL:[3,7,8,9,10,13,14,15,16,18], EST:[3,7,13,14,16], CDN:[3,7,13,16,22], ACP:[3,7,13,16], LAM:[3],
+    RQP:[3,7,13,16,18], RQS:[3,7,13,16,18], SPL:[3,7,13,16,18,19]
+  };
+  TA.ATS_CAMPO = { 3:'Tipo, número y datos de referencia', 5:'Descripción de la emergencia', 7:'Identificación de la aeronave y código SSR', 8:'Reglas y tipo de vuelo',
+    9:'Número y tipo de aeronave y estela turbulenta', 10:'Equipo y capacidades', 13:'Aeródromo de salida y hora', 14:'Datos de estimación', 15:'Ruta',
+    16:'Destino, duración total prevista y alternativas', 17:'Aeródromo de llegada y hora', 18:'Otros datos', 19:'Información suplementaria',
+    20:'Información de alerta SAR', 21:'Información sobre la falla de comunicaciones', 22:'Enmienda' };
+  // Hora de la casilla 13 b) según el mensaje (tabla del tipo de campo 13).
+  // CPL, EST, CDN y ACP no la llevan; en el RQP va sólo si se conoce. La tabla
+  // pide la EOBT en el RQS, pero su ejemplo (2.5.2.2) va sin hora: se admite
+  // como en el RQP.
+  TA.HORA13 = { FPL:'EOBT', ARR:'EOBT', CHG:'EOBT', CNL:'EOBT', DLA:'Nueva EOBT', RQS:'EOBT (si se conoce)', RQP:'EOBT (si se conoce)', ALR:'Hora real de salida', DEP:'Hora real de salida', SPL:'Hora real de salida' };
+  // Tipos en los que la casilla 16 lleva duración y alternativas (nota * del tipo de campo 16).
+  TA.CON_EET = ['ALR','FPL','SPL'];
+  // Prioridad de cada mensaje ATS por la AFTN (Doc 4444, 11.1). El SPL lleva
+  // la misma del mensaje de solicitud (11.4.2.4.4), normalmente FF.
+  TA.prioridadATS = (tipo, fase) => tipo === 'ALR' ? (fase === 'DETRESFA' ? 'SS' : 'DD') : 'FF';
+
+  // Separa los campos de un mensaje ATS. Devuelve { tipo, campos, ausentes }
+  // o null si el texto no es un mensaje ATS; en CHG y CDN campos[22] es una lista.
+  const ES18 = s => /^(0|[A-Z]{3,4}\/)/.test(s || '');
+  const ES22 = s => /^\d{1,2}\//.test(s || '');
+  TA.leerATS = (texto) => {
+    const t = TA.normATS(TA.limpiarTexto(texto).replace(TA.CABECERA_OMM, '')).replace(/^\(/, '').replace(/\)$/, '');
+    const p = t.split('-');
+    const tipo = p[0].slice(0, 3);
+    if(!TA.ATS_COMPOSICION[tipo] || !/^[A-Z]{3}([A-Z]{1,4}\/[A-Z]{1,4}\d{3}){0,2}$/.test(p[0])) return null;
+    const campos = { 3:p[0] }, resto = p.slice(1), ausentes = [];
+    let orden = TA.ATS_COMPOSICION[tipo].slice(1);
+    if(tipo === 'ARR' && resto.length <= 3) orden = [7, 13, 17];
+    if(tipo === 'CHG' || tipo === 'CDN'){
+      let i = 0;
+      orden.filter(n => n !== 22).forEach(n => {
+        if(n === 18 && !ES18(resto[i])){ ausentes.push(18); return; }
+        campos[n] = resto[i++] || '';
+      });
+      campos[22] = resto.slice(i);
+      if(!campos[22].length) ausentes.push(22);
+    } else {
+      orden.forEach((n, i) => { campos[n] = resto[i] || ''; });
+      if(resto.length > orden.length && orden.length) campos[orden[orden.length - 1]] += '-' + resto.slice(orden.length).join('-');
+    }
+    orden.forEach(n => { if(n !== 22 && campos[n] === '' && !ausentes.includes(n)) ausentes.push(n); });
+    return { tipo, campos, ausentes };
+  };
+
+  // Forma de cada casilla (tablas de campo A3-6 a A3-34).
+  const NIVEL = '(F\\d{3}|S\\d{4}|A\\d{3}|M\\d{4})';
+  const re = s => new RegExp('^' + s + '$');
+  TA.FORMA_CAMPO = {
+    5:  [re('(INCERFA|ALERFA|DETRESFA)\\/[A-Z]{8}\\/\\S.*'), 'fase / remitente de 8 letras / naturaleza, p. ej. ALERFA/SKBOZTZX/SIN CONTACTO RADIO'],
+    7:  [re('[A-Z0-9]{2,7}(\\/A[0-7]{4})?'), 'identificación (hasta 7 caracteres) y, si hay, /A + código SSR'],
+    8:  [re('[IVYZ][SNGMX]?'), 'reglas (I, V, Y, Z) y tipo de vuelo, p. ej. IS'],
+    9:  [re('(\\d{1,2})?[A-Z0-9]{2,4}\\/[JHML]'), 'tipo de aeronave / estela, p. ej. A320/M'],
+    10: [re('[A-Z0-9]+\\/[A-Z0-9]+'), 'equipo COM/NAV / equipo de vigilancia'],
+    14: [re('[A-Z0-9]{2,11}\\/\\d{4}' + NIVEL + '(' + NIVEL + '[AB])?'), 'punto limítrofe / hora + nivel autorizado [+ nivel de cruce y A o B]'],
+    15: [re('(N\\d{4}|K\\d{4}|M\\d{3})(F\\d{3}|S\\d{4}|A\\d{3}|M\\d{4}|VFR) \\S.*'), 'velocidad, nivel y ruta'],
+    17: [re('[A-Z]{4}\\d{4}( \\S.*)?'), 'aeródromo de llegada y hora, p. ej. SKCL1448'],
+    18: [re('(0|[A-Z]{3,4}\\/\\S.*)'), 'otros datos (INDICADOR/dato) o 0'],
+    19: [re('E\\/\\d{4}( \\S.*)?'), 'información suplementaria, empezando por E/ (autonomía HHMM)'],
+    20: [re('\\S+( \\S+){7,}'), 'ocho elementos separados por espacios (NIL si no se conoce)'],
+    21: [re('(\\d{4}|NIL) \\S+( \\S+){4,}'), 'seis elementos: hora, frecuencia, posición, hora, medios COM y observaciones (NIL si no se conoce)'],
+    22: [re('\\d{1,2}\\/\\S.*'), 'número de casilla / datos enmendados, p. ej. 8/IN']
+  };
+  TA.formaCampo13 = tipo => ['CPL','EST','CDN','ACP'].includes(tipo) ? [re('([A-Z]{4}|AFIL)'), 'sólo el aeródromo de salida (sin hora)']
+    : tipo === 'RQP' || tipo === 'RQS' ? [re('([A-Z]{4}|AFIL)(\\d{4})?'), 'aeródromo de salida y, si se conoce, la EOBT']
+    : [re('([A-Z]{4}|AFIL)([01]\\d|2[0-3])[0-5]\\d'), 'aeródromo de salida y hora HHMM, p. ej. SKBO1330'];
+  TA.formaCampo16 = tipo => TA.CON_EET.includes(tipo) ? [re('[A-Z]{4}\\d{4}( [A-Z]{4})*'), 'destino y duración total, y las alternativas']
+    : [re('[A-Z]{4}'), 'sólo el aeródromo de destino'];
+
+  // Composición completa de los mensajes ATS. En FPL, DEP, ARR, DLA, CHG y
+  // CNL la forma de cada casilla ya la revisa revisarATS; aquí se añade lo
+  // que falta: la casilla 18 obligatoria y el orden 18-22 del CHG.
+  TA.revisarComposicion = (texto) => {
+    const a = TA.leerATS(texto);
+    if(!a) return [];
+    const out = [], ref = 'Doc 4444, Ap. 3';
+    const viejos = ['FPL','DEP','ARR','DLA','CHG','CNL'].includes(a.tipo);
+    if(a.ausentes.includes(18) && a.tipo !== 'FPL')
+      out.push({ nivel:'warn', txt:`El ${a.tipo} lleva la casilla <b>18</b> (otros datos): <b>0</b> si no hay nada, o p. ej. <b>DOF/AAMMDD</b>.`, ref:ref + ', A3-35' });
+    if(viejos) return out;
+    if(!/\)\s*$/.test(TA.limpiarTexto(texto))) out.push({ nivel:'warn', txt:`El mensaje ${a.tipo} debe cerrar con paréntesis «)».`, ref:ref + ', 1.5.4' });
+    const comp = TA.ATS_COMPOSICION[a.tipo];
+    const faltan = a.ausentes.filter(n => n !== 18);
+    if(faltan.length) out.push({ nivel:'warn', txt:`Al ${a.tipo} le falta${faltan.length === 1 ? ' la casilla' : 'n las casillas'} <b>${faltan.join(', ')}</b>. Composición: ${comp.join('-')}.`, ref:ref + ', A3-35' });
+    const malas = [];
+    comp.forEach(n => {
+      const v = a.campos[n];
+      if(n === 3 || v === undefined || v === '' || (Array.isArray(v) && !v.length)) return;
+      const f = n === 13 ? TA.formaCampo13(a.tipo) : n === 16 ? TA.formaCampo16(a.tipo) : TA.FORMA_CAMPO[n];
+      if(!f) return;
+      const lista = Array.isArray(v) ? v : [v];
+      if(lista.some(x => !f[0].test(x))) malas.push(`la casilla <b>${n}</b> (${f[1]})`);
+    });
+    if(malas.length) out.push({ nivel:'warn', txt:'Revisa la forma de ' + malas.join('; ') + '.', ref });
+    return out;
+  };
+
+  // ---------- Del formulario al texto, y del texto al formulario ----------
+  // v: valores del formulario por subcampo ('7.id', '13.hora', …). Las
+  // casillas 18 cortas (DLA, CHG…) ordenan DOF/ entre los demás indicadores
+  // en el orden del tipo de campo 18.
+  TA.ORDEN18 = ['STS','PBN','NAV','COM','DAT','SUR','DEP','DEST','DOF','REG','EET','SEL','TYP','CODE','DLE','OPR','ORGN','PER','ALTN','RALT','TALT','RIF','RMK'];
+  TA.ordenar18 = (s) => {
+    const grupos = [];
+    const t = TA.norm(s);
+    const rx = /(?:^|\s)([A-Z]{3,4})\/(.*?)(?=\s[A-Z]{3,4}\/|$)/g;
+    let m;
+    while((m = rx.exec(t))) grupos.push({ ind:m[1], txt:m[1] + '/' + m[2].trim() });
+    if(!grupos.length) return t;
+    const pos = g => { const i = TA.ORDEN18.indexOf(g.ind); return i < 0 ? 99 : i; };
+    return grupos.map((g, i) => ({ g, i })).sort((a, b) => pos(a.g) - pos(b.g) || a.i - b.i).map(x => x.g.txt).join(' ');
+  };
+  // Casillas que empiezan en línea nueva en la copia de página (Ap. 3, 1.5.5
+  // y ejemplos de la sección 2); los mensajes cortos van en una sola línea.
+  const LINEA_NUEVA = { ALR:[7,9,13,15,16,18,19,20], FPL:[9,13,15,16,18], CPL:[9,13,15,16,18], SPL:[13,16,18,19], RCF:[21] };
+  const v_ = (v, k) => TA.norm(v[k] || '');
+  TA.campoATS = (tipo, n, v) => {
+    switch(n){
+      case 5:  return `${v_(v,'5.fase')}/${v_(v,'5.rem')}/${v_(v,'5.nat')}`;
+      case 7:  return v_(v,'7.id') + (v_(v,'7.ssr') ? '/A' + v_(v,'7.ssr') : '');
+      case 8:  return v_(v,'8.reglas') + v_(v,'8.tipo');
+      case 9:  return v_(v,'9.num') + v_(v,'9.tipo') + '/' + v_(v,'9.estela');
+      case 10: return v_(v,'10.a') + '/' + v_(v,'10.b');
+      case 13: return v_(v,'13.ad') + (TA.HORA13[tipo] ? v_(v,'13.hora') : '');
+      case 14: return `${v_(v,'14.punto')}/${v_(v,'14.hora')}${v_(v,'14.nivel')}${v_(v,'14.nivel2') ? v_(v,'14.nivel2') + v_(v,'14.cond') : ''}`;
+      case 15: return `${v_(v,'15.vel')}${v_(v,'15.nivel')} ${v_(v,'15.ruta')}`;
+      case 16: return v_(v,'16.ad') + (TA.CON_EET.includes(tipo) ? v_(v,'16.eet') + [v_(v,'16.altn1'), v_(v,'16.altn2')].filter(Boolean).map(x => ' ' + x).join('') : '');
+      case 17: return v_(v,'17.ad') + v_(v,'17.hora') + (v_(v,'17.ad') === 'ZZZZ' && v_(v,'17.nombre') ? ' ' + v_(v,'17.nombre') : '');
+      case 18: {
+        if(['FPL','ALR','CPL','SPL'].includes(tipo)) return v_(v,'18.txt') || '0';
+        const s = TA.ordenar18([v_(v,'18.dof') ? 'DOF/' + v_(v,'18.dof') : '', v_(v,'18.otros')].filter(Boolean).join(' '));
+        return s || '0';
+      }
+      case 19: {
+        const p = [];
+        if(v_(v,'19.e')) p.push('E/' + v_(v,'19.e'));
+        if(v_(v,'19.p')) p.push('P/' + v_(v,'19.p'));
+        const marcas = (pre, letras) => letras.filter(x => v['19.' + pre + x]).join('');
+        if(marcas('r', ['U','V','E'])) p.push('R/' + marcas('r', ['U','V','E']));
+        if(marcas('s', ['P','D','M','J'])) p.push('S/' + marcas('s', ['P','D','M','J']));
+        if(marcas('j', ['L','F','U','V'])) p.push('J/' + marcas('j', ['L','F','U','V']));
+        const d = [v_(v,'19.dnum'), v_(v,'19.dcap'), v['19.dcub'] ? 'C' : '', v_(v,'19.dcol')].filter(Boolean).join(' ');
+        if(d) p.push('D/' + d);
+        if(v_(v,'19.a')) p.push('A/' + v_(v,'19.a'));
+        if(v_(v,'19.n')) p.push('N/' + v_(v,'19.n'));
+        if(v_(v,'19.c')) p.push('C/' + v_(v,'19.c'));
+        return p.join(' ');
+      }
+      // 20 y 21: todos los elementos, en orden; lo que no se sabe va como NIL.
+      case 20: return ['20.expl','20.dep','20.hora','20.frec','20.pos','20.metodo','20.medidas','20.otros']
+        .map(k => k === '20.pos' ? [v_(v,'20.pos') || 'NIL', v_(v,'20.poshora')].filter(Boolean).join(' ') : (v_(v,k) || 'NIL')).join(' ');
+      case 21: return ['21.hora','21.frec','21.pos','21.poshora','21.com','21.obs'].map(k => v_(v,k) || 'NIL').join(' ');
+      default: return '';
+    }
+  };
+  TA.construirATS = (tipo, v) => {
+    const comp = (TA.ATS_COMPOSICION[tipo] || []).filter(n => n !== 3 && !(n === 16 && tipo === 'ARR' && !v['16.desvio']));
+    const nuevas = LINEA_NUEVA[tipo] || [];
+    let s = '(' + tipo;
+    comp.forEach(n => {
+      if(n === 22){
+        (v['22'] || []).filter(e => e && e.n && TA.norm(e.datos)).forEach(e => { s += `-${e.n}/${TA.norm(e.datos)}`; });
+        return;
+      }
+      s += (nuevas.includes(n) ? '\n' : '') + '-' + TA.campoATS(tipo, n, v);
+    });
+    return TA.partir69(s + ')').join('\n');
+  };
+  // Valores del formulario tipo a partir de un mensaje ATS ya transmitido o
+  // recibido. Se copian las casillas que tiene el mensaje destino; la hora de
+  // la 13 sólo cuando ambas son EOBT (una DLA pide la nueva, un DEP la real).
+  const EOBT13 = ['FPL','ARR','CHG','CNL','RQS','RQP','DLA'];
+  TA.valoresDesdeATS = (a, tipo) => {
+    const v = {}, c = a.campos, tiene = n => (TA.ATS_COMPOSICION[tipo] || []).includes(n) && c[n];
+    let m;
+    if(tiene(7) && (m = c[7].match(/^([A-Z0-9]{2,7})(?:\/A(\d{4}))?$/))){ v['7.id'] = m[1]; v['7.ssr'] = m[2] || ''; }
+    if(tiene(8)){ v['8.reglas'] = c[8].charAt(0); v['8.tipo'] = c[8].charAt(1); }
+    if(tiene(9) && (m = c[9].match(/^(\d{1,2})?([A-Z0-9]{2,4})\/([JHML])$/))){ v['9.num'] = m[1] || ''; v['9.tipo'] = m[2]; v['9.estela'] = m[3]; }
+    if(tiene(10)){ const [x, y] = c[10].split('/'); v['10.a'] = x || ''; v['10.b'] = y || ''; }
+    if(tiene(13) && (m = c[13].match(/^([A-Z]{4})(\d{4})?$/))){
+      v['13.ad'] = m[1];
+      if(m[2] && EOBT13.includes(a.tipo) && EOBT13.includes(tipo) && tipo !== 'DLA') v['13.hora'] = m[2];
+    }
+    if(tiene(15) && (m = c[15].match(/^(N\d{4}|K\d{4}|M\d{3})(F\d{3}|S\d{4}|A\d{3}|M\d{4}|VFR) (.*)$/))){ v['15.vel'] = m[1]; v['15.nivel'] = m[2]; v['15.ruta'] = m[3]; }
+    if(tiene(16) && (m = c[16].match(/^([A-Z]{4})(\d{4})?((?: [A-Z]{4})*)$/))){
+      v['16.ad'] = m[1];
+      if(TA.CON_EET.includes(tipo)){ const alt = m[3].trim().split(' ').filter(Boolean); v['16.eet'] = m[2] || ''; v['16.altn1'] = alt[0] || ''; v['16.altn2'] = alt[1] || ''; }
+    }
+    if(tiene(18)){
+      if(['FPL','ALR','CPL','SPL'].includes(tipo)) v['18.txt'] = c[18];
+      else {
+        const dof = c[18].match(/(?:^|\s)DOF\/(\d{6})/);
+        v['18.dof'] = dof ? dof[1] : '';
+        // De un plan completo (FPL, ALR…) sólo se lleva la fecha de vuelo.
+        v['18.otros'] = c[18] === '0' || ['FPL','ALR','CPL','SPL'].includes(a.tipo) ? '' : TA.norm(c[18].replace(/(?:^|\s)DOF\/\d{6}/, ''));
+      }
+    }
+    return v;
   };
 
   // ---------- VALIDADOR (Anexo 10, Vol. II, Cap. 4) ----------
@@ -1334,9 +1617,14 @@ const TA = {};
     // y actividades calificadas) no se sugiere la prioridad: sería regalar la
     // respuesta de una de las revisiones.
     const sug = o.sinPistas ? null : TA.prioridadSugerida(texto);
-    if(sug && TA.PRIORIDADES[prio] && sug.prio !== prio){
-      add(sug.prio === 'SS' ? 'error' : 'warn', `Por el contenido, la prioridad esperada es <b>${sug.prio}</b>: ${sug.porque}.`, sug.ref);
+    const cumple = sug && (sug.minimo ? ['SS','DD','FF'].includes(prio) : sug.prio === prio);
+    if(sug && TA.PRIORIDADES[prio] && !cumple){
+      add(sug.bloquea ? 'error' : 'warn', `Por el contenido, la prioridad esperada es <b>${sug.prio}</b>${sug.minimo ? ' o más alta' : ''}: ${sug.porque}.`, sug.ref);
     }
+    // Centro de una FIR: ZQZ para vuelos IFR y ZFZ para VFR (Doc 4444, 11.2.1.2.3.3).
+    const reglas = o.sinPistas ? '' : ((TA.leerATS(texto) || { campos:{} }).campos[8] || '').charAt(0);
+    if(reglas === 'V' && dest.some(d => d.slice(4, 7) === 'ZQZ')) add('warn', 'El vuelo es VFR (casilla 8 = V): al centro de la FIR se le escribe con <b>ZFZ</b>, no con ZQZ.', 'Doc 4444, 11.2.1.2.3.3');
+    if(reglas === 'I' && dest.some(d => d.slice(4, 7) === 'ZFZ')) add('warn', 'El vuelo es IFR (casilla 8 = I): al centro de la FIR se le escribe con <b>ZQZ</b>, no con ZFZ.', 'Doc 4444, 11.2.1.2.3.3');
     const svc = TA.analizarSVC(texto);
     if(svc && svc.reconocido) add('info', `Mensaje de servicio reconocido: ${svc.nombre}.`, svc.ref);
     if(svc && !svc.reconocido) add('warn', 'Empieza por SVC pero no reconozco el procedimiento. Revisa la tabla de mensajes de servicio en la pestaña Referencia.', '4.4.1.1.9');
@@ -1533,6 +1821,11 @@ const TA = {};
   document.addEventListener('DOMContentLoaded', () => {
     const fila = (a, b) => `<tr><td><code>${a}</code></td><td>${esc(b)}</td></tr>`;
     const ty = $('tablaSerieY'), tz = $('tablaSerieZ'), tal = $('tablaAlfabeto');
+    const tats = $('tablaATS'), tcampos = $('tablaCamposATS');
+    const prioTxt = t => t === 'ALR' ? 'DD · SS en DETRESFA' : t === 'RCF' ? 'FF o más alta' : t === 'LAM' ? 'FF (sólo entre computadoras ATC)' : 'FF';
+    if(tats) tats.innerHTML = TA.ATS_GRUPOS.map(g => Object.entries(g.tipos).map(([t, n]) =>
+      `<tr><td><code>${t}</code></td><td>${esc(n)}</td><td class="mono">${TA.ATS_COMPOSICION[t].join('-')}${t === 'ARR' ? ' <small>(16 sólo si aterrizó en otro aeródromo)</small>' : ''}</td><td>${prioTxt(t)}</td></tr>`).join('')).join('');
+    if(tcampos) tcampos.innerHTML = Object.entries(TA.ATS_CAMPO).map(([k, v]) => fila(k, v)).join('');
     if(ty) ty.innerHTML = Object.entries(TA.SERIE_Y).map(([k, v]) => fila(k, v)).join('');
     if(tz) tz.innerHTML = Object.entries(TA.SERIE_Z).map(([k, v]) => fila(k, v)).join('');
     if(tal){
@@ -1690,16 +1983,186 @@ const TA = {};
   TA.abrirAyuda = () => $('helpOverlay').classList.add('open');
   const cerrarAyuda = () => $('helpOverlay').classList.remove('open');
 
+  // ---------- FORMULARIO ATS POR CASILLAS (Doc 4444, Ap. 3) ----------
+  // Como la plantilla de la AMHS: sólo las casillas del mensaje elegido, con ✗
+  // en las obligatorias vacías; el texto ATS se arma solo (TA.construirATS).
+  const HHMM = /^([01]\d|2[0-3])[0-5]\d$/, DUR = /^\d{2}[0-5]\d$/, AD = /^[A-Z]{4}$/, NIV = /^(F\d{3}|S\d{4}|A\d{3}|M\d{4})$/;
+  const FORMA_SUB = {
+    '5.rem':/^[A-Z]{8}$/, '7.id':/^[A-Z0-9]{2,7}$/, '7.ssr':/^[0-7]{4}$/, '9.num':/^\d{1,2}$/, '9.tipo':/^[A-Z0-9]{2,4}$/,
+    '10.a':/^[A-Z0-9]+$/, '10.b':/^[A-Z0-9]+$/, '13.ad':/^([A-Z]{4}|AFIL)$/, '13.hora':HHMM,
+    '14.punto':/^[A-Z0-9]{2,11}$/, '14.hora':HHMM, '14.nivel':NIV, '14.nivel2':NIV,
+    '15.vel':/^(N\d{4}|K\d{4}|M\d{3})$/, '15.nivel':/^(F\d{3}|S\d{4}|A\d{3}|M\d{4}|VFR)$/,
+    '16.ad':AD, '16.eet':DUR, '16.altn1':AD, '16.altn2':AD, '17.ad':AD, '17.hora':HHMM,
+    '18.dof':/^\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/, '18.txt':/^(0|[A-Z]{3,4}\/\S.*)$/, '18.otros':/^[A-Z]{3,4}\/\S.*$/,
+    '19.e':DUR, '19.p':/^\d{1,3}$/, '19.dnum':/^\d{1,2}$/, '19.dcap':/^\d{1,3}$/,
+    '20.hora':HHMM, '20.poshora':HHMM, '21.hora':HHMM, '21.poshora':HHMM
+  };
+  // Obligatorias: el primer elemento de cada casilla (Ap. 3, 1.4, nota) y los
+  // que su tabla de campo no marca como condicionales. En 20 y 21 lo que no se
+  // conoce se transmite como NIL.
+  const OBLIG = {
+    '5.rem':1, '5.nat':1, '7.id':1, '8.reglas':1, '9.tipo':1, '9.estela':1, '10.a':1, '10.b':1, '13.ad':1,
+    '13.hora':t => !!TA.HORA13[t] && t !== 'RQP' && t !== 'RQS',
+    '14.punto':1, '14.hora':1, '14.nivel':1, '14.nivel2':(t, v) => !!v['14.cond'], '14.cond':(t, v) => !!TA.norm(v['14.nivel2']),
+    '15.vel':1, '15.nivel':1, '15.ruta':1, '16.ad':1, '16.eet':t => TA.CON_EET.includes(t),
+    '17.ad':1, '17.hora':1, '17.nombre':(t, v) => TA.norm(v['17.ad']) === 'ZZZZ', '19.e':1
+  };
+  const NUMERICOS = ['7.ssr','9.num','13.hora','14.hora','16.eet','17.hora','18.dof','19.e','19.p','19.dnum','19.dcap','20.hora','20.poshora','21.hora','21.poshora'];
+  const CAMPOS22 = [7, 8, 9, 10, 13, 14, 15, 16, 18, 19];
+
+  TA.crearFormATS = (cont, tipo, op) => {
+    const o = op || {};
+    const ej = o.ejemplo || {};
+    const comp = TA.ATS_COMPOSICION[tipo];
+    let v = { '5.fase':'INCERFA', '5.rem':o.remitente || '', '8.reglas':'I', '8.tipo':'', '9.estela':'', '14.cond':'', '22':[{ n:'', datos:'' }] };
+    Object.assign(v, o.valores || {});
+
+    const oblig = k => { const r = OBLIG[k]; return typeof r === 'function' ? r(tipo, v) : !!r; };
+    const inp = (k, lbl, a) => {
+      a = a || {};
+      const tag = a.area ? `<textarea class="txt" data-k="${k}" spellcheck="false" rows="2" placeholder="${esc(a.ph || ej[k] || '')}">${esc(v[k] || '')}</textarea>`
+        : `<input class="inp" data-k="${k}" autocomplete="off" spellcheck="false" ${a.max ? `maxlength="${a.max}"` : ''} ${NUMERICOS.includes(k) ? 'inputmode="numeric"' : ''} style="${a.w ? `width:${a.w}px` : ''}" placeholder="${esc(a.ph || ej[k] || '')}" value="${esc(v[k] || '')}">`;
+      return `<label class="fa-in ${a.cls || ''}" data-caja="${k}"><span>${lbl}</span>${tag}</label>`;
+    };
+    const sel = (k, lbl, opts) => `<label class="fa-in" data-caja="${k}"><span>${lbl}</span><select class="sel" data-k="${k}">${opts.map(([val, txt]) => `<option value="${val}" ${v[k] === val ? 'selected' : ''}>${txt}</option>`).join('')}</select></label>`;
+    const chk = (k, letra, txt) => `<label class="fa-chk" title="${txt}"><input type="checkbox" data-k="${k}" ${v[k] ? 'checked' : ''}><b>${letra}</b>${txt}</label>`;
+    const fila = (n, rot, html) => `<div class="fa-fila" data-campo="${n}"><div class="fa-rot">${rot}</div><div class="fa-cuerpo">${html}</div></div>`;
+
+    const html = {
+      5: () => fila(5, '5/Emergencia', sel('5.fase', 'Fase', [['INCERFA','INCERFA'],['ALERFA','ALERFA'],['DETRESFA','DETRESFA']])
+        + inp('5.rem', 'Remitente', { w:96, max:8 }) + inp('5.nat', 'Naturaleza de la emergencia', { cls:'medio', ph:'SIN CONTACTO RADIO' })),
+      7: () => fila(7, '7/ID aeronave', inp('7.id', 'Identificación', { w:96, max:7 }) + inp('7.ssr', 'SSR modo A', { w:70, max:4, ph:'2345' })),
+      8: () => fila(8, '8/Reglas de vuelo', sel('8.reglas', 'Reglas', [['I','I'],['V','V'],['Y','Y'],['Z','Z']])
+        + sel('8.tipo', 'Tipo de vuelo', [['','—'],['S','S regular'],['N','N no regular'],['G','G aviación general'],['M','M militar'],['X','X otro']])),
+      9: () => fila(9, '9/Aeronave', inp('9.num', 'Número', { w:52, max:2, ph:'' }) + inp('9.tipo', 'Tipo (Doc 8643)', { w:80, max:4 })
+        + sel('9.estela', 'Estela', [['','—'],['J','J súper'],['H','H pesada'],['M','M media'],['L','L ligera']])),
+      10: () => fila(10, '10/Equipo', inp('10.a', 'COM/NAV', { cls:'medio' }) + inp('10.b', 'Vigilancia', { w:110 })),
+      13: () => fila(13, '13/Salida', inp('13.ad', 'Aeródromo', { w:70, max:4 }) + (TA.HORA13[tipo] ? inp('13.hora', TA.HORA13[tipo], { w:78, max:4, ph:'HHMM' }) : '')),
+      14: () => fila(14, '14/Estimación', inp('14.punto', 'Punto limítrofe', { w:110, max:11, ph:'PUNTO' }) + inp('14.hora', 'Hora en el punto', { w:78, max:4, ph:'HHMM' })
+        + inp('14.nivel', 'Nivel autorizado', { w:78, max:5, ph:'F230' }) + inp('14.nivel2', 'Nivel de cruce', { w:78, max:5, ph:'F150' })
+        + sel('14.cond', 'Condición', [['','—'],['A','A: en o por encima'],['B','B: en o por debajo']])
+        + `<span class="fa-nota">Nivel de cruce y condición sólo si la aeronave cruza el punto ascendiendo o descendiendo.</span>`),
+      15: () => fila(15, '15/Ruta', inp('15.vel', 'Velocidad', { w:78, max:5, ph:ej['15.vel'] || 'N0450' }) + inp('15.nivel', 'Nivel', { w:70, max:5, ph:ej['15.nivel'] || 'F350' })
+        + inp('15.ruta', 'Ruta', { area:true, cls:'ancho' })),
+      16: () => {
+        const aviso = tipo === 'ARR' ? `<label class="fa-chk"><input type="checkbox" data-k="16.desvio" data-rehacer ${v['16.desvio'] ? 'checked' : ''}>Aterrizó en un aeródromo distinto del de destino</label>` : '';
+        if(tipo === 'ARR' && !v['16.desvio']) return fila(16, '16/Destino', aviso);
+        return fila(16, '16/Destino', aviso + inp('16.ad', 'Destino', { w:70, max:4 })
+          + (TA.CON_EET.includes(tipo) ? inp('16.eet', 'EET total', { w:70, max:4, ph:ej['16.eet'] || 'HHMM' }) + inp('16.altn1', 'Alterno', { w:70, max:4 }) + inp('16.altn2', '2.º alterno', { w:70, max:4 }) : ''));
+      },
+      17: () => fila(17, '17/Llegada', inp('17.ad', 'Aeródromo', { w:70, max:4, ph:ej['16.ad'] || '' }) + inp('17.hora', 'Hora de llegada', { w:78, max:4, ph:'HHMM' })
+        + inp('17.nombre', 'Nombre (sólo si ZZZZ)', { cls:'medio', ph:'' })),
+      18: () => ['FPL','ALR','CPL','SPL'].includes(tipo)
+        ? fila(18, '18/Otros datos', inp('18.txt', 'Indicadores en orden (0 si no hay)', { area:true, cls:'ancho' }))
+        : fila(18, '18/Otros datos', inp('18.dof', 'Fecha de vuelo DOF/', { w:80, max:6, ph:TA.dofHoy() })
+          + `<button type="button" class="btn sec mini" data-hoy>HOY</button>` + inp('18.otros', 'Otros indicadores', { cls:'medio', ph:'RMK/…' })
+          + `<span class="fa-nota">Sin datos se transmite <b>0</b>.</span>`),
+      19: () => fila(19, '19/Información suplementaria',
+        inp('19.e', 'E/ Autonomía', { w:78, max:4, ph:'HHMM' }) + inp('19.p', 'P/ Personas', { w:70, max:3 })
+        + `<div class="fa-in"><span>R/ Radio de emergencia</span><div class="fa-chks">${chk('19.rU','U','UHF 243,0')}${chk('19.rV','V','VHF 121,5')}${chk('19.rE','E','ELT')}</div></div>`
+        + `<div class="fa-in"><span>S/ Equipo de supervivencia</span><div class="fa-chks">${chk('19.sP','P','Polar')}${chk('19.sD','D','Desierto')}${chk('19.sM','M','Marítimo')}${chk('19.sJ','J','Selva')}</div></div>`
+        + `<div class="fa-in"><span>J/ Chalecos</span><div class="fa-chks">${chk('19.jL','L','Luz')}${chk('19.jF','F','Fluoresceína')}${chk('19.jU','U','UHF')}${chk('19.jV','V','VHF')}</div></div>`
+        + inp('19.dnum', 'D/ Botes', { w:56, max:2 }) + inp('19.dcap', 'Capacidad', { w:66, max:3 })
+        + `<div class="fa-in"><span>Cubierta</span><div class="fa-chks">${chk('19.dcub','C','Cubiertos')}</div></div>` + inp('19.dcol', 'Color de los botes', { w:110 })
+        + inp('19.a', 'A/ Color y marcas', { cls:'ancho' }) + inp('19.n', 'N/ Observaciones', { cls:'ancho' }) + inp('19.c', 'C/ Piloto al mando', { cls:'medio' })),
+      20: () => fila(20, '20/Alerta SAR', inp('20.expl', 'Explotador', { w:90 }) + inp('20.dep', 'Último contacto (dependencia)', { w:120 })
+        + inp('20.hora', 'Hora', { w:66, max:4, ph:'HHMM' }) + inp('20.frec', 'Frecuencia', { w:80 }) + inp('20.pos', 'Última posición', { w:100 }) + inp('20.poshora', 'Hora', { w:66, max:4, ph:'HHMM' })
+        + inp('20.metodo', 'Cómo se determinó la posición', { cls:'ancho' }) + inp('20.medidas', 'Medidas adoptadas', { cls:'ancho' }) + inp('20.otros', 'Otros datos', { cls:'ancho' })
+        + `<span class="fa-nota">Lo que no se conozca se transmite como <b>NIL</b>.</span>`),
+      21: () => fila(21, '21/Falla COM', inp('21.hora', 'Último contacto', { w:78, max:4, ph:'HHMM' }) + inp('21.frec', 'Frecuencia', { w:80 })
+        + inp('21.pos', 'Última posición', { w:100 }) + inp('21.poshora', 'Hora', { w:66, max:4, ph:'HHMM' })
+        + inp('21.com', 'Medios COM disponibles', { cls:'medio' }) + inp('21.obs', 'Observaciones', { cls:'ancho' })
+        + `<span class="fa-nota">Lo que no se conozca se transmite como <b>NIL</b>.</span>`),
+      22: () => fila(22, '22/Enmienda', (v['22'] || []).map((e, i) => `
+          <label class="fa-in ${e.n ? '' : 'falta'}"><span>Casilla</span><select class="sel" data-e22="${i}" data-p="n"><option value="">—</option>${CAMPOS22.map(n => `<option value="${n}" ${String(e.n) === String(n) ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+          <label class="fa-in medio ${TA.norm(e.datos) ? '' : 'falta'}"><span>Datos completos y enmendados</span><input class="inp" data-e22="${i}" data-p="datos" autocomplete="off" spellcheck="false" value="${esc(e.datos || '')}" placeholder="${e.n ? esc(TA.ATS_CAMPO[e.n] || '') : ''}"></label>
+          ${v['22'].length > 1 ? `<button type="button" class="fa-quitar" data-quitar22="${i}" aria-label="Quitar enmienda">✕</button>` : ''}`).join('<span class="fa-nota" style="flex-basis:100%;margin:0;"></span>')
+        + `<button type="button" class="btn sec mini" data-mas22>+ OTRA CASILLA</button>`)
+    };
+
+    function render(){
+      cont.innerHTML = `<div class="fa-cuerpo-form">${comp.filter(n => n !== 3 && html[n]).map(n => html[n]()).join('')}</div><div class="fa-estado" data-estado></div>`;
+      cont.querySelectorAll('[data-k]').forEach(el => {
+        const k = el.dataset.k;
+        el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
+          if(el.type === 'checkbox') v[k] = el.checked;
+          else {
+            let val = el.value.toUpperCase();
+            if(NUMERICOS.includes(k)) val = val.replace(/\D/g, '');
+            if(val !== el.value){ const a = el.selectionStart; el.value = val; try{ el.setSelectionRange(a, a); }catch(_){} }
+            v[k] = val;
+          }
+          if(el.hasAttribute('data-rehacer')) render();
+          cambio(k);
+        });
+      });
+      cont.querySelectorAll('[data-e22]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+        const e = v['22'][Number(el.dataset.e22)];
+        if(el.tagName === 'SELECT'){ e.n = el.value; render(); }
+        else { const a = el.selectionStart; el.value = el.value.toUpperCase(); try{ el.setSelectionRange(a, a); }catch(_){} e.datos = el.value; }
+        cambio('22');
+      }));
+      const mas = cont.querySelector('[data-mas22]');
+      if(mas) mas.addEventListener('click', () => { v['22'].push({ n:'', datos:'' }); render(); cambio('22'); });
+      cont.querySelectorAll('[data-quitar22]').forEach(b => b.addEventListener('click', () => { v['22'].splice(Number(b.dataset.quitar22), 1); render(); cambio('22'); }));
+      const hoy = cont.querySelector('[data-hoy]');
+      if(hoy) hoy.addEventListener('click', () => { v['18.dof'] = TA.dofHoy(); cont.querySelector('[data-k="18.dof"]').value = v['18.dof']; cambio('18.dof'); });
+      marcar();
+    }
+
+    // Casillas incompletas: error si falta algo obligatorio, advertencia si la
+    // forma no es la de la tabla del campo.
+    function problemas(){
+      const out = [];
+      cont.querySelectorAll('[data-caja]').forEach(caja => {
+        const k = caja.dataset.caja, val = TA.norm(v[k]);
+        const nombre = `${k.split('.')[0]} · ${caja.querySelector('span').textContent}`;
+        if(!val){ if(oblig(k)) out.push({ nivel:'error', k, txt:`Falta la casilla <b>${esc(nombre)}</b>.` }); return; }
+        if(FORMA_SUB[k] && !FORMA_SUB[k].test(val)) out.push({ nivel:'warn', k, txt:`Revisa la casilla <b>${esc(nombre)}</b>: ${esc(val)} no tiene la forma de la tabla del campo.` });
+      });
+      if(comp.includes(22)){
+        const completas = (v['22'] || []).filter(e => e.n && TA.norm(e.datos));
+        if(!completas.length) out.push({ nivel:'error', k:'22', txt:'Falta al menos una <b>enmienda (casilla 22)</b>: número de casilla y sus datos completos.' });
+      }
+      return out;
+    }
+    function marcar(){
+      const lista = problemas();
+      cont.querySelectorAll('[data-caja]').forEach(caja => {
+        const p = lista.find(x => x.k === caja.dataset.caja);
+        caja.classList.toggle('falta', !!p && p.nivel === 'error');
+        caja.classList.toggle('mal', !!p && p.nivel === 'warn');
+      });
+      const est = cont.querySelector('[data-estado]');
+      const faltan = lista.filter(x => x.nivel === 'error');
+      est.className = 'fa-estado ' + (faltan.length ? 'mal' : 'ok');
+      est.innerHTML = faltan.length ? `✗ Faltan ${faltan.length} dato${faltan.length === 1 ? '' : 's'} obligatorio${faltan.length === 1 ? '' : 's'}: ${faltan.map(x => x.k === '22' ? '22' : x.k.split('.')[0]).filter((x, i, a) => a.indexOf(x) === i).join(', ')}.`
+        : `✓ Casillas completas: ${comp.join('-')} (Doc 4444, Ap. 3).`;
+    }
+    function cambio(k){ marcar(); if(o.onCambio) o.onCambio(k); }
+
+    render();
+    return {
+      tipo,
+      valores: () => v,
+      texto: () => TA.construirATS(tipo, v),
+      problemas,
+      cargar(nv){ v = Object.assign(v, nv || {}); render(); cambio(); }
+    };
+  };
+
   // ---------- COMPOSITOR ----------
   // op: { remitente, remitenteEditable, plantillas (bool), sinPistas (bool),
-  //       estacionPlantillas, onCambio }
+  //       estacionPlantillas, base (mensaje seleccionado en la bandeja), onCambio }
   TA.crearComposer = (cont, op) => {
     const o = op || {};
     const idp = 'c' + Math.random().toString(36).slice(2, 8);
     cont.innerHTML = `
       <div class="comp">
         <div>
-          ${o.plantillas === false ? '' : `<div class="plantillas" data-plantillas><span class="plantillas-tit">PLANTILLAS</span></div>`}
+          ${o.plantillas === false ? '' : `<div class="plantillas" data-plantillas><span class="plantillas-tit">FORMULARIO ATS</span>
+            <select class="sel sel-form" data-form-tipo aria-label="Formulario de mensaje ATS"><option value="">— texto libre —</option>${TA.ATS_GRUPOS.map(g => `<optgroup label="${esc(g.nombre)}">${Object.entries(g.tipos).filter(([t]) => t !== 'LAM').map(([t, n]) => `<option value="${t}">${t} · ${esc(n)}</option>`).join('')}</optgroup>`).join('')}</select>
+            <span class="plantillas-tit" style="margin-left:6px;">PLANTILLAS</span></div>`}
           <div class="comp-grupo">LÍNEA DE DIRECCIÓN</div>
           <div class="fila">
             <div class="campo" style="flex:0 0 100px;"><label for="${idp}p">Prioridad</label>
@@ -1717,7 +2180,12 @@ const TA = {};
           </div>
           <div class="campo"><label for="${idp}i">Información optativa de encabezamiento <span>(opcional)</span></label>
             <input class="inp upper" id="${idp}i" data-f="ohi" maxlength="40" autocomplete="off"></div>
-          <div class="campo"><label for="${idp}t">Texto</label>
+          ${o.plantillas === false ? '' : `<div class="fa" data-fa hidden>
+            <div class="fa-cab"><span data-fa-tit></span><span class="fa-esp"></span>
+              <button type="button" class="btn sec" data-fa-base hidden></button>
+              <button type="button" class="btn sec" data-fa-libre title="Deja el texto armado y lo vuelve editable">EDITAR COMO TEXTO LIBRE</button></div>
+            <div data-fa-form></div></div>`}
+          <div class="campo"><label for="${idp}t" data-lbl-texto>Texto</label>
             <textarea class="txt" id="${idp}t" data-f="texto" spellcheck="false" autocapitalize="characters"></textarea>
             <div class="comp-cont" data-cont>0 / 1800</div></div>
         </div>
@@ -1733,6 +2201,7 @@ const TA = {};
     const cnt = cont.querySelector('[data-cont]');
     let remitente = o.remitente || '';
     f('orig').value = remitente;
+    let form = null, textoForm = '', prioAuto = '';
 
     const leer = () => ({
       prio: f('prio').value,
@@ -1742,7 +2211,14 @@ const TA = {};
       ohi: f('ohi').value.toUpperCase().trim(),
       texto: TA.limpiarTexto(f('texto').value)
     });
-    const validar = () => TA.validar(leer(), { sinPistas: o.sinPistas, remitenteEsperado: o.remitenteEditable ? null : remitente });
+    // Con el formulario abierto, las casillas obligatorias vacías también
+    // impiden transmitir (como la ✗ de la AMHS).
+    const validar = () => {
+      const r = TA.validar(leer(), { sinPistas: o.sinPistas, remitenteEsperado: o.remitenteEditable ? null : remitente });
+      if(!form) return r;
+      const faltan = form.problemas().filter(x => x.nivel === 'error').map(x => ({ nivel:'error', txt:x.txt, ref:'Doc 4444, Ap. 3' }));
+      return faltan.length ? faltan.concat(r.filter(x => x.nivel !== 'ok')) : r;
+    };
     const refrescar = () => {
       const m = leer();
       chips.innerHTML = m.dest.map(d => {
@@ -1769,12 +2245,80 @@ const TA = {};
     f('prio').addEventListener('change', refrescar);
     cont.querySelector('[data-ahora]').addEventListener('click', () => { f('hora').value = TA.horaUTC(); refrescar(); });
 
+    // Formulario ATS: el texto lo arma el formulario y queda de sólo lectura
+    // hasta pasarlo a texto libre.
+    const zonaFa = cont.querySelector('[data-fa]'), selForm = cont.querySelector('[data-form-tipo]');
+    const lblTexto = cont.querySelector('[data-lbl-texto]');
+    const base = o.base && o.base.texto ? TA.leerATS(o.base.texto) : null;
+    const plan = base && o.plan && o.plan.texto ? TA.leerATS(o.plan.texto) : null;
+    // Casillas a copiar: las del FPL del vuelo y, encima, lo que cambió el
+    // mensaje seleccionado (más reciente): código SSR, EOBT revisada y DOF.
+    const copiarDe = tipo => {
+      const b = TA.valoresDesdeATS(base, tipo);
+      if(!plan) return b;
+      const v = TA.valoresDesdeATS(plan, tipo);
+      ['7.ssr', '13.hora', '18.dof'].forEach(k => { if(b[k]) v[k] = b[k]; });
+      return v;
+    };
+    const ejemploATS = () => {
+      const p = TA.plantillas(o.estacionPlantillas || remitente).find(x => x.id === 'fpl');
+      const a = p ? TA.leerATS(p.texto) : null;
+      return a ? TA.valoresDesdeATS(a, 'FPL') : {};
+    };
+    function ponerPrio(){
+      if(o.sinPistas || !form) return;
+      const p = TA.prioridadATS(form.tipo, form.valores()['5.fase']);
+      if(!f('prio').value || f('prio').value === prioAuto){ f('prio').value = p; prioAuto = p; }
+    }
+    function volcar(){
+      if(!form) return;
+      textoForm = form.texto();
+      f('texto').value = textoForm;
+      refrescar();
+    }
+    function cerrarForm(){
+      form = null;
+      if(!zonaFa) return;
+      zonaFa.hidden = true;
+      zonaFa.querySelector('[data-fa-form]').innerHTML = '';
+      selForm.value = '';
+      f('texto').readOnly = false;
+      lblTexto.textContent = 'Texto';
+    }
+    function abrirForm(tipo, valores){
+      const t = f('texto');
+      if(t.value.trim() && t.value !== textoForm && !confirm(`¿Reemplazar el texto actual por el formulario ${tipo}?`)){ selForm.value = form ? form.tipo : ''; return; }
+      zonaFa.hidden = false;
+      zonaFa.querySelector('[data-fa-tit]').innerHTML = `<b>${tipo}</b> ${esc(TA.ATS_NOMBRE[tipo])} · casillas ${TA.ATS_COMPOSICION[tipo].join('-')}`;
+      form = TA.crearFormATS(zonaFa.querySelector('[data-fa-form]'), tipo, {
+        remitente: (o.remitenteEditable ? f('orig').value.toUpperCase().trim() : remitente) || '',
+        ejemplo: ejemploATS(), valores,
+        onCambio: k => { if(k === '5.fase') ponerPrio(); volcar(); }
+      });
+      selForm.value = tipo;
+      t.readOnly = true;
+      lblTexto.textContent = 'Texto ATS (lo arma el formulario)';
+      const bb = zonaFa.querySelector('[data-fa-base]');
+      bb.hidden = !(base && base.campos[7]);
+      if(base && base.campos[7]) bb.textContent = `COPIAR DATOS DE ${plan ? 'FPL + ' : ''}${base.tipo} ${base.campos[7].split('/')[0]}`;
+      if(!f('hora').value) f('hora').value = TA.horaUTC();
+      ponerPrio();
+      volcar();
+    }
+    if(zonaFa){
+      selForm.addEventListener('change', () => { if(selForm.value) abrirForm(selForm.value); else { cerrarForm(); refrescar(); } });
+      zonaFa.querySelector('[data-fa-libre]').addEventListener('click', () => { cerrarForm(); refrescar(); f('texto').focus(); });
+      zonaFa.querySelector('[data-fa-base]').addEventListener('click', () => { if(form && base) form.cargar(copiarDe(form.tipo)); });
+    }
+
     const zonaPl = cont.querySelector('[data-plantillas]');
     if(zonaPl){
-      TA.plantillas(o.estacionPlantillas || remitente).forEach(p => {
+      // Los mensajes ATS se hacen con el formulario; aquí quedan los demás.
+      TA.plantillas(o.estacionPlantillas || remitente).filter(p => !TA.ATS_COMPOSICION[p.nombre]).forEach(p => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'btn sec'; b.textContent = p.nombre;
         b.addEventListener('click', () => {
+          if(form){ cerrarForm(); textoForm = ''; }
           if(f('texto').value.trim() && !confirm('¿Reemplazar el texto actual por la plantilla ' + p.nombre + '?')) return;
           f('texto').value = p.texto;
           if(p.prio && !o.sinPistas) f('prio').value = p.prio;
@@ -1790,6 +2334,7 @@ const TA = {};
       leer, validar, refrescar,
       escribir(m){
         m = m || {};
+        cerrarForm();
         f('prio').value = m.prio || '';
         f('dest').value = (m.dest || []).join(' ');
         f('hora').value = m.hora || '';
@@ -1800,7 +2345,9 @@ const TA = {};
       },
       setRemitente(r){ remitente = r; f('orig').value = r; refrescar(); },
       bloquear(si){ cont.querySelectorAll('input,select,textarea,button').forEach(el => { el.disabled = si || (el.dataset.f === 'orig' && !o.remitenteEditable); }); },
-      foco(){ (f('dest').value ? f('texto') : f('dest')).focus(); }
+      foco(){ (f('dest').value ? f('texto') : f('dest')).focus(); },
+      // Abre el formulario ATS de un tipo (o lo cierra con null); lo usan las pruebas.
+      formulario(tipo, valores){ if(!zonaFa) return null; if(tipo) abrirForm(tipo, valores); else { cerrarForm(); refrescar(); } return form; }
     };
     refrescar();
     return api;
@@ -1811,11 +2358,11 @@ const TA = {};
   // que hay que acusar).
   let _modal = null;
   const hayBorrador = () => _modal && $('modalComp').classList.contains('open') && _modal.comp.leer().texto;
-  TA.abrirComposer = ({ titulo, inicial, remitente, onTransmitir, nota }) => {
+  TA.abrirComposer = ({ titulo, inicial, remitente, onTransmitir, nota, base, plan }) => {
     if(hayBorrador() && !confirm('¿Descartar el mensaje que estás redactando?')){ TA.abrirVentana('modalComp'); return; }
     $('modalCompTitulo').textContent = String(titulo || 'Nuevo mensaje').toUpperCase();
     $('modalCompNota').innerHTML = nota || `Remitente <b>${esc(remitente)}</b>`;
-    const comp = TA.crearComposer($('modalCompCuerpo'), { remitente, estacionPlantillas: remitente });
+    const comp = TA.crearComposer($('modalCompCuerpo'), { remitente, estacionPlantillas: remitente, base, plan });
     comp.escribir(Object.assign({ hora: TA.horaUTC() }, inicial || {}));
     $('modalCompCuerpo').scrollTop = 0;
     TA.abrirVentana('modalComp');
@@ -1925,10 +2472,22 @@ const TA = {};
     const qa = s => cont.querySelectorAll(s);
 
     const seleccionado = () => red.mensajes().find(m => m.id === selId) || null;
+    // Último FPL del mismo vuelo (casilla 7) entre los mensajes de la terminal.
+    const planDe = (m) => {
+      const a = m && TA.leerATS(m.texto);
+      if(!a || a.tipo === 'FPL' || !a.campos[7]) return null;
+      const id = a.campos[7].split('/')[0];
+      return red.mensajes().filter(x => x.carpeta !== 'trash' && TA.tipoMensaje(x.texto).codigo === 'FPL')
+        .filter(x => { const p = TA.leerATS(x.texto); return p && (p.campos[7] || '').split('/')[0] === id; })
+        .sort((x, y) => y.recibido - x.recibido)[0] || null;
+    };
 
     function abrirNuevo(inicial, titulo){
       TA.abrirComposer({
         titulo: titulo || 'Nuevo mensaje', inicial, remitente: red.estacion,
+        // El mensaje seleccionado y el FPL de ese vuelo: el formulario ATS
+        // puede copiar sus casillas.
+        base: seleccionado(), plan: planDe(seleccionado()),
         onTransmitir: async (msg) => {
           const r = await red.enviar(msg);
           if(r && r.ok){ carpeta = 'out'; selId = r.id || null; pintar(); }
@@ -3242,6 +3801,57 @@ N0300 W07400 - N0300 W07600 - N0500 W07600 TOP FL450 STNR NC=`, r:'FF', e:'La in
     });
   });
   $('salaCodigo').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+
+  // ---------- Rol y lugar de la estación en la sala ----------
+  // Sólo en la sala: estos roles no tienen tráfico ni situaciones generadas
+  // en el puesto individual (ventana ESTACIÓN). La dirección se arma con el
+  // lugar (Doc 7910), el designador de las series Y/Z y la X de relleno
+  // (4.4.3.1.2). «Otra dirección» deja escribirla a mano, como antes.
+  // Lugares: 'ad' aeródromos, 'fir' centros de las FIR, 'todos' ambos.
+  TA.ROLES_SALA = [
+    { grupo:'Servicios de tránsito aéreo', roles:[['ZPZ','Oficina ARO (plan de vuelo)','ad'], ['ZTZ','Torre de control','ad'], ['ZAZ','Control de aproximación','ad'],
+      ['ZQZ','Centro de control de área (ACC)','fir'], ['ZIZ','Centro de información de vuelo','fir'], ['ZSZ','Centro SAR/SAT','fir']] },
+    { grupo:'Información aeronáutica', roles:[['YNY','Oficina NOTAM internacional','todos'], ['YOY','Dependencia AIS','todos']] },
+    { grupo:'Meteorología', roles:[['YMY','Oficina meteorológica','ad']] },
+    { grupo:'Otros organismos', roles:[['YCY','Centro coordinador de salvamento','todos'], ['YAY','Autoridad de aviación civil','todos'], ['YFY','Estación fija aeronáutica','todos']] }
+  ];
+  const ROL = {};
+  TA.ROLES_SALA.forEach(g => g.roles.forEach(([d, nombre, donde]) => { ROL[d] = { nombre, donde }; }));
+  const lugaresDe = donde => {
+    const fir = ['SKED','SKEC'].map(l => [l, TA.OTROS_LUGARES[l]]);
+    const ads = Object.values(TA.AERODROMOS).sort((a, b) => a.ciudad.localeCompare(b.ciudad)).map(a => [a.id, `${a.ciudad} (${a.nombre})`]);
+    return donde === 'fir' ? fir : donde === 'ad' ? ads : fir.concat(ads);
+  };
+  [['Crear', 'ZQZ', 'SKED'], ['Unir', 'ZTZ', 'SKSP']].forEach(([s, rolDef, lugarDef]) => {
+    const rol = $('salaRol' + s), lugar = $('salaLugar' + s), inp = $('salaEstacion' + s), dec = $('salaEstacion' + s + 'Dec'), lbl = $('salaLugar' + s + 'Lbl');
+    const clave = 'aisAftnSalaRol' + s;
+    rol.innerHTML = TA.ROLES_SALA.map(g => `<optgroup label="${esc(g.grupo)}">${g.roles.map(([d, n]) => `<option value="${d}">${d} · ${esc(n)}</option>`).join('')}</optgroup>`).join('')
+      + '<optgroup label="Otra"><option value="otra">Otra dirección (a mano)</option></optgroup>';
+    let guardado = null;
+    try{ guardado = JSON.parse(localStorage.getItem(clave)); }catch(e){}
+    rol.value = guardado && (ROL[guardado.rol] || guardado.rol === 'otra') ? guardado.rol : rolDef;
+    if(guardado && guardado.rol === 'otra') inp.value = guardado.dir || '';
+    const armar = () => {
+      const otra = rol.value === 'otra';
+      lugar.hidden = otra; inp.hidden = !otra;
+      lbl.textContent = otra ? 'Dirección' : 'Lugar';
+      lbl.htmlFor = otra ? inp.id : lugar.id;
+      if(!otra){
+        const antes = lugar.value || (guardado && guardado.lugar) || lugarDef;
+        const lista = lugaresDe(ROL[rol.value].donde);
+        lugar.innerHTML = lista.map(([l, n]) => `<option value="${l}">${l} · ${esc(n)}</option>`).join('');
+        lugar.value = lista.some(([l]) => l === antes) ? antes : lista[0][0];
+        inp.value = lugar.value + rol.value + 'X';
+      }
+      const v = inp.value;
+      dec.textContent = v.length === 8 ? `${v} · ${TA.describirDir(v)}` : (v ? `${v.length}/8 letras` : '');
+      try{ localStorage.setItem(clave, JSON.stringify({ rol:rol.value, lugar:lugar.value, dir:otra ? v : '' })); }catch(e){}
+    };
+    rol.addEventListener('change', () => { armar(); if(rol.value === 'otra') inp.focus(); });
+    lugar.addEventListener('change', armar);
+    inp.addEventListener('input', armar);
+    armar();
+  });
 
   // ---------- Estado de la sala ----------
   let S = null;          // { id, codigo, nombre, yo, puestos, msgs:Map, consignas:[], desdeMsg, desdeCons, super }
