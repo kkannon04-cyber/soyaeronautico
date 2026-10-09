@@ -1941,6 +1941,7 @@ async function cargarTodo() {
   document.getElementById('nombreProfesor').textContent = perfil.nombreCompleto;
   document.getElementById('avatarInitials').textContent =
     perfil.nombreCompleto.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'PR';
+  montarFotoPerfil(document.getElementById('avatarInitials'));
 
   aplicarTipoActividad();
   await cargarTodo();

@@ -875,7 +875,8 @@
     const perfil = await obtenerPerfilEstudiante();
     nombreSpan.textContent = perfil.nombre;
     nombreTop.textContent = perfil.nombreCompleto;
-    avatarInitials.textContent = iniciales(perfil.nombreCompleto);
+    avatarInitials.dataset.iniciales = iniciales(perfil.nombreCompleto);
+    if (!avatarInitials.querySelector('img')) avatarInitials.textContent = avatarInitials.dataset.iniciales;
     return perfil;
   }
 
@@ -1995,6 +1996,7 @@
     renderAuthNav(sesion);
     if (sesion) await migrarProgresoLocalSiHaceFalta();
     await renderNombre();
+    montarFotoPerfil(avatarInitials);
     await renderPanel();
     const paginasCompletadas = await renderModulosAprendizaje();
     const racha = await renderRacha();

@@ -152,6 +152,16 @@
   .quiz-listing-card .btn-start{ display:inline-block; background:var(--accent); color:#fff; padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s; border:none; cursor:pointer; font-family:'IBM Plex Sans'; text-decoration:none; }
   .quiz-listing-card .btn-start:hover{ filter:brightness(1.08); }
 
+  .cat-saltos{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .cat-saltos a{ display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border:1px solid var(--hairline); border-radius:30px; background:var(--panel); color:var(--text); font-weight:600; font-size:0.85rem; text-decoration:none; transition:border-color .2s; }
+  .cat-saltos a:hover{ border-color:var(--accent); }
+  .cat-saltos span{ font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--accent); }
+  .cat{ scroll-margin-top:90px; }
+  .cat + .cat{ margin-top:44px; }
+  .cat-head{ display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 14px; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--hairline); }
+  .cat-head h2{ font-size:1.35rem; }
+  .cat-head p{ color:var(--text-muted); font-size:0.9rem; margin:0; }
+
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
   /* ---------- MOBILE NAV DRAWER ---------- */
@@ -291,138 +301,141 @@
 
 <section class="hero-simple">
   <div class="eyebrow">Zona de Quizzes</div>
-  <h1>Bancos de preguntas por módulo</h1>
-  <p class="lead">Selecciona un quiz para poner a prueba tus conocimientos. Cada uno tiene su propia calificación y puedes repetirlo las veces que quieras.</p>
+  <h1>Quizzes y simuladores</h1>
+  <p class="lead">Elige si quieres responder preguntas o practicar en un puesto simulado. Todo se califica y lo puedes repetir.</p>
+  <nav class="cat-saltos" aria-label="Categorías">
+    <a href="#quizzes">Quizzes <span>9</span></a>
+    <a href="#simuladores">Simuladores <span>6</span></a>
+  </nav>
 </section>
 
 <div class="quiz-index">
-  <div class="quiz-grid">
-    <!-- Quiz ATS (50 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">50 preguntas</div>
-      <h3>Servicios de Tránsito Aéreo (ATS)</h3>
-      <p>Objetivos, clasificación del espacio aéreo, FIS, alerta, comunicaciones y más.</p>
-      <a href="quiz-ats.html" class="btn-start">Comenzar →</a>
+  <section class="cat" id="quizzes">
+    <div class="cat-head">
+      <h2>Quizzes</h2>
+      <p>Preguntas de opción múltiple por módulo.</p>
     </div>
+    <div class="quiz-grid">
+      <div class="quiz-listing-card">
+        <div class="badge">50 preguntas</div>
+        <h3>Servicios de Tránsito Aéreo (ATS)</h3>
+        <p>Espacio aéreo, FIS, alerta y comunicaciones.</p>
+        <a href="quiz-ats.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz Plan de Vuelo (25 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">25 preguntas</div>
-      <h3>Plan de Vuelo — nivel medio-alto</h3>
-      <p>Normativa, plazos, mecanismos de presentación, tipos de vuelo y llenado del FPL en Colombia.</p>
-      <a href="quiz-fpl.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">25 preguntas</div>
+        <h3>Plan de Vuelo — nivel medio-alto</h3>
+        <p>Normativa, plazos y llenado del FPL en Colombia.</p>
+        <a href="quiz-fpl.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz NOTAM (25 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">25 preguntas</div>
-      <h3>NOTAM</h3>
-      <p>Formato NOTAM, código Q, series y tipos, validez, Trigger NOTAM, SNOWTAM y ASHTAM — con NOTAM de ejemplo para decodificar.</p>
-      <a href="quiz-notam.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">25 preguntas</div>
+        <h3>NOTAM</h3>
+        <p>Formato, código Q, series, SNOWTAM y ASHTAM.</p>
+        <a href="quiz-notam.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Entrenamiento AIS/COM (banco de 173 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">Entrenamiento · 173 preguntas</div>
-      <h3>Entrenamiento AIS/COM</h3>
-      <p>El cuestionario básico AIS/COM completo (COM, AIS, MET, cartas y aeródromos). Elige cuántas preguntas responder y si van al azar o en el orden del cuestionario.</p>
-      <a href="quiz-ais-com.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">Entrenamiento · 173 preguntas</div>
+        <h3>Entrenamiento AIS/COM</h3>
+        <p>El cuestionario básico completo: COM, AIS, MET y cartas.</p>
+        <a href="quiz-ais-com.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz Meteorología (banco de 194 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">194 preguntas</div>
-      <h3>Quiz Meteorología</h3>
-      <p>El examen completo de Meteorología Aeronáutica: atmósfera, temperatura, presión, humedad, viento, visibilidad, nubosidad, turbulencia, METAR, TAF, SIGMET y teledetección. Elige cuántas preguntas responder y si van al azar o en el orden del examen.</p>
-      <a href="quiz-meteorologia.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">194 preguntas</div>
+        <h3>Quiz Meteorología</h3>
+        <p>El examen completo de Meteorología Aeronáutica.</p>
+        <a href="quiz-meteorologia.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz Navegación I: Tiempo y Altimetría (25 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">25 preguntas</div>
-      <h3>Navegación — Quiz I: Tiempo y Altimetría</h3>
-      <p>Nivel avanzado con ejercicios de cálculo: UTC/hora local, husos horarios, reglajes QNH/QFE/QNE, errores del altímetro y desviación ISA.</p>
-      <a href="quiz-navegacion-tiempo-altimetria.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">25 preguntas</div>
+        <h3>Navegación — Quiz I: Tiempo y Altimetría</h3>
+        <p>Cálculo de UTC, husos horarios y reglajes altimétricos.</p>
+        <a href="quiz-navegacion-tiempo-altimetria.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz Navegación II: Radioayudas y Viento (25 preguntas) -->
-    <div class="quiz-listing-card">
-      <div class="badge">25 preguntas</div>
-      <h3>Navegación — Quiz II: Radioayudas y Viento</h3>
-      <p>Nivel avanzado con ejercicios de cálculo: radiales VOR, TO/FROM, QDM/QDR, groundspeed por DME, viento cruzado y conversión de unidades.</p>
-      <a href="quiz-navegacion-radioayudas-viento.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">25 preguntas</div>
+        <h3>Navegación — Quiz II: Radioayudas y Viento</h3>
+        <p>Radiales VOR, QDM/QDR, DME y viento cruzado.</p>
+        <a href="quiz-navegacion-radioayudas-viento.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Simulador METAR -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador</div>
-      <h3>Simulador METAR</h3>
-      <p>Codifica reportes METAR a partir de escenarios reales, con retroalimentación bloque por bloque y modo examen.</p>
-      <a href="simulador-metar.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">196 aeródromos</div>
+        <h3>Designadores de Aeródromos</h3>
+        <p>Códigos OACI, nombres y FIR de Colombia y el mundo.</p>
+        <a href="quiz-designadores.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz Designadores de Aeródromos -->
-    <div class="quiz-listing-card">
-      <div class="badge">196 aeródromos</div>
-      <h3>Designadores de Aeródromos</h3>
-      <p>Escribe el código OACI, identifica el nombre del aeródromo o la FIR que lo contiene. Colombia por categoría AD 2 y el resto del mundo por regiones: Canadá, Estados Unidos, México y el Caribe, Suramérica y Europa.</p>
-      <a href="quiz-designadores.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">50 preguntas</div>
+        <h3>Fraseología Aeronáutica — Parte 1 · Teórico</h3>
+        <p>Fraseología OACI, fases de vuelo y emergencias.</p>
+        <a href="quiz-fraseologia.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Simulador Plan de Vuelo -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador</div>
-      <h3>Simulador Plan de Vuelo</h3>
-      <p>Completa un formulario FPL campo por campo, con validación en tiempo real y retroalimentación por casilla según la normativa OACI/Colombia.</p>
-      <a href="simulador-plan-vuelo.html" class="btn-start">Comenzar →</a>
+      <div class="quiz-listing-card" style="border:2px dashed var(--hairline); background:transparent;">
+        <div class="badge" style="color:var(--text-muted); background:transparent;">Próximamente</div>
+        <h3 style="color:var(--text-muted);">Más quizzes</h3>
+        <p style="color:var(--text-muted);">PBN y más están en desarrollo.</p>
+      </div>
     </div>
+  </section>
 
-    <!-- Simulador NALA -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador CWP</div>
-      <h3>Simulador NALA — Plan de Vuelo y Radar</h3>
-      <p>Ponte en el lugar de un puesto de trabajo real: crea planes de vuelo, transmítelos por AFTN y sigue el tráfico en vivo en el radar y el mapa de rutas.</p>
-      <a href="Simulador-NALA.html" class="btn-start">Comenzar →</a>
+  <section class="cat" id="simuladores">
+    <div class="cat-head">
+      <h2>Simuladores</h2>
+      <p>Practica la tarea real, con corrección al instante.</p>
     </div>
+    <div class="quiz-grid">
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador</div>
+        <h3>Simulador METAR</h3>
+        <p>Codifica METAR de escenarios reales.</p>
+        <a href="simulador-metar.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Terminal AFTN / AMHS -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador · Anexo 10</div>
-      <h3>Terminal AFTN / AMHS</h3>
-      <p>Redacta y trata mensajes del servicio fijo aeronáutico: prioridad, direcciones de ocho letras, hora de depósito, mensajes de servicio y acuse de SS. Practica solo, con ejercicios o en una sala en vivo con tus compañeros.</p>
-      <a href="terminal-aftn.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador</div>
+        <h3>Simulador Plan de Vuelo</h3>
+        <p>Llena el FPL casilla por casilla con validación.</p>
+        <a href="simulador-plan-vuelo.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Quiz de Fraseología (opción múltiple) -->
-    <div class="quiz-listing-card">
-      <div class="badge">50 preguntas</div>
-      <h3>Fraseología Aeronáutica — Parte 1 · Teórico</h3>
-      <p>Preguntas de opción múltiple sobre fundamentos y marco normativo, fraseología OACI, fases de vuelo, emergencias y coordinación tierra-tierra, con situaciones de radio en español e inglés. Sin micrófono ni voz.</p>
-      <a href="quiz-fraseologia.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador CWP</div>
+        <h3>Simulador NALA — Plan de Vuelo y Radar</h3>
+        <p>Puesto de trabajo con planes, AFTN y radar en vivo.</p>
+        <a href="Simulador-NALA.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Simulador ATC por voz -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador · Voz + Mapa</div>
-      <h3>Fraseología Aeronáutica — Parte 2 · Simulador ATC</h3>
-      <p>Ahora tú eres el controlador: la aeronave te llama por voz, tú das la instrucción correcta hablando y la aeronave la ejecuta en un mapa de ruta en vivo, misión por misión.</p>
-      <a href="simulador-fraseologia.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador · Anexo 10</div>
+        <h3>Terminal AFTN / AMHS</h3>
+        <p>Redacta y trata mensajes AFTN, solo o en sala.</p>
+        <a href="terminal-aftn.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <!-- Memoria y Agilidad Mental -->
-    <div class="quiz-listing-card">
-      <div class="badge">Simulador · Memoria</div>
-      <h3>Memoria y Agilidad Mental</h3>
-      <p>Una secuencia aparece, se oculta y tú la escribes de memoria. Cada acierto le suma un carácter: transpondedores, frecuencias, códigos Q o matrículas, hasta donde llegue tu retención.</p>
-      <a href="simulador-memoria.html" class="btn-start">Comenzar →</a>
-    </div>
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador · Voz + Mapa</div>
+        <h3>Fraseología Aeronáutica — Parte 2 · Simulador ATC</h3>
+        <p>Eres el controlador: instruye por voz y míralo volar.</p>
+        <a href="simulador-fraseologia.html" class="btn-start">Comenzar →</a>
+      </div>
 
-    <div class="quiz-listing-card" style="border:2px dashed var(--hairline); background:transparent;">
-      <div class="badge" style="color:var(--text-muted); background:transparent;">Próximamente</div>
-      <h3 style="color:var(--text-muted);">Más quizzes</h3>
-      <p style="color:var(--text-muted);">PBN y más están en desarrollo.</p>
+      <div class="quiz-listing-card">
+        <div class="badge">Simulador · Memoria</div>
+        <h3>Memoria y Agilidad Mental</h3>
+        <p>Memoriza secuencias de códigos cada vez más largas.</p>
+        <a href="simulador-memoria.html" class="btn-start">Comenzar →</a>
+      </div>
     </div>
-  </div>
+  </section>
 </div>
 
 <footer>

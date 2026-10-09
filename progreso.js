@@ -371,6 +371,239 @@ async function guardarPerfilEstudiante(nombre, apellido) {
   localStorage.setItem(AIS_APELLIDO_KEY, apellidoLimpio);
 }
 
+// ---------- FOTO DE PERFIL (alumno y profesor, mismo código) ----------
+// El archivo vive en Supabase Storage (bucket "avatares", <uid>/perfil.jpg)
+// y se reduce en el navegador a 256×256 px antes de subirlo (~20 KB): el
+// bucket rechaza todo lo que no sea JPEG o pase de 100 KB. En perfiles solo
+// se guardan foto_version (para que el navegador no muestre la foto vieja)
+// y aviso_foto_off ("no me lo recuerdes más").
+const FOTO_BUCKET = 'avatares';
+const FOTO_LADO_PX = 256;
+const FOTO_MAX_BYTES = 100 * 1024;
+const FOTO_AVISO_SESION_KEY = 'aisAvisoFotoAhoraNo';
+
+function rutaFotoPerfil(uid) { return uid + '/perfil.jpg'; }
+
+function urlFotoPerfil(uid, version) {
+  const cliente = obtenerClienteAuth();
+  if (!cliente || !uid || !version) return null;
+  const { data } = cliente.storage.from(FOTO_BUCKET).getPublicUrl(rutaFotoPerfil(uid));
+  return data.publicUrl + '?v=' + version;
+}
+
+async function obtenerFotoPerfil() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return null;
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.from('perfiles').select('foto_version, aviso_foto_off').eq('id', sesion.user.id).maybeSingle();
+  if (error) { console.error('No se pudo leer la foto de perfil:', error.message); return null; }
+  const version = data ? data.foto_version : null;
+  return { uid: sesion.user.id, url: urlFotoPerfil(sesion.user.id, version), avisoOff: !!(data && data.aviso_foto_off) };
+}
+
+// Recorta al centro, reduce a FOTO_LADO_PX y baja la calidad hasta que
+// el JPEG quepa en FOTO_MAX_BYTES.
+function comprimirFotoPerfil(archivo) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(archivo);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const lado = Math.min(img.naturalWidth, img.naturalHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = FOTO_LADO_PX;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, FOTO_LADO_PX, FOTO_LADO_PX);
+      ctx.drawImage(img, (img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado, 0, 0, FOTO_LADO_PX, FOTO_LADO_PX);
+      const intentar = calidad => canvas.toBlob(blob => {
+        if (!blob) return reject(new Error('No se pudo procesar la imagen.'));
+        if (blob.size > FOTO_MAX_BYTES && calidad > 0.4) return intentar(calidad - 0.15);
+        resolve(blob);
+      }, 'image/jpeg', calidad);
+      intentar(0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Ese archivo no se pudo abrir como imagen. Prueba con una foto JPG.')); };
+    img.src = url;
+  });
+}
+
+async function subirFotoPerfil(archivo) {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Inicia sesión para poner tu foto de perfil.' };
+  if (!archivo || !/^image\//.test(archivo.type)) return { ok: false, error: 'Elige una imagen (JPG).' };
+  let blob;
+  try { blob = await comprimirFotoPerfil(archivo); }
+  catch (e) { return { ok: false, error: e.message }; }
+
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente.storage.from(FOTO_BUCKET)
+    .upload(rutaFotoPerfil(sesion.user.id), blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '31536000' });
+  if (error) return { ok: false, error: 'No se pudo subir la foto: ' + error.message };
+
+  const version = Date.now();
+  const { error: errPerfil } = await cliente.from('perfiles').update({ foto_version: version }).eq('id', sesion.user.id);
+  if (errPerfil) return { ok: false, error: 'La foto subió, pero no se pudo guardar en tu perfil: ' + errPerfil.message };
+  return { ok: true, url: urlFotoPerfil(sesion.user.id, version) };
+}
+
+async function quitarFotoPerfil() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return { ok: false, error: 'Sin sesión' };
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente.storage.from(FOTO_BUCKET).remove([rutaFotoPerfil(sesion.user.id)]);
+  if (error) return { ok: false, error: 'No se pudo borrar la foto: ' + error.message };
+  await cliente.from('perfiles').update({ foto_version: null }).eq('id', sesion.user.id);
+  return { ok: true };
+}
+
+async function desactivarAvisoFoto() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return;
+  const cliente = obtenerClienteAuth();
+  const { error } = await cliente.from('perfiles').update({ aviso_foto_off: true }).eq('id', sesion.user.id);
+  if (error) console.error('No se pudo guardar la preferencia del aviso de foto:', error.message);
+}
+
+function _estilosFotoPerfil() {
+  if (document.getElementById('estilosFotoPerfil')) return;
+  const s = document.createElement('style');
+  s.id = 'estilosFotoPerfil';
+  s.textContent = `
+  .avatar.avatar--editable { cursor: pointer; position: relative; overflow: visible; border: 0; padding: 0; font-family: inherit; }
+  .avatar.avatar--editable:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  .avatar img.avatar-foto { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+  .avatar-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 1200; min-width: 180px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 12px 30px -12px rgba(15,23,42,.35); padding: 6px; display: flex; flex-direction: column; font-weight: 500; font-size: .85rem; text-align: left; }
+  .avatar-menu button { background: none; border: 0; color: inherit; font: inherit; text-align: left; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+  .avatar-menu button:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+  .avatar-menu .avatar-menu-peligro { color: var(--danger); }
+  .aviso-foto { position: fixed; right: 20px; bottom: 20px; z-index: 1100; width: min(340px, calc(100vw - 32px)); background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); border-left: 4px solid var(--primary); border-radius: 12px; box-shadow: 0 16px 36px -16px rgba(15,23,42,.4); padding: 14px 16px; font-family: var(--font-main); }
+  .aviso-foto strong { display: block; font-family: var(--font-heading); font-size: .95rem; margin-bottom: 4px; }
+  .aviso-foto p { margin: 0 0 12px; font-size: .85rem; color: var(--text-muted); line-height: 1.4; }
+  .aviso-foto-botones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .aviso-foto-botones button { font: inherit; font-size: .8rem; border-radius: 8px; padding: 7px 12px; cursor: pointer; border: 1px solid var(--border-color); background: transparent; color: var(--text-main); }
+  .aviso-foto-botones .aviso-foto-si { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+  .aviso-foto-botones .aviso-foto-nunca { border: 0; padding: 7px 4px; color: var(--text-muted); text-decoration: underline; }
+  .aviso-foto-error { color: var(--danger); font-size: .8rem; margin-top: 8px; }
+  @media (max-width: 520px) { .aviso-foto { right: 16px; bottom: 16px; } }
+  `;
+  document.head.appendChild(s);
+}
+
+// Convierte el avatar de iniciales en el control de la foto: muestra la
+// foto si hay, abre un menú al pulsarlo y, a quien no tiene foto ni pidió
+// silenciarlo, le muestra un recordatorio. Sin sesión no hace nada.
+async function montarFotoPerfil(avatarEl) {
+  if (!avatarEl) return;
+  const info = await obtenerFotoPerfil();
+  if (!info) return;
+  _estilosFotoPerfil();
+
+  // El panel puede actualizar las iniciales después (al editar el nombre)
+  // escribiendo data-iniciales; por eso se leen en cada pintado.
+  if (!avatarEl.dataset.iniciales) avatarEl.dataset.iniciales = avatarEl.textContent;
+  let urlActual = info.url;
+  let aviso = null;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/webp';
+  input.hidden = true;
+  document.body.appendChild(input);
+
+  function pintar() {
+    avatarEl.textContent = '';
+    if (urlActual) {
+      const img = document.createElement('img');
+      img.className = 'avatar-foto';
+      img.alt = 'Foto de perfil';
+      img.src = urlActual;
+      img.onerror = () => { avatarEl.textContent = avatarEl.dataset.iniciales; };
+      avatarEl.appendChild(img);
+    } else {
+      avatarEl.textContent = avatarEl.dataset.iniciales;
+    }
+    avatarEl.title = urlActual ? 'Cambiar foto de perfil' : 'Poner foto de perfil';
+  }
+
+  avatarEl.classList.add('avatar--editable');
+  avatarEl.setAttribute('role', 'button');
+  avatarEl.tabIndex = 0;
+  avatarEl.setAttribute('aria-label', 'Foto de perfil');
+  pintar();
+
+  let menu = null;
+  function cerrarMenu() { if (menu) { menu.remove(); menu = null; } }
+  function abrirMenu() {
+    if (menu) return cerrarMenu();
+    menu = document.createElement('div');
+    menu.className = 'avatar-menu';
+    const subir = document.createElement('button');
+    subir.type = 'button';
+    subir.textContent = urlActual ? 'Cambiar foto' : 'Poner foto de perfil';
+    subir.addEventListener('click', e => { e.stopPropagation(); cerrarMenu(); input.click(); });
+    menu.appendChild(subir);
+    if (urlActual) {
+      const quitar = document.createElement('button');
+      quitar.type = 'button';
+      quitar.className = 'avatar-menu-peligro';
+      quitar.textContent = 'Quitar foto';
+      quitar.addEventListener('click', async e => {
+        e.stopPropagation(); cerrarMenu();
+        const r = await quitarFotoPerfil();
+        if (r.ok) { urlActual = null; pintar(); } else alert(r.error);
+      });
+      menu.appendChild(quitar);
+    }
+    avatarEl.appendChild(menu);
+  }
+  avatarEl.addEventListener('click', e => { if (!menu || !menu.contains(e.target)) abrirMenu(); });
+  avatarEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirMenu(); } if (e.key === 'Escape') cerrarMenu(); });
+  document.addEventListener('click', e => { if (menu && !avatarEl.contains(e.target)) cerrarMenu(); });
+
+  input.addEventListener('change', async () => {
+    const archivo = input.files[0];
+    input.value = '';
+    if (!archivo) return;
+    avatarEl.style.opacity = '.5';
+    const r = await subirFotoPerfil(archivo);
+    avatarEl.style.opacity = '';
+    if (r.ok) {
+      urlActual = r.url; pintar();
+      if (aviso) { aviso.remove(); aviso = null; }
+    } else if (aviso) {
+      aviso.querySelector('.aviso-foto-error').textContent = r.error;
+    } else {
+      alert(r.error);
+    }
+  });
+
+  let ahoraNo = false;
+  try { ahoraNo = sessionStorage.getItem(FOTO_AVISO_SESION_KEY) === '1'; } catch (e) {}
+  if (urlActual || info.avisoOff || ahoraNo) return;
+
+  aviso = document.createElement('div');
+  aviso.className = 'aviso-foto';
+  aviso.setAttribute('role', 'status');
+  aviso.innerHTML = '<strong>Pon tu foto de perfil</strong>'
+    + '<p>Personaliza tu cuenta con una foto. Puedes cambiarla o quitarla cuando quieras tocando tu avatar, arriba a la derecha.</p>'
+    + '<div class="aviso-foto-botones">'
+    + '<button type="button" class="aviso-foto-si">Poner foto</button>'
+    + '<button type="button" class="aviso-foto-luego">Ahora no</button>'
+    + '<button type="button" class="aviso-foto-nunca">No me lo recuerdes más</button>'
+    + '</div><div class="aviso-foto-error"></div>';
+  document.body.appendChild(aviso);
+  aviso.querySelector('.aviso-foto-si').addEventListener('click', () => input.click());
+  aviso.querySelector('.aviso-foto-luego').addEventListener('click', () => {
+    try { sessionStorage.setItem(FOTO_AVISO_SESION_KEY, '1'); } catch (e) {}
+    aviso.remove(); aviso = null;
+  });
+  aviso.querySelector('.aviso-foto-nunca').addEventListener('click', async () => {
+    aviso.remove(); aviso = null;
+    await desactivarAvisoFoto();
+  });
+}
+
 // ---------- MIGRACIÓN: progreso local -> nube, al iniciar sesión ----------
 async function migrarProgresoLocalSiHaceFalta() {
   const sesion = await obtenerSesionActual();
