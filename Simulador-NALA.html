@@ -269,6 +269,8 @@
   .fp-estado{ align-self:flex-end; min-width:54px; padding-bottom:6px; font-size:.74rem; font-weight:bold; letter-spacing:.08em; color:var(--vfr); }
   .mode-grid{ display:grid; grid-template-columns:repeat(8, auto); gap:9px 16px; align-items:center; }
   #win-fpop .grid-row{ gap:8px; }
+  /* La fila de horas lleva 17 casillas: un poco más junta para que quepa entera en un portátil de 1366 px. */
+  #win-fpop .fp-fila-horas, #win-fpop .fp-fila-horas .f-group-row{ gap:6px; }
   button.mode-item{ background:none; border:0; padding:0; font-family:var(--font-ui); text-align:left; opacity:.8; }
   button.mode-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
   .mode-item--off{ cursor:default; opacity:.3; }
@@ -1011,27 +1013,28 @@
           <div style="width:96px"><label class="f-label">STAR</label><input class="f" id="f_star"></div>
           <div class="fp-estado" id="fpEstado" aria-live="polite" title="Estado del plan de vuelo"></div>
         </div>
-        <div class="grid-row grid-row--abajo">
-          <div style="width:75px"><label class="f-label">EOBD</label><input class="f" id="f_eobd" maxlength="6" placeholder="YYMMDD"></div>
-          <div style="width:62px"><label class="f-label">EOBT</label><input class="f" id="f_eobt" maxlength="4" placeholder="HHMM"></div>
-          <div style="width:52px"><label class="f-label">MSG</label><input class="f" id="f_msg" disabled></div>
-          <div style="width:58px"><label class="f-label">CTOT</label><input class="f" id="f_ctot" disabled></div>
-          <div style="width:62px"><label class="f-label">ATFCM</label><input class="f" id="f_atfcm" disabled></div>
-          <div style="width:58px"><label class="f-label" title="Hora real de salida. Se registra con el modo ATD">ATD</label><input class="f" id="f_atd" maxlength="4" disabled></div>
-          <div style="width:62px"><label class="f-label" title="Hora estimada de llegada = EOBT (o ATD) + EET. En blanco se calcula sola; el mensaje FPL lleva el EET en la casilla 16">ETA</label><input class="f" id="f_eta" maxlength="4" placeholder="Auto"></div>
+        <div class="grid-row grid-row--abajo fp-fila-horas">
+          <div style="width:64px"><label class="f-label">EOBD</label><input class="f" id="f_eobd" maxlength="6" placeholder="YYMMDD"></div>
+          <div style="width:56px"><label class="f-label">EOBT</label><input class="f" id="f_eobt" maxlength="4" placeholder="HHMM"></div>
+          <div style="width:46px"><label class="f-label">MSG</label><input class="f" id="f_msg" disabled></div>
+          <div style="width:52px"><label class="f-label">CTOT</label><input class="f" id="f_ctot" disabled></div>
+          <div style="width:56px"><label class="f-label">ATFCM</label><input class="f" id="f_atfcm" disabled></div>
+          <div style="width:54px"><label class="f-label" title="Hora real de salida: se llena al despegar, o se registra con el modo ATD">ATD</label><input class="f" id="f_atd" maxlength="4" disabled></div>
+          <div style="width:56px"><label class="f-label" title="Casilla 16: tiempo total previsto de vuelo, en HHMM de duración (obligatorio)">EET</label><input class="f" id="f_eet" maxlength="4" placeholder="HHMM"></div>
+          <div style="width:54px"><label class="f-label" title="Hora estimada de llegada = EOBT (o ATD) + EET. Se calcula sola">ETA</label><input class="f" id="f_eta" maxlength="4" disabled></div>
           <div class="f-group">
             <span class="f-group-title">CRUISING</span>
             <div class="f-group-row">
-              <div style="width:70px"><label class="f-label">SPEED</label><input class="f" id="f_speed" placeholder="N0260"></div>
-              <div style="width:62px"><label class="f-label">LEVEL</label><input class="f" id="f_level" placeholder="F360"></div>
+              <div style="width:62px"><label class="f-label">SPEED</label><input class="f" id="f_speed" placeholder="N0260"></div>
+              <div style="width:56px"><label class="f-label">LEVEL</label><input class="f" id="f_level" placeholder="F360"></div>
             </div>
           </div>
-          <div style="width:72px"><label class="f-label">FIX</label><input class="f" id="f_fix" maxlength="11" disabled></div>
-          <div style="width:68px"><label class="f-label">ESTIMATE<br>TIME</label><input class="f" id="f_estTime" maxlength="4" disabled></div>
-          <div style="width:62px"><label class="f-label">LEVEL</label><input class="f" id="f_estLevel" maxlength="5" disabled></div>
-          <div style="width:70px"><label class="f-label">RCOORD</label><input class="f" id="f_rcoord" disabled></div>
-          <div style="width:70px"><label class="f-label">SCOORD</label><input class="f" id="f_scoord" disabled></div>
-          <div style="flex:1;min-width:70px"><label class="f-label">ALT AD(S)</label><input class="f" id="f_altad"></div>
+          <div style="width:62px"><label class="f-label">FIX</label><input class="f" id="f_fix" maxlength="11" disabled></div>
+          <div style="width:60px"><label class="f-label">ESTIMATE<br>TIME</label><input class="f" id="f_estTime" maxlength="4" disabled></div>
+          <div style="width:56px"><label class="f-label">LEVEL</label><input class="f" id="f_estLevel" maxlength="5" disabled></div>
+          <div style="width:58px"><label class="f-label">RCOORD</label><input class="f" id="f_rcoord" disabled></div>
+          <div style="width:58px"><label class="f-label">SCOORD</label><input class="f" id="f_scoord" disabled></div>
+          <div style="flex:1;min-width:54px"><label class="f-label">ALT AD(S)</label><input class="f" id="f_altad"></div>
         </div>
         <div class="grid-row">
           <div style="flex:1"><label class="f-label">FIELD 18</label><input class="f" id="f_field18" placeholder="DOF/260729 (0 si no hay más datos)"></div>
@@ -1108,7 +1111,7 @@
 -A320/M-S/C
 -SKBO2000
 -N0260F360 DCT ZIP DCT BUV DCT ILSEV DCT BAQ DCT
--SKBQ
+-SKBQ0130
 -DOF/260729
 )"></textarea>
         <div class="win-buttons" style="margin-top:10px; justify-content:flex-end;">
@@ -1447,7 +1450,7 @@
     </ol>
 
     <h3>Crear un plan de vuelo</h3>
-    <p><b>Camino A — formulario.</b> Pulsa <b>+ NUEVO</b> o <b>FP OPERATION</b>. Las casillas en rojo son obligatorias. Al escribir el A/C TYPE se completa sola la estela turbulenta; al escribir el FLIGHT ID se completa el indicativo de radio. La <b>ETA</b> se calcula sola si la dejas en blanco. Pulsa <b>UPDATE</b> para transmitir.</p>
+    <p><b>Camino A — formulario.</b> Pulsa <b>+ NUEVO</b> o <b>FP OPERATION</b>. Las casillas en rojo son obligatorias. Al escribir el A/C TYPE se completa sola la estela turbulenta; al escribir el FLIGHT ID se completa el indicativo de radio. El <b>EET</b> (casilla 16, duración en HHMM) es obligatorio; la <b>ETA</b> (EOBT + EET) se calcula sola, la <b>ATD</b> se llena al despegar y la <b>ATA</b> al aterrizar. Pulsa <b>UPDATE</b> para transmitir.</p>
     <p><b>Opciones de FP OPERATION.</b> <b>VIEW</b>: escribe el FLIGHT ID y pulsa UPDATE (o Enter) para buscar un plan. <b>CREATE CURRENT</b>: con el plan cargado, escribe FIX, ESTIMATE TIME y LEVEL y pulsa UPDATE; el plan queda <b>ACTIV</b> sobre ese punto y la ruta se reescribe desde él (<code>DCT REMUK/H1930 N0250A170 DCT</code>). <b>ATD</b> y <b>ATA</b>: escribe la hora real de salida o de llegada y pulsa UPDATE; cada una queda registrada en FP HISTORY. <b>STRIPS</b> imprime la ficha de progreso del plan y <b>PRINT</b> el plan completo: en el diálogo elige «Guardar como PDF». Las opciones atenuadas no se simulan.</p>
     <p><b>Avisos normativos.</b> Al transmitir se revisan reglas del AIP (sentido de niveles de ENR 3 y normas de ENR 2.1: niveles máximos entre TMA, ADS-B por encima de FL290, encaminamiento vía PEI, rutas con sentido preferencial, VFR en las TMA Bogotá y Barranquilla, Apiay). No rechazan el plan: avisan, y puedes <b>ACEPTAR Y TRANSMITIR</b> igualmente; lo aceptado queda anotado en el historial.</p>
     <p><b>Camino B — mensaje AFTN.</b> Abre <b>FREE TEXT (AFTN)</b> y escribe el mensaje en sintaxis OACI, o pulsa <b>EJEMPLO</b> para partir de uno correcto. Pulsa <b>TRANS</b>. Si algo está mal, el mensaje queda <b>ENCOLADO</b> en ARCHIVE con la lista de errores; pulsa <b>REINTENTAR</b> ahí para corregirlo con los errores a la vista. Al aceptarse, desaparece de la cola. Tras transmitir, el editor queda libre para el mensaje siguiente; si el indicativo ya tiene un plan, se pregunta antes de reemplazarlo.</p>
@@ -6310,7 +6313,7 @@ function resumeOwnNavigation(){
 
 /* ===================== ESTADO Y UTILIDADES ===================== */
 let flightPlans = []; let queue = []; let currentFP = null; let currentMode = 'CREATE'; let idSeq = 1;
-const COMPULSORY_IDS = ['f_flightId','f_acType','f_dep','f_dest','f_route','f_eobt','f_speed','f_level'];
+const COMPULSORY_IDS = ['f_flightId','f_acType','f_dep','f_dest','f_route','f_eobt','f_eet','f_speed','f_level'];
 
 /* ===================== MATRIZ DE PARAMETRIZACIÓN FPL (RAC 215 / OACI) ===================== */
 // R (reglas de vuelo) y FT (tipo de vuelo): un solo carácter de estas listas.
@@ -6597,12 +6600,14 @@ document.addEventListener('keydown', e=>{
 /* ===================== FP OPERATION ===================== */
 const ALL_FIELD_IDS = ['f_flightId','f_radio','f_no','f_acType','f_wake','f_dep','f_dest','f_navcom','f_rvsm',
   'f_surv','f_cssr','f_r','f_ft','f_sid','f_route','f_star','f_eobd','f_eobt','f_msg','f_ctot','f_atfcm','f_atd',
-  'f_eta','f_speed','f_level','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_altad','f_field18',
+  'f_eet','f_eta','f_speed','f_level','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_altad','f_field18',
   'f_eat','f_freetext','f_cfl','f_ecl','f_s','f_reg','f_sts','f_modes','f_origroute'];
-const ALWAYS_DISABLED = ['f_msg','f_ctot','f_atfcm','f_atd','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_eat','f_origroute'];
+const ALWAYS_DISABLED = ['f_msg','f_ctot','f_atfcm','f_atd','f_eta','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_eat','f_origroute'];
 // Casillas del estimado (FIX / ESTIMATE TIME / LEVEL): se escriben en CREATE CURRENT.
 const CAMPOS_ESTIMADO = ['f_fix','f_estTime','f_estLevel'];
 const RE_HHMM = /^([01][0-9]|2[0-3])[0-5][0-9]$/;
+// EET: tiempo transcurrido en HHMM (horas y minutos 00-59), nunca 0000.
+const RE_EET = /^(?!0000)[0-9]{2}[0-5][0-9]$/;
 // Botón de cada modo de FP OPERATION que cambia el formulario (los demás actúan al pulsarlos).
 const BOTON_MODO = { VIEW:'mode_view', CREATE:'mode_create', CURRENT:'mode_current', ATD:'mode_atd', ATA:'mode_ata' };
 const MSG_BUSCAR_PLAN = 'Primero busca el plan: en VIEW escribe su FLIGHT ID y pulsa UPDATE (o Enter), o elígelo en la lista de planes.';
@@ -6698,7 +6703,7 @@ function actualizarEstadoFP(fp){
 function openFPOperationCreate(){ currentFP = null; clearFormFields(); document.getElementById('f_eobd').value = todayYYMMDD(); actualizarEstadoFP(null); setMode('CREATE'); updateDepartButton(null); openWindow('win-fpop'); }
 
 function fillFormFromFP(fp){
-  ['flightId','radio','no','acType','wake','dep','dest','navcom','rvsm','surv','cssr','rules','type','sid','route','star','eobd','eobt','atd','eta','speed','level','altn','field18','freetext','cfl','ecl','sfield','reg','sts','modes'].forEach(k=>{
+  ['flightId','radio','no','acType','wake','dep','dest','navcom','rvsm','surv','cssr','rules','type','sid','route','star','eobd','eobt','atd','eet','eta','speed','level','altn','field18','freetext','cfl','ecl','sfield','reg','sts','modes'].forEach(k=>{
     const el = document.getElementById('f_' + (k==='rules'?'r':k==='type'?'ft':k==='altn'?'altad':k==='sfield'?'s':k));
     if(el) el.value = fp[k] || '';
   });
@@ -6709,8 +6714,9 @@ function fillFormFromFP(fp){
   // que es exactamente la carga útil de un mensaje de estimado entre dependencias ATS.
   const filas = fp.departed && !fp.landed ? computeEstimates(fp) : [];
   const prox = filas.find(f => !f.pasado);
-  document.getElementById('f_fix').value = prox ? prox.code : '';
-  document.getElementById('f_estTime').value = prox ? horaSobrePunto(fp, prox.etoMin) : '';
+  // Con el vuelo ya en tierra, FIX y ESTIMATE TIME muestran la llegada: destino y ATA.
+  document.getElementById('f_fix').value = fp.landed ? fp.dest : prox ? prox.code : '';
+  document.getElementById('f_estTime').value = fp.landed ? (fp.ata || '') : prox ? horaSobrePunto(fp, prox.etoMin) : '';
   document.getElementById('f_estLevel').value = fp.cfl || fp.level || '';
   // La ETA tiene ahora su propia casilla: EAT (hora prevista de aproximación) queda para lo que es.
   document.getElementById('f_eat').value = fp.eat || '';
@@ -6752,8 +6758,8 @@ function fpAccion(accion){
 function leerPlanDelFormulario(){
   const v = id => document.getElementById(id).value.trim().toUpperCase();
   let ok = true; const errors = [];
-  const checks = { f_flightId: /^[A-Z0-9]{3,7}$/, f_dep: /^[A-Z]{4}$/, f_dest: /^[A-Z]{4}$/, f_route: /^.{3,}$/, f_eobt: RE_HHMM, f_speed: SPEED_REGEX, f_level: LEVEL_REGEX };
-  const labels = { f_flightId:'FLIGHT ID', f_dep:'DEP', f_dest:'DEST', f_route:'FIR ROUTE', f_eobt:'EOBT', f_speed:'SPEED', f_level:'LEVEL' };
+  const checks = { f_flightId: /^[A-Z0-9]{3,7}$/, f_dep: /^[A-Z]{4}$/, f_dest: /^[A-Z]{4}$/, f_route: /^.{3,}$/, f_eobt: RE_HHMM, f_eet: RE_EET, f_speed: SPEED_REGEX, f_level: LEVEL_REGEX };
+  const labels = { f_flightId:'FLIGHT ID', f_dep:'DEP', f_dest:'DEST', f_route:'FIR ROUTE', f_eobt:'EOBT', f_eet:'EET (HHMM de duración: horas y minutos 00-59)', f_speed:'SPEED', f_level:'LEVEL' };
 
   COMPULSORY_IDS.filter(id=>id!=='f_acType').forEach(id=>{
     if(!v(id) || !checks[id].test(v(id))){
@@ -6812,21 +6818,6 @@ function leerPlanDelFormulario(){
     errors.push('FIELD 18 PBN inválido (' + pbnCheck.invalid.join(', ') + ')');
   }
 
-  // ETA: optativa. Es la HORA de llegada (no el EET): el EET de la casilla 16 sale de ETA − EOBT.
-  const etaVal = v('f_eta');
-  let eetDesdeEta = null;
-  if(etaVal){
-    if(!RE_HHMM.test(etaVal)){ ok = false; marcarInvalido('f_eta'); errors.push('ETA (HHMM)'); }
-    else if(RE_HHMM.test(v('f_eobt'))){
-      eetDesdeEta = ((minutosDeHHMM(etaVal) - minutosDeHHMM(v('f_eobt'))) % 1440 + 1440) % 1440;
-      // Un vuelo de más de 16 h delata que se escribió un EET donde va la hora de llegada.
-      if(eetDesdeEta === 0 || eetDesdeEta > 16*60){
-        ok = false; marcarInvalido('f_eta');
-        errors.push(`ETA ${etaVal} (daría un vuelo de ${minutesToHHMM(eetDesdeEta)}: la casilla es la hora de llegada; déjala en blanco para calcularla)`);
-      }
-    }
-  }
-
   if(!ok) return { ok, errors };
 
   const fp = {
@@ -6840,11 +6831,10 @@ function leerPlanDelFormulario(){
     altn: v('f_altad'), field18: v('f_field18')||'0', status: 'PROGRAMADO', departed: false, history: []
   };
 
-  // EET (casilla 16) por distancia real Haversine + velocidad y nivel declarados, salvo que se haya
-  // escrito la ETA; la ETA es EOBT + EET y se usa para el seguimiento en pantalla, no para el mensaje.
-  const eetMin = eetDesdeEta != null ? eetDesdeEta : calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level);
-  fp.eet = minutesToHHMM(eetMin);
-  fp.eta = addMinutesToHHMM(fp.eobt, eetMin);
+  // EET (casilla 16): obligatorio, lo escribe el operador como en el FPL. La ETA es EOBT + EET y se
+  // usa para el seguimiento en pantalla, no para el mensaje.
+  fp.eet = v('f_eet');
+  fp.eta = addMinutesToHHMM(fp.eobt, minutosDeHHMM(fp.eet));
   return { ok: true, fp };
 }
 
@@ -7316,7 +7306,10 @@ function fpDepart(flightId){
   // que la hora real de llegada y su desviación frente a la ETA salieran disparatadas.
   fp._sim = { startReal: nowSimMs(), totalMin: calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level) };
   fp._lastSimMs = nowSimMs();
-  fp.history.push({ ts: nowStampHeader(), text: `DESPEGUE — ${fp.flightId} en el aire, salida de ${fp.dep}.`, source:'ATC' });
+  // La casilla ATD se llena sola: el reloj del vuelo arranca en la EOBT (hora = EOBT + tiempo
+  // transcurrido). Si la salida real fue a otra hora, se corrige con el modo ATD de FP OPERATION.
+  if(!fp.atd) fp.atd = fp.eobt;
+  fp.history.push({ ts: nowStampHeader(), text: `DESPEGUE — ${fp.flightId} en el aire, salida de ${fp.dep} a las ${fp.atd}Z.`, source:'ATC' });
   renderSidebar();
   renderHistoryWindow(fp.flightId);
   if(currentFP && currentFP.flightId === fp.flightId) updateDepartButton(fp);
@@ -7434,7 +7427,11 @@ function parseICAOText(raw){
     if(!isKnownAirport(fp.dest)) errors.push(`Línea 5: DEST ${fp.dest} no existe en la base de datos.${avisoCargaNav()}`);
     // El EET es un tiempo transcurrido: sus dos primeras cifras son horas de vuelo, no una hora
     // del reloj, así que "2145" en un vuelo doméstico delata que se escribió la ETA por error.
-    if(fp.eet && parseInt(fp.eet.slice(2),10) > 59){
+    // El EET es obligatorio (Doc 4444, Ap. 2, casilla 16): antes se calculaba si faltaba, y el
+    // plan pasaba sin él.
+    if(!fp.eet || fp.eet === '0000'){
+      errors.push(`Línea 5: falta el EET. La casilla 16 lleva el destino seguido del tiempo total previsto en HHMM, por ejemplo -${fp.dest}0110.`);
+    } else if(parseInt(fp.eet.slice(2),10) > 59){
       errors.push(`Línea 5: EET ${fp.eet} inválido — los dos últimos dígitos son minutos (00–59).`);
     }
   }
@@ -7450,7 +7447,6 @@ function parseICAOText(raw){
 
   if(errors.length) return {ok:false, errors};
   fp.radio = airlineFromFlightId(fp.flightId);
-  if(!fp.eet) fp.eet = minutesToHHMM(calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level));
   fp.eta = addMinutesToHHMM(fp.eobt, parseInt(fp.eet.slice(0,2),10)*60 + parseInt(fp.eet.slice(2),10));
   return {ok:true, fp};
 }
@@ -8982,6 +8978,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     e.preventDefault();
     fpUpdate();
   });
+  // ETA = EOBT + EET, a la vista mientras se escribe el plan.
+  const etaEnVivo = ()=>{
+    if(currentMode !== 'CREATE' && !(currentMode === 'CURRENT' && !currentFP)) return;
+    const eobt = document.getElementById('f_eobt').value.trim(), eet = document.getElementById('f_eet').value.trim();
+    document.getElementById('f_eta').value = RE_HHMM.test(eobt) && RE_EET.test(eet) ? addMinutesToHHMM(eobt, minutosDeHHMM(eet)) : '';
+  };
+  ['f_eobt','f_eet'].forEach(id => document.getElementById(id).addEventListener('input', etaEnVivo));
   flightIdEl.addEventListener('input', ()=>{
     if(currentMode !== 'CREATE' && currentMode !== 'CURRENT') return;
     const guess = airlineFromFlightId(flightIdEl.value);
