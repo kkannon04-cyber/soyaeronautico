@@ -256,6 +256,30 @@
   .wbtn:hover{ filter:brightness(1.1); }
   .wbtn:disabled{ opacity:.4; cursor:not-allowed; }
 
+  /* ---------- FP OPERATION con la distribución de la ventana real ----------
+     Casillas en el mismo orden y agrupación que la ventana FP OPERATION del puesto real (foto de
+     referencia del usuario): CRUISING agrupa SPEED/LEVEL, la casilla de hora del estimado se rotula
+     ESTIMATE TIME y las opciones van en una rejilla de dos filas. Las filas alinean las casillas
+     por abajo para que un rótulo de dos líneas no las descuadre. */
+  .grid-row--abajo{ align-items:flex-end; }
+  .f-group{ display:flex; flex-direction:column; }
+  .f-group-title{ font-size:.62rem; letter-spacing:.06em; color:var(--text-muted); font-weight:bold; text-align:center; margin-bottom:2px; border-bottom:1px solid var(--hairline); padding-bottom:1px; }
+  .f-group-row{ display:flex; gap:10px; }
+  .f-group-row > div{ display:flex; flex-direction:column; }
+  .fp-estado{ align-self:flex-end; min-width:54px; padding-bottom:6px; font-size:.74rem; font-weight:bold; letter-spacing:.08em; color:var(--vfr); }
+  .mode-grid{ display:grid; grid-template-columns:repeat(8, auto); gap:9px 16px; align-items:center; }
+  #win-fpop .grid-row{ gap:8px; }
+  button.mode-item{ background:none; border:0; padding:0; font-family:var(--font-ui); text-align:left; opacity:.8; }
+  button.mode-item:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+  .mode-item--off{ cursor:default; opacity:.3; }
+  /* Avisos normativos: informan sin bloquear (el operador decide si acepta el plan igualmente). */
+  .msg-flash.aviso{ background:rgba(var(--warn-rgb),.13); border:1px solid var(--warn); color:var(--text); display:block; }
+  .aviso-lista{ margin:6px 0 8px 16px; padding:0; }
+  .aviso-lista li{ margin-bottom:4px; line-height:1.45; }
+  .aviso-ref{ font-weight:bold; color:var(--warn); }
+  .aviso-botones{ display:flex; gap:8px; flex-wrap:wrap; }
+  .aviso-botones .wbtn{ padding:6px 12px; }
+
   .msg-flash{ margin-top:10px; padding:8px 10px; border-radius:6px; font-size:.72rem; display:none; }
   .msg-flash.ok{ background:rgba(var(--vfr-rgb),.15); border:1px solid var(--vfr); color:var(--text); display:block; }
   .msg-flash.err{ background:rgba(var(--danger-rgb),.15); border:1px solid var(--danger); color:var(--text); display:block; }
@@ -765,6 +789,10 @@
     .win-body{ padding:10px 12px; }
     .grid-row{ gap:7px; margin-bottom:7px; }
     .grid-row > div{ flex:1 1 92px !important; width:auto !important; min-width:0; }
+    .grid-row > .f-group{ flex:2 1 150px !important; }
+    .f-group-row{ gap:7px; }
+    .f-group-row > div{ flex:1 1 0; min-width:0; width:auto !important; }
+    .mode-grid{ grid-template-columns:repeat(4, auto); }
     input.f, select.f, textarea.f{ padding:4px 5px; font-size:.74rem; }
     .wbtn{ padding:6px 12px; }
     .sidebar{ width:168px; }
@@ -809,6 +837,10 @@
     .win-head{ cursor:default; }
     .win-body{ padding:12px; }
     .grid-row > div{ flex:1 1 118px !important; width:auto !important; min-width:0; }
+    .grid-row > .f-group{ flex:2 1 236px !important; }
+    .grid-row > .fp-ruta{ flex:1 1 100% !important; order:-1; }
+    .f-group-row > div{ flex:1 1 0; min-width:0; width:auto !important; }
+    .mode-grid{ grid-template-columns:repeat(4, auto); gap:10px 14px; }
     #flightMap{ height:min(62vh, 420px); }
     #aftnFreeText{ height:180px; }
     #historyBox{ height:210px; }
@@ -823,6 +855,7 @@
     footer{ padding:10px 16px; }
     .win-buttons{ flex-wrap:wrap; }
     .wbtn{ flex:1 1 auto; }
+    .mode-grid{ grid-template-columns:repeat(2, auto); }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
@@ -951,48 +984,54 @@
     <!-- Los anchos van como min(ancho de diseño, área de trabajo): en un monitor grande se
          respeta la medida pensada para cada ventana, y en un portátil se encogen solas al
          redimensionar en vez de quedar más anchas que el escritorio del CWP. -->
-    <div class="sim-window" id="win-fpop" style="top:20px; left:20px; width:min(900px, calc(100vw - 230px));">
+    <div class="sim-window" id="win-fpop" style="top:20px; left:20px; width:min(1180px, calc(100vw - 230px));">
       <div class="win-head" data-drag>
         <span>FP OPERATION</span>
         <span class="win-close" onclick="closeWindow('win-fpop')">X</span>
       </div>
       <div class="win-body">
-        <div class="grid-row">
-          <div style="flex:1.3"><label class="f-label">FLIGHT ID</label><input class="f" id="f_flightId" maxlength="7" list="callsignList" autocomplete="off" placeholder="AVA123"><datalist id="callsignList"></datalist></div>
-          <div style="flex:1.5"><label class="f-label">RADIO CALLSIGN</label><input class="f" id="f_radio"></div>
-          <div style="width:55px"><label class="f-label">NO</label><input class="f" id="f_no" value="01"></div>
-          <div style="flex:1"><label class="f-label">A/C TYPE</label><input class="f" id="f_acType" list="acTypeList" autocomplete="off" placeholder="Elige de la lista"><datalist id="acTypeList"></datalist></div>
-          <div style="width:50px"><label class="f-label">W</label><input class="f" id="f_wake" maxlength="1" placeholder="—" readonly></div>
-          <div style="width:70px"><label class="f-label">DEP</label><input class="f" id="f_dep" maxlength="4" placeholder="SKBO"></div>
-          <div style="width:70px"><label class="f-label">DEST</label><input class="f" id="f_dest" maxlength="4" placeholder="SKBQ"></div>
-          <div style="flex:1.3"><label class="f-label">NAV/COM</label><input class="f" id="f_navcom" placeholder="S"></div>
-          <div style="width:60px"><label class="f-label">RVSM</label><input class="f" id="f_rvsm" placeholder="UN"></div>
-          <div style="width:90px"><label class="f-label">SURVEILLANCE EQUIPMENT</label><input class="f" id="f_surv" placeholder="C"></div>
-          <div style="width:55px"><label class="f-label">CSSR</label><input class="f" id="f_cssr"></div>
-          <div style="width:38px"><label class="f-label">R</label><input class="f" id="f_r" maxlength="1" placeholder="I"></div>
-          <div style="width:38px"><label class="f-label">FT</label><input class="f" id="f_ft" maxlength="1" placeholder="S"></div>
+        <div class="grid-row grid-row--abajo">
+          <div style="width:96px"><label class="f-label">FLIGHT ID</label><input class="f" id="f_flightId" maxlength="7" list="callsignList" autocomplete="off" placeholder="AVA123"><datalist id="callsignList"></datalist></div>
+          <div style="flex:1.1;min-width:120px"><label class="f-label">RADIO CALLSIGN</label><input class="f" id="f_radio"></div>
+          <div style="width:44px"><label class="f-label">NO</label><input class="f" id="f_no" value="01"></div>
+          <div style="width:66px"><label class="f-label">A/C<br>TYPE</label><input class="f" id="f_acType" list="acTypeList" autocomplete="off" placeholder="A320"><datalist id="acTypeList"></datalist></div>
+          <div style="width:34px"><label class="f-label">W</label><input class="f" id="f_wake" maxlength="1" placeholder="—" readonly></div>
+          <div style="width:64px"><label class="f-label">DEP</label><input class="f" id="f_dep" maxlength="4" placeholder="SKBO"></div>
+          <div style="width:64px"><label class="f-label">DEST</label><input class="f" id="f_dest" maxlength="4" placeholder="SKBQ"></div>
+          <div style="flex:2;min-width:120px"><label class="f-label">NAV/COM</label><input class="f" id="f_navcom" placeholder="S"></div>
+          <div style="width:48px"><label class="f-label">RVSM</label><input class="f" id="f_rvsm" placeholder="UN"></div>
+          <div style="flex:1.5;min-width:110px"><label class="f-label">SURVEILLANCE EQUIPMENT</label><input class="f" id="f_surv" placeholder="C"></div>
+          <div style="width:60px"><label class="f-label">CSSR</label><input class="f" id="f_cssr"></div>
+          <div style="width:34px"><label class="f-label">R</label><input class="f" id="f_r" maxlength="1" placeholder="I"></div>
+          <div style="width:34px"><label class="f-label">FT</label><input class="f" id="f_ft" maxlength="1" placeholder="S"></div>
         </div>
-        <div class="grid-row">
-          <div style="width:90px"><label class="f-label">SID</label><input class="f" id="f_sid"></div>
-          <div style="flex:1"><label class="f-label">FIR ROUTE</label><input class="f" id="f_route" placeholder="DCT ZIP DCT BUV DCT ILSEV DCT BAQ DCT"></div>
-          <div style="width:90px"><label class="f-label">STAR</label><input class="f" id="f_star"></div>
+        <div class="grid-row grid-row--abajo">
+          <div style="width:100px"><label class="f-label">SID</label><input class="f" id="f_sid"></div>
+          <div class="fp-ruta" style="flex:1"><label class="f-label" style="text-align:center">FIR ROUTE</label><input class="f" id="f_route" placeholder="DCT ZIP DCT BUV DCT ILSEV DCT BAQ DCT"></div>
+          <div style="width:96px"><label class="f-label">STAR</label><input class="f" id="f_star"></div>
+          <div class="fp-estado" id="fpEstado" aria-live="polite" title="Estado del plan de vuelo"></div>
         </div>
-        <div class="grid-row">
+        <div class="grid-row grid-row--abajo">
           <div style="width:75px"><label class="f-label">EOBD</label><input class="f" id="f_eobd" maxlength="6" placeholder="YYMMDD"></div>
-          <div style="width:65px"><label class="f-label">EOBT</label><input class="f" id="f_eobt" maxlength="4" placeholder="HHMM"></div>
-          <div style="width:55px"><label class="f-label">MSG</label><input class="f" id="f_msg" disabled></div>
-          <div style="width:60px"><label class="f-label">CTOT</label><input class="f" id="f_ctot" disabled></div>
-          <div style="width:65px"><label class="f-label">ATFCM</label><input class="f" id="f_atfcm" disabled></div>
-          <div style="width:60px"><label class="f-label">ATD</label><input class="f" id="f_atd" disabled></div>
-          <div style="width:65px"><label class="f-label" title="Casilla 16: tiempo total previsto de vuelo, en HHMM de duración">EET</label><input class="f" id="f_eta" maxlength="4" placeholder="Auto"></div>
-          <div style="width:70px"><label class="f-label">SPEED</label><input class="f" id="f_speed" placeholder="N0260"></div>
-          <div style="width:65px"><label class="f-label">LEVEL</label><input class="f" id="f_level" placeholder="F360"></div>
-          <div style="width:60px"><label class="f-label">FIX</label><input class="f" id="f_fix" disabled></div>
-          <div style="width:65px"><label class="f-label">TIME</label><input class="f" id="f_estTime" disabled></div>
-          <div style="width:60px"><label class="f-label">LEVEL</label><input class="f" id="f_estLevel" disabled></div>
-          <div style="width:75px"><label class="f-label">RCOORD</label><input class="f" id="f_rcoord" disabled></div>
-          <div style="width:75px"><label class="f-label">SCOORD</label><input class="f" id="f_scoord" disabled></div>
-          <div style="flex:1;min-width:100px"><label class="f-label">ALT AD(S)</label><input class="f" id="f_altad"></div>
+          <div style="width:62px"><label class="f-label">EOBT</label><input class="f" id="f_eobt" maxlength="4" placeholder="HHMM"></div>
+          <div style="width:52px"><label class="f-label">MSG</label><input class="f" id="f_msg" disabled></div>
+          <div style="width:58px"><label class="f-label">CTOT</label><input class="f" id="f_ctot" disabled></div>
+          <div style="width:62px"><label class="f-label">ATFCM</label><input class="f" id="f_atfcm" disabled></div>
+          <div style="width:58px"><label class="f-label" title="Hora real de salida. Se registra con el modo ATD">ATD</label><input class="f" id="f_atd" maxlength="4" disabled></div>
+          <div style="width:62px"><label class="f-label" title="Hora estimada de llegada = EOBT (o ATD) + EET. En blanco se calcula sola; el mensaje FPL lleva el EET en la casilla 16">ETA</label><input class="f" id="f_eta" maxlength="4" placeholder="Auto"></div>
+          <div class="f-group">
+            <span class="f-group-title">CRUISING</span>
+            <div class="f-group-row">
+              <div style="width:70px"><label class="f-label">SPEED</label><input class="f" id="f_speed" placeholder="N0260"></div>
+              <div style="width:62px"><label class="f-label">LEVEL</label><input class="f" id="f_level" placeholder="F360"></div>
+            </div>
+          </div>
+          <div style="width:72px"><label class="f-label">FIX</label><input class="f" id="f_fix" maxlength="11" disabled></div>
+          <div style="width:68px"><label class="f-label">ESTIMATE<br>TIME</label><input class="f" id="f_estTime" maxlength="4" disabled></div>
+          <div style="width:62px"><label class="f-label">LEVEL</label><input class="f" id="f_estLevel" maxlength="5" disabled></div>
+          <div style="width:70px"><label class="f-label">RCOORD</label><input class="f" id="f_rcoord" disabled></div>
+          <div style="width:70px"><label class="f-label">SCOORD</label><input class="f" id="f_scoord" disabled></div>
+          <div style="flex:1;min-width:70px"><label class="f-label">ALT AD(S)</label><input class="f" id="f_altad"></div>
         </div>
         <div class="grid-row">
           <div style="flex:1"><label class="f-label">FIELD 18</label><input class="f" id="f_field18" placeholder="DOF/260729 (0 si no hay más datos)"></div>
@@ -1011,19 +1050,34 @@
           <div style="flex:1"><label class="f-label">ORIGINAL ROUTE</label><input class="f" id="f_origroute" disabled></div>
         </div>
         <div id="compulsoryTag" class="compulsory-tag" style="display:none;">COMPULSORY</div>
+        <!-- Opciones en el mismo orden que la ventana real. VIEW, CREATE, CREATE CURRENT, ATD y ATA
+             cambian el formulario y se ejecutan con UPDATE; HISTORY, EST y STRIPS actúan al pulsarlas.
+             Las atenuadas no se simulan en este ejercicio. -->
         <div class="mode-row">
-          <div class="mode-list">
-            <div class="mode-item" id="mode_view" onclick="setMode('VIEW')"><span class="dot"></span>VIEW</div>
-            <div class="mode-item" id="mode_create" onclick="setMode('CREATE')"><span class="dot"></span>CREATE</div>
-            <div class="mode-item" title="No simulado en este ejercicio">MODIFY</div>
-            <div class="mode-item" title="No simulado en este ejercicio">HISTORY</div>
+          <div class="mode-grid">
+            <button type="button" class="mode-item" id="mode_view" onclick="setMode('VIEW')" title="Consultar un plan: escribe el FLIGHT ID y pulsa UPDATE (o Enter)"><span class="dot"></span>VIEW</button>
+            <button type="button" class="mode-item" id="mode_create" onclick="setMode('CREATE')"><span class="dot"></span>CREATE</button>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>MODIFY</span>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>NOTIF</span>
+            <button type="button" class="mode-item" id="mode_atd" onclick="setMode('ATD')" title="Registrar la hora real de salida (ATD)"><span class="dot"></span>ATD</button>
+            <button type="button" class="mode-item" id="mode_ata" onclick="setMode('ATA')" title="Registrar la hora real de llegada (ATA)"><span class="dot"></span>ATA</button>
+            <button type="button" class="mode-item" id="mode_est" onclick="fpAccion('EST')" title="Estimados punto por punto del plan"><span class="dot"></span>EST</button>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>AFTN SEND</span>
+            <button type="button" class="mode-item" id="mode_history" onclick="fpAccion('HISTORY')" title="Historial del plan"><span class="dot"></span>HISTORY</button>
+            <button type="button" class="mode-item" id="mode_current" onclick="setMode('CURRENT')" title="Activar el plan sobre un punto: FIX, hora estimada y nivel"><span class="dot"></span>CREATE CURRENT</button>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>TERM</span>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>C.NOTIF</span>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>C.ATD</span>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>C.ATA</span>
+            <span class="mode-item mode-item--off" title="No simulado en este ejercicio"><span class="dot"></span>POS</span>
+            <button type="button" class="mode-item" id="mode_strips" onclick="fpAccion('STRIPS')" title="Imprimir la ficha de progreso del plan (o guardarla en PDF)"><span class="dot"></span>STRIPS</button>
           </div>
           <div class="win-buttons">
             <button class="wbtn" onclick="fpUpdate()">UPDATE</button>
             <button class="wbtn" id="fpDepartBtn" style="display:none; background:var(--ok); border-color:var(--ok);" onclick="if(currentFP) fpDepart(currentFP.flightId)">🛫 DESPEGUE</button>
             <button class="wbtn" onclick="fpCancel()">CANCEL</button>
             <button class="wbtn" onclick="fpClear()">CLEAR</button>
-            <button class="wbtn" onclick="openHistoryFor(currentFP? currentFP.flightId : (document.getElementById('f_flightId').value||''))">HISTORY</button>
+            <button class="wbtn" onclick="fpImprimir()" title="Imprimir el plan de vuelo (o guardarlo en PDF)">PRINT</button>
           </div>
         </div>
         <div class="msg-flash" id="fpFlash"></div>
@@ -1272,6 +1326,9 @@
         <span class="win-close" onclick="closeWindow('win-strips')">X</span>
       </div>
       <div class="win-body">
+        <div class="win-buttons" style="justify-content:flex-end; margin-bottom:8px;">
+          <button class="wbtn" style="padding:5px 12px; font-size:.64rem" onclick="imprimirFichaProgreso(flightPlans)" title="Abre el diálogo de impresión con todas las fichas: elige «Guardar como PDF» para conservarlas">🖨 IMPRIMIR TODAS / PDF</button>
+        </div>
         <div class="win-scroll" id="stripsList"></div>
       </div>
     </div>
@@ -1390,8 +1447,10 @@
     </ol>
 
     <h3>Crear un plan de vuelo</h3>
-    <p><b>Camino A — formulario.</b> Pulsa <b>+ NUEVO</b> o <b>FP OPERATION</b>. Las casillas en rojo son obligatorias. Al escribir el A/C TYPE se completa sola la estela turbulenta; al escribir el FLIGHT ID se completa el indicativo de radio. Pulsa <b>UPDATE</b> para transmitir.</p>
-    <p><b>Camino B — mensaje AFTN.</b> Abre <b>FREE TEXT (AFTN)</b> y escribe el mensaje en sintaxis OACI, o pulsa <b>EJEMPLO</b> para partir de uno correcto. Pulsa <b>TRANS</b>. Si algo está mal, el mensaje queda <b>ENCOLADO</b> en ARCHIVE con la lista de errores; pulsa <b>REINTENTAR</b> ahí para corregirlo con los errores a la vista. Al aceptarse, desaparece de la cola.</p>
+    <p><b>Camino A — formulario.</b> Pulsa <b>+ NUEVO</b> o <b>FP OPERATION</b>. Las casillas en rojo son obligatorias. Al escribir el A/C TYPE se completa sola la estela turbulenta; al escribir el FLIGHT ID se completa el indicativo de radio. La <b>ETA</b> se calcula sola si la dejas en blanco. Pulsa <b>UPDATE</b> para transmitir.</p>
+    <p><b>Opciones de FP OPERATION.</b> <b>VIEW</b>: escribe el FLIGHT ID y pulsa UPDATE (o Enter) para buscar un plan. <b>CREATE CURRENT</b>: con el plan cargado, escribe FIX, ESTIMATE TIME y LEVEL y pulsa UPDATE; el plan queda <b>ACTIV</b> sobre ese punto y la ruta se reescribe desde él (<code>DCT REMUK/H1930 N0250A170 DCT</code>). <b>ATD</b> y <b>ATA</b>: escribe la hora real de salida o de llegada y pulsa UPDATE; cada una queda registrada en FP HISTORY. <b>STRIPS</b> imprime la ficha de progreso del plan y <b>PRINT</b> el plan completo: en el diálogo elige «Guardar como PDF». Las opciones atenuadas no se simulan.</p>
+    <p><b>Avisos normativos.</b> Al transmitir se revisan reglas del AIP (sentido de niveles de ENR 3 y normas de ENR 2.1: niveles máximos entre TMA, ADS-B por encima de FL290, encaminamiento vía PEI, rutas con sentido preferencial, VFR en las TMA Bogotá y Barranquilla, Apiay). No rechazan el plan: avisan, y puedes <b>ACEPTAR Y TRANSMITIR</b> igualmente; lo aceptado queda anotado en el historial.</p>
+    <p><b>Camino B — mensaje AFTN.</b> Abre <b>FREE TEXT (AFTN)</b> y escribe el mensaje en sintaxis OACI, o pulsa <b>EJEMPLO</b> para partir de uno correcto. Pulsa <b>TRANS</b>. Si algo está mal, el mensaje queda <b>ENCOLADO</b> en ARCHIVE con la lista de errores; pulsa <b>REINTENTAR</b> ahí para corregirlo con los errores a la vista. Al aceptarse, desaparece de la cola. Tras transmitir, el editor queda libre para el mensaje siguiente; si el indicativo ya tiene un plan, se pregunta antes de reemplazarlo.</p>
     <p>Se valida la parametrización completa de las casillas 7 a 18: reglas de vuelo, tipo de vuelo, equipo COM/NAV y de vigilancia, PBN, formatos de EOBD/EOBT/SPEED/LEVEL, y que DEP y DEST existan. La <b>casilla 16</b> lleva el <b>EET</b> (tiempo total de vuelo en HHMM de duración), no la hora de llegada: la ETA se calcula aparte y se muestra en la ficha.</p>
 
     <h3>Rutas: puntos y aerovías reales</h3>
@@ -4965,8 +5024,23 @@ function refreshMapTheme(){
 // Trayectoria del plan: la misma resolución de la casilla 15 que valida el plan (resolverRuta),
 // con los tramos publicados de cada paso para las comprobaciones de MEA y sentido de niveles.
 function buildRoutePoints(fp){
-  const { pts, legs } = resolverRuta(fp.dep, fp.route, fp.dest);
+  const { pts, legs } = resolverRuta(fp.dep, rutaGeometrica(fp.route), fp.dest);
   return { pts, legs };
+}
+
+/* Ruta de un plan activado con CREATE CURRENT. La ventana FP OPERATION del puesto real la reescribe
+   desde el punto del estimado con la hora pegada al punto y el grupo de velocidad y nivel suelto
+   detrás: «DCT REMUK/H1930 N0250A170 DCT». Esa notación es del sistema, no del mensaje FPL (en la
+   casilla 15 un cambio de velocidad o nivel va siempre pegado a su punto), así que resolverRuta la
+   sigue rechazando y solo se traduce aquí, para volar la ruta: el punto se queda sin la hora y el
+   grupo suelto desaparece. */
+const RE_PUNTO_CON_HORA = /^([A-Z0-9]{2,11})\/H\d{4}$/;
+const RE_GRUPO_VEL_NIVEL = /^(N\d{4}|K\d{4}|M\d{3})(F\d{3}|A\d{3}|S\d{4}|M\d{4}|VFR)$/;
+function rutaGeometrica(routeStr){
+  return (routeStr || '').trim().toUpperCase().split(/\s+/).filter(Boolean)
+    .filter(t => !RE_GRUPO_VEL_NIVEL.test(t))
+    .map(t => t.replace(RE_PUNTO_CON_HORA, '$1'))
+    .join(' ');
 }
 
 function segDistances(pts){
@@ -5797,14 +5871,17 @@ function logFlight(fp, text, source){
 // Llegada al aeródromo de destino: el plan se cierra, la aeronave sale del tránsito activo y
 // deja de generar conflictos. Antes las aeronaves se quedaban clavadas sobre el destino
 // indefinidamente, disparando STCA falsos contra cualquier otra que llegara al mismo punto.
-function landFlight(fp){
+// «ataManual» (HHMM) es la hora que el operador registra con el modo ATA de FP OPERATION; sin ella
+// la llegada se fecha con el reloj del vuelo.
+function landFlight(fp, ataManual){
   fp.landed = true;
   fp.conflict = false;
   fp.status = 'ATERRIZADO';
-  fp.ata = addMinutesToHHMM(fp.eobt, Math.round((nowSimMs() - fp._sim.startReal)/60000));
+  fp.ata = ataManual || addMinutesToHHMM(fp.eobt, Math.round((nowSimMs() - fp._sim.startReal)/60000));
   const desvio = fp.ata && fp.eta ? diffMinutesHHMM(fp.eta, fp.ata) : null;
-  logFlight(fp, `ATERRIZAJE — ${fp.flightId} en ${fp.dest} a las ${fp.ata}Z`
-    + (desvio != null ? ` (ETA ${fp.eta}Z, desviación ${desvio >= 0 ? '+' : ''}${desvio} min).` : '.'));
+  logFlight(fp, `${ataManual ? 'ATA' : 'ATERRIZAJE'} — ${fp.flightId} en ${fp.dest} a las ${fp.ata}Z`
+    + (desvio != null ? ` (ETA ${fp.eta}Z, desviación ${desvio >= 0 ? '+' : ''}${desvio} min).` : '.'),
+    ataManual ? 'FP OPERATION' : undefined);
   removeFlightFromMap(fp.flightId);
   renderSidebar();
   if(document.getElementById('win-strips').classList.contains('open')) renderStrips();
@@ -6233,8 +6310,6 @@ function resumeOwnNavigation(){
 
 /* ===================== ESTADO Y UTILIDADES ===================== */
 let flightPlans = []; let queue = []; let currentFP = null; let currentMode = 'CREATE'; let idSeq = 1;
-// Firma del último aviso de sentido de niveles mostrado, para no repetirlo en bucle.
-let avisoSentidoNiveles = null;
 const COMPULSORY_IDS = ['f_flightId','f_acType','f_dep','f_dest','f_route','f_eobt','f_speed','f_level'];
 
 /* ===================== MATRIZ DE PARAMETRIZACIÓN FPL (RAC 215 / OACI) ===================== */
@@ -6525,20 +6600,89 @@ const ALL_FIELD_IDS = ['f_flightId','f_radio','f_no','f_acType','f_wake','f_dep'
   'f_eta','f_speed','f_level','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_altad','f_field18',
   'f_eat','f_freetext','f_cfl','f_ecl','f_s','f_reg','f_sts','f_modes','f_origroute'];
 const ALWAYS_DISABLED = ['f_msg','f_ctot','f_atfcm','f_atd','f_fix','f_estTime','f_estLevel','f_rcoord','f_scoord','f_eat','f_origroute'];
+// Casillas del estimado (FIX / ESTIMATE TIME / LEVEL): se escriben en CREATE CURRENT.
+const CAMPOS_ESTIMADO = ['f_fix','f_estTime','f_estLevel'];
+const RE_HHMM = /^([01][0-9]|2[0-3])[0-5][0-9]$/;
+// Botón de cada modo de FP OPERATION que cambia el formulario (los demás actúan al pulsarlos).
+const BOTON_MODO = { VIEW:'mode_view', CREATE:'mode_create', CURRENT:'mode_current', ATD:'mode_atd', ATA:'mode_ata' };
+const MSG_BUSCAR_PLAN = 'Primero busca el plan: en VIEW escribe su FLIGHT ID y pulsa UPDATE (o Enter), o elígelo en la lista de planes.';
+
+function minutosDeHHMM(s){ return /^\d{4}$/.test(s || '') ? parseInt(s.slice(0,2),10)*60 + parseInt(s.slice(2),10) : 0; }
 
 function clearFormFields(){
   ALL_FIELD_IDS.forEach(id=>{ const el = document.getElementById(id); el.value = ''; el.classList.remove('f-invalid','f-ok'); });
   document.getElementById('f_no').value = '01';
 }
 
+// Qué casillas se pueden escribir en cada modo y cuáles son obligatorias (en rojo):
+//  · VIEW: solo FLIGHT ID, para buscar un plan.
+//  · CREATE: el plan completo.
+//  · CREATE CURRENT: con un plan cargado, el estimado y la velocidad; sin plan, además el plan
+//    completo, que se crea ya activo sobre el FIX.
+//  · ATD: la hora real de salida. · ATA: la hora real de llegada, en ESTIMATE TIME (el FIX
+//    muestra el destino): la ventana real no tiene una casilla propia para la ATA.
+function camposDelModo(mode){
+  const plan = ALL_FIELD_IDS.filter(id => !ALWAYS_DISABLED.includes(id));
+  switch(mode){
+    case 'VIEW':    return { hab: ['f_flightId'], obl: [] };
+    case 'CREATE':  return { hab: plan, obl: COMPULSORY_IDS };
+    case 'CURRENT': return currentFP
+      ? { hab: ['f_speed'].concat(CAMPOS_ESTIMADO), obl: ['f_speed'].concat(CAMPOS_ESTIMADO) }
+      : { hab: plan.concat(CAMPOS_ESTIMADO), obl: COMPULSORY_IDS.concat(CAMPOS_ESTIMADO) };
+    case 'ATD':     return { hab: ['f_atd'], obl: ['f_atd'] };
+    case 'ATA':     return { hab: ['f_estTime'], obl: ['f_estTime'] };
+  }
+  return { hab: [], obl: [] };
+}
+
 function setMode(mode){
+  // ATD y ATA registran horas de un plan que ya existe: tiene que estar cargado.
+  if((mode === 'ATD' || mode === 'ATA') && !currentFP) return flashFP('err', MSG_BUSCAR_PLAN);
   currentMode = mode;
-  document.getElementById('mode_view').classList.toggle('active', mode==='VIEW');
-  document.getElementById('mode_create').classList.toggle('active', mode==='CREATE');
-  document.getElementById('compulsoryTag').style.display = (mode==='CREATE') ? 'block' : 'none';
-  ALL_FIELD_IDS.forEach(id=>{ document.getElementById(id).disabled = (mode==='VIEW') || ALWAYS_DISABLED.includes(id); });
-  COMPULSORY_IDS.forEach(id=>{ document.getElementById(id).classList.toggle('f-compulsory', mode==='CREATE'); });
+  Object.entries(BOTON_MODO).forEach(([m, id])=>{
+    const b = document.getElementById(id);
+    b.classList.toggle('active', m === mode);
+    b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+  });
+  const { hab, obl } = camposDelModo(mode);
+  document.getElementById('compulsoryTag').style.display = obl.length ? 'block' : 'none';
+  ALL_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    el.disabled = !hab.includes(id);
+    el.classList.toggle('f-compulsory', obl.includes(id));
+  });
   document.getElementById('fpFlash').style.display='none';
+  prepararModo(mode);
+}
+
+// Deja el formulario listo para el modo elegido y dice qué escribir.
+function prepararModo(mode){
+  const fp = currentFP;
+  const poner = (id, valor, pista) => {
+    const el = document.getElementById(id);
+    if(valor != null) el.value = valor;
+    if(pista != null) el.placeholder = pista;
+  };
+  if(mode === 'VIEW'){
+    CAMPOS_ESTIMADO.forEach(id => poner(id, null, ''));
+    if(fp) fillFormFromFP(fp);
+    return;
+  }
+  if(mode === 'CURRENT'){
+    poner('f_fix', '', 'REMUK'); poner('f_estTime', '', 'HHMM'); poner('f_estLevel', '', (fp && fp.level) || 'A170');
+    if(!fp && !document.getElementById('f_eobd').value) poner('f_eobd', todayYYMMDD());
+    return flashFP('ok', fp
+      ? `CREATE CURRENT de ${fp.flightId}: escribe el FIX, la hora estimada sobre él (ESTIMATE TIME) y el LEVEL, y pulsa UPDATE. La ruta se reescribe desde ese punto y el plan queda activo.`
+      : 'CREATE CURRENT: llena el plan y el estimado (FIX, ESTIMATE TIME y LEVEL) y pulsa UPDATE. El plan se crea ya activo sobre ese punto.');
+  }
+  if(mode === 'ATD'){
+    poner('f_atd', fp.atd || '', 'HHMM');
+    return flashFP('ok', `ATD de ${fp.flightId}: escribe la hora real de salida de ${fp.dep} (HHMM, UTC) y pulsa UPDATE.`);
+  }
+  if(mode === 'ATA'){
+    poner('f_fix', fp.dest); poner('f_estTime', fp.ata || '', 'HHMM');
+    return flashFP('ok', `ATA de ${fp.flightId}: escribe en ESTIMATE TIME la hora real de llegada a ${fp.dest} (HHMM, UTC) y pulsa UPDATE.`);
+  }
 }
 
 function updateDepartButton(fp){
@@ -6546,35 +6690,69 @@ function updateDepartButton(fp){
   btn.style.display = (fp && !fp.departed && !fp.collided) ? 'inline-block' : 'none';
 }
 
-function openFPOperationCreate(){ currentFP = null; clearFormFields(); document.getElementById('f_eobd').value = todayYYMMDD(); setMode('CREATE'); updateDepartButton(null); openWindow('win-fpop'); }
+// Estado que la ventana real muestra junto a la STAR («ACTIV» con el plan en vuelo).
+function actualizarEstadoFP(fp){
+  document.getElementById('fpEstado').textContent = fp && fp.departed && !fp.landed && !fp.collided ? 'ACTIV' : '';
+}
+
+function openFPOperationCreate(){ currentFP = null; clearFormFields(); document.getElementById('f_eobd').value = todayYYMMDD(); actualizarEstadoFP(null); setMode('CREATE'); updateDepartButton(null); openWindow('win-fpop'); }
 
 function fillFormFromFP(fp){
-  ['flightId','radio','no','acType','wake','dep','dest','navcom','rvsm','surv','cssr','rules','type','sid','route','star','eobd','eobt','eet','speed','level','altn','field18','freetext','cfl','ecl','sfield','reg','sts','modes'].forEach(k=>{
-    const el = document.getElementById('f_' + (k==='rules'?'r':k==='type'?'ft':k==='altn'?'altad':k==='sfield'?'s':k==='eet'?'eta':k));
+  ['flightId','radio','no','acType','wake','dep','dest','navcom','rvsm','surv','cssr','rules','type','sid','route','star','eobd','eobt','atd','eta','speed','level','altn','field18','freetext','cfl','ecl','sfield','reg','sts','modes'].forEach(k=>{
+    const el = document.getElementById('f_' + (k==='rules'?'r':k==='type'?'ft':k==='altn'?'altad':k==='sfield'?'s':k));
     if(el) el.value = fp[k] || '';
   });
-  document.getElementById('f_msg').value = 'FPL'; document.getElementById('f_origroute').value = fp.route;
+  // ORIGINAL ROUTE: la ruta presentada; tras un CREATE CURRENT, la que tenía antes de reescribirla.
+  document.getElementById('f_msg').value = 'FPL'; document.getElementById('f_origroute').value = fp.origRoute || fp.route;
   // Casillas de estimado (FIX / TIME / LEVEL): dejaron de estar en blanco — muestran el próximo
   // punto de la ruta que la aeronave tiene por delante, su ETO y el nivel autorizado vigente,
   // que es exactamente la carga útil de un mensaje de estimado entre dependencias ATS.
   const filas = fp.departed && !fp.landed ? computeEstimates(fp) : [];
   const prox = filas.find(f => !f.pasado);
   document.getElementById('f_fix').value = prox ? prox.code : '';
-  document.getElementById('f_estTime').value = prox ? addMinutesToHHMM(fp.eobt, Math.round(prox.etoMin)) : '';
+  document.getElementById('f_estTime').value = prox ? horaSobrePunto(fp, prox.etoMin) : '';
   document.getElementById('f_estLevel').value = fp.cfl || fp.level || '';
-  document.getElementById('f_eat').value = fp.eta || '';
+  // La ETA tiene ahora su propia casilla: EAT (hora prevista de aproximación) queda para lo que es.
+  document.getElementById('f_eat').value = fp.eat || '';
+  actualizarEstadoFP(fp);
 }
 
 function openFPOperationView(fp){ currentFP = fp; fillFormFromFP(fp); setMode('VIEW'); updateDepartButton(fp); openWindow('win-fpop'); }
 function fpCancel(){ document.getElementById('fpFlash').style.display='none'; if(currentFP) openFPOperationView(currentFP); else closeWindow('win-fpop'); }
 function fpClear(){ clearFormFields(); document.getElementById('fpFlash').style.display='none'; }
 function flashFP(kind, text){ const el = document.getElementById('fpFlash'); el.className = 'msg-flash ' + kind; el.style.display='block'; el.textContent = text; }
+function marcarInvalido(id){ const el = document.getElementById(id); el.classList.add('f-invalid'); setTimeout(()=>el.classList.remove('f-invalid'), 600); }
 
-function fpUpdate(){
-  if(currentMode !== 'CREATE') return flashFP('err','Solo puedes usar UPDATE en modo CREATE.');
+// VIEW + FLIGHT ID + UPDATE (o Enter): trae el plan, como en el puesto real.
+function buscarPlanFP(){
+  const id = document.getElementById('f_flightId').value.trim().toUpperCase();
+  if(!id){ marcarInvalido('f_flightId'); return flashFP('err', 'Escribe el FLIGHT ID del plan que buscas y pulsa UPDATE (o Enter).'); }
+  const fp = flightPlans.find(p => p.flightId === id);
+  if(!fp){ marcarInvalido('f_flightId'); return flashFP('err', `No hay ningún plan de vuelo ${id}. Revisa el indicativo o créalo con CREATE.`); }
+  openFPOperationView(fp);
+  flashFP('ok', `Plan ${id} cargado (${fp.dep} → ${fp.dest}). Elige CREATE CURRENT, ATD, ATA, EST, HISTORY o STRIPS.`);
+}
+
+// Opciones que actúan al pulsarlas, sobre el plan cargado.
+function fpAccion(accion){
+  const fp = currentFP;
+  if(accion === 'HISTORY'){
+    const id = fp ? fp.flightId : document.getElementById('f_flightId').value.trim();
+    return id ? openHistoryFor(id) : flashFP('err', MSG_BUSCAR_PLAN);
+  }
+  if(!fp) return flashFP('err', MSG_BUSCAR_PLAN);
+  if(accion === 'EST') return openEstimatesFor(fp.flightId);
+  if(accion === 'STRIPS'){
+    imprimirFichaProgreso([fp]);
+    flashFP('ok', `Ficha de progreso de ${fp.flightId} enviada a imprimir: en el diálogo elige «Guardar como PDF» para conservarla.`);
+  }
+}
+
+// Lee y valida el plan escrito en el formulario (CREATE, y CREATE CURRENT sin plan cargado).
+function leerPlanDelFormulario(){
   const v = id => document.getElementById(id).value.trim().toUpperCase();
   let ok = true; const errors = [];
-  const checks = { f_flightId: /^[A-Z0-9]{3,7}$/, f_dep: /^[A-Z]{4}$/, f_dest: /^[A-Z]{4}$/, f_route: /^.{3,}$/, f_eobt: /^([01][0-9]|2[0-3])[0-5][0-9]$/, f_speed: SPEED_REGEX, f_level: LEVEL_REGEX };
+  const checks = { f_flightId: /^[A-Z0-9]{3,7}$/, f_dep: /^[A-Z]{4}$/, f_dest: /^[A-Z]{4}$/, f_route: /^.{3,}$/, f_eobt: RE_HHMM, f_speed: SPEED_REGEX, f_level: LEVEL_REGEX };
   const labels = { f_flightId:'FLIGHT ID', f_dep:'DEP', f_dest:'DEST', f_route:'FIR ROUTE', f_eobt:'EOBT', f_speed:'SPEED', f_level:'LEVEL' };
 
   COMPULSORY_IDS.filter(id=>id!=='f_acType').forEach(id=>{
@@ -6634,7 +6812,22 @@ function fpUpdate(){
     errors.push('FIELD 18 PBN inválido (' + pbnCheck.invalid.join(', ') + ')');
   }
 
-  if(!ok) return flashFP('err', 'Errores en casillas obligatorias: ' + errors.join(' · '));
+  // ETA: optativa. Es la HORA de llegada (no el EET): el EET de la casilla 16 sale de ETA − EOBT.
+  const etaVal = v('f_eta');
+  let eetDesdeEta = null;
+  if(etaVal){
+    if(!RE_HHMM.test(etaVal)){ ok = false; marcarInvalido('f_eta'); errors.push('ETA (HHMM)'); }
+    else if(RE_HHMM.test(v('f_eobt'))){
+      eetDesdeEta = ((minutosDeHHMM(etaVal) - minutosDeHHMM(v('f_eobt'))) % 1440 + 1440) % 1440;
+      // Un vuelo de más de 16 h delata que se escribió un EET donde va la hora de llegada.
+      if(eetDesdeEta === 0 || eetDesdeEta > 16*60){
+        ok = false; marcarInvalido('f_eta');
+        errors.push(`ETA ${etaVal} (daría un vuelo de ${minutesToHHMM(eetDesdeEta)}: la casilla es la hora de llegada; déjala en blanco para calcularla)`);
+      }
+    }
+  }
+
+  if(!ok) return { ok, errors };
 
   const fp = {
     id: idSeq++, flightId: v('f_flightId'), radio: v('f_radio') || airlineFromFlightId(v('f_flightId')),
@@ -6646,34 +6839,409 @@ function fpUpdate(){
     eobd: v('f_eobd')||todayYYMMDD(), eobt: v('f_eobt'), speed: v('f_speed'), level: v('f_level'),
     altn: v('f_altad'), field18: v('f_field18')||'0', status: 'PROGRAMADO', departed: false, history: []
   };
-  
-  // Sentido de los niveles de crucero: el AIP publica, tramo a tramo, si la aerovía admite solo
-  // niveles impares, solo pares o ambos. Un nivel que no encaja no invalida el plan (hay
-  // excepciones autorizadas), pero el controlador debe verlo antes de aceptarlo.
-  const dir = checkCruisingLevelDirection(fp, fp.level);
-  const firmaDir = `${fp.flightId}|${fp.route}|${fp.level}`;
-  if(dir && avisoSentidoNiveles !== firmaDir){
-    // Se avisa una vez por combinación de vuelo, ruta y nivel: si el usuario vuelve a pulsar
-    // UPDATE sin cambiar nada, entiende que lo ha revisado y el plan se transmite.
-    avisoSentidoNiveles = firmaDir;
-    return flashFP('err', dir.sentidoUnico
-      ? `Aviso: el tramo ${dir.airway ? dir.airway + ' ' : ''}${dir.tramo} es de sentido único y el AIP no lo publica `
-        + `en la dirección en que lo recorre esta ruta. Revísalo; si lo mantienes, vuelve a pulsar UPDATE.`
-      : `Aviso: el nivel ${fp.level} no corresponde al sentido publicado para el tramo `
-        + `${dir.airway ? dir.airway + ' ' : ''}${dir.tramo}, que en esa dirección admite niveles ${dir.exige}. `
-        + `Revísalo; si lo mantienes, vuelve a pulsar UPDATE.`);
+
+  // EET (casilla 16) por distancia real Haversine + velocidad y nivel declarados, salvo que se haya
+  // escrito la ETA; la ETA es EOBT + EET y se usa para el seguimiento en pantalla, no para el mensaje.
+  const eetMin = eetDesdeEta != null ? eetDesdeEta : calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level);
+  fp.eet = minutesToHHMM(eetMin);
+  fp.eta = addMinutesToHHMM(fp.eobt, eetMin);
+  return { ok: true, fp };
+}
+
+// Estimado de CREATE CURRENT: punto, hora sobre él y nivel.
+function leerEstimado(speed){
+  const v = id => document.getElementById(id).value.trim().toUpperCase();
+  const fix = v('f_fix'), hora = v('f_estTime'), level = v('f_estLevel');
+  const errors = [];
+  if(!fix){ errors.push('FIX'); marcarInvalido('f_fix'); }
+  else if(!resolverPunto(fix)){ errors.push(`FIX (${fix} no existe en la base de datos)`); marcarInvalido('f_fix'); }
+  if(!RE_HHMM.test(hora)){ errors.push('ESTIMATE TIME (HHMM)'); marcarInvalido('f_estTime'); }
+  if(!LEVEL_REGEX.test(level)){ errors.push('LEVEL (F170, A170…)'); marcarInvalido('f_estLevel'); }
+  return { ok: !errors.length, errors, fix, hora, level, speed };
+}
+
+/* Ruta de un plan activado sobre un punto (CREATE CURRENT), con la notación de la ventana real:
+   «DCT REMUK/H1930 N0250A170 DCT» — directo al FIX, hora del estimado pegada al punto, grupo de
+   velocidad y nivel, y el resto de la ruta desde el FIX:
+   1) si el FIX está escrito en la ruta, lo que venía después;
+   2) si está dentro de una aerovía de la ruta («LCE B689 RNG» pasa por REMUK), esa aerovía desde él;
+   3) si no está en la ruta, DCT al destino (y se avisa). */
+function rutaDesdeFix(routeStr, est){
+  const tokens = (routeStr || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+  const nombre = t => t.split('/')[0];
+  let resto = null;
+  const i = tokens.findIndex(t => nombre(t) === est.fix);
+  if(i >= 0){
+    resto = tokens.slice(i + 1);
+    while(resto.length && RE_GRUPO_VEL_NIVEL.test(resto[0])) resto.shift();   // de una activación anterior
+  } else {
+    for(let k = 1; k + 1 < tokens.length && !resto; k++){
+      const seq = AIRWAYS[tokens[k]];
+      if(!seq) continue;
+      const seg = airwaySegmentIndices(seq, nombre(tokens[k-1]), nombre(tokens[k+1]));
+      if(!seg) continue;
+      const a = Math.min(seg.from, seg.to), b = Math.max(seg.from, seg.to);
+      if(seq.some((p, idx) => p === est.fix && idx > a && idx < b)) resto = tokens.slice(k);
+    }
+  }
+  const enRuta = resto !== null;
+  if(!resto || !resto.length) resto = ['DCT'];
+  return { ruta: `DCT ${est.fix}/H${est.hora} ${est.speed}${est.level} ${resto.join(' ')}`, enRuta };
+}
+
+// Cómo quedaría el plan tras CREATE CURRENT (sin tocarlo), para revisar la normativa antes.
+function planActivadoSobre(fp, est){
+  return { ...fp, route: rutaDesdeFix(fp.route, est).ruta, speed: est.speed, level: est.level, _geo: null, _segIndex: null };
+}
+
+/* CREATE CURRENT: el plan pasa a ACTIVO con la aeronave sobre el FIX, a la hora y el nivel del
+   estimado. El reloj del vuelo se ajusta para que la hora que se lee en ese instante sea la del
+   estimado, y la ETA se recalcula desde el FIX por la ruta reescrita. */
+function activarPlanSobreFix(fp, est){
+  const { ruta, enRuta } = rutaDesdeFix(fp.route, est);
+  if(!fp.origRoute) fp.origRoute = fp.route;
+  fp.route = ruta;
+  fp.speed = est.speed;
+  fp.level = est.level;
+  fp.ecl = est.level;
+  fp.cfl = '';
+  fp.vectorHdg = null;
+  fp.directTo = null;
+  fp._current = true;
+
+  const geo = getRouteGeometry(fp);
+  const k = Math.max(1, geo.pts.findIndex((p, i) => i > 0 && p.code === est.fix));
+  const p = geo.pts[Math.min(k, geo.pts.length - 1)];
+  const sig = geo.pts[k + 1] || p;
+  const trk = bearingBetween(p.lat, p.lon, sig.lat, sig.lon);
+  fp._distFlown = geo.cumDist[Math.min(k, geo.cumDist.length - 1)];
+  fp._pos = { lat: p.lat, lon: p.lon };
+  fp._prevPos = { lat: p.lat, lon: p.lon };
+  fp._track = trk; fp._hdg = trk;
+  fp._gs = parseSpeedKnots(est.speed);   // el primer reporte sobre el FIX estima con esta velocidad
+  const ft = parseLevelFt(est.level);
+  if(ft != null) fp._altFt = ft;
+  fp._remainingNM = Math.max(0, geo.cumDist[geo.cumDist.length - 1] - fp._distFlown);
+  fp._nextReportIdx = k;
+
+  const ahora = nowSimMs();
+  const minEstimado = diffMinutesHHMM(fp.eobt, est.hora) || 0;
+  fp._sim = { startReal: ahora - minEstimado * 60000, totalMin: calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level) };
+  fp._lastSimMs = ahora;
+  const filas = computeEstimates(fp);
+  const etoFix = filas[k - 1] ? filas[k - 1].etoMin : 0;
+  fp._desfaseMin = minEstimado - Math.round(etoFix);
+  fp.eta = horaSobrePunto(fp, filas.length ? filas[filas.length - 1].etoMin : etoFix);
+  fp.departed = true;
+  fp.status = 'ACTIVE';
+
+  // La estela del radar no debe unir la posición anterior con el FIX de un salto.
+  const capa = mapLayers[fp.flightId];
+  if(capa && capa.trail){ capa._trailPts = []; capa.trail.setLatLngs([]); }
+
+  logFlight(fp, `CREATE CURRENT — ${fp.flightId} activo sobre ${est.fix} a las ${est.hora}Z, ${est.level}. `
+    + `Ruta en vigor: ${ruta}. ETA ${fp.dest} ${fp.eta}Z.`
+    + (enRuta ? '' : ` ${est.fix} no figuraba en la ruta: desde él continúa directo a ${fp.dest}.`), 'FP OPERATION');
+  renderSidebar();
+  if(document.getElementById('win-strips').classList.contains('open')) renderStrips();
+  return enRuta;
+}
+
+function fpUpdate(opciones){
+  const aceptar = !!(opciones && opciones.aceptarAvisos);
+  if(currentMode === 'VIEW') return buscarPlanFP();
+  if(currentMode === 'ATD') return fpRegistrarATD();
+  if(currentMode === 'ATA') return fpRegistrarATA();
+  if(currentMode === 'CURRENT' && currentFP) return fpCreateCurrent(currentFP, aceptar);
+
+  const leido = leerPlanDelFormulario();
+  if(!leido.ok) return flashFP('err', 'Errores en casillas obligatorias: ' + leido.errors.join(' · '));
+  const fp = leido.fp;
+  let est = null;
+  if(currentMode === 'CURRENT'){
+    est = leerEstimado(fp.speed);
+    if(!est.ok) return flashFP('err', 'Errores en el estimado: ' + est.errors.join(' · '));
   }
 
-  // EET (casilla 16) por distancia real Haversine + velocidad y nivel declarados; la ETA es
-  // EOBT + EET y se usa solo para el seguimiento en pantalla, no para el mensaje.
-  const eetMin = calculateRealisticETA(fp.dep, fp.dest, fp.speed, fp.level);
-  fp.eet = /^\d{4}$/.test(v('f_eta')) ? v('f_eta') : minutesToHHMM(eetMin);
-  const eetMinReal = parseInt(fp.eet.slice(0,2),10)*60 + parseInt(fp.eet.slice(2),10);
-  fp.eta = addMinutesToHHMM(fp.eobt, eetMinReal);
+  // Normativa del AIP (sentido de niveles de ENR 3 y reglas de ENR 2.1): avisa, no bloquea.
+  const avisos = est ? avisosNormativos(planActivadoSobre(fp, est), { enVuelo: true }) : avisosNormativos(fp);
+  if(avisos.length && !aceptar) return mostrarAvisos('fpFlash', avisos, 'fpUpdate({aceptarAvisos:true})');
+  if(!confirmarReemplazo(fp.flightId)) return flashFP('err', `No se transmitió: ya hay un plan ${fp.flightId}. Cambia el FLIGHT ID para crear otro plan.`);
 
   registerFlightPlan(fp, true);
-  flashFP('ok', `Plan ${fp.flightId} creado y transmitido. EET ${fp.eet} → ETA ${fp.eta}Z. Consulta FP HISTORY.`);
+  anotarAvisosAceptados(fp, avisos);
+  if(est){
+    const enRuta = activarPlanSobreFix(fp, est);
+    openFPOperationView(fp);
+    return flashFP('ok', `Plan ${fp.flightId} creado y activo sobre ${est.fix} a las ${est.hora}Z. ETA ${fp.dest} ${fp.eta}Z.`
+      + (enRuta ? '' : ` ${est.fix} no estaba en la ruta: sigue directo a ${fp.dest}.`));
+  }
   openFPOperationView(fp);
+  flashFP('ok', `Plan ${fp.flightId} creado y transmitido. EET ${fp.eet} → ETA ${fp.eta}Z. Consulta FP HISTORY.`);
+}
+
+// CREATE CURRENT sobre el plan cargado.
+function fpCreateCurrent(fp, aceptar){
+  if(fp.landed || fp.collided) return flashFP('err', `${fp.flightId} ya ${fp.landed ? 'aterrizó' : 'terminó en colisión'}: no se puede activar de nuevo.`);
+  const speed = document.getElementById('f_speed').value.trim().toUpperCase();
+  if(!SPEED_REGEX.test(speed)){ marcarInvalido('f_speed'); return flashFP('err', 'SPEED con formato incorrecto (N0250, K0460 o M082).'); }
+  const est = leerEstimado(speed);
+  if(!est.ok) return flashFP('err', 'Errores en el estimado: ' + est.errors.join(' · '));
+  const avisos = avisosNormativos(planActivadoSobre(fp, est), { enVuelo: true });
+  if(avisos.length && !aceptar) return mostrarAvisos('fpFlash', avisos, 'fpUpdate({aceptarAvisos:true})');
+  anotarAvisosAceptados(fp, avisos);
+  const enRuta = activarPlanSobreFix(fp, est);
+  openFPOperationView(fp);
+  flashFP('ok', `${fp.flightId} activo sobre ${est.fix} a las ${est.hora}Z, ${est.level}. Ruta actualizada; ETA ${fp.dest} ${fp.eta}Z.`
+    + (enRuta ? '' : ` ${est.fix} no estaba en la ruta: sigue directo a ${fp.dest}.`));
+}
+
+// ATD: hora real de salida. Si el plan aún no había salido, sale ahora. El reloj del vuelo, que
+// arranca en la EOBT, se corre para que la salida quede a la hora registrada, y la ETA pasa a ser
+// ATD + EET. En un plan activado con CREATE CURRENT la hora ya está fijada sobre el FIX, así que la
+// ATD solo se anota.
+function fpRegistrarATD(){
+  const fp = currentFP;
+  if(!fp) return flashFP('err', MSG_BUSCAR_PLAN);
+  const hora = document.getElementById('f_atd').value.trim();
+  if(!RE_HHMM.test(hora)){ marcarInvalido('f_atd'); return flashFP('err', 'ATD: escribe la hora real de salida en HHMM (UTC), por ejemplo 1850.'); }
+  if(fp.collided) return flashFP('err', `${fp.flightId} terminó en colisión: no admite más registros.`);
+  if(fp.landed) return flashFP('err', `${fp.flightId} ya aterrizó (ATA ${fp.ata || '—'}Z): su ATD ya no se puede cambiar.`);
+  const previa = fp.atd || null;
+  if(!fp.departed) fpDepart(fp.flightId);
+  if(!fp._current){
+    const delta = diffMinutesHHMM(previa || fp.eobt, hora) || 0;
+    fp._sim.startReal -= delta * 60000;
+    fp._desfaseMin = (fp._desfaseMin || 0) + delta;
+    fp.eta = addMinutesToHHMM(hora, minutosDeHHMM(fp.eet));
+  }
+  fp.atd = hora;
+  logFlight(fp, `ATD — ${fp.flightId} salió de ${fp.dep} a las ${hora}Z${previa && previa !== hora ? ` (corrige ${previa}Z)` : ''}. ETA ${fp.dest} ${fp.eta}Z.`, 'FP OPERATION');
+  renderSidebar();
+  if(document.getElementById('win-strips').classList.contains('open')) renderStrips();
+  openFPOperationView(fp);
+  flashFP('ok', `ATD ${hora}Z registrada para ${fp.flightId}. ETA ${fp.dest} ${fp.eta}Z. Queda anotada en FP HISTORY.`);
+}
+
+// ATA: hora real de llegada. Cierra el plan (la aeronave sale del tránsito) o corrige la ATA.
+function fpRegistrarATA(){
+  const fp = currentFP;
+  if(!fp) return flashFP('err', MSG_BUSCAR_PLAN);
+  const hora = document.getElementById('f_estTime').value.trim();
+  if(!RE_HHMM.test(hora)){ marcarInvalido('f_estTime'); return flashFP('err', 'ATA: escribe en ESTIMATE TIME la hora real de llegada en HHMM (UTC), por ejemplo 1952.'); }
+  if(fp.collided) return flashFP('err', `${fp.flightId} terminó en colisión: no admite más registros.`);
+  if(!fp.departed) return flashFP('err', `${fp.flightId} todavía no ha salido: registra primero el ATD.`);
+  if(fp.landed){
+    const previa = fp.ata;
+    fp.ata = hora;
+    logFlight(fp, `ATA — ${fp.flightId} en ${fp.dest}: hora de llegada corregida ${previa || '—'}Z → ${hora}Z.`, 'FP OPERATION');
+    renderSidebar();
+  } else {
+    landFlight(fp, hora);
+  }
+  openFPOperationView(fp);
+  flashFP('ok', `ATA ${hora}Z registrada: ${fp.flightId} en ${fp.dest}. El plan queda cerrado y anotado en FP HISTORY.`);
+}
+
+// Un plan nuevo con el FLIGHT ID de otro ya existente lo reemplazaría: se pregunta antes, en vez de
+// pisarlo en silencio (pasaba al escribir un segundo FREE TEXT con el mismo indicativo).
+function confirmarReemplazo(flightId){
+  const ex = flightPlans.find(p => p.flightId === flightId);
+  if(!ex) return true;
+  const estado = ex.collided ? 'terminó en colisión'
+    : ex.landed ? `aterrizó a las ${ex.ata || '—'}Z`
+    : ex.departed ? 'está EN VUELO'
+    : `está programado para las ${ex.eobt}Z`;
+  return confirm(`Ya existe un plan de vuelo ${flightId} (${ex.dep} → ${ex.dest}), que ${estado}.\n\n`
+    + 'Aceptar: reemplazarlo por este (su historial se conserva).\n'
+    + 'Cancelar: no transmitir. Para tener los dos planes, cambia el FLIGHT ID.');
+}
+
+/* ===================== AVISOS NORMATIVOS (no bloquean) =====================
+   Reglas del AIP que se pueden comprobar con los datos del plan. Se aplican SIN ser restrictivas
+   (pedido del usuario): se avisa del posible error citando la fuente y el operador decide si
+   acepta el plan igualmente; lo aceptado queda anotado en FP HISTORY.
+   Fuente: eAIP Colombia, AIRAC AMDT 73/26 (vigente desde el 01 OCT 2026), ENR 2.1 y ENR 3.
+   Los aeródromos de cada TMA se obtuvieron con el ARP de AD 2 dentro del contorno publicado en
+   ENR 2.1. */
+const TMA_ENR21 = {
+  BOGOTA:        ['SKBO','SKGI','SKGY','SKIB','SKMZ','SKQU'],
+  MEDELLIN:      ['SKEB','SKMD','SKRG'],
+  BUCARAMANGA:   ['SKBG','SKEJ','SKPA','SKSG'],
+  YOPAL:         ['SKYP','SQUJ'],
+  VILLAVICENCIO: ['SKAP','SKVV','SQHK'],
+  NEIVA:         ['SKNV'],
+  CALI:          ['SKBU','SKCL','SKGB','SKHA','SKPP','SKUL'],
+  PEREIRA:       ['SKAR','SKGO','SKPE'],
+  BARRANQUILLA:  ['SKBQ','SKCG','SKCZ','SKMG','SKML','SKMR','SKSM','SKTL'],
+  BARRANQUILLA_SUR: ['SKCZ','SKMG','SKML','SKMR'],   // sector sur (3.1.12)
+};
+// 4.1.11: TMA adyacentes a la de Bogotá (RNG, BGA, EYP, VVC, NVA, CLO, PEI), con su nombre.
+const TMA_ADYACENTES_BOG = { MEDELLIN:'Medellín', BUCARAMANGA:'Bucaramanga', YOPAL:'Yopal', VILLAVICENCIO:'Villavicencio', NEIVA:'Neiva', CALI:'Cali', PEREIRA:'Pereira' };
+// Sectores SE y SW de la UTA Bogotá, con los vértices publicados en la tabla de ENR 2.1 ([lat, lon]).
+// Los tramos «siguiendo la frontera» se cierran en recta: basta para saber si una ruta entra en el
+// sector (9.2.7 habla del tránsito HACIA esos sectores, también del que solo los atraviesa).
+const UTA_BOG_SECTORES = {
+  SE: [[4.6761,-74.1025],[4.0278,-73.0147],[3.4,-67.3167],[-4.195,-69.9406],[-1.775,-73.2167],[0.7125,-74.11],[4.7033,-74.3086]],
+  SW: [[7.2472,-77.88],[6.1228,-77.0042],[4.09,-76.2236],[4.7839,-74.7675],[4.7033,-74.3086],[0.7125,-74.11],[-1.775,-73.2167],[-1,-74.025],
+       [1.4139,-78.8297],[1.4167,-78.8333],[1.4139,-82.9136],[4.5306,-82.9136],[4.4972,-79.9967],[6.2639,-79.0467],[6.4639,-78.78],[6.7306,-78.2967]],
+};
+const RIONEGRO_MEDELLIN = ['SKRG','SKMD'];
+
+function dentroDePoligono(lat, lon, pol){
+  let dentro = false;
+  for(let i = 0, j = pol.length - 1; i < pol.length; j = i++){
+    const [yi, xi] = pol[i], [yj, xj] = pol[j];
+    if((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+// Sectores SE/SW de la UTA Bogotá por los que pasa la ruta («SW», «SE» o «SW y SE»), revisándola
+// cada ~10 NM por la ortodrómica.
+function sectorUtaBogDeRuta(pts){
+  const vistos = [];
+  for(let i = 0; i + 1 < pts.length; i++){
+    const n = Math.max(1, Math.ceil(getDistanceNM(pts[i].lat, pts[i].lon, pts[i + 1].lat, pts[i + 1].lon) / 10));
+    for(let k = 1; k <= n; k++){
+      const p = gcIntermedio(pts[i], pts[i + 1], k / n);
+      for(const s of ['SW', 'SE']) if(!vistos.includes(s) && dentroDePoligono(p.lat, p.lon, UTA_BOG_SECTORES[s])) vistos.push(s);
+    }
+  }
+  return vistos.join(' y ');
+}
+
+// Casilla 10b con ADS-B: B1, B2, U1, U2, V1, V2, o Mode S con squitter ampliado (E, L).
+function declaraADSB(surv){ const s = (surv || '').toUpperCase(); return /[BUV][12]/.test(s) || /[EL]/.test(s); }
+
+// opciones.enVuelo: el plan se está activando ya en vuelo (CREATE CURRENT), así que no se revisan
+// las coordinaciones previas al despegue.
+function avisosNormativos(fp, opciones){
+  const avisos = [];
+  const add = (ref, texto) => avisos.push({ ref, texto });
+  const ft = parseLevelFt(fp.level);
+  const nivel = (fp.level || '').toUpperCase();
+  const dep = fp.dep, dest = fp.dest;
+  const en = (lista, ad) => lista.includes(ad);
+  const vfr = fp.rules === 'V';
+
+  // Sentido de los niveles de crucero publicado tramo a tramo (ENR 3). Un nivel que no encaja no
+  // invalida el plan (hay excepciones autorizadas), pero el controlador debe verlo.
+  const dir = checkCruisingLevelDirection(fp, fp.level);
+  if(dir) add(`ENR 3, ${dir.airway ? dir.airway + ' ' : ''}${dir.tramo}`, dir.sentidoUnico
+    ? 'El tramo es de sentido único y el AIP no lo publica en la dirección en que lo recorre esta ruta.'
+    : `El nivel ${nivel} no corresponde al sentido publicado: en esa dirección el tramo admite niveles ${dir.exige}.`);
+
+  // Niveles máximos de gestión de afluencia (ENR 2.1).
+  const tope = (ref, maxFt, etiqueta, trayecto) => {
+    if(ft != null && ft > maxFt) add(`ENR 2.1, ${ref}`, `${trayecto}: nivel máximo utilizable ${etiqueta}; el plan pide ${nivel}.`);
+  };
+  const adyacente = Object.keys(TMA_ADYACENTES_BOG).find(t => en(TMA_ENR21[t], dest));
+  if(en(TMA_ENR21.BOGOTA, dep) && adyacente) tope('4.1.11', 24000, 'FL240', `Salida de la TMA Bogotá hacia un aeródromo de la TMA ${TMA_ADYACENTES_BOG[adyacente]}`);
+  if(en(RIONEGRO_MEDELLIN, dep) && dest === 'SKBG') tope('5.2.1 y 9.2.3', 23000, 'FL230', 'Desde Rionegro y Medellín con destino Bucaramanga');
+  if(dep === 'SKBG' && en(RIONEGRO_MEDELLIN, dest)) tope('5.2.2 y 9.2.4', 24000, 'FL240', 'Desde Bucaramanga con destino Rionegro y Medellín');
+  if(en(TMA_ENR21.MEDELLIN, dep) && en(TMA_ENR21.CALI, dest)) tope('6.2.1 y 9.2.1', 22000, '22 000 ft', 'De la TMA Medellín hacia la TMA Cali');
+  if(en(TMA_ENR21.CALI, dep) && en(TMA_ENR21.MEDELLIN, dest)) tope('6.2.2 y 9.2.2', 23000, '23 000 ft', 'De la TMA Cali hacia la TMA Medellín');
+  if(en(RIONEGRO_MEDELLIN, dep) && dest === 'SKCC') tope('7.2.1 y 9.2.5', 29000, 'FL290', 'Desde Rionegro y Medellín con destino Cúcuta');
+  if(dep === 'SKCC' && en(RIONEGRO_MEDELLIN, dest)) tope('7.2.2 y 9.2.6', 30000, 'FL300', 'Desde Cúcuta con destino Rionegro y Medellín');
+
+  // Puntos por los que pasa la ruta, para las reglas que dependen de ella.
+  const geo = getRouteGeometry(fp);
+  const pts = geo ? geo.pts : [];
+  const legs = geo ? geo.legs || [] : [];
+
+  // Rionegro/Medellín → UTA Bogotá SE o SW (destino o tránsito) a FL245 o más: vía PEI.
+  if(en(RIONEGRO_MEDELLIN, dep) && ft != null && ft >= 24500 && !pts.some(p => p.code === 'PEI')){
+    const sector = sectorUtaBogDeRuta(pts);
+    if(sector) add('ENR 2.1, 9.2.7 y observaciones de ACC/SE y ACC/SW Bogotá',
+      `El tránsito desde Rionegro y Medellín hacia la UTA Bogotá ${sector.includes(' y ') ? 'sectores' : 'sector'} ${sector} a FL245 o superior se encamina vía PEI con conexión a la ruta propuesta, y esta ruta no pasa por PEI.`);
+  }
+
+  // ADS-B por encima de FL290 en las UTA Barranquilla y Bogotá.
+  if(ft != null && ft > 29000 && (/^S[KQ]/.test(dep || '') || /^S[KQ]/.test(dest || '')) && !declaraADSB(fp.surv))
+    add('ENR 2.1, UTA Barranquilla y UTA Bogotá',
+      `Las aeronaves que evolucionen en esas UTA por encima de FL290 deben usar equipo ADS-B, y la casilla 10b (${fp.surv || '—'}) no declara ninguno (B1, B2, U1, U2, V1, V2, E o L).`);
+
+  // Mariquita (MQU): sentido preferencial sur.
+  const iM = pts.findIndex(p => p.code === 'MQU');
+  if(iM > 0 && iM < pts.length - 1 && ft != null && ft > 14000 && pts[iM + 1].lat > pts[iM - 1].lat)
+    add('ENR 2.1, TMA Bogotá: rutas ATS con sentido preferencial',
+      'Por saturación sobre el VOR/DME de Mariquita (MQU), con sentido sur, el ATC no autoriza el sentido norte a aeronaves que propongan niveles por encima de 14 000 ft.');
+
+  // TMA Yopal: W24 (entre EYP y ZIP) preferencial oeste; W39 preferencial este.
+  const W24_EYP_ZIP = ['ZIP','SIRUG','SUPNU','EYP'];
+  for(let i = 0; i + 1 < pts.length; i++){
+    const leg = legs[i];
+    if(!leg) continue;
+    const haciaEste = deltaLon(pts[i].lon, pts[i + 1].lon) > 0;
+    if(leg.airway === 'W24' && en(W24_EYP_ZIP, pts[i].code) && en(W24_EYP_ZIP, pts[i + 1].code) && haciaEste){
+      add('ENR 2.1, 8.1.3', 'W24 entre el VOR EYP y el VOR/DME ZIP tiene sentido preferencial oeste, y esta ruta la recorre hacia el este.');
+      break;
+    }
+  }
+  for(let i = 0; i + 1 < pts.length; i++){
+    const leg = legs[i];
+    if(leg && leg.airway === 'W39' && deltaLon(pts[i].lon, pts[i + 1].lon) < 0){
+      add('ENR 2.1, 8.1.3', 'W39 tiene sentido preferencial oriente (este), y esta ruta la recorre hacia el oeste.');
+      break;
+    }
+  }
+
+  // VFR en la TMA Bogotá.
+  if(vfr && (en(TMA_ENR21.BOGOTA, dep) || en(TMA_ENR21.BOGOTA, dest)) && ft != null && ft > 11500)
+    add('ENR 2.1, 4.1.4', 'Los vuelos VFR dentro de la TMA Bogotá se mantienen a o por debajo de 11 500 ft, salvo al cruzar la Cordillera Central vía EL PASO o LETRAS (hasta 14 500 ft o 500 ft por debajo de la MEA) o hacia los Llanos vía GUATEQUE (hasta 13 500 ft).');
+
+  // TMA Barranquilla: sector sur limitado para VFR y espacio clase G bajo 1 500 ft (Anexo B).
+  if(vfr && (en(TMA_ENR21.BARRANQUILLA_SUR, dep) || en(TMA_ENR21.BARRANQUILLA_SUR, dest)) && ft != null && ft > 3500)
+    add('ENR 2.1, 3.1.12', 'TMA Barranquilla sector sur limitado: el tránsito VFR sin autorización del ATC se mantiene a 3 500 ft o menos.');
+  if(vfr && (en(TMA_ENR21.BARRANQUILLA, dep) || en(TMA_ENR21.BARRANQUILLA, dest)) && ft != null && ft <= 1500)
+    add('ENR 2.1, TMA Barranquilla, Anexo B', 'Desde GND hasta 1 500 ft el espacio es clase G (región de información de vuelo): no hay control ATC; el servicio lo presta BARRANQUILLA INFORMACIÓN en 127.5 MHz.');
+
+  // Base Aérea de Apiay (Gómez Niño).
+  if((fp.altn || '').split(/\s+/).includes('SKAP'))
+    add('ENR 2.1, 13.1.6', 'El aeropuerto de la Base Aérea de Apiay (Gómez Niño, SKAP) no se utilizará como alterno.');
+  if(dest === 'SKAP')
+    add('ENR 2.1, 13.1.12', 'Para aterrizar en Gómez Niño (SKAP), dentro de SKR12 y SKP29, la autorización la da la Dirección de Operaciones Aéreas de la FAC, por escrito y con 72 horas de antelación.');
+
+  // Salidas de Leticia: coordinación de la torre antes del despegue. No aplica a un plan que se
+  // activa ya en vuelo (CREATE CURRENT).
+  if(dep === 'SKLT' && !(opciones && opciones.enVuelo)){
+    const faltan = RE_HHMM.test(fp.eobt || '') ? diffMinutesHHMM(nowHHMMZulu(), fp.eobt) : null;
+    if(!vfr && faltan != null && faltan < 15)
+      add('ENR 2.1, 1.3.5.1', `Para despegar de SKLT en IFR, la torre debe notificar a Control Bogotá (SE) al menos 15 minutos antes del EOBT; con EOBT ${fp.eobt}Z ${faltan < 0 ? 'esa hora ya pasó' : `faltan ${faltan} min`}.`);
+    if(vfr || (ft != null && ft < 17500))
+      add('ENR 2.1, 1.3.5.2', 'Para despegar de SKLT en VFR, o en IFR por debajo de 17 500 ft, la torre debe notificar a VVC INFORMACIÓN SUR.');
+  }
+
+  // VFR hacia la Base Militar Marco Fidel Suárez (SKGB), junto a la zona restringida SKR5.
+  if(vfr && dest === 'SKGB')
+    add('ENR 2.1, 6.1.10', 'El tránsito VFR que procede hacia la Base Militar Marco Fidel Suárez debe comunicar en las frecuencias militares: sobre BUGA el procedente del norte y sobre SANTANDER el procedente del sur.');
+
+  // Entrada a la TMA Palanquero (zona restringida SK-R10).
+  const PUERTAS_PQE = ['EDSID','TOLOD','SAVGA','PUDSU'];
+  const puerta = pts.find(p => en(PUERTAS_PQE, p.code));
+  if(dest === 'SKPQ')
+    add('ENR 2.1, 14.1.2 a 14.1.4', 'Con destino SKPQ: no se entra al área SK-R10 sin haber recibido y colacionado la autorización; hay que llamar a Palanquero Control (127,9 MHz) 10 minutos antes de ingresar al área restringida y a German Olano Torre (126,3 MHz) 10 minutos antes de entrar en la TMA.');
+  else if(puerta)
+    add('ENR 2.1, 14.1.4', `La ruta entra en la TMA Palanquero por ${puerta.code}: hay que comunicar con German Olano Torre (126,3 MHz) 10 minutos antes.`);
+
+  return avisos;
+}
+
+// Panel de avisos: no rechaza el plan. «accionAceptar» vuelve a transmitirlo aceptando los avisos.
+function mostrarAvisos(elId, avisos, accionAceptar){
+  const el = document.getElementById(elId);
+  el.className = 'msg-flash aviso';
+  el.style.display = 'block';
+  el.innerHTML = `<b>⚠ AVISOS NORMATIVOS (${avisos.length})</b> — revisa el plan. No es un rechazo: si lo mantienes, acéptalo y se transmite igual; los avisos quedan anotados en FP HISTORY.`
+    + `<ul class="aviso-lista">${avisos.map(a => `<li><span class="aviso-ref">${escapeHtml(a.ref)}</span> — ${escapeHtml(a.texto)}</li>`).join('')}</ul>`
+    + `<div class="aviso-botones"><button type="button" class="wbtn" onclick="${accionAceptar}">ACEPTAR Y TRANSMITIR</button>`
+    + `<button type="button" class="wbtn" onclick="this.closest('.msg-flash').style.display='none'">CORREGIR</button></div>`;
+}
+function anotarAvisosAceptados(fp, avisos){
+  if(!avisos.length) return;
+  fp.history.push({ ts: nowStampHeader(), source: 'SISTEMA',
+    text: 'Avisos normativos aceptados por el operador:\n' + avisos.map(a => `• ${a.ref} — ${a.texto}`).join('\n') });
+  renderHistoryWindow(fp.flightId);
 }
 
 /* ===================== REGISTRO ===================== */
@@ -6693,10 +7261,14 @@ function buildICAOText(fp){
 function registerFlightPlan(fp, viaForm){
   const existing = flightPlans.find(p=>p.flightId===fp.flightId);
   const entry = { ts: nowStampHeader(), text: buildICAOText(fp), source: viaForm ? 'FP OPERATION' : 'FREE AFTN' };
-  if(existing){ fp.history = existing.history; fp.history.push(entry); flightPlans[flightPlans.indexOf(existing)] = fp; }
+  if(existing){
+    // El plan reemplazado deja de simularse: su ruta y su avión no pueden quedarse en el mapa.
+    removeFlightFromMap(existing.flightId);
+    fp.history = existing.history; fp.history.push(entry); flightPlans[flightPlans.indexOf(existing)] = fp;
+  }
   else { fp.history = [entry]; flightPlans.push(fp); }
   // Procedencia de lo que no sale de un AIP: el estudiante debe saber qué posiciones son de referencia.
-  const r = resolverRuta(fp.dep, fp.route, fp.dest);
+  const r = resolverRuta(fp.dep, rutaGeometrica(fp.route), fp.dest);
   if(r.referencia.length){
     fp.history.push({ ts: nowStampHeader(), source: 'SISTEMA',
       text: `Posición de referencia (OurAirports, no del AIP) para: ${r.referencia.join(', ')}. El resto de la ruta sale del eAIP de Colombia y de los AIP cargados.` });
@@ -6787,10 +7359,19 @@ function aftnClear(){
 // Carga en el editor AFTN un mensaje FPL de ejemplo, correcto y con datos reales del AIP: el
 // estudiante que abre el simulador por primera vez tenía el ejemplo únicamente como placeholder,
 // que desaparecía al escribir la primera letra y no se podía copiar.
+// El ejemplo usaba siempre AVA9755: cargarlo dos veces creaba el mismo plan y el segundo
+// reemplazaba al primero. Ahora toma un número de vuelo que no esté en uso.
+function indicativoLibre(prefijo){
+  for(let i = 0; i < 200; i++){
+    const id = prefijo + (1000 + Math.floor(Math.random() * 9000));
+    if(!flightPlans.some(p => p.flightId === id)) return id;
+  }
+  return prefijo + '9755';
+}
 function aftnLoadExample(){
   document.getElementById('aftnFreeText').value =
-    '(FPL-AVA9755-IS\n'
-  + '-A320/M-SDE3FGHIRWY/C\n'
+    '(FPL-' + indicativoLibre('AVA') + '-IS\n'
+  + '-A320/M-SDE3FGHIRWY/LB1\n'   // ADS-B: obligatorio por encima de FL290 en las UTA (ENR 2.1)
   + '-SKBO' + nowHHMMZulu() + '\n'
   + '-N0450F340 BOG DCT BUV DCT ILSEV DCT BAQ DCT\n'
   + '-SKBQ0110\n'
@@ -6880,7 +7461,8 @@ function parseICAOText(raw){
 // no había forma de distinguir lo ya resuelto de lo pendiente.
 let retryingQueueId = null;
 
-function aftnTrans(){
+function aftnTrans(opciones){
+  const aceptar = !!(opciones && opciones.aceptarAvisos);
   const raw = document.getElementById('aftnFreeText').value;
   if(!raw.trim()) return flashAFTN('err', 'El campo está vacío.');
   const result = parseICAOText(raw); aftnFill();
@@ -6897,13 +7479,26 @@ function aftnTrans(){
     renderQueue(); openWindow('win-queue');
     return flashAFTN('err', 'MENSAJE ENCOLADO —<br>• ' + result.errors.map(escapeHtml).join('<br>• '));
   }
+  // Normativa del AIP: avisa, no rechaza (el mensaje es válido; el operador decide).
+  const avisos = avisosNormativos(result.fp);
+  if(avisos.length && !aceptar) return mostrarAvisos('aftnFlash', avisos, 'aftnTrans({aceptarAvisos:true})');
+  if(!confirmarReemplazo(result.fp.flightId)){
+    return flashAFTN('err', `No se transmitió: ya hay un plan ${escapeHtml(result.fp.flightId)}. `
+      + 'Cambia el indicativo (primera línea) para crear otro plan, o vuelve a pulsar TRANS y acepta el reemplazo.');
+  }
   if(retryingQueueId != null){
     queue = queue.filter(x=>x.id !== retryingQueueId);
     retryingQueueId = null;
     renderQueue();
   }
   registerFlightPlan(result.fp, false);
-  flashAFTN('ok', `Plan de vuelo ${escapeHtml(result.fp.flightId)} aceptado. EET ${escapeHtml(result.fp.eet||'—')} → ETA ${escapeHtml(result.fp.eta||'—')}Z.`);
+  anotarAvisosAceptados(result.fp, avisos);
+  // El editor queda libre para el mensaje siguiente, como en un terminal AFTN: el transmitido ya
+  // está en FP HISTORY y en la lista de planes. Antes se quedaba escrito y, al editarlo para el
+  // plan siguiente sin cambiar el indicativo, el nuevo reemplazaba al anterior sin avisar.
+  document.getElementById('aftnFreeText').value = '';
+  flashAFTN('ok', `Plan de vuelo ${escapeHtml(result.fp.flightId)} aceptado. EET ${escapeHtml(result.fp.eet||'—')} → ETA ${escapeHtml(result.fp.eta||'—')}Z. `
+    + 'El editor quedó libre para el siguiente mensaje; el transmitido está en FP HISTORY.');
 }
 
 /* ===================== PLANES ACTIVADOS DESDE EL SIMULADOR DE PLAN DE VUELO =====================
@@ -7212,6 +7807,7 @@ function renderStrips(){
         <button class="wbtn" style="padding:4px 10px;font-size:.62rem" onclick="event.stopPropagation(); openEstimatesFor('${fp.flightId}')">ESTIMADOS</button>
         <button class="wbtn" style="padding:4px 10px;font-size:.62rem" onclick="event.stopPropagation(); openHistoryFor('${fp.flightId}')">HISTORY</button>
         <button class="wbtn" style="padding:4px 10px;font-size:.62rem" onclick="event.stopPropagation(); openMeteoFor('${fp.flightId}')">METEO</button>
+        <button class="wbtn" style="padding:4px 10px;font-size:.62rem" onclick="event.stopPropagation(); imprimirFichaDe('${fp.flightId}')" title="Imprimir esta ficha o guardarla en PDF">🖨 PDF</button>
       </div>
     </div>`;
   }).join('');
@@ -7262,6 +7858,10 @@ function computeEstimates(fp){
   return filas;
 }
 
+// Hora sobre un punto a partir de los minutos desde el inicio de la ruta. La base es la EOBT,
+// desplazada cuando se registra la ATD real o se activa el plan con CREATE CURRENT (_desfaseMin).
+function horaSobrePunto(fp, etoMin){ return addMinutesToHHMM(fp.eobt, (fp._desfaseMin || 0) + Math.round(etoMin)); }
+
 function openEstimatesFor(flightId){ estFlightId = flightId; renderEstimates(); openWindow('win-est'); }
 function openEstimates(){
   if(!estFlightId) estFlightId = selectedFlightId || (currentFP && currentFP.flightId) || (flightPlans[0] && flightPlans[0].flightId);
@@ -7304,7 +7904,7 @@ function renderEstimates(){
           <td>${Math.round(f.gs)}</td>
           <td>${f.mea ? f.mea.toLocaleString('es-CO') : '—'}</td>
           <td>${f.airspace ? escapeHtml(f.airspace) : '—'}</td>
-          <td>${addMinutesToHHMM(fp.eobt, Math.round(f.etoMin))}Z</td>
+          <td>${horaSobrePunto(fp, f.etoMin)}Z</td>
         </tr>`).join('')}
       </tbody>
     </table></div>
@@ -7527,6 +8127,93 @@ function renderDebrief(){
 }
 function openDebrief(){ renderDebrief(); openWindow('win-debrief'); }
 
+/* ---------- DOCUMENTOS IMPRIMIBLES (PDF) ----------
+   Piezas comunes del debrief, de la ficha de progreso y del plan de vuelo impresos: tipografías,
+   paleta clara literal, banda de marca y pie con la autoría. Se imprimen en un IFRAME oculto y el
+   propio navegador ofrece «Guardar como PDF» (ver exportarDebriefPDF). */
+const PDF_FUENTES = `<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">`;
+const PDF_CSS_BASE = `:root{
+        --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB; --accent:#1657C6; --navy:#0A2647;
+        --text:#0F1B2D; --text-muted:#5B6B7F; --hairline:#E1E7EF;
+        --danger:#D64545; --vfr:#2E9E6D; --warn:#E08E3E;
+      }
+      @page { margin: 14mm; }
+      /* Sin esto el navegador descarta los fondos al imprimir y la cabecera de marca sale en
+         blanco: es justo lo que se ha pedido que se vea. */
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      body{ font-family:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; color:var(--text);
+            font-size:11px; line-height:1.55; margin:0; }
+      h1,h2,h3,h4{ font-family:'Archivo', sans-serif; margin:0; }
+
+      /* ---- cabecera de marca (mismo lenguaje que el encabezado de las ventanas del CWP) ---- */
+      .marca{ background:linear-gradient(90deg, var(--accent), var(--navy)); color:#fff;
+              padding:13px 16px; border-radius:8px; display:flex; align-items:center; gap:12px; }
+      .marca-logo{ width:34px; height:34px; flex:none; color:#fff; }
+      .marca-logo svg{ display:block; }
+      .marca-nombre{ font-family:'Archivo', sans-serif; font-weight:800; font-size:16px; letter-spacing:.02em; line-height:1.15; }
+      .marca-sub{ font-family:'IBM Plex Mono', monospace; font-size:8.5px; letter-spacing:.08em;
+                  opacity:.85; text-transform:uppercase; }
+      .marca-doc{ margin-left:auto; text-align:right; font-family:'IBM Plex Mono', monospace; font-size:9px; opacity:.95; }
+      .titulo{ margin:14px 0 2px; font-size:15px; color:var(--navy); }
+      .titulo-sub{ color:var(--text-muted); font-size:10px; margin-bottom:10px;
+                   font-family:'IBM Plex Mono', monospace; }
+      .pie{ margin-top:16px; border-top:2px solid var(--accent); padding-top:7px;
+            font-size:8.5px; color:var(--text-muted); line-height:1.6; }
+      .pie b{ color:var(--navy); }`;
+function marcaPdfHtml(sello){
+  return `<div class="marca">
+      <div class="marca-logo">
+        <!-- Mismo distintivo que el encabezado del portal, en blanco sobre la banda de marca. -->
+        <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--navy)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="marca-nombre">SoyAeronáutico</div>
+        <div class="marca-sub">Portal AIS · COM · MET</div>
+      </div>
+      <div class="marca-doc">CWP 6 · Simulador NALA<br>${sello}</div>
+    </div>`;
+}
+function piePdfHtml(anio){
+  return `<div class="pie">
+      Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.<br>
+      Creado por <b>Cristian Arcila</b> · © ${anio} — Todos los derechos reservados
+    </div>`;
+}
+function imprimirEnMarco(doc){
+  const marco = document.createElement('iframe');
+  marco.setAttribute('aria-hidden', 'true');
+  marco.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
+  document.body.appendChild(marco);
+  const idoc = marco.contentWindow.document;
+  idoc.open(); idoc.write(doc); idoc.close();
+  // Se espera al load del iframe: imprimir antes de que el documento esté compuesto saca páginas
+  // en blanco en Chrome.
+  const lanzar = ()=>{
+    marco.contentWindow.focus();
+    marco.contentWindow.print();
+    // El diálogo de impresión es modal y bloquea el hilo; al volver ya se puede retirar el marco.
+    setTimeout(()=>marco.remove(), 1000);
+  };
+  // Hay que esperar a las tipografías de la marca (Archivo / IBM Plex): si se imprime antes de
+  // que carguen, el PDF sale con la tipografía de reserva y pierde la identidad del portal.
+  // El tope de 2,5 s evita que el botón se quede muerto si Google Fonts no responde: en ese caso
+  // se imprime igual, solo que con la tipografía de reserva.
+  const conFuentes = ()=>{
+    const tope = new Promise(r=>setTimeout(r, 2500));
+    const listas = idoc.fonts ? idoc.fonts.ready : null;
+    (listas ? Promise.race([listas, tope]) : tope).then(lanzar);
+  };
+  if(idoc.readyState === 'complete') setTimeout(conFuentes, 60);
+  else marco.onload = ()=>setTimeout(conFuentes, 60);
+}
+
 /* ---------- EXPORTAR EL DEBRIEF A PDF ----------
    El debrief vivía solo en pantalla y se perdía al recargar, así que no había forma de entregarle
    la sesión a un profesor ni de guardarla para comparar. Se compone un documento aparte y se
@@ -7559,35 +8246,9 @@ function exportarDebriefPDF(){
   // oscuro (un PDF con fondo azul noche es ilegible en papel y gasta tinta a lo tonto).
   const doc = `<!doctype html><html lang="es"><head><meta charset="utf-8">
     <title>Debrief NALA ${sello}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    ${PDF_FUENTES}
     <style>
-      :root{
-        --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB; --accent:#1657C6; --navy:#0A2647;
-        --text:#0F1B2D; --text-muted:#5B6B7F; --hairline:#E1E7EF;
-        --danger:#D64545; --vfr:#2E9E6D; --warn:#E08E3E;
-      }
-      @page { margin: 14mm; }
-      /* Sin esto el navegador descarta los fondos al imprimir y la cabecera de marca sale en
-         blanco: es justo lo que se ha pedido que se vea. */
-      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-      body{ font-family:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; color:var(--text);
-            font-size:11px; line-height:1.55; margin:0; }
-      h1,h2,h3,h4{ font-family:'Archivo', sans-serif; margin:0; }
-
-      /* ---- cabecera de marca (mismo lenguaje que el encabezado de las ventanas del CWP) ---- */
-      .marca{ background:linear-gradient(90deg, var(--accent), var(--navy)); color:#fff;
-              padding:13px 16px; border-radius:8px; display:flex; align-items:center; gap:12px; }
-      .marca-logo{ width:34px; height:34px; flex:none; color:#fff; }
-      .marca-logo svg{ display:block; }
-      .marca-nombre{ font-family:'Archivo', sans-serif; font-weight:800; font-size:16px; letter-spacing:.02em; line-height:1.15; }
-      .marca-sub{ font-family:'IBM Plex Mono', monospace; font-size:8.5px; letter-spacing:.08em;
-                  opacity:.85; text-transform:uppercase; }
-      .marca-doc{ margin-left:auto; text-align:right; font-family:'IBM Plex Mono', monospace; font-size:9px; opacity:.95; }
-      .titulo{ margin:14px 0 2px; font-size:15px; color:var(--navy); }
-      .titulo-sub{ color:var(--text-muted); font-size:10px; margin-bottom:10px;
-                   font-family:'IBM Plex Mono', monospace; }
+      ${PDF_CSS_BASE}
 
       h2{ font-size:12px; color:var(--accent); margin:16px 0 6px; padding-bottom:3px;
           border-bottom:2px solid var(--accent); text-transform:uppercase; letter-spacing:.04em; }
@@ -7633,26 +8294,8 @@ function exportarDebriefPDF(){
       .meteo-meta{ color:var(--text-muted); font-size:9.5px; }
       .qerr{ color:var(--danger); }
 
-      .pie{ margin-top:16px; border-top:2px solid var(--accent); padding-top:7px;
-            font-size:8.5px; color:var(--text-muted); line-height:1.6; }
-      .pie b{ color:var(--navy); }
     </style></head><body>
-    <div class="marca">
-      <div class="marca-logo">
-        <!-- Mismo distintivo que el encabezado del portal, en blanco sobre la banda de marca. -->
-        <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
-          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
-          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
-          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
-          <circle cx="20" cy="20" r="2.6" fill="var(--navy)" stroke="currentColor" stroke-width="1.3"/>
-        </svg>
-      </div>
-      <div>
-        <div class="marca-nombre">SoyAeronáutico</div>
-        <div class="marca-sub">Portal AIS · COM · MET</div>
-      </div>
-      <div class="marca-doc">CWP 6 · Simulador NALA<br>${sello}</div>
-    </div>
+    ${marcaPdfHtml(sello)}
 
     <h1 class="titulo">Debrief de sesión</h1>
     <div class="titulo-sub">Puesto de trabajo CWP de práctica ATC/AIS</div>
@@ -7660,37 +8303,133 @@ function exportarDebriefPDF(){
     <h2>Resumen de la sesión</h2>
     ${contenido.innerHTML}
     ${historial ? `<h2>Historial por vuelo</h2>${historial}` : ''}
-    <div class="pie">
-      Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.<br>
-      Creado por <b>Cristian Arcila</b> · © ${ahora.getUTCFullYear()} — Todos los derechos reservados
-    </div>
+    ${piePdfHtml(ahora.getUTCFullYear())}
     </body></html>`;
 
-  const marco = document.createElement('iframe');
-  marco.setAttribute('aria-hidden', 'true');
-  marco.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
-  document.body.appendChild(marco);
-  const idoc = marco.contentWindow.document;
-  idoc.open(); idoc.write(doc); idoc.close();
-  // Se espera al load del iframe: imprimir antes de que el documento esté compuesto saca páginas
-  // en blanco en Chrome.
-  const lanzar = ()=>{
-    marco.contentWindow.focus();
-    marco.contentWindow.print();
-    // El diálogo de impresión es modal y bloquea el hilo; al volver ya se puede retirar el marco.
-    setTimeout(()=>marco.remove(), 1000);
-  };
-  // Hay que esperar a las tipografías de la marca (Archivo / IBM Plex): si se imprime antes de
-  // que carguen, el PDF sale con la tipografía de reserva y pierde la identidad del portal.
-  // El tope de 2,5 s evita que el botón se quede muerto si Google Fonts no responde: en ese caso
-  // se imprime igual, solo que con la tipografía de reserva.
-  const conFuentes = ()=>{
-    const tope = new Promise(r=>setTimeout(r, 2500));
-    const listas = idoc.fonts ? idoc.fonts.ready : null;
-    (listas ? Promise.race([listas, tope]) : tope).then(lanzar);
-  };
-  if(idoc.readyState === 'complete') setTimeout(conFuentes, 60);
-  else marco.onload = ()=>setTimeout(conFuentes, 60);
+  imprimirEnMarco(doc);
+}
+
+function selloPdf(ahora){ return `${pad(ahora.getUTCDate())}/${pad(ahora.getUTCMonth()+1)}/${ahora.getUTCFullYear()} ${nowHHMMZulu()}Z`; }
+
+/* ---------- FICHA DE PROGRESO IMPRESA (STRIPS) ----------
+   La opción STRIPS de FP OPERATION imprime la ficha del plan cargado, y la ventana STRIPS las de
+   todos; en el diálogo de impresión se elige «Guardar como PDF». Es un formato de práctica con los
+   datos del plan, no el de una dependencia concreta: identificación, salida, niveles, un casillero
+   por punto de la ruta con su ETO calculado (ATO y nivel quedan en blanco para anotar a mano, como
+   en una ficha de papel) y llegada. */
+const FICHA_MAX_PUNTOS = 9;
+function fichaProgresoHtml(fp){
+  const puntos = computeEstimates(fp).slice(0, -1);   // la última fila es el destino: tiene su casilla
+  const vistos = puntos.slice(0, FICHA_MAX_PUNTOS);
+  const huecos = Math.max(0, 2 - vistos.length);       // al menos dos casilleros para anotar
+  const cols = vistos.length + huecos;
+  const celda = (rotulo, valor) => `<span>${rotulo}</span><b>${valor ? escapeHtml(valor) : '&nbsp;'}</b>`;
+  const etos = vistos.map(f => `<td class="fix">${celda(escapeHtml(f.code), horaSobrePunto(fp, f.etoMin))}</td>`).join('')
+    + Array.from({ length: huecos }, () => `<td class="fix">${celda('&nbsp;', '')}</td>`).join('');
+  const anotar = rotulo => Array.from({ length: cols }, () => `<td class="fix anota">${celda(rotulo, '')}</td>`).join('');
+  const mas = puntos.length > vistos.length ? ` · ${puntos.length - vistos.length} puntos más en EST` : '';
+  return `<table class="ficha">
+    <tr>
+      <td class="id" rowspan="3"><div class="cs">${escapeHtml(fp.flightId)}</div>
+        <div>${escapeHtml(fp.acType || '----')}/${escapeHtml(fp.wake || '-')} · ${escapeHtml((fp.rules || 'I') + (fp.type || 'G'))}</div>
+        <div>SSR ${escapeHtml(fp.cssr || '----')} · ${escapeHtml(fp.speed || '')}</div>
+        <div class="radio">${escapeHtml(fp.radio || '')}</div></td>
+      <td>${celda('DEP', fp.dep)}</td><td>${celda('RFL', fp.level)}</td>${etos}<td class="dest">${celda('DEST', fp.dest)}</td>
+    </tr>
+    <tr><td>${celda('EOBT', fp.eobt)}</td><td>${celda('CFL', fp.cfl)}</td>${anotar('ATO')}<td class="dest">${celda('ETA', fp.eta)}</td></tr>
+    <tr><td>${celda('ATD', fp.atd)}</td><td>${celda('ECL', fp.ecl)}</td>${anotar('NIVEL')}<td class="dest">${celda('ATA', fp.ata)}</td></tr>
+    <tr><td class="ruta" colspan="${cols + 4}"><span>RUTA</span> ${escapeHtml(fp.route || '—')}`
+      + `${fp.altn ? ` · <span>ALTN</span> ${escapeHtml(fp.altn)}` : ''}`
+      + `${fp.field18 && fp.field18 !== '0' ? ` · <span>18</span> ${escapeHtml(fp.field18)}` : ''}${mas}</td></tr>
+  </table>`;
+}
+
+function imprimirFichaProgreso(lista){
+  const planes = (lista || []).filter(Boolean);
+  if(!planes.length) return;
+  const ahora = new Date();
+  const sello = selloPdf(ahora);
+  const uno = planes.length === 1;
+  const doc = `<!doctype html><html lang="es"><head><meta charset="utf-8">
+    <title>${uno ? 'Ficha de progreso ' + escapeHtml(planes[0].flightId) : 'Fichas de progreso'} · NALA ${sello}</title>
+    ${PDF_FUENTES}
+    <style>
+      ${PDF_CSS_BASE}
+      @page { size: A4 landscape; margin: 12mm; }
+      .leyenda{ font-size:9px; color:var(--text-muted); margin:0 0 9px; }
+      .ficha{ width:100%; border-collapse:collapse; margin:0 0 7mm; page-break-inside:avoid;
+              font-family:'IBM Plex Mono', monospace; border:1.5px solid var(--navy); border-left:6px solid var(--accent); }
+      .ficha td{ border:1px solid #9FB0C6; padding:2px 5px; vertical-align:top; min-width:15mm; height:9mm; }
+      .ficha td span{ display:block; font-size:7px; letter-spacing:.06em; color:var(--text-muted); text-transform:uppercase; }
+      .ficha td b{ display:block; font-size:11px; font-weight:600; color:var(--text); }
+      .ficha td.id{ width:40mm; background:var(--panel); font-size:9px; line-height:1.45; }
+      .ficha td.id .cs{ font-family:'Archivo', sans-serif; font-weight:800; font-size:17px; color:var(--navy); letter-spacing:.02em; }
+      .ficha td.id .radio{ color:var(--text-muted); }
+      .ficha td.fix b{ color:var(--accent); }
+      .ficha td.dest{ background:var(--panel); width:17mm; }
+      .ficha td.ruta{ height:auto; font-size:9px; background:#FBFCFE; }
+      .ficha td.ruta span{ display:inline; }
+    </style></head><body>
+    ${marcaPdfHtml(sello)}
+    <h1 class="titulo">${uno ? 'Ficha de progreso de vuelo' : 'Fichas de progreso de vuelo'}</h1>
+    <div class="titulo-sub">Formato de práctica con los datos de cada plan · no reproduce el de una dependencia ATS concreta</div>
+    <p class="leyenda">ETO: hora estimada sobre cada punto, calculada por la ruta con la velocidad y el viento del ejercicio.
+      ATO y NIVEL quedan en blanco para anotar a mano. RFL: nivel solicitado en el plan · CFL: nivel autorizado.</p>
+    ${planes.map(fichaProgresoHtml).join('')}
+    ${piePdfHtml(ahora.getUTCFullYear())}
+    </body></html>`;
+  imprimirEnMarco(doc);
+}
+function imprimirFichaDe(flightId){ imprimirFichaProgreso([flightPlans.find(p => p.flightId === flightId)]); }
+
+/* ---------- PRINT DE FP OPERATION ----------
+   El plan cargado tal como se ve en la ventana, el mensaje FPL con que se presentó y su historial. */
+function fpImprimir(){
+  const fp = currentFP;
+  if(!fp) return flashFP('err', MSG_BUSCAR_PLAN);
+  const ahora = new Date();
+  const sello = selloPdf(ahora);
+  const estado = fp.collided ? 'COLISIÓN' : fp.landed ? 'ATERRIZADO' : fp.departed ? 'ACTIV' : 'PROGRAMADO';
+  const casillas = [
+    ['FLIGHT ID', fp.flightId], ['RADIO CALLSIGN', fp.radio], ['A/C TYPE / W', `${fp.acType || ''}/${fp.wake || ''}`], ['NO', fp.no],
+    ['DEP', fp.dep], ['DEST', fp.dest], ['ALT AD(S)', fp.altn], ['R / FT', `${fp.rules || ''}${fp.type || ''}`],
+    ['NAV/COM', fp.navcom], ['SURVEILLANCE EQUIPMENT', fp.surv], ['CSSR', fp.cssr], ['RVSM', fp.rvsm],
+    ['EOBD', fp.eobd], ['EOBT', fp.eobt], ['ATD', fp.atd], ['ETA', fp.eta],
+    ['EET (CASILLA 16)', fp.eet], ['ATA', fp.ata], ['CRUISING SPEED', fp.speed], ['CRUISING LEVEL', fp.level],
+    ['CFL', fp.cfl], ['ECL', fp.ecl], ['SID / STAR', [fp.sid, fp.star].filter(Boolean).join(' / ')], ['ESTADO', estado],
+  ];
+  const fpl = (fp.history || []).find(h => /^\(FPL-/.test(h.text || ''));
+  const historial = (fp.history || []).map(h => `<li><span class="hh">${escapeHtml(h.ts || '')}</span> [${escapeHtml(h.source || '')}] ${escapeHtml(h.text || '')}</li>`).join('');
+  const doc = `<!doctype html><html lang="es"><head><meta charset="utf-8">
+    <title>Plan de vuelo ${escapeHtml(fp.flightId)} · NALA ${sello}</title>
+    ${PDF_FUENTES}
+    <style>
+      ${PDF_CSS_BASE}
+      h2{ font-size:12px; color:var(--accent); margin:14px 0 6px; padding-bottom:3px;
+          border-bottom:2px solid var(--accent); text-transform:uppercase; letter-spacing:.04em; }
+      .casillas{ display:grid; grid-template-columns:repeat(4, 1fr); border:1px solid var(--hairline); }
+      .casilla{ border:1px solid var(--hairline); padding:3px 7px; }
+      .casilla span, .linea span{ display:block; font-size:7.5px; letter-spacing:.06em; color:var(--text-muted); text-transform:uppercase; }
+      .casilla b, .linea b{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:11px; }
+      .linea{ border:1px solid var(--hairline); padding:4px 7px; margin-top:5px; }
+      pre.fpl{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; background:var(--panel);
+               border-left:3px solid var(--accent); padding:7px 10px; white-space:pre-wrap; margin:0; }
+      ul{ margin:3px 0 0 15px; padding:0; } li{ margin-bottom:3px; white-space:pre-wrap; }
+      .hh{ color:var(--accent); font-family:'IBM Plex Mono', monospace; font-weight:500; }
+    </style></head><body>
+    ${marcaPdfHtml(sello)}
+    <h1 class="titulo">Plan de vuelo ${escapeHtml(fp.flightId)}</h1>
+    <div class="titulo-sub">FP OPERATION · ${escapeHtml(fp.dep || '')} → ${escapeHtml(fp.dest || '')}</div>
+    <div class="casillas">${casillas.map(([r, v]) => `<div class="casilla"><span>${r}</span><b>${v ? escapeHtml(v) : '—'}</b></div>`).join('')}</div>
+    <div class="linea"><span>FIR ROUTE</span><b>${escapeHtml(fp.route || '—')}</b></div>
+    ${fp.origRoute ? `<div class="linea"><span>ORIGINAL ROUTE</span><b>${escapeHtml(fp.origRoute)}</b></div>` : ''}
+    <div class="linea"><span>FIELD 18</span><b>${escapeHtml(fp.field18 || '0')}</b></div>
+    ${fpl ? `<h2>Mensaje FPL presentado</h2><pre class="fpl">${escapeHtml(fpl.text)}</pre>` : ''}
+    ${historial ? `<h2>Historial</h2><ul>${historial}</ul>` : ''}
+    ${piePdfHtml(ahora.getUTCFullYear())}
+    </body></html>`;
+  imprimirEnMarco(doc);
+  flashFP('ok', `Plan ${fp.flightId} enviado a imprimir: en el diálogo elige «Guardar como PDF» para conservarlo.`);
 }
 
 /* ===================== REPRODUCCIÓN DE LA SESIÓN (REPLAY) =====================
@@ -8236,8 +8975,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   const flightIdEl = document.getElementById('f_flightId');
   const radioEl = document.getElementById('f_radio');
+  // En los modos de una sola casilla (VIEW para buscar, ATD, ATA), Enter equivale a UPDATE.
+  document.getElementById('win-fpop').addEventListener('keydown', e=>{
+    if(e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    if(!['VIEW','ATD','ATA'].includes(currentMode)) return;
+    e.preventDefault();
+    fpUpdate();
+  });
   flightIdEl.addEventListener('input', ()=>{
-    if(currentMode !== 'CREATE') return;
+    if(currentMode !== 'CREATE' && currentMode !== 'CURRENT') return;
     const guess = airlineFromFlightId(flightIdEl.value);
     if(guess){ radioEl.value = guess; radioEl.classList.add('f-ok'); } else radioEl.classList.remove('f-ok');
   });
@@ -8245,7 +8991,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const acTypeEl = document.getElementById('f_acType');
   const wakeEl = document.getElementById('f_wake');
   acTypeEl.addEventListener('input', ()=>{
-    if(currentMode !== 'CREATE') return;
+    if(currentMode !== 'CREATE' && currentMode !== 'CURRENT') return;
     const info = acTypeInfo(acTypeEl.value);
     if(info){ wakeEl.value = info.wtc; acTypeEl.classList.replace('f-invalid','f-ok'); wakeEl.classList.add('f-ok'); }
     else { wakeEl.value = ''; acTypeEl.classList.remove('f-ok'); wakeEl.classList.remove('f-ok'); }
