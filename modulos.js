@@ -91,7 +91,15 @@ const MODULOS_CATALOGO = [
   // propia (entrena una destreza, no un contenido del AIP), por eso va sin tema.
   { id: 'simulador-memoria', nombre: 'Memoria y Agilidad Mental', url: 'simulador-memoria.html',
     tipo: 'simulador', seccion: 'simuladores',
-    desc: 'Secuencias que crecen a cada acierto: memoria de trabajo bajo presión de tiempo.', temaPorDefecto: null }
+    desc: 'Secuencias que crecen a cada acierto: memoria de trabajo bajo presión de tiempo.', temaPorDefecto: null },
+
+  // Añadido 2026-10-09: estudio del AIP Colombia (AMDT 73/26) por partes GEN/ENR/AD, con
+  // buscador. Guarda cada prueba, cacería, simulacro o práctica; en el detalle, el tema de
+  // cada pregunta es su sección del AIP («ENR 1.10»), que no tiene página teórica propia:
+  // nombreDeTema() la muestra tal cual y urlDeTema() devuelve null, como corresponde.
+  { id: 'simulador-aip', nombre: 'Simulador AIP Colombia', url: 'simulador-aip.html',
+    tipo: 'simulador', seccion: 'simuladores',
+    desc: 'Estudia el AIP por partes, practica con más de 15 000 preguntas y pregúntale al AIP.', temaPorDefecto: null }
 ];
 
 // ---------- TEMAS ----------

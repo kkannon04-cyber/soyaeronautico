@@ -156,6 +156,14 @@ Claude Code está conectado directamente a Supabase, Netlify y GitHub vía MCP (
 - **Estado actual de "Stopped builds" (Netlify): ACTIVO/auto-deploy encendido** (el usuario lo desactivó el 2026-08-26 tras la primera prueba). Esto significa que un push autorizado a `main` dispara un build automático de inmediato — ya no hay una pausa de por medio como respaldo. La confirmación explícita antes de cada push (regla de arriba) es ahora el único filtro real contra gastar créditos sin que el usuario lo sepa. El MCP de Netlify no expone una herramienta para activar/desactivar ese interruptor — solo se hace manualmente en el dashboard (Project configuration → Build & deploy → Continuous deployment → Build settings). Si el usuario pide varios cambios seguidos y prefiere volver a pausar los builds como respaldo mientras tanto, es decisión suya, no asumirlo.
 - **Disparar un deploy manualmente**: la herramienta `deploy-site` del MCP de Netlify no ejecuta el build ella misma — devuelve un comando `npx @netlify/mcp@latest --site-id ... --proxy-path ...` para correr localmente, que normalmente bloquea el clasificador de seguridad de Claude Code (parece ejecución arbitraria con token en la URL). No intentar sortear ese bloqueo. La alternativa simple: pedirle al usuario que entre al dashboard de Netlify y le dé clic a "Trigger deploy" él mismo (relevante sobre todo si "Stopped builds" vuelve a activarse en el futuro).
 
+### Simulador AIP Colombia — agregado 2026-10-09
+
+`simulador-aip.html` y `simulador-aip-banco.js` son **archivos generados**: no se editan a mano.
+- Fuente: carpeta de estudio `C:\Users\HP\OneDrive\Documentos\Simulacion-AIS-COM-MET`. Allí están `entrenador-aip.html`, `sitio\plantilla-simulador-aip.html` y la copia del eAIP.
+- Para regenerar: `node scripts/publicar-en-sitio.mjs` desde esa carpeta.
+- Cabecera, menú, tema y pie: copiados de `simulador-memoria.html`. Si cambian en el sitio, actualizar la plantilla.
+- Guarda su progreso con `guardarIntento('simulador-aip', …)`, igual que los demás simuladores.
+
 ---
 
 ## Regla importante

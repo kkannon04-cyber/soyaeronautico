@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador AIP Colombia | SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  Página GENERADA. No editar a mano: la fuente es la carpeta de estudio Simulacion-AIS-COM-MET
+  (entrenador-aip.html + sitio/plantilla-simulador-aip.html) y se publica con
+  node scripts/publicar-en-sitio.mjs. Cabecera, menú, tema y pie: copiados de simulador-memoria.html.
+-->
+<style>
+  /* ================= Diseño del sitio (igual que los demás simuladores) ================= */
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
+    --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
+    --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
+    --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --live:#2E9E6D; --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+    --on-accent:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
+    --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
+    --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
+    --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --live:#4FA88C; --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+    --on-accent:#0B1220;
+  }
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+  [hidden]{ display:none !important; }
+
+  .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55);} 70%{box-shadow:0 0 0 6px rgba(var(--live-rgb),0);} 100%{box-shadow:0 0 0 0 rgba(var(--live-rgb),0);} }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover{ color:var(--text); }
+  nav.desktop-nav a:hover::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
+
+  /* ---------- DROPDOWN "MÓDULOS" ---------- */
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:active{ transform:translateY(1px); }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  nav.desktop-nav a, .nav-dropdown-btn{ white-space:nowrap; }
+  @media (max-width:1400px){ nav.desktop-nav{ gap:20px; } }
+  @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
+  @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- HERO ---------- */
+  .hero-simple{ max-width:1200px; margin:0 auto; padding:40px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .hero-simple h1{ font-size:clamp(1.6rem, 3.8vw, 2.3rem); line-height:1.2; margin-bottom:14px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:760px; margin-bottom:10px; }
+  .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--warn); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); max-width:900px; }
+  .hero-note b{ color:var(--text); }
+  .btn-volver-modulo-solido{ display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.95rem; }
+  .btn-volver-modulo-solido:hover{ filter:brightness(1.08); }
+
+  footer.pie-sitio{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  @media (max-width:600px){
+    .topbar{ padding:12px 16px; }
+    .hero-simple{ padding:28px 16px 8px; }
+  }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{ position:absolute; top:0; right:0; bottom:0; width:min(300px, 85vw); background:var(--panel); border-left:1px solid var(--hairline); padding:24px 0; display:flex; flex-direction:column; overflow-y:auto; box-shadow:-8px 0 32px rgba(0,0,0,0.2); }
+  .mobile-nav-header{ display:flex; align-items:center; justify-content:space-between; padding:0 24px 20px; border-bottom:1px solid var(--hairline); margin-bottom:12px; }
+  .mobile-nav-close{ background:none; border:1px solid var(--hairline); color:var(--text); width:40px; height:40px; border-radius:8px; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .mobile-nav-links a{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; text-decoration:none; color:var(--text); font-size:0.95rem; font-weight:500; border-bottom:1px solid var(--hairline); transition:background .15s, color .15s, padding-left .15s; }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
+  .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+<style>
+  /* ================= Simulador AIP (estilos de la app) ================= */
+
+/* Negro mate: grises neutros sin tinte, sin brillos ni sombras; el único color de marca es el azul de SoyAeronáutico.
+   GEN, ENR y AD conservan los colores del mapa impreso. */
+:root{
+  color-scheme:dark;
+  --negro:#141414; --hundido:#0f0f0f; --hoja:#1b1b1b; --hoja-2:#232323;
+  --linea:#2b2b2b; --linea-2:#3b3b3b;
+  --tinta:#ecebe7; --gris:#a4a29d; --tenue:#77756f;
+  --azul:#4f8ef7; --azul-v:rgba(79,142,247,.13); --sobre-azul:#0b1426;
+  --gen:#88a8f0; --enr:#4cc3a8; --ad:#ec80b1;
+  --bien:#7fcf86; --mal:#f0705f; --ojo:#e9a94e;
+  --bien-v:rgba(127,207,134,.12); --mal-v:rgba(240,112,95,.12); --ojo-v:rgba(233,169,78,.13);
+  --marca:rgba(233,169,78,.32);
+  --alto-cab:112px;
+}
+*{box-sizing:border-box}
+html{background:var(--negro)}
+body{margin:0;color:var(--tinta);font:400 16px/1.55 Archivo,system-ui,sans-serif;font-variation-settings:"wdth" 100;-webkit-font-smoothing:antialiased;
+  background:var(--negro) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .045 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>")}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+.envoltura{max-width:1200px;margin:0 auto;padding:0 16px}
+@media (min-width:720px){.envoltura{padding:0 24px}}
+.t-gen{--c:var(--gen)}.t-enr{--c:var(--enr)}.t-ad{--c:var(--ad)}
+
+/* ---------------------------------------------------------------- cabecera */
+header.cabecera{position:sticky;top:0;z-index:5;background:rgba(20,20,20,.94);border-bottom:1px solid var(--linea);backdrop-filter:blur(6px)}
+.barra-marca{display:flex;align-items:center;gap:14px;padding-top:12px;padding-bottom:4px}
+a.marca{display:flex;gap:11px;align-items:center;text-decoration:none;color:var(--tinta);min-width:0}
+a.marca svg{color:var(--azul);flex:none}
+a.marca b{display:block;font:800 18px/1.1 Archivo;letter-spacing:.01em}
+a.marca small{display:block;font:500 12.5px/1.3 Archivo;color:var(--gris);margin-top:2px}
+.progreso-mini{margin-left:auto;text-align:right;font-size:13px;color:var(--gris);line-height:1.3}
+.progreso-mini b{color:var(--tinta);font:800 20px/1 Archivo;font-variation-settings:"wdth" 75}
+nav.pestanas{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin:0 -8px}
+nav.pestanas::-webkit-scrollbar{display:none}
+nav.pestanas button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 12px 11px;color:var(--gris);font-weight:600;white-space:nowrap;font-size:15px}
+nav.pestanas button:hover{color:var(--tinta)}
+nav.pestanas button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--azul)}
+nav.pestanas .cuenta{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--hoja-2);color:var(--gris);font-size:12px;line-height:18px}
+/* buscador de la cabecera */
+.barra-marca{flex-wrap:wrap}
+form.buscador{flex:1 1 320px;max-width:560px;display:flex;align-items:center;gap:8px;background:var(--hundido);border:1px solid var(--linea-2);border-radius:11px;padding:0 10px 0 12px;min-height:42px;color:var(--tenue);margin-left:auto}
+form.buscador:focus-within{border-color:var(--azul);color:var(--gris)}
+form.buscador input{flex:1;min-width:0;border:0;background:transparent;outline:none;min-height:40px;padding:0;color:var(--tinta);font-size:15px}
+form.buscador input::placeholder{color:var(--tenue)}
+form.buscador input::-webkit-search-cancel-button{filter:invert(.7)}
+form.buscador kbd{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--linea-2);border-radius:5px;padding:1px 6px;color:var(--tenue)}
+.progreso-mini{margin-left:0}
+@media (max-width:860px){form.buscador{order:3;flex-basis:100%;max-width:none;margin-left:0}form.buscador kbd{display:none}.progreso-mini{margin-left:auto}}
+/* resultados de búsqueda */
+.respuesta{border:1px solid var(--linea);border-left:3px solid var(--c,var(--azul));border-radius:10px;padding:12px 14px;margin:10px 0;background:var(--hundido)}
+.respuesta .pregunta-b{color:var(--gris);font-size:14px;margin:0 0 4px}
+.respuesta .dato{font:700 20px/1.3 Archivo;font-variation-settings:"wdth" 92;margin:2px 0 6px;overflow-wrap:anywhere}
+.respuesta .fila{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.linea-res{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;padding:8px 0;border-top:1px solid var(--linea);align-items:baseline}
+.linea-res .txt{font-size:14.5px;overflow-wrap:anywhere}
+.linea-res mark,.respuesta mark{background:var(--marca);color:var(--tinta);border-radius:2px;padding:0 1px}
+.entendi{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--gris);border:1px solid var(--linea-2);border-radius:999px;padding:4px 12px;margin:4px 0 8px}
+.ejemplos{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+@media (max-width:560px){.linea-res{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){header.cabecera{position:static}.progreso-mini span{display:none}nav.pestanas{margin:0 -6px}nav.pestanas button{padding:10px 7px 11px;font-size:14px}}
+
+/* ---------------------------------------------------------------- estructura */
+main{padding:24px 0 40px}
+.rejilla{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+.rejilla.sola{grid-template-columns:minmax(0,1fr)}
+@media (max-width:980px){.rejilla{grid-template-columns:minmax(0,1fr)}}
+#vista{min-width:0}
+.hoja{background:var(--hoja);border:1px solid var(--linea);border-radius:14px;padding:20px 22px;min-width:0}
+.hoja + .hoja,.hoja + .dos,.dos + .hoja{margin-top:16px}
+@media (max-width:560px){.hoja{padding:16px}}
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.dos > .hoja{margin:0}
+h1{font:800 34px/1.05 Archivo;font-variation-settings:"wdth" 72;margin:0 0 8px;letter-spacing:-.01em}
+h2{font:800 24px/1.15 Archivo;font-variation-settings:"wdth" 78;margin:0 0 8px}
+h3{font:700 17px/1.25 Archivo;font-variation-settings:"wdth" 90;margin:20px 0 8px}
+p{margin:6px 0;max-width:72ch}
+.ayuda{color:var(--gris);font-size:14px}
+.tenue{color:var(--tenue)}
+.cod{font:800 17px/1 Archivo;font-variation-settings:"wdth" 66;color:var(--c,var(--tinta));letter-spacing:.01em;white-space:nowrap}
+.m{font-family:'IBM Plex Mono',Consolas,monospace;font-size:.92em}
+.oculto-total{display:none!important}
+
+/* ---------------------------------------------------------------- controles */
+.controles{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end;margin:12px 0 4px}
+label.campo{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--gris);font-weight:600;max-width:100%;min-width:0}
+label.marcar{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--tinta);font-weight:500}
+select,input[type=text],input[type=date],input[type=time],textarea{background:var(--hundido);border:1px solid var(--linea-2);border-radius:8px;padding:8px 10px;min-height:40px;color:var(--tinta);max-width:100%}
+select{text-overflow:ellipsis}
+input[type=checkbox]{accent-color:var(--azul);width:18px;height:18px}
+textarea{width:100%;min-height:110px;resize:vertical}
+.boton{border:1px solid var(--azul);background:var(--azul);color:var(--sobre-azul);border-radius:9px;padding:9px 18px;min-height:42px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.boton:hover{filter:brightness(1.08)}
+.boton.sec{background:transparent;color:var(--tinta);border-color:var(--linea-2)}
+.boton.sec:hover{background:var(--hoja-2);filter:none}
+.boton.peq{padding:5px 11px;min-height:32px;font-size:14px;border-radius:7px}
+.boton:disabled{opacity:.4;cursor:not-allowed;filter:none}
+a.enlace{color:var(--azul);font-weight:600}
+.fila-botones{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sub{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;background:var(--hundido);border:1px solid var(--linea);border-radius:11px;margin-bottom:16px;max-width:100%}
+.sub button{border:0;background:none;padding:7px 14px;border-radius:8px;color:var(--gris);font-weight:600;font-size:15px}
+.sub button:hover{color:var(--tinta)}
+.sub button[aria-pressed="true"]{background:var(--hoja-2);color:var(--tinta)}
+.sub button .cod{font-size:15px;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--linea-2);border-radius:999px;padding:5px 13px;background:transparent;font-size:14px;color:var(--gris)}
+.chip[aria-pressed="true"]{background:var(--hoja-2);color:var(--tinta);border-color:var(--gris)}
+.alerta{border:1px solid var(--ojo);color:var(--ojo);background:var(--ojo-v);border-radius:9px;padding:9px 13px;margin:8px 0;font-weight:600}
+
+/* ---------------------------------------------------------------- mapa de dominio (casillas por sección) */
+.mapa{display:flex;flex-wrap:wrap;gap:10px 14px;margin:14px 0 6px}
+.grupo{display:flex;flex-wrap:wrap;gap:4px}
+.casilla{width:36px;height:30px;padding:0;border-radius:5px;border:1px solid var(--linea-2);background:transparent;color:var(--tenue);font:700 11.5px/1 Archivo;font-variation-settings:"wdth" 74}
+.casilla:hover{border-color:var(--gris);color:var(--tinta)}
+.casilla.debil{background:var(--mal-v);border-color:var(--mal);color:var(--mal)}
+.casilla.regular{background:var(--ojo-v);border-color:var(--ojo);color:var(--ojo)}
+.casilla.domina{background:var(--bien-v);border-color:var(--bien);color:var(--bien)}
+.casilla.vacia{border-style:dotted;opacity:.5}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--gris);margin-top:8px}
+.leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--linea-2);vertical-align:-2px;margin-right:6px}
+.leyenda i.debil{background:var(--mal-v);border-color:var(--mal)}.leyenda i.regular{background:var(--ojo-v);border-color:var(--ojo)}.leyenda i.domina{background:var(--bien-v);border-color:var(--bien)}.leyenda i.vacia{border-style:dotted}
+
+/* ---------------------------------------------------------------- inicio */
+.saludo p{color:var(--gris);font-size:17px}
+.saludo-h{font:800 34px/1.05 Archivo;font-variation-settings:"wdth" 72;margin:0 0 8px;letter-spacing:-.01em}
+.aviso-guardado{border-left:3px solid var(--bien);background:var(--bien-v);padding:7px 12px;margin:8px 0;font-size:14px;border-radius:0 8px 8px 0;max-width:72ch}
+.aviso-guardado.error{border-left-color:var(--ojo);background:var(--ojo-v)}
+.partes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:16px}
+.partes > .hoja{margin:0}
+.parte-tarjeta{border-top:3px solid var(--c)}
+.parte-tarjeta .cab{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.parte-tarjeta .cab .cod{font-size:34px}
+.parte-tarjeta .cab b{font-size:17px}
+.parte-tarjeta .cifras{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:13.5px;color:var(--gris)}
+.parte-tarjeta .cifras b{display:block;color:var(--tinta);font:800 24px/1.1 Archivo;font-variation-settings:"wdth" 72}
+.foco{list-style:none;padding:0;margin:6px 0 0;counter-reset:f}
+.foco > li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-top:1px solid var(--linea)}
+.foco > li::before{counter-increment:f;content:counter(f);font:800 22px/1.1 Archivo;font-variation-settings:"wdth" 72;color:var(--tenue)}
+.foco .titulo-foco{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.foco .porque{color:var(--ojo);font-size:14px;font-weight:600;margin:4px 0}
+.foco .que{color:var(--gris);font-size:14.5px;margin:2px 0}
+.lista{list-style:none;padding:0;margin:0}
+.lista > li{padding:10px 0;border-top:1px solid var(--linea);display:flex;gap:12px;align-items:baseline}
+.lista > li:first-child{border-top:0}
+.lista .veces{font:800 18px/1 Archivo;font-variation-settings:"wdth" 72;color:var(--mal);min-width:30px}
+table.datos{width:100%;border-collapse:collapse;font-size:14.5px}
+table.datos td,table.datos th{border-bottom:1px solid var(--linea);padding:8px 8px;text-align:left;vertical-align:top}
+table.datos td{overflow-wrap:anywhere}
+table.datos th{font-size:12.5px;color:var(--gris);font-weight:600}
+table.datos td.fuente{white-space:nowrap;font:800 14px Archivo;font-variation-settings:"wdth" 68;color:var(--c,var(--ad))}
+
+/* ---------------------------------------------------------------- estudiar */
+.parte-cabeza{border-top:3px solid var(--c)}
+.parte-cabeza h2 .cod{font-size:30px;margin-right:6px}
+.capitulo h3{display:flex;gap:10px;align-items:baseline;margin-top:26px}
+.capitulo:first-child h3{margin-top:4px}
+.sec-fila{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:6px 16px;padding:14px 0;border-top:1px solid var(--linea);scroll-margin-top:calc(var(--alto-cab) + 16px)}
+.sec-fila.resaltada{background:var(--azul-v);border-radius:10px;padding-left:10px;padding-right:10px;margin:0 -10px}
+.sec-titulo{font-weight:700;font-size:15.5px;line-height:1.35}
+.sec-que{color:var(--gris);font-size:14.5px;margin:4px 0 0}
+.sirve{color:var(--tenue);font-size:13.5px;margin:4px 0 0}
+.sec-acc{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+.dominio{font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;border:1px solid var(--linea-2);color:var(--tenue);white-space:nowrap}
+.dominio.debil{color:var(--mal);border-color:var(--mal);background:var(--mal-v)}
+.dominio.regular{color:var(--ojo);border-color:var(--ojo);background:var(--ojo-v)}
+.dominio.domina{color:var(--bien);border-color:var(--bien);background:var(--bien-v)}
+@media (max-width:680px){.sec-fila{grid-template-columns:minmax(0,1fr)}.sec-acc{justify-content:flex-start}}
+
+/* ---------------------------------------------------------------- elegir prueba */
+.opciones-grandes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px;margin:12px 0}
+.op-grande{text-align:left;background:var(--hundido);border:1px solid var(--linea-2);border-radius:12px;padding:14px 16px}
+.op-grande .cod{font-size:26px;display:block;margin-bottom:6px}
+.op-grande span{color:var(--gris);font-size:13.5px;display:block}
+.op-grande[aria-pressed="true"]{border-color:var(--c,var(--azul));background:var(--hoja-2);box-shadow:inset 0 0 0 1px var(--c,var(--azul))}
+
+/* ---------------------------------------------------------------- pregunta */
+.ronda-cabeza{display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--gris);font-size:14px;flex-wrap:wrap}
+.barra{height:4px;background:var(--hundido);border-radius:2px;overflow:hidden;margin:10px 0 16px}
+.barra > span{display:block;height:100%;background:var(--azul)}
+.reloj{font:800 26px/1 Archivo;font-variation-settings:"wdth" 66;font-variant-numeric:tabular-nums;color:var(--tinta)}
+.reloj.urgente{color:var(--mal)}
+.cabeza-pregunta{display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--gris);font-size:14px;margin-bottom:6px;flex-wrap:wrap}
+.etiqueta{display:inline-block;font-size:12.5px;font-weight:700;border-radius:6px;padding:2px 8px;border:1px solid var(--c);color:var(--c)}
+.enunciado{font:600 20px/1.4 Archivo;font-variation-settings:"wdth" 94;margin:8px 0 16px;max-width:62ch}
+.ad-nombre{font:900 34px/1 Archivo;font-variation-settings:"wdth" 64;color:var(--ad);margin:0}
+.ad-nombre small{font:600 15px Archivo;color:var(--gris);font-variation-settings:"wdth" 94;display:block;margin-top:4px}
+.opciones{display:grid;gap:8px;margin:6px 0}
+.opcion{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--linea-2);border-radius:10px;padding:11px 13px;background:var(--hundido);width:100%}
+.opcion:hover{border-color:var(--gris)}
+.opcion .letra{font:800 15px Archivo;font-variation-settings:"wdth" 70;color:var(--tenue);min-width:16px}
+.opcion[aria-pressed="true"]{border-color:var(--azul);box-shadow:inset 0 0 0 1px var(--azul)}
+.opcion.correcta{background:var(--bien-v);border-color:var(--bien)}
+.opcion.incorrecta{background:var(--mal-v);border-color:var(--mal)}
+.opcion:disabled{cursor:default;color:var(--tinta)}
+.parte{margin:14px 0}
+.parte > .titulo-parte{font-size:13.5px;font-weight:600;color:var(--gris);margin-bottom:6px}
+.seccion-input{display:flex;gap:8px;flex-wrap:wrap}
+.seccion-input input{font:800 22px/1 Archivo;font-variation-settings:"wdth" 70;letter-spacing:.02em;width:min(100%,260px);text-transform:uppercase}
+.seccion-input input.ok{border-color:var(--bien);background:var(--bien-v)}
+.seccion-input input.no{border-color:var(--mal);background:var(--mal-v)}
+.resultado{border-left:3px solid var(--tenue);background:var(--hundido);padding:12px 15px;margin-top:14px;border-radius:0 10px 10px 0}
+.resultado.bien{border-color:var(--bien)}.resultado.mal{border-color:var(--mal)}
+.resultado h4{margin:0 0 4px;font:800 16px Archivo;font-variation-settings:"wdth" 80}
+.cita{font:800 18px/1.1 Archivo;font-variation-settings:"wdth" 66;color:var(--c,var(--ad))}
+.evidencia{font-family:'IBM Plex Mono',Consolas,monospace;font-size:13.5px;background:var(--negro);border:1px dashed var(--linea-2);border-radius:8px;padding:9px 11px;margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap;color:var(--tinta)}
+
+/* ---------------------------------------------------------------- informe de la sesión */
+.informe-cabeza{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.cifra{font:800 64px/.9 Archivo;font-variation-settings:"wdth" 66;letter-spacing:-.02em}
+.cifra small{font-size:24px;color:var(--gris)}
+.barras-partes{display:grid;gap:10px;margin:18px 0 6px;max-width:560px}
+.bp{display:grid;grid-template-columns:44px minmax(0,1fr) 70px;gap:12px;align-items:center;font-size:14px}
+.bp .pista{height:10px;background:var(--hundido);border:1px solid var(--linea);border-radius:5px;overflow:hidden}
+.bp .pista span{display:block;height:100%;background:var(--c)}
+.bp .num{color:var(--gris);text-align:right;font-variant-numeric:tabular-nums}
+.diagnostico{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin:14px 0}
+.diagnostico div{border:1px solid var(--linea);border-radius:10px;padding:12px 14px;background:var(--hundido)}
+.diagnostico b{display:block;font:800 30px/1 Archivo;font-variation-settings:"wdth" 70}
+.diagnostico span{color:var(--gris);font-size:13.5px}
+.consejo{border-left:3px solid var(--azul);padding:4px 0 4px 14px;margin:12px 0;color:var(--tinta)}
+details.revision{margin-top:18px;border-top:1px solid var(--linea);padding-top:12px}
+details.revision summary{cursor:pointer;font-weight:700;color:var(--gris)}
+.lista-revision{list-style:none;padding:0;margin:8px 0 0}
+.lista-revision > li{border-bottom:1px solid var(--linea);padding:12px 0}
+
+/* ---------------------------------------------------------------- panel de lectura */
+aside.panel{position:sticky;top:calc(var(--alto-cab) + 12px);max-height:calc(100vh - var(--alto-cab) - 24px);display:flex;flex-direction:column}
+aside.panel .hoja{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden}
+aside.panel h2{font-size:19px}
+.texto-seccion{position:relative;overflow:auto;flex:1;min-height:120px;font-size:14px;line-height:1.5;border-top:1px solid var(--linea);margin-top:10px;padding-top:8px}
+.texto-seccion .fl{padding:3px 0;border-bottom:1px dotted var(--linea);overflow-wrap:anywhere}
+.texto-seccion .fl.en{color:var(--tenue);font-size:12.5px}
+.texto-seccion mark{background:var(--marca);color:var(--tinta);padding:0 2px;border-radius:2px}
+@media (max-width:980px){aside.panel{position:static;max-height:none}.texto-seccion{max-height:60vh}}
+
+/* ---------------------------------------------------------------- herramientas */
+.valor{transition:filter .15s}
+.oculto .valor{filter:blur(6px);cursor:pointer;user-select:none}
+.oculto .valor.visto{filter:none}
+.check{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dotted var(--linea)}
+.check input{margin-top:3px;flex:none}
+.tarjeta-rol{border:1px solid var(--linea-2);border-left:3px solid var(--azul);border-radius:10px;padding:14px 16px;margin:10px 0;background:var(--hundido)}
+.tarjeta-rol .quien{font-weight:600;color:var(--gris);font-size:14px}
+.tarjeta-rol .dice{font:600 19px/1.4 Archivo;font-variation-settings:"wdth" 94;margin:4px 0}
+.indice-secciones{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.indice-secciones button{border:1px solid var(--linea-2);background:var(--hundido);border-radius:6px;padding:4px 9px;font:700 14px Archivo;font-variation-settings:"wdth" 75;color:var(--gris)}
+.indice-secciones button[aria-current="true"]{background:var(--ad);color:#1b0f15;border-color:var(--ad)}
+
+/* ---------------------------------------------------------------- pie */
+footer.pie{border-top:1px solid var(--linea);margin-top:24px;padding:22px 0 40px;color:var(--gris);font-size:13.5px}
+footer.pie .envoltura{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+footer.pie svg{color:var(--azul);flex:none}
+footer.pie b{color:var(--tinta)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+</style>
+<style>
+  /* ================= Integración con el diseño de SoyAeronautico.com =================
+     La app usa sus propios nombres de color; aquí se traducen a los del sitio, así respeta
+     el tema claro/oscuro de la cabecera y los colores, fuentes y botones del resto de páginas. */
+  :root{
+    color-scheme:light;
+    --negro:var(--bg); --hundido:var(--bg); --hoja:var(--panel); --hoja-2:var(--panel-alt);
+    --linea:var(--hairline); --linea-2:rgba(var(--muted-rgb),0.35);
+    --tinta:var(--text); --gris:var(--text-muted); --tenue:rgba(var(--muted-rgb),0.9);
+    --azul:var(--accent); --azul-v:rgba(var(--accent-rgb),0.10); --sobre-azul:var(--on-accent);
+    --gen:var(--mvfr); --enr:var(--vfr); --ad:var(--lifr);
+    --bien:var(--vfr); --mal:var(--danger); --ojo:var(--warn);
+    --bien-v:rgba(var(--vfr-rgb),0.12); --mal-v:rgba(var(--danger-rgb),0.10); --ojo-v:rgba(224,142,62,0.14);
+    --marca:rgba(224,142,62,0.30);
+    --alto-cab:80px;
+  }
+  [data-theme="dark"]{ color-scheme:dark; }
+  body{ background:var(--bg); font-family:'IBM Plex Sans', sans-serif; font-size:16px; line-height:1.55; font-variation-settings:normal; }
+  header.cabecera{ position:static; background:transparent; backdrop-filter:none; border-bottom:1px solid var(--hairline); }
+  .barra-marca{ padding-top:16px; }
+  .progreso-mini b{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .cod{ font-family:'IBM Plex Mono', monospace; font-weight:600; letter-spacing:0; }
+  .boton{ border-radius:30px; font-family:'IBM Plex Sans', sans-serif; font-weight:600; }
+  .boton.peq{ border-radius:30px; }
+  .saludo-h{ font-family:'Archivo', sans-serif; font-weight:800; }
+  .cifra{ font-family:'IBM Plex Mono', monospace; font-weight:600; color:var(--accent); }
+  .reloj{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .indice-secciones button[aria-current="true"]{ color:#FFFFFF; }
+  :root:not([data-theme="dark"]) form.buscador input::-webkit-search-cancel-button{ filter:none; }
+  main.envoltura{ padding-top:20px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
+<script src="progreso.js"></script>
+</head>
+<body>
+<script src="auth-gate.js"></script>
+
+<div class="sticky-header">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+          <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+          <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div>
+        SoyAeronáutico
+        <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+      </div>
+    </a>
+    <nav class="desktop-nav">
+      <div class="nav-dropdown" id="modulosDropdown">
+        <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          Módulos
+          <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="modulosMenu">
+          <div class="nav-dropdown-menu-inner">
+            <a href="meteorologia.html">Meteorología</a>
+            <a href="ats.html">ATS</a>
+            <a href="fraseologia.html">Fraseología</a>
+            <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+            <a href="navegacion.html">Navegación</a>
+            <a href="notam.html">NOTAM</a>
+          </div>
+        </div>
+      </div>
+      <a href="designadores.html">Designadores</a>
+      <a href="aeronaves.html">Aeronaves</a>
+      <a href="metar-taf.html">METAR y TAF</a>
+      <a href="glosario.html">Glosario</a>
+      <a href="quizzes.html" class="active">Quizzes</a>
+      <a href="quienes-somos.html">Quiénes somos</a>
+    </nav>
+    <div class="nav-right">
+      <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+      <a href="login.html" class="nav-login-btn" id="navLoginBtn">Iniciar sesión</a>
+      <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+      <div class="nav-divider"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="aeronaves.html">Aeronaves <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html" class="active">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="login.html" id="navLoginBtnMobile">Iniciar sesión <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<section class="hero-simple">
+  <div class="eyebrow">Zona de Quizzes — Simulador</div>
+  <h1>Simulador AIP Colombia</h1>
+  <p class="lead">Estudia el AIP de Colombia por partes (GEN, ENR y AD), practica con más de 15 000 preguntas sacadas del texto oficial y pregúntale al AIP lo que necesites. Al terminar cada prueba te dice en qué secciones enfocarte.</p>
+  <div class="hero-note">
+    <span>📌</span>
+    <span><b>Fuente:</b> eAIP Colombia, AIRAC AMDT 73/26 (vigente desde el 01 OCT 2026). Cada respuesta cita su sección y la línea exacta del AIP. No reemplaza el eAIP oficial: los NOTAM, SUP, METAR y TAF se consultan en vivo.</span>
+  </div>
+  <a href="quizzes.html" class="btn-volver-modulo-solido">← Volver a la Zona de Quizzes</a>
+</section>
+
+<header class="cabecera">
+  <div class="envoltura barra-marca">
+    <form class="buscador" id="f-buscar" role="search" autocomplete="off">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="search" id="q-buscar" placeholder="Pregúntale al AIP: ¿a qué hora abre SKBQ?" aria-label="Pregúntale al AIP o busca una palabra" enterkeyhint="search">
+      <kbd title="Atajo de teclado">/</kbd>
+    </form>
+    <div class="progreso-mini" id="progreso-mini"></div>
+  </div>
+  <div class="envoltura">
+    <nav class="pestanas" role="tablist" aria-label="Secciones del simulador">
+      <button role="tab" data-modo="inicio" aria-selected="true">Inicio</button>
+      <button role="tab" data-modo="estudiar">Estudiar</button>
+      <button role="tab" data-modo="practicar">Practicar</button>
+      <button role="tab" data-modo="simulacro">Simulacro</button>
+      <button role="tab" data-modo="herramientas">Herramientas</button>
+    </nav>
+  </div>
+</header>
+
+<main class="envoltura">
+  <div class="rejilla" id="rejilla">
+    <div id="vista"></div>
+    <aside class="panel" id="panel" aria-label="Texto del AIP">
+      <div class="hoja">
+        <h2 id="panel-titulo">Texto del AIP</h2>
+        <div id="panel-enlaces" class="ayuda"></div>
+        <div class="texto-seccion" id="panel-texto"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="pie-sitio">
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>Preguntas y textos del eAIP Colombia, AIRAC AMDT 73/26 (Aerocivil) · banco del 2026-10-09.</span>
+  <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
+</footer>
+
+<script>
+  // ---------- TEMA OSCURO ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){ document.documentElement.setAttribute('data-theme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('aisTheme','light'); themeToggle.setAttribute('aria-label','Cambiar a modo oscuro'); }
+    else{ document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('aisTheme','dark'); themeToggle.setAttribute('aria-label','Cambiar a modo claro'); }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+</script>
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+<script>
+  // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
+  (async function actualizarBotonSesion(){
+    if (typeof sbClient === 'undefined' || !sbClient) return;
+    const { data } = await sbClient.auth.getSession();
+    if (!data || !data.session) return;
+    const btnDesktop = document.getElementById('navLoginBtn');
+    const btnMobile = document.getElementById('navLoginBtnMobile');
+    if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
+    if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+</script>
+
+<!-- ================= Simulador AIP ================= -->
+<script>window.SITIO_SOYAERONAUTICO = true;</script>
+<script src="simulador-aip-banco.js"></script>
+<script>
+
+'use strict';
+// =====================================================================================
+// Utilidades
+// =====================================================================================
+const B = window.BANCO;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const azar = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const barajar = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const unicos = (arr) => [...new Set(arr)];
+const LETRAS = 'ABCDEFG';
+const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+const parte = (cita) => /^GEN/.test(cita) ? 'gen' : /^ENR/.test(cita) ? 'enr' : 'ad';
+const NOMBRE_PARTE = { gen: 'GEN', enr: 'ENR', ad: 'AD' };
+const hhmm = (n) => String(Math.floor(n / 100)).padStart(2, '0') + String(n % 100).padStart(2, '0');
+const aMin = (s) => +String(s).slice(0, 2) * 60 + +String(s).slice(2, 4);
+const deMin = (m) => { m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + String(m % 60).padStart(2, '0'); };
+const pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
+const AD = Object.fromEntries(B.aerodromos.map((a) => [a.oaci, a]));
+const ahoraLocal = () => { const d = new Date(); const z = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; };
+const OFICIAL = 'https://eaip-colombia.atnaerocivil.gov.co/eaip/A%2073-26_2026_10_01/eAIP/';
+
+// Títulos oficiales vienen en mayúsculas; se muestran en tipo oración sin tocar las siglas.
+const SIGLAS = new Set(['AIP', 'ATS', 'OACI', 'FIR', 'UIR', 'TMA', 'CTA', 'GNSS', 'ADIZ', 'VSS', 'AD', 'ENR', 'GEN', 'RNAV', 'SSEI', 'ILS', 'UAEAC', 'AIS', 'MET', 'SAR', 'VFR', 'IFR', 'ATZ', 'CTR', 'ATFM', 'DME', 'VOR', 'NDB']);
+function legible(t) {
+  t = String(t || '').trim();
+  if (!t || /[a-záéíóúñ]/.test(t)) return t;
+  const s = t.toLowerCase().replace(/[a-záéíóúñü]+/g, (w) => (SIGLAS.has(w.toUpperCase()) ? w.toUpperCase() : w));
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ------------------------------------------------------------------ guía de estudio (3 partes)
+const GUIA = {};          // cita → { sec, parte, cap, capTitulo, que, sirve }
+const SECCIONES_GUIA = [];
+for (const P of B.guia) for (const c of P.capitulos) for (const [sec, que, sirve] of c.secciones) {
+  const g = { sec, parte: P.id, cap: c.id, capTitulo: c.titulo, que, sirve };
+  GUIA[sec] = g; SECCIONES_GUIA.push(g);
+}
+const tituloDe = (sec) => legible(B.titulos[sec] || '');
+const etiquetaCorta = (sec) => sec.replace(/^(GEN|ENR|AD) /, '');
+
+// ------------------------------------------------------------------ modo sitio (SoyAeronautico.com)
+// La misma app corre suelta (doble clic, carpeta de estudio) o dentro del sitio. En el sitio:
+// no hay copia local del eAIP, cada estudiante tiene su progreso y cada sesión se guarda
+// con guardarIntento() (progreso.js), igual que los demás simuladores.
+const SITIO = !!window.SITIO_SOYAERONAUTICO;
+const MODULO_ID = 'simulador-aip', MODULO_NOMBRE = 'Simulador AIP Colombia';
+const sesionSitio = SITIO && typeof leerSesionGuardada === 'function' ? leerSesionGuardada() : null;
+const UID = sesionSitio && sesionSitio.user ? sesionSitio.user.id : 'invitado';
+let nombreSaludo = SITIO ? '' : 'Cristian';
+
+// ------------------------------------------------------------------ almacenamiento seguro
+// En el sitio la clave lleva el usuario: en un computador compartido cada estudiante ve lo suyo.
+const CLAVE = SITIO ? `entrenadorAIP.v1.${UID}` : 'entrenadorAIP.v1';
+function cargar() {
+  try { const v = JSON.parse(localStorage.getItem(CLAVE)); if (v && typeof v === 'object') return v; } catch (e) { /* sin almacenamiento */ }
+  return {};
+}
+const estado = Object.assign({ total: 0, ok: 0, porCita: {}, fallos: [], historial: [], sesiones: [], conteo: {}, vistos: {}, ultimoAD: '', corregirSimulacro: false, sincronizadas: [] }, cargar());
+if (!Array.isArray(estado.sesiones)) estado.sesiones = [];
+if (!estado.vistos || typeof estado.vistos !== 'object') estado.vistos = {};
+if (!estado.conteo || typeof estado.conteo !== 'object') estado.conteo = {};
+function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* sin almacenamiento */ } }
+
+// Registra una respuesta: acumulado por sección (con el tipo de error), preguntas que más se fallan y repaso.
+function registrar(p, r, opc = {}) {
+  const acierto = r.max > 0 && r.puntos === r.max;
+  estado.total++; if (acierto) estado.ok++;
+  const sid = p.sid || p.clave; estado.vistos[sid] = (estado.vistos[sid] || 0) + 1;
+  const c = p.citaPrincipal || p.cita;
+  const s = estado.porCita[c] || (estado.porCita[c] = { ok: 0, mal: 0 });
+  if (acierto) s.ok++;
+  else {
+    s.mal++;
+    if (r.okSec === false) s.malSec = (s.malSec || 0) + 1;
+    else if (r.okDato === false) s.malDato = (s.malDato || 0) + 1;
+    const k = estado.conteo[p.clave] || (estado.conteo[p.clave] = { n: 0, q: String(p.q).slice(0, 180), sec: c });
+    k.n++; k.ult = ahoraLocal();
+    const claves = Object.keys(estado.conteo);
+    if (claves.length > 400) { claves.sort((x, y) => estado.conteo[x].n - estado.conteo[y].n); delete estado.conteo[claves[0]]; }
+  }
+  const i = estado.fallos.findIndex((f) => f.clave === p.clave);
+  if (!acierto && i < 0) estado.fallos.push(p);
+  if (acierto && i >= 0 && opc.repaso) estado.fallos.splice(i, 1);
+  if (estado.fallos.length > 200) estado.fallos.shift();
+  guardar(); pintarProgreso();
+}
+
+// ------------------------------------------------------------------ sesiones
+// Una sesión agrupa las respuestas de una prueba, una cacería, un simulacro o una práctica.
+// Al cerrarse guarda su resumen por sección, que alimenta «Enfócate en».
+let sesionAbierta = null;
+function nuevaSesion(modoS, titulo) { cerrarSesion(); sesionAbierta = { modo: modoS, titulo, fecha: ahoraLocal(), items: [] }; return sesionAbierta; }
+function anotar(s, p, r, opc) { registrar(p, r, opc); s.items.push({ p, r }); }
+function cerrarSesion() {
+  const s = sesionAbierta; sesionAbierta = null;
+  if (!s || !s.items.length || s.cerrada) return s;
+  s.cerrada = true;
+  const porSec = {}; let ok = 0, puntos = 0, max = 0;
+  for (const { p, r } of s.items) {
+    const c = p.citaPrincipal || p.cita; const a = r.max > 0 && r.puntos === r.max;
+    const x = porSec[c] || (porSec[c] = [0, 0]); a ? x[0]++ : x[1]++;
+    if (a) ok++; puntos += r.puntos; max += r.max;
+  }
+  estado.sesiones.push({ fecha: s.fecha, modo: s.titulo, n: s.items.length, ok, puntos, max, porSec });
+  if (estado.sesiones.length > 60) estado.sesiones.shift();
+  estado.historial.push({ fecha: s.fecha, modo: s.titulo, puntos, max });
+  if (estado.historial.length > 200) estado.historial.shift();
+  s.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  marcarSincronizada(s.id);
+  guardar();
+  s.guardado = guardarEnPlataforma(s, puntos, max);
+  return s;
+}
+
+// ------------------------------------------------------------------ progreso en la plataforma
+// Cada sesión cerrada se guarda como un intento (Supabase si hay sesión iniciada, el navegador si no).
+// El detalle sigue el formato del sitio ({ v:1, preguntas:[{ i, ok, tema }] }), con la sección del AIP
+// como tema para que el Panel del Estudiante pueda decir qué repasar. Lleva además lo necesario para
+// reconstruir el progreso en otro dispositivo: id de la sesión y de cada pregunta, y el tipo de error.
+function marcarSincronizada(id) {
+  if (!Array.isArray(estado.sincronizadas)) estado.sincronizadas = [];
+  if (!estado.sincronizadas.includes(id)) estado.sincronizadas.push(id);
+  if (estado.sincronizadas.length > 600) estado.sincronizadas.shift();
+}
+function guardarEnPlataforma(s, puntos, max) {
+  if (typeof guardarIntento !== 'function') return Promise.resolve(null);
+  const detalle = {
+    v: 1, sim: 'aip', id: s.id, modo: s.modo, titulo: s.titulo, fecha: s.fecha,
+    preguntas: s.items.slice(0, 300).map(({ p, r }, i) => {
+      const it = { i, ok: r.max > 0 && r.puntos === r.max, tema: p.citaPrincipal || p.cita, s: p.sid || p.clave };
+      if (!it.ok) it.e = r.okSec === false ? 'sec' : r.okDato === false ? 'dato' : '';
+      return it;
+    }),
+  };
+  return guardarIntento(MODULO_ID, MODULO_NOMBRE, puntos, max, detalle).catch((e) => ({ ok: false, error: String(e) }));
+}
+// Trae los intentos guardados en la cuenta y suma al progreso de este navegador los que aún no tiene
+// (sesiones hechas en otro computador o celular). Cada sesión se aplica una sola vez, por su id.
+async function sincronizarDesdePlataforma() {
+  if (!SITIO || typeof obtenerIntentosPorModulo !== 'function') return 0;
+  let intentos = [];
+  try { intentos = await obtenerIntentosPorModulo(MODULO_ID); } catch (e) { return 0; }
+  const porId = {}; POOL.forEach((e) => { porId[e.id] = e; });
+  let nuevas = 0;
+  for (const it of intentos.slice().sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)))) {
+    const d = it.detalle;
+    if (!d || d.sim !== 'aip' || !d.id || !Array.isArray(d.preguntas) || (estado.sincronizadas || []).includes(d.id)) continue;
+    const porSec = {}; let ok = 0;
+    for (const pr of d.preguntas) {
+      const sec = pr.tema; const bien = !!pr.ok;
+      estado.total++; if (bien) { estado.ok++; ok++; }
+      const c = estado.porCita[sec] || (estado.porCita[sec] = { ok: 0, mal: 0 });
+      const x = porSec[sec] || (porSec[sec] = [0, 0]);
+      if (bien) { c.ok++; x[0]++; } else {
+        c.mal++; x[1]++;
+        if (pr.e === 'sec') c.malSec = (c.malSec || 0) + 1; else if (pr.e === 'dato') c.malDato = (c.malDato || 0) + 1;
+      }
+      if (pr.s) estado.vistos[pr.s] = (estado.vistos[pr.s] || 0) + 1;
+      const e = pr.s && porId[pr.s];
+      if (!bien && e) {
+        const p = armar(e);
+        if (p) {
+          const k = estado.conteo[p.clave] || (estado.conteo[p.clave] = { n: 0, q: String(p.q).slice(0, 180), sec });
+          k.n++; k.ult = d.fecha;
+          if (!estado.fallos.some((f) => f.clave === p.clave) && estado.fallos.length < 200) estado.fallos.push(p);
+        }
+      }
+    }
+    estado.sesiones.push({ fecha: d.fecha, modo: d.titulo, n: d.preguntas.length, ok, puntos: it.correctas, max: it.total, porSec });
+    estado.historial.push({ fecha: d.fecha, modo: d.titulo, puntos: it.correctas, max: it.total });
+    marcarSincronizada(d.id); nuevas++;
+  }
+  if (nuevas) {
+    estado.sesiones.sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+    estado.historial.sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+    while (estado.sesiones.length > 60) estado.sesiones.shift();
+    while (estado.historial.length > 200) estado.historial.shift();
+    guardar(); pintarProgreso();
+  }
+  return nuevas;
+}
+
+function pintarProgreso() {
+  $('#progreso-mini').innerHTML = estado.total ? `<b>${pct(estado.ok, estado.total)}%</b> <span>de acierto</span><br>${estado.total} respuestas` : 'Sin respuestas todavía';
+  const t = document.querySelector('nav.pestanas [data-modo="practicar"]');
+  t.innerHTML = `Practicar${estado.fallos.length ? `<span class="cuenta" title="Preguntas en repaso">${estado.fallos.length}</span>` : ''}`;
+}
+
+// =====================================================================================
+// Lectura de horarios y sol
+// =====================================================================================
+// Devuelve una lista de intervalos [inicio, fin] en minutos UTC o 'H24' o null si el texto
+// depende del día de la semana o no se puede leer sin ambigüedad.
+function leerHorario(txt, ad, fecha) {
+  if (!txt) return null;
+  const t = txt.trim();
+  if (/^H24$/i.test(t)) return 'H24';
+  if (/^HJ$/i.test(t) && ad && ad.sol && fecha) { const s = solDe(ad, fecha); return s ? [[aMin(s.sr), aMin(s.ss)]] : null; }
+  if (!/^[\d\s\-–,y]+$/.test(t)) return null;
+  const nums = t.match(/\d{4}/g);
+  if (!nums || nums.length % 2) return null;
+  const r = [];
+  for (let i = 0; i < nums.length; i += 2) r.push([aMin(nums[i]), aMin(nums[i + 1])]);
+  return r;
+}
+function abierto(intervalos, min) {
+  if (intervalos === 'H24') return true;
+  return intervalos.some(([a, b]) => (a <= b ? min >= a && min <= b : min >= a || min <= b));
+}
+// Fila de GEN 2.7 para una fecha: la fila semanal más próxima y la conservadora (puesta más temprana de las dos vecinas).
+function solDe(ad, fecha) {
+  if (!ad.sol) return null;
+  const d = new Date(fecha + 'T12:00:00Z'); const t = d.getTime();
+  const filas = ad.sol.map(([m, dd, sr, ss]) => ({ m, dd, sr, ss, t: Date.UTC(d.getUTCFullYear(), m - 1, dd, 12) }));
+  let antes = null, despues = null;
+  for (const f of filas) { if (f.t <= t) antes = f; if (f.t >= t && !despues) despues = f; }
+  const exacta = filas.find((f) => f.t === t);
+  if (exacta) return { sr: exacta.sr, ss: exacta.ss, filas: [exacta], exacta: true };
+  const vec = [antes, despues].filter(Boolean);
+  if (!vec.length) return null;
+  const ss = vec.reduce((a, f) => (aMin(f.ss) < aMin(a) ? f.ss : a), vec[0].ss);
+  const sr = vec.reduce((a, f) => (aMin(f.sr) > aMin(a) ? f.sr : a), vec[0].sr);
+  return { sr, ss, filas: vec, exacta: false };
+}
+const fechaFila = (f) => `${String(f.dd).padStart(2, '0')} ${MESES[f.m - 1]}`;
+function festivoDe(fecha) {
+  const d = new Date(fecha + 'T12:00:00Z');
+  return B.festivos.find((f) => f.mes === d.getUTCMonth() + 1 && f.dia === d.getUTCDate()) || null;
+}
+
+// =====================================================================================
+// Generadores de preguntas
+// =====================================================================================
+// Una pregunta: { clave, tipo, nivel, ad, q, opciones?, correcta?, secciones? (respuestas válidas
+// para «¿en qué sección?»), cita, citaPrincipal, evidencia, ver: {ad, n} | {gen: 'ENR 1.10'} }
+const lineaCon = (texto, valor) => {
+  if (!texto || !valor) return null;
+  const v = String(valor).slice(0, 40);
+  return texto.split('\n').map((l) => l.trim()).find((l) => l.includes(v)) || null;
+};
+const normSec = (s) => String(s || '').toUpperCase().replace(/\s+/g, '').replace(/,/g, '.');
+function seccionCorrecta(p, escrito) {
+  const e = normSec(escrito); if (!e) return false;
+  return (p.secciones || []).some((s) => {
+    const n = normSec(s);
+    if (e === n) return true;
+    // «SKBQ AD 2.18» también vale escrito como «AD 2.18»
+    const m = n.match(/^(S[KQ][A-Z]{2})(AD2\.\d+)$/);
+    return m ? e === m[2] || e === m[1] + m[2] : false;
+  });
+}
+function opcionesCon(correcta, candidatas, n = 4) {
+  const otras = barajar(unicos(candidatas.filter((c) => c && c !== correcta))).slice(0, n - 1);
+  return barajar([correcta, ...otras]);
+}
+
+// ---- 1. «¿En qué sección?» de un aeródromo
+function pSeccionAD(a, concepto) {
+  const [txt, n] = concepto || azar(B.conceptosAD);
+  const sec = `${a.oaci} AD ${n}`;
+  return { clave: `S-${a.oaci}-${n}`, tipo: 'seccion', nivel: 1, ad: a.oaci, q: `¿En qué sección del AIP encuentras ${txt} de ${a.oaci}?`, secciones: [sec], cita: sec, citaPrincipal: `AD ${n}`, evidencia: `${a.oaci} AD ${n} — ${a.secciones[n.split('.')[1]].t}`, ver: { ad: a.oaci, n: +n.split('.')[1] } };
+}
+// ---- 2. «¿En qué sección?» general
+function pSeccionGeneral(concepto) {
+  const [txt, sec] = concepto || azar(B.conceptosGenerales);
+  return { clave: `SG-${sec}-${txt.slice(0, 20)}`, tipo: 'seccion', nivel: 1, ad: null, q: `¿En qué sección del AIP están ${txt}?`, secciones: [sec], cita: sec, citaPrincipal: sec, evidencia: B.textos[sec] ? B.textos[sec].split('\n')[0] : sec, ver: { gen: sec } };
+}
+// ---- 3. «¿Qué dato?» de un aeródromo (opción múltiple con distractores reales de otros aeródromos)
+const CAMPOS = [
+  { id: 'horasAD', n: 3, q: (a) => `¿Cuál es el horario del explotador del aeródromo de ${a.oaci}?`, v: (a) => a.horas.AD },
+  { id: 'horasATS', n: 3, q: (a) => `¿En qué horario presta ATS ${a.oaci}?`, v: (a) => a.horas.ATS },
+  { id: 'horasMET', n: 3, q: (a) => `¿En qué horario atiende la oficina de información MET de ${a.oaci}?`, v: (a) => a.horas.MET },
+  { id: 'comb', n: 4, q: (a) => `¿Qué combustible publica ${a.oaci}?`, v: (a) => a.comb },
+  { id: 'ssei', n: 6, q: (a) => `¿Qué categoría SSEI publica ${a.oaci}?`, v: (a) => a.ssei },
+  { id: 'transito', n: 2, q: (a) => `¿Qué tipo de tránsito se permite en ${a.oaci}?`, v: (a) => a.transito },
+  { id: 'elev', n: 2, q: (a) => `¿Cuál es la elevación y la temperatura de referencia de ${a.oaci}?`, v: (a) => a.elev },
+  { id: 'afs', n: 2, q: (a) => `¿Cuál es la dirección AFS publicada en la ficha de ${a.oaci}?`, v: (a) => a.afs },
+  { id: 'dim', n: 12, q: (a) => `¿Qué dimensiones tiene la pista ${a.dimensiones[0].rwy} de ${a.oaci}?`, v: (a) => a.dimensiones[0] && a.dimensiones[0].dim + ' m', ev: (a) => a.dimensiones[0].linea },
+  { id: 'tora', n: 13, q: (a) => `¿Cuál es el TORA de la pista ${a.distancias[0].rwy} de ${a.oaci}?`, v: (a) => a.distancias[0] && /^\d+$/.test(a.distancias[0].tora) && a.distancias[0].tora + ' m', ev: (a) => a.distancias[0].linea },
+  { id: 'lda', n: 13, q: (a) => `¿Cuál es el LDA de la pista ${a.distancias[0].rwy} de ${a.oaci}?`, v: (a) => a.distancias[0] && /^\d+$/.test(a.distancias[0].lda) && a.distancias[0].lda + ' m', ev: (a) => a.distancias[0].linea },
+  { id: 'twr', n: 18, q: (a) => `¿Cuál es la frecuencia principal de la torre de ${a.oaci}?`, v: (a) => a.twr && a.twr.freq, ev: (a) => a.twr.linea },
+  { id: 'app', n: 18, q: (a) => `¿Cuál es la primera frecuencia de APP publicada para ${a.oaci}?`, v: (a) => a.app && a.app.freq, ev: (a) => a.app.linea },
+  { id: 'clase', n: 17, q: (a) => `¿Qué clase de espacio aéreo tiene ${a.espacio.nombre || 'el espacio'} de ${a.oaci}?`, v: (a) => a.espacio.clase && 'Clase ' + a.espacio.clase, ev: (a) => 'Clasificación del Espacio Aéreo: ' + a.espacio.claseTexto, otras: ['Clase A', 'Clase B', 'Clase C', 'Clase D', 'Clase E', 'Clase G'] },
+  { id: 'vertical', n: 17, q: (a) => `¿Qué límites verticales tiene ${a.espacio.nombre || 'el espacio'} de ${a.oaci}?`, v: (a) => a.espacio.vertical && /\d/.test(a.espacio.vertical) && a.espacio.vertical },
+  { id: 'ta', n: 17, q: (a) => `¿Cuál es la altitud de transición de ${a.oaci}?`, v: (a) => a.espacio.ta, ev: (a) => 'Altitud de Transición | ' + a.espacio.ta },
+  { id: 'metOf', n: 11, q: (a) => `¿Cuál es la oficina MET conexa de ${a.oaci}?`, v: (a) => a.metOficina && a.metOficina.valor, ev: (a) => a.metOficina.linea },
+  { id: 'taf', n: 11, q: (a) => `¿Qué dice ${a.oaci} sobre la preparación del TAF y su validez?`, v: (a) => a.taf && a.taf.valor, ev: (a) => a.taf.linea },
+];
+function valido(v) { return v && typeof v === 'string' && v.length <= 90 && !/^(NIL|No\.?|-)$/i.test(v.trim()); }
+function pDato(a, soloIds) {
+  const posibles = CAMPOS.filter((c) => (!soloIds || soloIds.includes(c.id)) && valido(c.v(a)));
+  if (!posibles.length) return null;
+  const c = azar(posibles);
+  const correcta = c.v(a);
+  const otras = c.otras || B.aerodromos.map((x) => { try { return c.v(x); } catch (e) { return null; } }).filter(valido);
+  const opciones = opcionesCon(correcta, otras);
+  if (opciones.length < 2) return null;
+  const sec = `${a.oaci} AD 2.${c.n}`;
+  const ev = c.ev ? c.ev(a) : lineaCon(a.secciones[c.n].x, correcta) || correcta;
+  return { clave: `D-${a.oaci}-${c.id}`, tipo: 'dato', nivel: 2, ad: a.oaci, q: c.q(a), opciones, correcta, secciones: [sec], cita: sec, citaPrincipal: `AD 2.${c.n}`, evidencia: ev, ver: { ad: a.oaci, n: c.n } };
+}
+// ---- 4. Datos que cruzan las tablas nacionales con un aeródromo
+const conAD = (a, p) => p && Object.assign({ tipo: 'dato', nivel: 2, ad: a.oaci }, p);
+const CRUZADOS = [
+  { id: 'aro', sec: 'ENR 1.10', f: (a) => a.aro && conAD(a, { clave: `X-${a.oaci}-aro`, q: `¿Qué oficina ARO/AIS tramita el plan de vuelo de un vuelo que sale de ${a.oaci}?`, opciones: opcionesCon(a.aro.nombre, B.aerodromos.map((x) => x.aro && x.aro.nombre)), correcta: a.aro.nombre, secciones: ['ENR 1.10'], cita: 'ENR 1.10 (tablas de oficinas ARO/AIS)', citaPrincipal: 'ENR 1.10', evidencia: a.aro.linea + ' … | ' + a.oaci, ver: { gen: 'ENR 1.10', marca: a.oaci } }) },
+  { id: 'aftn', sec: 'ENR 1.11', f: (a) => a.aftn && conAD(a, { clave: `X-${a.oaci}-aftn`, q: `¿Qué dirección AFTN publica ENR 1.11 para la torre de ${a.oaci}?`, opciones: opcionesCon(a.aftn.dir, ['SK//ZTZX', ...B.aerodromos.map((x) => x.aftn && x.aftn.dir), a.oaci + 'ZPZG', a.oaci + 'ZRZX']), correcta: a.aftn.dir, secciones: ['ENR 1.11'], cita: 'ENR 1.11', citaPrincipal: 'ENR 1.11', evidencia: a.aftn.linea, ver: { gen: 'ENR 1.11', marca: a.aftn.dir } }) },
+  { id: 'ad12', sec: 'AD 1.2', f: (a) => a.ssei12 && conAD(a, { clave: `X-${a.oaci}-ad12`, q: `Según la tabla de AD 1.2, ¿qué categoría SSEI tiene ${a.oaci}?`, opciones: opcionesCon('CAT ' + a.ssei12.cat, ['CAT 3', 'CAT 4', 'CAT 5', 'CAT 6', 'CAT 7', 'CAT 8', 'CAT 10']), correcta: 'CAT ' + a.ssei12.cat, secciones: ['AD 1.2', `${a.oaci} AD 2.6`], cita: 'AD 1.2 (y AD 2.6 de la ficha)', citaPrincipal: 'AD 1.2', evidencia: a.ssei12.linea, ver: { gen: 'AD 1.2', marca: a.oaci } }) },
+  { id: 'ad13', sec: 'AD 1.3', f: (a) => {
+    if (!a.ad13) return null;
+    const T = { 'INTL-NTL': 'Internacional y nacional', NTL: 'Solo nacional', INTL: 'Solo internacional' };
+    const R = { 'IFR - VFR': 'IFR y VFR', VFR: 'solo VFR', IFR: 'solo IFR' };
+    const val = `${T[a.ad13.trafico]} · ${R[a.ad13.reglas]}`;
+    return conAD(a, { clave: `X-${a.oaci}-ad13`, q: `Según el índice de AD 1.3, ¿qué tránsito admite ${a.oaci}?`, opciones: opcionesCon(val, ['Internacional y nacional · IFR y VFR', 'Solo nacional · IFR y VFR', 'Solo nacional · solo VFR', 'Internacional y nacional · solo VFR']), correcta: val, secciones: ['AD 1.3'], cita: 'AD 1.3, num. 1 (índice de aeródromos controlados)', citaPrincipal: 'AD 1.3', evidencia: a.ad13.linea, ver: { gen: 'AD 1.3', marca: `/ ${a.oaci} ·` } });
+  } },
+  { id: 'cert', sec: 'AD 1.5', f: (a) => a.cat === 'Controlado' && conAD(a, { clave: `X-${a.oaci}-cert`, q: `¿${a.oaci} figura como aeródromo certificado?`, opciones: ['Sí', 'No'], correcta: a.cert ? 'Sí' : 'No', secciones: ['AD 1.5'], cita: 'AD 1.5', citaPrincipal: 'AD 1.5', evidencia: a.cert ? a.cert.linea : 'AD 1.5 solo lista SKCG, SKCC, SKPE y SKBO.', ver: { gen: 'AD 1.5' } }) },
+  { id: 'vmc', sec: 'ENR 1.2', f: (a) => {
+    if (a.cat !== 'Controlado' || (a.vmc && !a.vmc.techoFt)) return null;
+    const val = a.vmc ? `Techo ${a.vmc.techoFt} ft y ${a.vmc.visKm} km` : 'Techo 1500 ft y 5 km';
+    return conAD(a, { clave: `X-${a.oaci}-vmc`, q: `¿Con qué mínimos VMC operacionales (techo y visibilidad) opera ${a.oaci}?`, opciones: opcionesCon(val, ['Techo 1500 ft y 5 km', 'Techo 1500 ft y 8 km', 'Techo 2000 ft y 6 km', 'Techo 2000 ft y 8 km', 'Techo 1500 ft y 7 km']), correcta: val, secciones: ['ENR 1.2'], cita: 'ENR 1.2, num. 12', citaPrincipal: 'ENR 1.2', evidencia: a.vmc ? a.vmc.linea : B.lineaMinimosDefecto, ver: { gen: 'ENR 1.2', marca: a.vmc ? a.oaci : 'no figuran' } });
+  } },
+  { id: 'auto', sec: 'GEN 3.5', f: (a) => a.met35 && conAD(a, { clave: `X-${a.oaci}-auto`, q: `Según la tabla de GEN 3.5, ¿${a.oaci} tiene METAR automático disponible?`, opciones: ['Sí', 'No'], correcta: a.met35.automatico ? 'Sí' : 'No', secciones: ['GEN 3.5'], cita: 'GEN 3.5, num. 3', citaPrincipal: 'GEN 3.5', evidencia: a.met35.linea, ver: { gen: 'GEN 3.5', marca: a.oaci } }) },
+  { id: 'sol', sec: 'GEN 2.7', f: (a, filaFija) => {
+    if (!a.sol) return null;
+    const filas = a.sol.filter((f) => f[0] >= 10 && f[0] <= 11);
+    const f = filaFija || azar(filas.length ? filas : a.sol);
+    const ss = f[3];
+    const mismas = B.aerodromos.filter((x) => x.sol).map((x) => (x.sol.find((y) => y[0] === f[0] && y[1] === f[1]) || [])[3]);
+    return conAD(a, { clave: `X-${a.oaci}-sol-${f[0]}-${f[1]}`, q: `¿A qué hora (UTC) se pone el sol en ${a.oaci} el ${fechaFila({ m: f[0], dd: f[1] })} 2026?`, opciones: opcionesCon(ss + ' UTC', [f[2] + ' UTC', ...mismas.map((x) => x && x + ' UTC'), deMin(aMin(ss) - 300) + ' UTC']), correcta: ss + ' UTC', secciones: ['GEN 2.7'], cita: 'GEN 2.7 (conjunto de datos de salida y puesta del sol)', citaPrincipal: 'GEN 2.7', evidencia: `${a.oaci} · fila ${fechaFila({ m: f[0], dd: f[1] })}: SR ${f[2]} · SS ${f[3]} (UTC)`, ver: { gen: 'GEN 2.7' } });
+  } },
+];
+function pCruzado(a) { for (const c of barajar(CRUZADOS)) { const p = c.f(a); if (p) return p; } return null; }
+// ---- 5. Preguntas generales verificadas
+function pGeneral(nivelMax = 3, fija) {
+  const g = fija || azar(B.generales.filter((x) => x.nivel <= nivelMax));
+  return { clave: g.id, tipo: 'general', nivel: g.nivel, ad: null, q: g.q, opciones: barajar(g.opciones), correcta: g.opciones[0], secciones: [g.cita], cita: g.cita, citaPrincipal: g.cita, evidencia: g.evidencia, ver: { gen: g.cita, marca: g.evidencia } };
+}
+// ---- 6. Escenarios (nivel 3): cruzan varias secciones y se calculan con los datos reales
+const FECHAS_SIM = ['2026-10-08', '2026-10-15', '2026-10-22', '2026-10-29', '2026-11-05', '2026-11-12'];
+function escVFRNoche(a, fechaFija) {
+  const hor = leerHorario(a.horas.AD, a, '2026-10-15');
+  if (!a.sol || !hor || a.transito === 'NIL') return null;
+  const fecha = fechaFija || azar(FECHAS_SIM);
+  const s = solDe(a, fecha);
+  const ss = aMin(s.ss);
+  const etd = ss + azar([-90, -45, -20, 15, 40, 120]);
+  const etdTxt = deMin(etd);
+  const abiertoAD = abierto(leerHorario(a.horas.AD, a, fecha), ((etd % 1440) + 1440) % 1440);
+  const deNoche = etd > ss || etd < aMin(s.sr);
+  let correcta;
+  if (!abiertoAD && deNoche) correcta = 'No: el aeródromo está cerrado y ya es de noche';
+  else if (!abiertoAD) correcta = 'No: el aeródromo está cerrado a esa hora';
+  else if (deNoche) correcta = 'No sin autorización de la UAEAC: sale después de la puesta del sol';
+  else correcta = 'Sí: el aeródromo está abierto y aún es de día';
+  const d = new Date(fecha + 'T12:00:00Z');
+  return { clave: `E-noche-${a.oaci}-${fecha}-${etdTxt}`, tipo: 'escenario', nivel: 3, ad: a.oaci,
+    q: `Un piloto quiere salir VFR de ${a.oaci} el ${d.getUTCDate()} ${MESES[d.getUTCMonth()]} 2026 a las ${etdTxt} UTC. Sin contar meteorología ni NOTAM, ¿puede salir?`,
+    opciones: barajar(['Sí: el aeródromo está abierto y aún es de día', 'No sin autorización de la UAEAC: sale después de la puesta del sol', 'No: el aeródromo está cerrado a esa hora', 'No: el aeródromo está cerrado y ya es de noche']),
+    correcta, secciones: [`${a.oaci} AD 2.3`, 'GEN 2.7', 'ENR 1.2'], cita: `${a.oaci} AD 2.3 + GEN 2.7 + ENR 1.2 num. 11`, citaPrincipal: 'GEN 2.7',
+    evidencia: `${a.oaci} AD 2.3: AD ${a.horas.AD}\nGEN 2.7, fila ${fechaFila(s.filas[0])}: SR ${s.sr} · SS ${s.ss} UTC\nENR 1.2 num. 11: «Entre la puesta y salida del sol, excepto los tramos de ruta autorizados según RAC 91 APÉNDICE 19.»`,
+    ver: { ad: a.oaci, n: 3 } };
+}
+function escMinimos(a) {
+  if (a.cat !== 'Controlado' || (a.vmc && !a.vmc.techoFt)) return null;
+  const tec = a.vmc ? a.vmc.techoFt : 1500, vis = a.vmc ? a.vmc.visKm : 5;
+  const techo = azar([tec - 500, tec, tec + 500, tec + 1000].filter((x) => x > 0));
+  const visib = azar([vis - 1, vis, vis + 2].filter((x) => x > 0));
+  const puede = techo >= tec && visib >= vis;
+  return { clave: `E-min-${a.oaci}-${techo}-${visib}`, tipo: 'escenario', nivel: 3, ad: a.oaci,
+    q: `El METAR de ${a.oaci} da techo de ${techo} ft y visibilidad de ${visib} km. ¿Puede despegar un VFR?`,
+    opciones: ['Sí, cumple los mínimos VMC operacionales del aeródromo', 'No, está por debajo de los mínimos VMC operacionales'],
+    correcta: puede ? 'Sí, cumple los mínimos VMC operacionales del aeródromo' : 'No, está por debajo de los mínimos VMC operacionales',
+    secciones: ['ENR 1.2'], cita: 'ENR 1.2, num. 5 y 12', citaPrincipal: 'ENR 1.2',
+    evidencia: (a.vmc ? a.vmc.linea : B.lineaMinimosDefecto) + `\nMínimo: techo ${tec} ft y ${vis} km.`, ver: { gen: 'ENR 1.2', marca: a.vmc ? a.oaci : 'no figuran' } };
+}
+const CAMBIOS_FPL = [
+  ['Cambia el tipo de aeronave (C172 por PA28)', 'CNL y FPL nuevo', 'Cambio de tipo de aeronave. Ejemplo: Cambiar un A320 por un B737.'],
+  ['Cambia la matrícula (identificación) de la aeronave', 'CNL y FPL nuevo', 'La identificación de la aeronave.'],
+  ['Cambia el aeródromo de destino', 'CNL y FPL nuevo', 'El aeródromo de salida y/o destino.'],
+  ['Cambia la ruta de un vuelo hacia San Andrés', 'CNL y FPL nuevo', 'Cambio de ruta en vuelos con destinos internacionales y los aeródromos de San Andrés y Providencia.'],
+  ['Adelanta la EOBT 15 minutos, avisando 45 minutos antes de la EOBT', 'CHG (modificación)', 'Los cambios o adelantos de hora se podrán hacer hasta 30 minutos de antelación con respecto a la EOBT.'],
+  ['Pide un cambio de EOBT avisando 20 minutos antes de la EOBT', 'CNL y FPL nuevo', 'para modificaciones (CHG) con menos tiempo se debe cancelar el plan de vuelo y presentar un nuevo FPL.'],
+  ['Cambia el nivel de crucero', 'Por radio, en el primer contacto con el ATS', 'Las modificaciones relativas al nivel de crucero podrán notificarse por radiotelefonía en ocasión del primer intercambio de comunicaciones con la dependencia ATS correspondiente.'],
+  ['Quiere otra SID', 'Por radio, en el primer contacto con el ATS', 'Las modificaciones relativas a las salidas normalizadas por instrumentos (SID), podrán realizarse por radiotelefonía'],
+];
+function escCambioFPL(fijo) {
+  const [caso, resp, ev] = fijo || azar(CAMBIOS_FPL);
+  return { clave: `E-fpl-${caso.slice(0, 25)}`, tipo: 'escenario', nivel: 3, ad: null, q: `FPL presentado por WEB y aceptado. ${caso}. ¿Qué se hace?`,
+    opciones: barajar(['CNL y FPL nuevo', 'CHG (modificación)', 'Por radio, en el primer contacto con el ATS', 'DLA']), correcta: resp,
+    secciones: ['ENR 1.10'], cita: 'ENR 1.10, modificaciones en el plan de vuelo', citaPrincipal: 'ENR 1.10', evidencia: ev, ver: { gen: 'ENR 1.10', marca: ev } };
+}
+const EOBT_SIM = [1200, 1430, 1600, 1815, 2100], ANTES_SIM = [30, 45, 60, 90, 150, 60 * 24 * 6];
+function escPlazoFPL(eobtFija, antesFija) {
+  const eobt = eobtFija ?? azar(EOBT_SIM);
+  const antes = antesFija ?? azar(ANTES_SIM);
+  const ahora = deMin(aMin(hhmm(eobt)) - (antes % 1440));
+  const dice = antes >= 60 * 24 ? `faltan ${Math.round(antes / 1440)} días para la EOBT (${hhmm(eobt)} UTC)` : `son las ${ahora} UTC y la EOBT es ${hhmm(eobt)} UTC`;
+  const correcta = antes > 120 * 60 ? 'No: es más de 120 h antes' : antes < 60 ? 'No: es menos de 60 min antes' : 'Sí: está entre 120 h y 60 min antes';
+  return { clave: `E-plazo-${eobt}-${antes}`, tipo: 'escenario', nivel: 3, ad: null, q: `Un piloto presenta su FPL nacional: ${dice}. ¿Se puede presentar ahora?`,
+    opciones: ['Sí: está entre 120 h y 60 min antes', 'No: es menos de 60 min antes', 'No: es más de 120 h antes'], correcta,
+    secciones: ['ENR 1.10'], cita: 'ENR 1.10, tiempos del plan de vuelo', citaPrincipal: 'ENR 1.10', evidencia: 'Los planes de vuelo no se presentarán con más de 120 horas (5 días) de antelación respecto de la hora prevista de fuera calzos (EOBT) y por lo menos 60 minutos antes de la salida', ver: { gen: 'ENR 1.10', marca: 'Los planes de vuelo no se presentarán' } };
+}
+function escZona(fija) {
+  const z = fija || azar(B.zonas);
+  const r = { D: 'No se autoriza bajo ninguna circunstancia', P: 'Autorización del COFAC con 96 h de antelación', R: 'Autorización de la JOA con 72 h de antelación' };
+  const ev = { D: 'No se autoriza bajo ninguna circunstancia, la operación de ningún tipo de aeronaves en estas zonas.', P: 'deberán tramitar autorización al Comando de la Fuerza Aérea Colombiana (COFAC), con 96 horas de antelación', R: 'deberán tramitar autorización a la Jefatura de Operaciones Aéreas de la Fuerza Aérea Colombiana (JOA), con 72 horas de antelación' };
+  return { clave: `E-zona-${z.id}`, tipo: 'escenario', nivel: 3, ad: null, q: `Un piloto quiere cruzar la zona ${z.id} ${z.nombre} (${z.limites}). ¿Qué necesita?`,
+    opciones: barajar([...Object.values(r), 'Solo un plan de vuelo IFR']), correcta: r[z.tipo], secciones: ['ENR 5.1'], cita: 'ENR 5.1', citaPrincipal: 'ENR 5.1',
+    evidencia: z.linea + '\n' + ev[z.tipo], ver: { gen: 'ENR 5.1', marca: z.id } };
+}
+function escPasajerosSSEI(a) {
+  if (!/^(NIL|No)\b/i.test(a.ssei) || a.cat === 'Aviación de Estado') return null;
+  return { clave: `E-ssei-${a.oaci}`, tipo: 'escenario', nivel: 3, ad: a.oaci, q: `Una aerolínea quiere programar un vuelo no regular con pasajeros a ${a.oaci}. Su ficha publica SSEI: «${a.ssei}». ¿Puede operar?`,
+    opciones: ['No: sin SSEI no puede operar tráfico con pasajeros', 'Sí, si avisa por NOTAM', 'Sí, porque es no regular', 'Sí, de día'], correcta: 'No: sin SSEI no puede operar tráfico con pasajeros',
+    secciones: ['AD 1.2', `${a.oaci} AD 2.6`], cita: `${a.oaci} AD 2.6 + AD 1.2`, citaPrincipal: 'AD 1.2', evidencia: 'El tráfico regular o no regular con aviones que transporten pasajeros no puede utilizar aeródromos sin servicios de salvamento y extinción de incendios.', ver: { ad: a.oaci, n: 6 } };
+}
+const BASES_ALTERNO = B.aerodromos.filter((x) => x.cat === 'Aviación de Estado' && x.oaci !== 'SKJC');
+function escAlternoMilitar(fija) {
+  const a = fija || azar(BASES_ALTERNO);
+  return { clave: `E-alt-${a.oaci}`, tipo: 'escenario', nivel: 3, ad: a.oaci, q: `Un piloto civil pone ${a.oaci} (${a.nombre}, aviación de Estado) como alterno en su FPL. ¿Se acepta?`,
+    opciones: ['No: está prohibido planear bases militares como alterno', 'Sí, si tiene SSEI', 'Sí, con permiso de la torre', 'Sí, si el vuelo es IFR'], correcta: 'No: está prohibido planear bases militares como alterno',
+    secciones: ['AD 1.1'], cita: 'AD 1.1, num. 2.2.3', citaPrincipal: 'AD 1.1', evidencia: 'El uso o planificación de bases aéreas militares como aeródromos o helipuertos de alternativa en el plan de vuelo está totalmente prohibido', ver: { gen: 'AD 1.1', marca: 'está totalmente prohibido' } };
+}
+const ESCENARIOS = [
+  { sec: 'GEN 2.7', ad: true, f: escVFRNoche }, { sec: 'ENR 1.2', ad: true, f: escMinimos }, { sec: 'AD 1.2', ad: true, f: escPasajerosSSEI },
+  { sec: 'ENR 1.10', f: () => escCambioFPL() }, { sec: 'ENR 1.10', f: () => escPlazoFPL() }, { sec: 'ENR 5.1', f: () => escZona() }, { sec: 'AD 1.1', f: () => escAlternoMilitar() },
+];
+function pEscenario(a) {
+  for (const e of barajar(ESCENARIOS)) { const p = e.f(a); if (p) return p; }
+  return escPlazoFPL();
+}
+
+// Mezcla por tipos (Práctica libre y pruebas antiguas)
+function preguntaPara(a, tipos, nivel) {
+  for (let i = 0; i < 30; i++) {
+    const t = azar(tipos); let p = null;
+    if (t === 'seccion') p = Math.random() < 0.6 && a ? pSeccionAD(a) : pSeccionGeneral();
+    else if (t === 'dato') p = a ? (Math.random() < 0.6 ? pDato(a) : pCruzado(a)) : null;
+    else if (t === 'general') p = pGeneral(nivel || 3);
+    else if (t === 'escenario') p = pEscenario(a || azar(B.aerodromos));
+    if (p) return p;
+  }
+  return pGeneral();
+}
+
+// =====================================================================================
+// Banco completo: cada entrada es una pregunta posible, con su sección, su familia y cómo armarla.
+// Las preguntas de tablas salen de una fila del AIP y muestran esa línea literal como evidencia.
+// estado.vistos cuenta cuántas veces salió cada entrada: cada sesión trae primero las que no has visto.
+// =====================================================================================
+const POOL = []; const POOL_POR_SEC = {};
+function agregar(sec, fam, tipo, id, ad, make) {
+  const e = { sec, fam, tipo, id, ad, make };
+  POOL.push(e); (POOL_POR_SEC[sec] || (POOL_POR_SEC[sec] = [])).push(e);
+}
+const T = B.tablas;
+const qd = (base) => Object.assign({ tipo: 'general', nivel: 2, ad: null }, base);
+const enTabla = (sec, linea) => ({ gen: sec, marca: linea });
+const fechaLarga = (iso) => { const [y, m, d] = iso.split('-'); return `${d} ${MESES[+m - 1]} ${y}`; };
+// Secciones que también se aceptan como respuesta porque traen el mismo dato.
+const ALTERNAS = { 'AD 2.6': ['AD 1.2'], 'ENR 3': ['ENR 3.1', 'ENR 3.2', 'ENR 3.3'], 'ENR 6': ['ENR 6.1'], 'GEN 2.5': ['ENR 4.1'] };
+
+// ---- «Te preguntan…»: la pregunta típica de la simulación; hay que decir dónde se busca
+function pSirve(g) {
+  return { clave: `SV-${g.sec}`, tipo: 'seccion', nivel: 1, ad: null, q: `En la simulación te preguntan: «${g.sirve}». ¿En qué sección del AIP lo buscas?`, secciones: [g.sec, ...(ALTERNAS[g.sec] || [])], cita: g.sec, citaPrincipal: g.sec, evidencia: `${g.sec} ${tituloDe(g.sec)}: ${g.que}`, ver: { gen: g.sec } };
+}
+function pSirveAD(a, g) {
+  const n = +g.sec.split('.')[1]; const sec = `${a.oaci} ${g.sec}`;
+  return { clave: `SV-${a.oaci}-${g.sec}`, tipo: 'seccion', nivel: 1, ad: a.oaci, q: `Te dan ${a.oaci} y te preguntan: «${g.sirve}». ¿En qué sección del AIP lo buscas?`, secciones: [sec, ...(ALTERNAS[g.sec] || [])], cita: sec, citaPrincipal: g.sec, evidencia: `${sec} — ${a.secciones[n].t}`, ver: { ad: a.oaci, n } };
+}
+// ---- Ficha AD 2: ítems numerados, pistas, luces, servicios, radioayudas y distintivo
+const VALORES_NUM = {};
+for (const a of B.aerodromos) for (const [n, k, , v] of a.numerados) (VALORES_NUM[n + '-' + k] || (VALORES_NUM[n + '-' + k] = new Set())).add(v);
+function pNumerado(a, [n, k, etq, valor, linea]) {
+  const sec = `${a.oaci} AD 2.${n}`;
+  const donde = /^Observaciones/i.test(etq) ? ` en AD 2.${n}` : '';
+  return qd({ clave: `N-${a.oaci}-${n}-${k}`, tipo: 'dato', ad: a.oaci, q: `¿Qué publica la ficha de ${a.oaci}${donde} para «${etq}»?`, opciones: opcionesCon(valor, [...VALORES_NUM[n + '-' + k]]), correcta: valor, secciones: [sec], cita: sec, citaPrincipal: `AD 2.${n}`, evidencia: linea, ver: { ad: a.oaci, n, marca: linea } });
+}
+const DIST = [['tora', 'TORA'], ['toda', 'TODA'], ['asda', 'ASDA'], ['lda', 'LDA']];
+const TODAS_DIST = unicos(B.aerodromos.flatMap((a) => a.distancias.flatMap((d) => DIST.map(([c]) => (/^\d+$/.test(d[c]) ? d[c] + ' m' : null))))).filter(Boolean);
+function pDistancia(a, d, campo, nombre) {
+  const v = d[campo] + ' m';
+  const propias = a.distancias.flatMap((x) => DIST.map(([c]) => (/^\d+$/.test(x[c]) ? x[c] + ' m' : null)));
+  const otras = unicos([...propias, ...barajar(TODAS_DIST).slice(0, 6)]);
+  return qd({ clave: `R13-${a.oaci}-${d.rwy}-${campo}`, tipo: 'dato', ad: a.oaci, q: `¿Cuál es el ${nombre} de la pista ${d.rwy} de ${a.oaci}?`, opciones: opcionesCon(v, otras), correcta: v, secciones: [`${a.oaci} AD 2.13`], cita: `${a.oaci} AD 2.13`, citaPrincipal: 'AD 2.13', evidencia: d.linea, ver: { ad: a.oaci, n: 13, marca: d.linea } });
+}
+const valorPista = (campo) => unicos(B.aerodromos.flatMap((a) => a.pistas12.map((p) => p[campo])));
+const VALORES_PISTA = { dim: valorPista('dim'), brg: valorPista('brg'), pcn: valorPista('pcn') };
+const PREG_PISTA = { dim: 'qué dimensiones (m) tiene', brg: 'qué marcación (BRG GEO / MAG) tiene', pcn: 'qué resistencia (PCN) y superficie tiene' };
+function pPista(a, p, campo) {
+  return qd({ clave: `R12-${a.oaci}-${p.rwy}-${campo}`, tipo: 'dato', ad: a.oaci, q: `¿${PREG_PISTA[campo].charAt(0).toUpperCase() + PREG_PISTA[campo].slice(1)} la pista ${p.rwy} de ${a.oaci}?`, opciones: opcionesCon(p[campo], VALORES_PISTA[campo]), correcta: p[campo], secciones: [`${a.oaci} AD 2.12`], cita: `${a.oaci} AD 2.12`, citaPrincipal: 'AD 2.12', evidencia: p.linea, ver: { ad: a.oaci, n: 12, marca: p.linea } });
+}
+const VALORES_LUZ = { apch: unicos(B.aerodromos.flatMap((a) => a.luces14.map((l) => l.apch))), papi: unicos(B.aerodromos.flatMap((a) => a.luces14.map((l) => l.papi))) };
+function pLuz(a, l, campo) {
+  const q = campo === 'apch' ? `¿Qué luces de aproximación publica la pista ${l.rwy} de ${a.oaci}?` : `¿Qué sistema visual indicador de pendiente (VASIS/PAPI) tiene la pista ${l.rwy} de ${a.oaci}?`;
+  return qd({ clave: `L14-${a.oaci}-${l.rwy}-${campo}`, tipo: 'dato', ad: a.oaci, q, opciones: opcionesCon(l[campo], VALORES_LUZ[campo]), correcta: l[campo], secciones: [`${a.oaci} AD 2.14`], cita: `${a.oaci} AD 2.14`, citaPrincipal: 'AD 2.14', evidencia: l.linea, ver: { ad: a.oaci, n: 14, marca: l.linea } });
+}
+const FRECS_18 = unicos(B.aerodromos.flatMap((a) => a.servicios18.map((s) => s.freq)));
+const DISTINTIVOS_18 = unicos(B.aerodromos.flatMap((a) => a.servicios18.map((s) => s.distintivo))).filter(Boolean);
+function pServicio(a, s, campo) {
+  const q = campo === 'freq' ? `¿En qué frecuencia opera el servicio ${s.serv}${s.distintivo ? ` (${s.distintivo})` : ''} de ${a.oaci}?` : `¿Qué distintivo de llamada tiene el servicio ${s.serv} de ${a.oaci}?`;
+  const val = s[campo];
+  return qd({ clave: `S18-${a.oaci}-${s.serv}-${campo}`, tipo: 'dato', ad: a.oaci, q, opciones: opcionesCon(val, campo === 'freq' ? FRECS_18 : DISTINTIVOS_18), correcta: val, secciones: [`${a.oaci} AD 2.18`], cita: `${a.oaci} AD 2.18`, citaPrincipal: 'AD 2.18', evidencia: s.linea, ver: { ad: a.oaci, n: 18, marca: s.linea } });
+}
+const IDENTS_19 = unicos(B.aerodromos.flatMap((a) => a.ayudas19.map((x) => x.ident)));
+const FRECS_19 = unicos(B.aerodromos.flatMap((a) => a.ayudas19.map((x) => x.freq)));
+function pAyuda(a, x, campo) {
+  const q = campo === 'ident' ? `¿Qué identificación tiene el ${x.tipo} de ${a.oaci}?` : `¿Qué frecuencia publica ${a.oaci} para el ${x.tipo} ${x.ident}?`;
+  const val = x[campo];
+  return qd({ clave: `A19-${a.oaci}-${x.tipo}-${campo}`, tipo: 'dato', ad: a.oaci, q, opciones: opcionesCon(val, campo === 'ident' ? IDENTS_19 : FRECS_19), correcta: val, secciones: [`${a.oaci} AD 2.19`], cita: `${a.oaci} AD 2.19`, citaPrincipal: 'AD 2.19', evidencia: x.linea, ver: { ad: a.oaci, n: 19, marca: x.linea } });
+}
+const DISTINTIVOS_17 = unicos(B.aerodromos.map((a) => a.distintivo17)).filter(Boolean);
+function pDistintivo17(a) {
+  return qd({ clave: `D17-${a.oaci}`, tipo: 'dato', ad: a.oaci, q: `¿Qué distintivo de llamada ATS (e idioma) publica ${a.oaci} para su espacio aéreo?`, opciones: opcionesCon(a.distintivo17, DISTINTIVOS_17), correcta: a.distintivo17, secciones: [`${a.oaci} AD 2.17`], cita: `${a.oaci} AD 2.17`, citaPrincipal: 'AD 2.17', evidencia: 'Distintivo de Llamada ATS · Idiomas: ' + a.distintivo17, ver: { ad: a.oaci, n: 17, marca: a.distintivo17 } });
+}
+
+// ---- Tablas nacionales (GEN, ENR, AD 1)
+const ABR_ES = T.abreviaturas.map((x) => x.es), ABR = T.abreviaturas.map((x) => x.abr);
+const pAbrev = (x) => qd({ clave: `GA-${x.abr}`, q: `¿Qué significa la abreviatura ${x.abr}?`, opciones: opcionesCon(x.es, ABR_ES), correcta: x.es, secciones: ['GEN 2.2'], cita: 'GEN 2.2', citaPrincipal: 'GEN 2.2', evidencia: x.linea, ver: enTabla('GEN 2.2', x.linea) });
+const pAbrevInv = (x) => qd({ clave: `GB-${x.abr}`, q: `¿Qué abreviatura significa «${x.es}»?`, opciones: opcionesCon(x.abr, ABR), correcta: x.abr, secciones: ['GEN 2.2'], cita: 'GEN 2.2', citaPrincipal: 'GEN 2.2', evidencia: x.linea, ver: enTabla('GEN 2.2', x.linea) });
+const IND_ID = T.indicadores.map((x) => x.id), IND_LUGAR = T.indicadores.map((x) => x.lugar);
+const pIndicador = (x) => qd({ clave: `GI-${x.id}`, q: `¿Qué indicador de lugar tiene ${x.lugar}?`, opciones: opcionesCon(x.id, IND_ID), correcta: x.id, secciones: ['GEN 2.4'], cita: 'GEN 2.4', citaPrincipal: 'GEN 2.4', evidencia: x.linea, ver: enTabla('GEN 2.4', x.linea) });
+const pIndicadorInv = (x) => qd({ clave: `GJ-${x.id}`, q: `¿A qué lugar corresponde el indicador ${x.id}?`, opciones: opcionesCon(x.lugar, IND_LUGAR), correcta: x.lugar, secciones: ['GEN 2.4'], cita: 'GEN 2.4', citaPrincipal: 'GEN 2.4', evidencia: x.linea, ver: enTabla('GEN 2.4', x.linea) });
+const DEST = T.destinatarios.map((x) => x.dir);
+const pDestinatario = (x) => qd({ clave: `GD-${x.nombre.slice(0, 40)}`, q: `¿Qué indicador de destinatario AMHS tiene «${x.nombre}»?`, opciones: opcionesCon(x.dir, DEST), correcta: x.dir, secciones: ['GEN 2.4'], cita: 'GEN 2.4, indicadores de destinatario', citaPrincipal: 'GEN 2.4', evidencia: x.linea, ver: enTabla('GEN 2.4', x.linea) });
+const RADIO_EST = unicos(T.radioayudas.map((x) => x.estacion)), RADIO_TIPO = unicos(T.radioayudas.map((x) => x.tipo));
+const pRadioEstacion = (x) => qd({ clave: `GR-${x.id}`, q: `¿A qué estación corresponde la radioayuda identificada ${x.id}?`, opciones: opcionesCon(x.estacion, RADIO_EST), correcta: x.estacion, secciones: ['GEN 2.5', ...ALTERNAS['GEN 2.5']], cita: 'GEN 2.5', citaPrincipal: 'GEN 2.5', evidencia: x.linea, ver: enTabla('GEN 2.5', x.linea) });
+const pRadioTipo = (x) => qd({ clave: `GT-${x.id}`, q: `¿Qué tipo de radioayuda es ${x.id} (${x.estacion})?`, opciones: opcionesCon(x.tipo, RADIO_TIPO), correcta: x.tipo, secciones: ['GEN 2.5', ...ALTERNAS['GEN 2.5']], cita: 'GEN 2.5', citaPrincipal: 'GEN 2.5', evidencia: x.linea, ver: enTabla('GEN 2.5', x.linea) });
+function pAirac(i) {
+  const x = T.airac[i], sig = T.airac[i + 1], otra = T.airac[i + 2];
+  const mas = (iso, d) => new Date(Date.parse(iso + 'T12:00:00Z') + d * 86400000).toISOString().slice(0, 10);
+  const correcta = fechaLarga(sig.f);
+  return qd({ clave: `GC-${x.f}`, q: `En el calendario AIRAC, ¿qué fecha de entrada en vigor sigue a la del ${fechaLarga(x.f)}?`, opciones: opcionesCon(correcta, [mas(sig.f, -14), mas(sig.f, 7), otra ? otra.f : mas(sig.f, 28)].map(fechaLarga)), correcta, secciones: ['GEN 3.1'], cita: 'GEN 3.1, num. 4.4 (calendario AIRAC)', citaPrincipal: 'GEN 3.1', evidencia: sig.linea, ver: enTabla('GEN 3.1', sig.linea) });
+}
+const FEST = B.festivos.map((f) => `${f.dia} ${MESES[f.mes - 1]}`);
+const pFestivo = (f) => qd({ clave: `GF-${f.nombre.slice(0, 30)}`, q: `¿Qué día de 2026 es festivo por «${f.nombre}»?`, opciones: opcionesCon(`${f.dia} ${MESES[f.mes - 1]}`, FEST), correcta: `${f.dia} ${MESES[f.mes - 1]}`, secciones: ['GEN 2.1'], cita: 'GEN 2.1, num. 6', citaPrincipal: 'GEN 2.1', evidencia: f.linea, ver: enTabla('GEN 2.1', f.linea) });
+const MET_HORAS = unicos(T.met35.map((x) => x.horas)).filter(valido);
+const pMetHoras = (x) => qd({ clave: `GM-${x.id}`, ad: AD[x.id] ? x.id : null, q: `Según la tabla de estaciones de GEN 3.5, ¿en qué horario funciona la estación MET de ${x.id}?`, opciones: opcionesCon(x.horas, MET_HORAS), correcta: x.horas, secciones: ['GEN 3.5'], cita: 'GEN 3.5, num. 3', citaPrincipal: 'GEN 3.5', evidencia: x.linea, ver: enTabla('GEN 3.5', x.id) });
+const SSR = T.ssr.map((x) => x.cod);
+const pSSR = (x) => qd({ clave: `ES-${x.cod}`, q: `¿Qué código SSR se asigna a «${x.desc}»?`, opciones: opcionesCon(x.cod, SSR), correcta: x.cod, secciones: ['ENR 1.6'], cita: 'ENR 1.6, asignación de códigos SSR', citaPrincipal: 'ENR 1.6', evidencia: x.linea, ver: enTabla('ENR 1.6', x.linea) });
+const TMA_DIR = [...T.tmaAftn.map((x) => x.dir), 'SKECZQZX', 'SKEDZQZX', 'SKBOZPZG'];
+const pTmaAftn = (x) => qd({ clave: `EA-${x.dir}`, q: `¿A qué dirección AFTN se dirige un plan de vuelo que pasa por la ${x.tma}?`, opciones: opcionesCon(x.dir, TMA_DIR), correcta: x.dir, secciones: ['ENR 1.11'], cita: 'ENR 1.11', citaPrincipal: 'ENR 1.11', evidencia: x.linea, ver: enTabla('ENR 1.11', x.linea) });
+const ARO_NOMBRES = T.aroOficinas.map((o) => o.nombre);
+function pAroTabla(id) {
+  const o = T.aroOficinas[T.aroPorId[id]]; const nombre = T.nombrePorId[id];
+  return qd({ clave: `EO-${id}`, q: `¿Qué oficina ARO/AIS tramita el plan de vuelo de un vuelo que sale de ${nombre ? `${nombre} (${id})` : id}?`, opciones: opcionesCon(o.nombre, ARO_NOMBRES), correcta: o.nombre, secciones: ['ENR 1.10'], cita: 'ENR 1.10 (tablas de oficinas ARO/AIS)', citaPrincipal: 'ENR 1.10', evidencia: o.linea + ' … | ' + id, ver: enTabla('ENR 1.10', id) });
+}
+const E41_FREQ = T.enr41.map((x) => x.freq), E41_ID = T.enr41.map((x) => x.ident);
+const pEnr41Freq = (x) => qd({ clave: `EF-${x.ident}`, q: `¿Qué frecuencia publica la lista de radioayudas en ruta para ${x.ident} (${x.estacion} ${x.tipo})?`, opciones: opcionesCon(x.freq, E41_FREQ), correcta: x.freq, secciones: ['ENR 4.1'], cita: 'ENR 4.1', citaPrincipal: 'ENR 4.1', evidencia: x.linea, ver: enTabla('ENR 4.1', x.linea) });
+const pEnr41Id = (x) => qd({ clave: `EI-${x.ident}`, q: `¿Qué identificación tiene la radioayuda en ruta ${x.tipo} de ${x.estacion}?`, opciones: opcionesCon(x.ident, E41_ID), correcta: x.ident, secciones: ['ENR 4.1', 'GEN 2.5'], cita: 'ENR 4.1', citaPrincipal: 'ENR 4.1', evidencia: x.linea, ver: enTabla('ENR 4.1', x.linea) });
+const PUNTOS_RUTAS = unicos(T.puntos.map((x) => x.rutas));
+const pPunto = (x) => qd({ clave: `EP-${x.id}`, q: `¿A qué aerovías pertenece el punto significativo ${x.id}?`, opciones: opcionesCon(x.rutas, PUNTOS_RUTAS), correcta: x.rutas, secciones: ['ENR 4.4'], cita: 'ENR 4.4', citaPrincipal: 'ENR 4.4', evidencia: x.linea, ver: enTabla('ENR 4.4', x.linea) });
+const SUBRUTA = { '3.1': 'ENR 3.1 · rutas ATS inferiores', '3.2': 'ENR 3.2 · rutas ATS superiores', '3.3': 'ENR 3.3 · rutas de navegación aérea' };
+const puntoLimpio = (p) => /^[A-Z]{5}$/.test(p) || / · (D?VOR|VOR|NDB)/.test(p);
+const TODOS_PUNTOS = unicos(T.rutas.flatMap((r) => r.puntos.filter(puntoLimpio)));
+const evRuta = (r) => `${r.id} (ENR ${r.sub}): ${r.puntos.join(' → ')}`;
+const pRutaSub = (r) => qd({ clave: `ER-${r.id}`, q: `¿En qué subsección del AIP está la aerovía ${r.id}?`, opciones: Object.values(SUBRUTA), correcta: SUBRUTA[r.sub], secciones: [`ENR ${r.sub} ${r.id}`, `ENR ${r.sub}`], cita: `ENR ${r.sub} ${r.id}`, citaPrincipal: 'ENR 3', evidencia: evRuta(r), ver: { ruta: r.id } });
+function pRutaPunto(r) {
+  const propios = r.puntos.filter(puntoLimpio); if (propios.length < 2) return null;
+  const correcta = azar(propios);
+  return qd({ clave: `EQ-${r.id}-${correcta.slice(0, 12)}`, q: `¿Cuál de estos puntos significativos está en la aerovía ${r.id}?`, opciones: opcionesCon(correcta, TODOS_PUNTOS.filter((p) => !r.puntos.includes(p))), correcta, secciones: [`ENR ${r.sub} ${r.id}`, `ENR ${r.sub}`], cita: `ENR ${r.sub} ${r.id}`, citaPrincipal: 'ENR 3', evidencia: evRuta(r), ver: { ruta: r.id } });
+}
+const NOMBRE_ZONA = { D: 'peligrosa', P: 'prohibida', R: 'restringida' };
+const nZona = {}; B.zonas.forEach((z) => { nZona[z.nombre] = (nZona[z.nombre] || 0) + 1; });
+const ZONA_LIM = unicos(B.zonas.map((z) => z.limites)), ZONA_ID = B.zonas.map((z) => z.id);
+const pZonaLim = (z) => qd({ clave: `EZ-${z.id}`, q: `¿Qué límites verticales tiene la zona ${z.id} ${z.nombre}?`, opciones: opcionesCon(z.limites, ZONA_LIM), correcta: z.limites, secciones: ['ENR 5.1'], cita: 'ENR 5.1', citaPrincipal: 'ENR 5.1', evidencia: z.linea, ver: enTabla('ENR 5.1', z.linea) });
+const pZonaId = (z) => qd({ clave: `EY-${z.id}`, q: `¿Qué designación tiene la zona ${NOMBRE_ZONA[z.tipo]} de ${z.nombre}?`, opciones: opcionesCon(z.id, ZONA_ID), correcta: z.id, secciones: ['ENR 5.1'], cita: 'ENR 5.1', citaPrincipal: 'ENR 5.1', evidencia: z.linea, ver: enTabla('ENR 5.1', z.linea) });
+const SKE_LIM = unicos(T.ske.map((x) => `${x.sup} / ${x.inf}`));
+const pSkeLim = (x) => qd({ clave: `EK-${x.id}`, q: `¿Qué límites verticales (superior / inferior) tiene la ${x.id} ${x.nombre}?`, opciones: opcionesCon(`${x.sup} / ${x.inf}`, SKE_LIM), correcta: `${x.sup} / ${x.inf}`, secciones: ['ENR 5.2'], cita: 'ENR 5.2', citaPrincipal: 'ENR 5.2', evidencia: `${x.linea}\nLímite superior: ${x.sup} · inferior: ${x.inf}`, ver: enTabla('ENR 5.2', x.linea) });
+const pSkeUso = (x) => qd({ clave: `EU-${x.id}`, q: `¿La zona de entrenamiento ${x.id} ${x.nombre} es civil o militar?`, opciones: ['Civil', 'Militar'], correcta: x.uso, secciones: ['ENR 5.2'], cita: 'ENR 5.2', citaPrincipal: 'ENR 5.2', evidencia: x.linea, ver: enTabla('ENR 5.2', x.linea) });
+const TIPO_TRAFICO = { S: 'Regular (S)', N: 'No regular (N)', G: 'Aviación general (G)', M: 'Militar (M)', X: 'Otro (X)' };
+const traficoDe = (t) => t.split(/[-, ]+/).filter(Boolean).map((l) => TIPO_TRAFICO[l]).join(' y ');
+const pAd13nc = (x) => qd({ clave: `AN-${x.id}`, q: `En el índice de aeródromos no controlados, ¿qué tipo de tráfico admite ${x.nombre} (${x.id})?`, opciones: opcionesCon(traficoDe(x.tipo), Object.values(TIPO_TRAFICO)), correcta: traficoDe(x.tipo), secciones: ['AD 1.3'], cita: 'AD 1.3, num. 2', citaPrincipal: 'AD 1.3', evidencia: x.linea, ver: enTabla('AD 1.3', `· ${x.id} |`) });
+
+// ---- Construcción del banco
+B.generales.forEach((g) => agregar(g.cita, 'reglas', 'general', g.id, null, () => pGeneral(3, g)));
+B.conceptosGenerales.forEach((c, i) => agregar(c[1], 'donde', 'seccion', `SG-${i}`, null, () => pSeccionGeneral(c)));
+SECCIONES_GUIA.filter((g) => g.sirve && !/^AD 2\./.test(g.sec)).forEach((g) => agregar(g.sec, 'donde', 'seccion', `SV-${g.sec}`, null, () => pSirve(g)));
+const SIRVE_AD2 = SECCIONES_GUIA.filter((g) => g.sirve && /^AD 2\./.test(g.sec));
+const CAMPOS_POOL = CAMPOS.filter((c) => !['dim', 'tora', 'lda'].includes(c.id)); // las pistas tienen familia propia, una pregunta por pista
+for (const a of B.aerodromos) {
+  const o = a.oaci;
+  B.conceptosAD.forEach((c) => agregar('AD ' + c[1], 'donde', 'seccion', `S-${o}-${c[1]}`, o, () => pSeccionAD(a, c)));
+  SIRVE_AD2.forEach((g) => a.secciones[+g.sec.split('.')[1]].x && agregar(g.sec, 'donde', 'seccion', `SV-${o}-${g.sec}`, o, () => pSirveAD(a, g)));
+  CAMPOS_POOL.forEach((c) => { if (valido(c.v(a))) agregar('AD 2.' + c.n, 'ficha', 'dato', `D-${o}-${c.id}`, o, () => pDato(a, [c.id])); });
+  a.numerados.forEach((it) => { if ((VALORES_NUM[it[0] + '-' + it[1]] || new Set()).size >= 3) agregar('AD 2.' + it[0], 'ficha', 'dato', `N-${o}-${it[0]}-${it[1]}`, o, () => pNumerado(a, it)); });
+  a.distancias.forEach((d) => DIST.forEach(([c, nombre]) => { if (/^\d+$/.test(d[c])) agregar('AD 2.13', 'pista', 'dato', `R13-${o}-${d.rwy}-${c}`, o, () => pDistancia(a, d, c, nombre)); }));
+  a.pistas12.forEach((p) => ['dim', 'brg', 'pcn'].forEach((c) => { if (valido(p[c])) agregar('AD 2.12', 'pista', 'dato', `R12-${o}-${p.rwy}-${c}`, o, () => pPista(a, p, c)); }));
+  a.luces14.forEach((l) => ['apch', 'papi'].forEach((c) => { if (valido(l[c]) && !/^(No|NIL|—)\b/i.test(l[c])) agregar('AD 2.14', 'luces', 'dato', `L14-${o}-${l.rwy}-${c}`, o, () => pLuz(a, l, c)); }));
+  a.servicios18.forEach((s) => {
+    if (!['TWR', 'APP'].includes(s.serv)) agregar('AD 2.18', 'servicios', 'dato', `S18-${o}-${s.serv}-freq`, o, () => pServicio(a, s, 'freq'));
+    if (s.distintivo) agregar('AD 2.18', 'servicios', 'dato', `S18-${o}-${s.serv}-dist`, o, () => pServicio(a, s, 'distintivo'));
+  });
+  const tipos19 = {}; a.ayudas19.forEach((x) => { tipos19[x.tipo] = (tipos19[x.tipo] || 0) + 1; });
+  a.ayudas19.forEach((x) => {
+    if (tipos19[x.tipo] === 1) agregar('AD 2.19', 'ayudas', 'dato', `A19-${o}-${x.tipo}-ident`, o, () => pAyuda(a, x, 'ident'));
+    agregar('AD 2.19', 'ayudas', 'dato', `A19-${o}-${x.tipo}-${x.ident}-freq`, o, () => pAyuda(a, x, 'freq'));
+  });
+  if (a.distintivo17) agregar('AD 2.17', 'ficha', 'dato', `D17-${o}`, o, () => pDistintivo17(a));
+  // cruces con tablas nacionales
+  CRUZADOS.forEach((c) => {
+    if (c.id === 'sol') { if (a.sol) a.sol.filter((f) => f[0] >= 10 && f[0] <= 11).forEach((f) => agregar('GEN 2.7', 'sol', 'dato', `X-${o}-sol-${f[0]}-${f[1]}`, o, () => c.f(a, f))); }
+    else if (c.f(a)) agregar(c.sec, 'cruce-' + c.id, 'dato', `X-${o}-${c.id}`, o, () => c.f(a));
+  });
+  // escenarios con datos del aeródromo
+  if (escVFRNoche(a, FECHAS_SIM[0])) FECHAS_SIM.forEach((fe) => agregar('GEN 2.7', 'esc-noche', 'escenario', `E-noche-${o}-${fe}`, o, () => escVFRNoche(a, fe)));
+  if (escMinimos(a)) agregar('ENR 1.2', 'esc-minimos', 'escenario', `E-min-${o}`, o, () => escMinimos(a));
+  if (escPasajerosSSEI(a)) agregar('AD 1.2', 'esc-ssei', 'escenario', `E-ssei-${o}`, o, () => escPasajerosSSEI(a));
+}
+CAMBIOS_FPL.forEach((c, i) => agregar('ENR 1.10', 'esc-fpl', 'escenario', `E-fpl-${i}`, null, () => escCambioFPL(c)));
+EOBT_SIM.forEach((e) => ANTES_SIM.forEach((x) => agregar('ENR 1.10', 'esc-plazo', 'escenario', `E-plazo-${e}-${x}`, null, () => escPlazoFPL(e, x))));
+B.zonas.forEach((z) => agregar('ENR 5.1', 'esc-zona', 'escenario', `E-zona-${z.id}`, null, () => escZona(z)));
+BASES_ALTERNO.forEach((a) => agregar('AD 1.1', 'esc-alterno', 'escenario', `E-alt-${a.oaci}`, null, () => escAlternoMilitar(a)));
+// tablas nacionales
+T.abreviaturas.forEach((x) => { agregar('GEN 2.2', 'abrev', 'general', `GA-${x.abr}`, null, () => pAbrev(x)); agregar('GEN 2.2', 'abrev-inv', 'general', `GB-${x.abr}`, null, () => pAbrevInv(x)); });
+T.indicadores.forEach((x) => { agregar('GEN 2.4', 'indicador', 'general', `GI-${x.id}`, null, () => pIndicador(x)); agregar('GEN 2.4', 'indicador-inv', 'general', `GJ-${x.id}`, null, () => pIndicadorInv(x)); });
+T.destinatarios.forEach((x, i) => agregar('GEN 2.4', 'amhs', 'general', `GD-${i}`, null, () => pDestinatario(x)));
+{
+  const filasPorId = {}; T.radioayudas.forEach((x) => (filasPorId[x.id] || (filasPorId[x.id] = [])).push(x));
+  Object.values(filasPorId).forEach((fs) => {
+    agregar('GEN 2.5', 'radio', 'general', `GR-${fs[0].id}`, null, () => pRadioEstacion(fs[0]));
+    if (fs.length === 1) agregar('GEN 2.5', 'radio-tipo', 'general', `GT-${fs[0].id}`, null, () => pRadioTipo(fs[0]));
+  });
+}
+T.airac.forEach((x, i) => { if (i + 1 < T.airac.length && x.f >= '2026-01-01' && x.f < '2029-01-01') agregar('GEN 3.1', 'airac', 'general', `GC-${x.f}`, null, () => pAirac(i)); });
+B.festivos.forEach((f, i) => agregar('GEN 2.1', 'festivos', 'general', `GF-${i}`, null, () => pFestivo(f)));
+T.met35.forEach((x) => { if (valido(x.horas)) agregar('GEN 3.5', 'met35', 'general', `GM-${x.id}`, AD[x.id] ? x.id : null, () => pMetHoras(x)); });
+T.ssr.forEach((x) => agregar('ENR 1.6', 'ssr', 'general', `ES-${x.cod}`, null, () => pSSR(x)));
+T.tmaAftn.forEach((x) => agregar('ENR 1.11', 'tma-aftn', 'general', `EA-${x.dir}`, null, () => pTmaAftn(x)));
+Object.keys(T.aroPorId).forEach((id) => { if (!AD[id]) agregar('ENR 1.10', 'aro-tabla', 'general', `EO-${id}`, null, () => pAroTabla(id)); });
+T.enr41.forEach((x) => { agregar('ENR 4.1', 'enr41', 'general', `EF-${x.ident}`, null, () => pEnr41Freq(x)); agregar('ENR 4.1', 'enr41-id', 'general', `EI-${x.ident}`, null, () => pEnr41Id(x)); });
+T.puntos.forEach((x) => agregar('ENR 4.4', 'puntos', 'general', `EP-${x.id}`, null, () => pPunto(x)));
+T.rutas.forEach((r) => { agregar('ENR 3', 'ruta-sub', 'general', `ER-${r.id}`, null, () => pRutaSub(r)); if (r.puntos.filter(puntoLimpio).length >= 2) agregar('ENR 3', 'ruta-punto', 'general', `EQ-${r.id}`, null, () => pRutaPunto(r)); });
+B.zonas.forEach((z) => { agregar('ENR 5.1', 'zona-lim', 'general', `EZ-${z.id}`, null, () => pZonaLim(z)); if (nZona[z.nombre] === 1) agregar('ENR 5.1', 'zona-id', 'general', `EY-${z.id}`, null, () => pZonaId(z)); });
+T.ske.forEach((x) => { agregar('ENR 5.2', 'ske', 'general', `EK-${x.id}`, null, () => pSkeLim(x)); if (x.uso) agregar('ENR 5.2', 'ske-uso', 'general', `EU-${x.id}`, null, () => pSkeUso(x)); });
+T.ad13nc.forEach((x) => agregar('AD 1.3', 'ad13nc', 'general', `AN-${x.id}`, null, () => pAd13nc(x)));
+const practicable = (sec) => !!(POOL_POR_SEC[sec] || []).length;
+const cuantasDe = (sec) => (POOL_POR_SEC[sec] || []).length;
+
+// ---- Selección: siempre entre las menos vistas (primero las nunca vistas). Entre ellas, familia al azar,
+// ponderada para que ninguna tabla grande tape a las demás.
+const vecesVista = (e) => (estado.vistos && estado.vistos[e.id]) || 0;
+function minVisto(entradas, usadas) { let m = Infinity; for (const e of entradas) if (!usadas.has(e.id)) m = Math.min(m, vecesVista(e)); return m; }
+function elegir(entradas, usadas) {
+  const m = minVisto(entradas, usadas);
+  if (m === Infinity) return null;
+  const frescas = entradas.filter((e) => !usadas.has(e.id) && vecesVista(e) === m);
+  const porFam = {}; for (const e of frescas) (porFam[e.fam] || (porFam[e.fam] = [])).push(e);
+  const fams = Object.values(porFam).map((l) => [l, Math.min(Math.sqrt(l.length), 6)]);
+  let r = Math.random() * fams.reduce((n, x) => n + x[1], 0);
+  for (const [l, w] of fams) { r -= w; if (r <= 0) return azar(l); }
+  return azar(fams[fams.length - 1][0]);
+}
+// Secciones en orden aleatorio, pero primero las que aún tienen preguntas sin ver.
+function ordenarPorFrescura(secs, a, usadas, filtro) {
+  return barajar(secs).map((s) => [s, minVisto(entradasDe(s, a, filtro), usadas)]).sort((x, y) => x[1] - y[1]).map((x) => x[0]);
+}
+function armar(e) {
+  let p = null;
+  try { p = e.make() || null; } catch (err) { p = null; }
+  if (p) { p.sid = e.id; p.citaPrincipal = p.citaPrincipal || e.sec; }
+  return p;
+}
+// Entradas de una sección; con aeródromo dado, solo las de ese aeródromo o las que no dependen de uno.
+function entradasDe(sec, a, filtro) {
+  let l = POOL_POR_SEC[sec] || [];
+  if (filtro) l = l.filter(filtro);
+  if (a) { const delAD = l.filter((e) => !e.ad || e.ad === a.oaci); if (delAD.length) l = delAD; }
+  return l;
+}
+function preguntaDeSeccion(sec, a, usadas = new Set(), filtro) {
+  const l = entradasDe(sec, a, filtro);
+  for (let k = 0; k < 8; k++) {
+    const e = elegir(l, usadas); if (!e) return null;
+    usadas.add(e.id);
+    const p = armar(e); if (p) return p;
+  }
+  return null;
+}
+// Prueba por partes: recorre secciones distintas de cada parte antes de repetir; el orden final es al azar.
+function armarPrueba(reparto, a, filtro) {
+  const ronda = []; const usadas = new Set();
+  for (const [pt, cuantas] of reparto) {
+    const secs = SECCIONES_GUIA.filter((g) => g.parte === pt && entradasDe(g.sec, a, filtro).length).map((g) => g.sec);
+    let cola = ordenarPorFrescura(secs, a, usadas, filtro); let n = 0; let vueltas = 0;
+    while (n < cuantas && vueltas < 6 && secs.length) {
+      if (!cola.length) { cola = ordenarPorFrescura(secs, a, usadas, filtro); vueltas++; continue; }
+      const p = preguntaDeSeccion(cola.shift(), a, usadas, filtro);
+      if (p) { ronda.push(p); n++; }
+    }
+  }
+  return barajar(ronda);
+}
+function sacarDe(lista, n, usadas) {
+  const out = [];
+  for (let k = 0; k < n * 4 && out.length < n; k++) { const e = elegir(lista, usadas); if (!e) break; usadas.add(e.id); const p = armar(e); if (p) out.push(p); }
+  return out;
+}
+function armarDeSecciones(secs, a, porSeccion) {
+  const ronda = []; const usadas = new Set();
+  for (let vuelta = 0; vuelta < porSeccion; vuelta++) for (const sec of secs) { const p = preguntaDeSeccion(sec, a, usadas); if (p) ronda.push(p); }
+  return barajar(ronda);
+}
+
+// =====================================================================================
+// Dominio por sección y diagnóstico
+// =====================================================================================
+function nivel(sec) {
+  if (!practicable(sec)) return 'vacia';
+  const r = estado.porCita[sec]; const n = r ? r.ok + r.mal : 0;
+  if (!n) return 'nuevo';
+  const t = r.ok / n;
+  if (t >= 0.85 && n >= 3) return 'domina';
+  if (t >= 0.6) return 'regular';
+  return 'debil';
+}
+const NOMBRE_NIVEL = { nuevo: 'Sin practicar', debil: 'Por reforzar', regular: 'En progreso', domina: 'Dominada', vacia: 'Solo lectura' };
+function resumenParte(pt) {
+  const secs = SECCIONES_GUIA.filter((g) => g.parte === pt);
+  const pract = secs.filter((g) => practicable(g.sec));
+  let ok = 0, n = 0, hechas = 0, preguntas = 0, vistas = 0;
+  for (const g of pract) {
+    const r = estado.porCita[g.sec]; if (r && r.ok + r.mal) { hechas++; ok += r.ok; n += r.ok + r.mal; }
+    for (const e of POOL_POR_SEC[g.sec]) { preguntas++; if (estado.vistos[e.id]) vistas++; }
+  }
+  return { total: pract.length, hechas, ok, n, acierto: n ? pct(ok, n) : null, preguntas, vistas };
+}
+function mapaParte(pt) {
+  const P = B.guia.find((x) => x.id === pt);
+  return `<div class="mapa t-${pt}">${P.capitulos.map((c) => `<span class="grupo" title="${esc(c.id + ' · ' + c.titulo)}">${c.secciones.map(([sec]) => {
+    const nv = nivel(sec); const r = estado.porCita[sec];
+    const det = r && r.ok + r.mal ? ` · ${r.ok} de ${r.ok + r.mal} bien` : '';
+    return `<button type="button" class="casilla ${nv}" data-ir-sec="${esc(sec)}" title="${esc(`${sec} ${tituloDe(sec)} · ${NOMBRE_NIVEL[nv]}${det}`)}" aria-label="${esc(`${sec}: ${NOMBRE_NIVEL[nv]}`)}">${esc(etiquetaCorta(sec))}</button>`;
+  }).join('')}</span>`).join('')}</div>`;
+}
+const LEYENDA = '<div class="leyenda"><span><i></i>Sin practicar</span><span><i class="debil"></i>Por reforzar (menos de 60 %)</span><span><i class="regular"></i>En progreso</span><span><i class="domina"></i>Dominada (85 % o más)</span><span><i class="vacia"></i>Solo lectura</span></div>';
+
+// Analiza las respuestas de una sesión.
+function analizar(items) {
+  const partes = { gen: { ok: 0, n: 0 }, enr: { ok: 0, n: 0 }, ad: { ok: 0, n: 0 } };
+  const porSec = {}; let ok = 0, puntos = 0, max = 0, noUbica = 0, malDato = 0;
+  for (const { p, r } of items) {
+    const sec = p.citaPrincipal || p.cita; const pt = parte(sec);
+    const acierto = r.max > 0 && r.puntos === r.max;
+    partes[pt].n++; if (acierto) { partes[pt].ok++; ok++; }
+    puntos += r.puntos; max += r.max;
+    const s = porSec[sec] || (porSec[sec] = { sec, ok: 0, mal: 0, malSec: 0, malDato: 0 });
+    if (acierto) s.ok++;
+    else { s.mal++; if (r.okSec === false) { s.malSec++; noUbica++; } else if (r.okDato === false) { s.malDato++; malDato++; } }
+  }
+  const errores = Object.values(porSec).filter((s) => s.mal).sort((a, b) => b.mal - a.mal || b.mal / (b.ok + b.mal) - a.mal / (a.ok + a.mal));
+  return { n: items.length, ok, puntos, max, partes, porSec, errores, noUbica, malDato };
+}
+// En cuántas sesiones anteriores también se falló esta sección
+function recurrencia(sec, sesiones) { return sesiones.filter((s) => s.porSec && s.porSec[sec] && s.porSec[sec][1] > 0).length; }
+// «Enfócate en» acumulado: pesa lo reciente, la tasa de error y que el fallo se repita.
+function focoGlobal() {
+  const recientes = estado.sesiones.slice(-6);
+  const rec = {};
+  for (const s of recientes) for (const [sec, [ok, mal]] of Object.entries(s.porSec || {})) { const r = rec[sec] || (rec[sec] = { ok: 0, mal: 0, ses: 0 }); r.ok += ok; r.mal += mal; if (mal) r.ses++; }
+  return Object.entries(estado.porCita).filter(([sec, r]) => r.mal > 0 && GUIA[sec]).map(([sec, r]) => {
+    const rr = rec[sec] || { ok: 0, mal: 0, ses: 0 };
+    const n = r.ok + r.mal; const err = r.mal / n;
+    return { sec, ok: r.ok, mal: r.mal, n, err, recMal: rr.mal, recOk: rr.ok, ses: rr.ses, malSec: r.malSec || 0, malDato: r.malDato || 0, puntaje: rr.mal * 2 + r.mal * err + rr.ses };
+  }).filter((x) => x.recMal > 0 || x.err >= 0.25).sort((a, b) => b.puntaje - a.puntaje);
+}
+function tipoDeError(malSec, malDato) {
+  if (malSec && malSec >= malDato) return 'Sobre todo no ubicas la sección.';
+  if (malDato) return 'Llegas a la sección, pero fallas el dato: léela completa.';
+  return '';
+}
+function filaFoco(x, porque) {
+  const g = GUIA[x.sec];
+  return `<li class="t-${g.parte}"><div><div class="titulo-foco"><span class="cod">${esc(x.sec)}</span><b>${esc(tituloDe(x.sec))}</b></div>
+    <p class="porque">${porque}</p><p class="que">${esc(g.que)}</p>
+    <div class="fila-botones"><button type="button" class="boton peq" data-practicar="${esc(x.sec)}">Practicar ${esc(x.sec)}</button><button type="button" class="boton sec peq" data-estudiar="${esc(x.sec)}">Estudiar en la guía</button></div></div></li>`;
+}
+
+// =====================================================================================
+// Panel de lectura del AIP
+// =====================================================================================
+function enlacesDe(ver) {
+  if (ver.ad) {
+    const a = AD[ver.ad];
+    const local = a.local && !SITIO ? `eAIP-73-26/eAIP/${encodeURIComponent(a.local)}` : null;
+    return `${local ? `<a class="enlace" href="${local}" target="_blank" rel="noopener">Abrir en el eAIP (copia local)</a> · ` : ''}<a class="enlace" href="${esc(a.url)}" target="_blank" rel="noopener">eAIP oficial</a>`;
+  }
+  const nombre = ver.gen + '-es-CO.html';
+  const oficial = `<a class="enlace" href="${OFICIAL}${encodeURIComponent(nombre)}" target="_blank" rel="noopener">eAIP oficial</a>`;
+  return SITIO ? oficial : `<a class="enlace" href="eAIP-73-26/eAIP/${encodeURIComponent(nombre)}" target="_blank" rel="noopener">Abrir en el eAIP (copia local)</a> · ${oficial}`;
+}
+function textoAHtml(texto, marca) {
+  const lineas = String(texto || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const m = marca ? String(marca).split('\n')[0].slice(0, 60) : '';
+  let primera = -1;
+  const html = lineas.map((l, i) => {
+    let h = esc(l);
+    if (m && primera < 0 && l.includes(m)) { primera = i; h = h.replace(esc(m), `<mark>${esc(m)}</mark>`); }
+    const ingles = /^[A-Z][a-z]+[ a-z/()]*(\||$)/.test(l) && !/[áéíóúñ]/i.test(l) && i > 0;
+    return `<div class="fl${ingles ? ' en' : ''}" ${primera === i ? 'id="marcada"' : ''}>${h}</div>`;
+  }).join('');
+  return html || '<p class="ayuda">Esta sección viene vacía en el AIP.</p>';
+}
+function panelVacio(msg) {
+  $('#panel-titulo').textContent = 'Texto del AIP';
+  $('#panel-enlaces').innerHTML = '';
+  $('#panel-texto').innerHTML = `<p class="ayuda">${msg}</p>`;
+}
+function mostrarEnPanel(ver, marca) {
+  if (!ver) return;
+  let titulo, texto, enlaces;
+  if (ver.ad) { const a = AD[ver.ad]; const s = a.secciones[ver.n]; titulo = `${a.oaci} AD 2.${ver.n} · ${legible(s.t)}`; texto = s.x; enlaces = enlacesDe(ver); }
+  else if (ver.ruta) { const r = T.rutas.find((x) => x.id === ver.ruta); titulo = `ENR ${r.sub} ${r.id}`; texto = [`Puntos significativos de la aerovía ${r.id}, en orden:`, ...r.puntos].join('\n'); enlaces = r.local ? `${SITIO ? '' : `<a class="enlace" href="eAIP-73-26/eAIP/${encodeURIComponent(r.local)}" target="_blank" rel="noopener">Abrir la ruta en el eAIP (copia local)</a> · `}<a class="enlace" href="${OFICIAL}${encodeURIComponent(r.local)}" target="_blank" rel="noopener">eAIP oficial</a>` : enlacesDe({ gen: 'ENR 0.6' }); }
+  else if (ver.gen === 'ENR 3' || ver.gen === 'ENR 6') { titulo = `${ver.gen} · ${tituloDe(ver.gen)}`; texto = GUIA[ver.gen].que + '\nEl índice de la Parte 2 (ENR 0.6) enlaza cada página.'; enlaces = enlacesDe({ gen: 'ENR 0.6' }); }
+  else if (ver.gen === 'GEN 2.7') { titulo = 'GEN 2.7 · Salida y puesta del sol'; texto = (B.textos['GEN 2.7'] || '') + '\nLa tabla semanal está en el conjunto de datos (Excel), convertido en datos/sol-2026.json. Consúltala en Herramientas › Briefing.'; enlaces = enlacesDe(ver); }
+  else { titulo = `${ver.gen} · ${tituloDe(ver.gen)}`; texto = B.textos[ver.gen] || 'Texto no incluido en el simulador: ábrelo en el eAIP.'; enlaces = enlacesDe(ver); }
+  $('#panel-titulo').textContent = titulo;
+  $('#panel-enlaces').innerHTML = enlaces;
+  $('#panel-texto').innerHTML = textoAHtml(texto, ver.marca || marca);
+  // Desplaza solo el texto del panel, nunca la página: en móvil el panel va debajo y no debe esconder la pregunta.
+  const caja = $('#panel-texto'); const mk = $('#marcada');
+  caja.scrollTop = mk ? Math.max(0, mk.offsetTop - caja.clientHeight / 2) : 0;
+}
+function mostrarPanel(si) { $('#rejilla').classList.toggle('sola', !si); $('#panel').classList.toggle('oculto-total', !si); }
+function verSeccion(sec, a) {
+  if (/^AD 2\.\d+$/.test(sec)) mostrarEnPanel({ ad: (a || adEstudio()).oaci, n: +sec.split('.')[1] });
+  else mostrarEnPanel({ gen: sec });
+  if (matchMedia('(max-width: 980px)').matches) $('#panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// =====================================================================================
+// Buscador: preguntas en lenguaje natural sobre la copia local del AIP
+// Tres capas: respuestas del banco (dato + sección + línea literal), secciones donde buscar
+// y líneas del texto del AIP. No inventa nada: todo lo que muestra está en el AIP.
+// =====================================================================================
+const normalizar = (s) => ' ' + String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9./]+/g, ' ').replace(/\.(?=\s)/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+const VACIAS = new Set('que cual cuales cuanto cuanta cuantos cuantas donde cuando como quien quienes hay es son ser esta estan tiene tienen tener del de la el los las un una unos unas y o u en para por con sin se al a lo le les su sus mi me yo puedo puede pueden debe deben debo segun aip dice dime decir sobre eso este ese esa estos esas hacer hace si no mas muy ya entre desde hasta saber quiero necesito busco buscar encuentro encontrar sale salen algun alguna da dan dar va van ir'.split(' '));
+const raiz = (t) => (t.length > 4 && /^[a-z]+$/.test(t) ? t.replace(/s$/, '') : t);
+// Sinónimos: lo que se pregunta en voz alta → cómo lo escribe el AIP
+const SINONIMOS = {
+  abre: ['horas', 'horario', 'h24'], abrir: ['horas', 'horario', 'h24'], cierra: ['horas', 'horario'], cerrar: ['horas', 'horario'], abierto: ['horas', 'horario', 'h24'],
+  horario: ['horas', 'horario'], hora: ['horas', 'horario'], funciona: ['horas', 'funcionamiento'], atiende: ['horas', 'horario'],
+  frecuencia: ['frecuencia', 'mhz'], torre: ['twr', 'torre'], aproximacion: ['app', 'aproximacion'], rodaje: ['smc', 'rodaje'], superficie: ['smc', 'superficie'],
+  combustible: ['combustible', 'jet', 'avgas'], gasolina: ['combustible', 'avgas', 'jet'], tanquear: ['combustible'],
+  bomberos: ['ssei', 'salvamento', 'incendios'], incendios: ['ssei', 'incendios', 'salvamento'], ssei: ['ssei', 'salvamento'],
+  pista: ['pista', 'rwy'], largo: ['dimensiones', 'longitud', 'tora'], mide: ['dimensiones'], longitud: ['dimensiones', 'longitud'], ancho: ['dimensiones', 'ancho'],
+  atardecer: ['puesta', 'sol'], anochece: ['puesta', 'sol'], oscurece: ['puesta', 'sol'], amanecer: ['salida', 'sol'], amanece: ['salida', 'sol'],
+  proxima: ['siguiente', 'proxima'], siguiente: ['siguiente', 'proxima'],
+  dron: ['remotamente', 'tripuladas', 'art', 'dron'], drones: ['remotamente', 'tripuladas', 'art'],
+  pajaros: ['aves', 'fauna'], aves: ['aves', 'fauna'], festivo: ['festivo', 'festividad'], feriado: ['festivo', 'feriados'],
+  clima: ['met', 'meteorologica', 'meteorologico'], meteorologia: ['met', 'meteorologica', 'meteorologia'],
+  fpl: ['fpl', 'plan'], telefono: ['tel', 'telefono'], correo: ['correo', 'email'],
+  emergencia: ['emergencia', '7700'], secuestro: ['secuestro', 'ilicita', '7500'], falla: ['falla', 'fallo'],
+  significa: ['significa', 'abreviatura'], sigla: ['abreviatura'], siglas: ['abreviatura'],
+  direccion: ['direccion', 'afs', 'aftn'], cuesta: ['tarifas', 'derechos'], tarifa: ['tarifas', 'derechos'], cobran: ['tarifas', 'derechos'],
+  bogota: ['bogota', 'skbo', 'sked'], ats: ['ats', 'atc'], atc: ['atc', 'ats'],
+};
+const ABREVIATURAS = new Set(T.abreviaturas.map((x) => normalizar(x.abr).trim()));
+const GENERICAS = new Set(['aeropuerto', 'internacional', 'aerodromo', 'base', 'aerea', 'santa', 'santiago', 'nueva', 'puerto', 'colombia', 'gustavo', 'alfonso', 'camilo', 'jose', 'maria', 'antonio']);
+const AD_POR_NOMBRE = {};
+for (const a of B.aerodromos) for (const w of normalizar(a.nombre).trim().split(' ')) if (w.length >= 5 && !GENERICAS.has(w)) (AD_POR_NOMBRE[w] || (AD_POR_NOMBRE[w] = [])).push(a.oaci);
+const PRIORIDAD_AD = { Controlado: 0, 'Aviación de Estado': 1, 'No controlado': 2 };
+
+function entenderConsulta(q) {
+  const tokens = normalizar(q).trim().split(' ').filter(Boolean);
+  let ad = null, porCodigo = false;
+  for (const t of tokens) if (/^s[kq][a-z]{2}$/.test(t) && AD[t.toUpperCase()]) { ad = AD[t.toUpperCase()]; porCodigo = true; break; }
+  if (!ad) for (const t of tokens) {
+    const l = AD_POR_NOMBRE[t];
+    if (l && l.length <= 3) { ad = l.map((o) => AD[o]).sort((x, y) => PRIORIDAD_AD[x.cat] - PRIORIDAD_AD[y.cat])[0]; break; }
+  }
+  // Sección escrita directamente («ENR 1.10», «SKBQ AD 2.18», «AD 2.3»)
+  const qn = normalizar(q);
+  const mSec = qn.match(/ (gen|enr|ad) (\d+(?:\.\d+)?) /);
+  let seccion = null;
+  if (mSec) { const s = `${mSec[1].toUpperCase()} ${mSec[2]}`; if (GUIA[s] || B.textos[s]) seccion = s; }
+  const grupos = [];
+  for (const t of tokens) {
+    if (VACIAS.has(t) || (porCodigo && t === ad.oaci.toLowerCase())) continue;
+    if (t.length < 2 && !/\d/.test(t)) continue;
+    const alts = unicos([raiz(t), ...((SINONIMOS[t] || SINONIMOS[raiz(t)] || []).map(raiz))]).filter((x) => !['amp', 'quot', 'lt', 'gt'].includes(x));
+    if (alts.length) grupos.push(alts);
+  }
+  return { q, ad, porCodigo, grupos, seccion };
+}
+const contiene = (n, t) => (/^\d/.test(t) ? n.includes(t) : n.includes(' ' + t));
+// Puntaje tipo BM25 simplificado: cada grupo de la consulta suma el idf de su mejor alternativa;
+// se premia cubrir todos los grupos y se pondera por aeródromo.
+function puntuar(docs, grupos, peso, minCubre = 1) {
+  if (!grupos.length) return [];
+  const N = docs.length;
+  const idf = grupos.map((alts) => alts.map((t) => { let df = 0; for (const d of docs) if (contiene(d.n, t)) df++; return Math.log(1 + N / (df + 0.5)); }));
+  const out = [];
+  for (const d of docs) {
+    let s = 0, cubre = 0;
+    for (let g = 0; g < grupos.length; g++) {
+      let mejor = 0; const alts = grupos[g];
+      for (let k = 0; k < alts.length; k++) {
+        if (!contiene(d.n, alts[k])) continue;
+        const t = alts[k]; // la palabra exacta (o su plural) pesa más que un prefijo
+        const v = idf[g][k] * (d.n.includes(' ' + t + ' ') || d.n.includes(' ' + t + 's ') || d.n.includes(' ' + t + 'es ') ? 1.2 : 1);
+        if (v > mejor) mejor = v;
+      }
+      if (mejor) { s += mejor; cubre++; }
+    }
+    if (cubre >= minCubre) { const w = peso ? peso(d) : 1; if (w > 0) out.push({ d, s: s * Math.pow(cubre / grupos.length, 1.5) * w, cubre }); }
+  }
+  return out.sort((x, y) => y.s - x.s || x.d.n.length - y.d.n.length);
+}
+const pesoAD = (c) => (d) => (!d.ad ? 1 : !c.ad ? 0.45 : d.ad === c.ad.oaci ? (c.porCodigo ? 2.2 : 1.4) : (c.porCodigo ? 0 : 0.35));
+
+let INDICE = null;
+function prepararIndice() {
+  if (INDICE) return INDICE;
+  const banco = [];
+  for (const e of POOL) {
+    const p = armar(e); if (!p) continue;
+    banco.push({ e, p, ad: e.ad || null, n: normalizar(`${p.q} ${p.correcta || ''} ${(p.secciones || []).join(' ')} ${tituloDe(e.sec)} ${e.ad ? AD[e.ad].nombre : ''}`) });
+  }
+  const lineas = [];
+  const esIngles = (l) => /^[A-Z][a-z]+[ a-z/()]*(\||$)/.test(l) && !/[áéíóúñ]/i.test(l);
+  const meter = (texto, cita, ver, ad, extra = '') => { for (const l of String(texto || '').split('\n')) { const r = l.trim(); if (r.length < 4 || /^[\d |]+$/.test(r) || esIngles(r)) continue; lineas.push({ raw: r, cita, ver, ad, n: normalizar(r + ' ' + extra) }); } };
+  for (const [sec, t] of Object.entries(B.textos)) meter(t, sec, { gen: sec }, null);
+  // las líneas de una ficha llevan el nombre del aeródromo para que «torre de Rionegro» encuentre SKRG
+  for (const a of B.aerodromos) for (let n = 1; n <= 25; n++) meter(a.secciones[n].x, `${a.oaci} AD 2.${n}`, { ad: a.oaci, n }, a.oaci, a.nombre);
+  for (const r of T.rutas) lineas.push({ raw: `${r.id}: ${r.puntos.join(' → ')}`, cita: `ENR ${r.sub} ${r.id}`, ver: { ruta: r.id }, ad: null, n: normalizar(`aerovia ruta ${r.id} ${r.puntos.join(' ')}`) });
+  const secciones = SECCIONES_GUIA.map((g) => ({ g, ad: null, n: normalizar([g.sec, tituloDe(g.sec), g.que, g.sirve, ...B.conceptosGenerales.filter((c) => c[1] === g.sec).map((c) => c[0]), ...B.conceptosAD.filter((c) => 'AD ' + c[1] === g.sec).map((c) => c[0])].join(' ')) }));
+  INDICE = { banco, lineas, secciones };
+  return INDICE;
+}
+function buscarEnAIP(q) {
+  const c = entenderConsulta(q); const I = prepararIndice();
+  const minCubre = Math.max(1, Math.ceil(c.grupos.length / 2));
+  const peso = pesoAD(c);
+  // Las abreviaturas solo suben si se pregunta por una sigla; «se busca en…» pesa menos que un dato.
+  const pideSigla = c.grupos.some((alts) => alts.includes('abreviatura') || ABREVIATURAS.has(alts[0]));
+  const pesoBanco = (d) => peso(d) * (/^abrev/.test(d.e.fam) && !pideSigla ? 0.45 : 1) * (d.p.tipo === 'seccion' ? 0.75 : 1);
+  const resp = puntuar(I.banco, c.grupos, pesoBanco, minCubre);
+  const mejor = resp.length ? resp[0].s : 0;
+  const respuestas = []; let deDonde = 0; const vistas = new Set();
+  for (const r of resp) {
+    if (r.s < mejor * 0.55 || respuestas.length >= 4) break;
+    const llave = r.d.p.q;
+    if (vistas.has(llave)) continue;
+    if (r.d.p.tipo === 'seccion') { if (deDonde) continue; deDonde++; }
+    vistas.add(llave); respuestas.push(r.d);
+  }
+  // primero los datos; la respuesta «se busca en…» va al final (la sección ya sale en «Dónde buscarlo»)
+  respuestas.sort((x, y) => (x.p.tipo === 'seccion') - (y.p.tipo === 'seccion'));
+  const secs = puntuar(I.secciones, c.grupos, null, 1);
+  const mejorS = secs.length ? secs[0].s : 0;
+  let secciones = secs.filter((x) => x.s >= mejorS * 0.5).slice(0, 3).map((x) => x.d.g);
+  if (c.seccion && GUIA[c.seccion] && !secciones.some((g) => g.sec === c.seccion)) secciones = [GUIA[c.seccion], ...secciones].slice(0, 3);
+  const lineas = []; const yaVistas = new Set();
+  for (const x of puntuar(I.lineas, c.grupos, peso, minCubre)) {
+    if (yaVistas.has(x.d.raw)) continue;
+    yaVistas.add(x.d.raw); lineas.push(x.d);
+    if (lineas.length >= 40) break;
+  }
+  return { c, respuestas, secciones, lineas };
+}
+// Resalta en el texto original las palabras buscadas, sin importar tildes
+const ACENTOS = { a: '[aáàä]', e: '[eéèë]', i: '[iíìï]', o: '[oóòö]', u: '[uúùü]', n: '[nñ]' };
+function resaltar(raw, grupos) {
+  const alts = unicos(grupos.flat()).filter((t) => t.length >= 2).sort((x, y) => y.length - x.length);
+  const h = esc(raw);
+  if (!alts.length) return h;
+  const patron = alts.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[aeioun]/g, (ch) => ACENTOS[ch])).join('|');
+  try { return h.replace(new RegExp(`(^|[^\\p{L}\\p{N}&#])(${patron})`, 'giu'), '$1<mark>$2</mark>'); } catch (e) { return h; }
+}
+// opciones: { pedirSeccion, pedirDato, inmediato, alResponder(r) }
+function pintarPregunta(cont, p, opc) {
+  const pideSec = !!(opc.pedirSeccion && p.secciones);
+  const pideDato = !!(opc.pedirDato !== false && p.opciones);
+  const ad = p.ad ? AD[p.ad] : null;
+  const pt = parte(p.citaPrincipal);
+  cont.innerHTML = `
+    <div class="cabeza-pregunta"><span>${opc.cabecera || ''}</span><span class="etiqueta t-${pt}">${NOMBRE_PARTE[pt]} · ${p.tipo === 'escenario' ? 'Escenario' : p.tipo === 'seccion' ? '¿Dónde está?' : '¿Qué dato?'}</span></div>
+    ${ad && opc.mostrarAD ? `<p class="ad-nombre">${ad.oaci}<small>${esc(ad.nombre)} · ${esc(ad.cat)}</small></p>` : ''}
+    <p class="enunciado">${esc(p.q)}</p>
+    ${pideSec ? `<div class="parte"><div class="titulo-parte">${pideDato ? '1. ' : ''}Escribe la sección (por ejemplo «${p.ad ? p.ad + ' AD 2.18' : 'ENR 1.10'}»)</div>
+      <div class="seccion-input"><input type="text" autocomplete="off" spellcheck="false" aria-label="Sección del AIP" id="in-sec"></div></div>` : ''}
+    ${pideDato ? `<div class="parte">${pideSec ? '<div class="titulo-parte">2. Elige el dato</div>' : ''}<div class="opciones" role="group" aria-label="Opciones">
+      ${p.opciones.map((o, i) => `<button type="button" class="opcion" data-o="${esc(o)}" aria-pressed="false"><span class="letra">${LETRAS[i]}</span><span>${esc(o)}</span></button>`).join('')}</div></div>` : ''}
+    <div class="fila-botones" id="botones-preg"><button class="boton" id="b-responder" type="button">${opc.inmediato ? 'Comprobar' : 'Guardar y seguir'}</button>${opc.extraBotones || ''}</div>
+    <div id="res"></div>`;
+  let elegida = opc.previa ? opc.previa.dato : null;
+  cont.querySelectorAll('.opcion').forEach((b) => {
+    if (elegida === b.dataset.o) b.setAttribute('aria-pressed', 'true');
+    b.addEventListener('click', () => { cont.querySelectorAll('.opcion').forEach((x) => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); elegida = b.dataset.o; });
+  });
+  const inSec = $('#in-sec', cont);
+  if (inSec && opc.previa) inSec.value = opc.previa.sec || '';
+  if (inSec) { inSec.focus({ preventScroll: true }); inSec.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#b-responder', cont).click(); }); }
+  document.onkeydown = (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'Enter' && e.target.tagName === 'BUTTON') return; // el botón enfocado ya responde a Enter
+    const i = LETRAS.indexOf(e.key.toUpperCase());
+    const btns = cont.querySelectorAll('.opcion');
+    if (pideDato && i >= 0 && btns[i] && !btns[i].disabled) btns[i].click();
+    if (e.key === 'Enter') { const sig = $('#r-sig', cont) || $('#b-sig', cont); const r = $('#b-responder', cont); if (r && !r.disabled) r.click(); else if (sig) sig.click(); }
+  };
+  $('#b-responder', cont).addEventListener('click', () => {
+    const sec = inSec ? inSec.value.trim() : null;
+    if ((pideDato && !elegida) || (pideSec && !sec)) { $('#res', cont).innerHTML = `<p class="alerta">${pideDato && !elegida ? 'Elige una opción' : 'Escribe la sección'} antes de continuar.</p>`; return; }
+    const okSec = pideSec ? seccionCorrecta(p, sec) : null;
+    const okDato = pideDato ? elegida === p.correcta : null;
+    const puntos = (okSec ? 1 : 0) + (okDato ? 1 : 0);
+    const max = (pideSec ? 1 : 0) + (pideDato ? 1 : 0);
+    if (opc.inmediato) { corregir(cont, p, { sec, dato: elegida, okSec, okDato, pideSec, pideDato }); $('#b-responder', cont).disabled = true; }
+    opc.alResponder && opc.alResponder({ puntos, max, sec, dato: elegida, okSec, okDato });
+  });
+}
+function corregir(cont, p, r) {
+  const todoBien = (r.okSec !== false) && (r.okDato !== false);
+  cont.querySelectorAll('.opcion').forEach((b) => {
+    b.disabled = true;
+    if (b.dataset.o === p.correcta) b.classList.add('correcta');
+    else if (b.dataset.o === r.dato) b.classList.add('incorrecta');
+  });
+  const inSec = $('#in-sec', cont);
+  if (inSec) { inSec.disabled = true; inSec.classList.add(r.okSec ? 'ok' : 'no'); }
+  $('#res', cont).innerHTML = bloqueResultado(p, r, todoBien);
+  const bv = $('.b-ver', cont); if (bv) bv.addEventListener('click', () => mostrarEnPanel(p.ver, p.evidencia));
+  mostrarEnPanel(p.ver, p.evidencia);
+}
+function bloqueResultado(p, r, todoBien, conBoton = true) {
+  const partes = [];
+  if (r.sinResponder) partes.push('Sin responder: se acabó el tiempo o terminaste antes.');
+  else {
+    if (r.pideSec) partes.push(r.okSec ? 'Sección correcta.' : `Sección: escribiste «${esc(r.sec)}»; era <b>${esc(p.secciones[0])}</b>${p.secciones.length > 1 ? ` (también vale ${p.secciones.slice(1).map(esc).join(', ')})` : ''}.`);
+    if (r.pideDato) partes.push(r.okDato ? 'Dato correcto.' : `Dato: era <b>${esc(p.correcta)}</b>.`);
+  }
+  if (r.sinResponder && p.correcta) partes.push(`Respuesta: <b>${esc(p.correcta)}</b> · sección <b>${esc((p.secciones || [p.cita])[0])}</b>.`);
+  return `<div class="resultado ${todoBien ? 'bien' : 'mal'}"><h4>${todoBien ? 'Correcto' : 'Revisa esto'}</h4><p>${partes.join(' ')}</p>
+    <p class="t-${parte(p.citaPrincipal)}"><span class="cita">${esc(p.cita)}</span></p><div class="evidencia">${esc(p.evidencia)}</div>
+    ${conBoton ? '<button type="button" class="boton sec peq b-ver">Ver la sección en el panel</button>' : ''}</div>`;
+}
+
+// =====================================================================================
+// Selector de aeródromo
+// =====================================================================================
+function selectorAD(id, incluirAzar = true, valor = '') {
+  const grupos = ['Controlado', 'No controlado', 'Aviación de Estado'].map((c) => `<optgroup label="${c}">${B.aerodromos.filter((a) => a.cat === c).map((a) => `<option value="${a.oaci}" ${a.oaci === valor ? 'selected' : ''}>${a.oaci} · ${esc(a.nombre)}</option>`).join('')}</optgroup>`).join('');
+  return `<select id="${id}">${incluirAzar ? '<option value="">Al azar</option>' : ''}${grupos}</select>`;
+}
+const elegirAD = (v) => (v ? AD[v] : azar(B.aerodromos));
+const adEstudio = () => AD[estado.ultimoAD] || AD.SKBQ;
+
+// =====================================================================================
+// Rondas (prueba, cacería, simulacro, práctica de secciones) e informe de la sesión
+// =====================================================================================
+let reloj = null;
+// cfg: { titulo, modo, ad, nivel, pedirSeccion, inmediato, minutos, otra() }
+function correrRonda(cont, ronda, cfg) {
+  const s = nuevaSesion(cfg.modo, cfg.titulo);
+  const resp = []; let i = 0; let fin = cfg.minutos ? Date.now() + cfg.minutos * 60000 : 0;
+  mostrarPanel(!!cfg.inmediato);
+  if (cfg.inmediato) panelVacio('Al comprobar cada respuesta, aquí aparece la sección citada con la línea exacta resaltada.');
+  const pide = (p) => {
+    let sec = !!(p.secciones && (cfg.pedirSeccion || p.tipo === 'seccion'));
+    const dato = !!(p.opciones && p.tipo !== 'seccion' && cfg.nivel !== 1);
+    if (!sec && !dato) sec = !!p.secciones;
+    return { sec, dato };
+  };
+  const sinResponder = (p) => { const d = pide(p); return { puntos: 0, max: (d.sec ? 1 : 0) + (d.dato ? 1 : 0), sec: '', dato: null, okSec: d.sec ? false : null, okDato: d.dato ? false : null, sinResponder: true }; };
+  const tic = () => {
+    const el = $('#r-reloj'); const r = Math.max(0, fin - Date.now());
+    if (el) { el.textContent = `${String(Math.floor(r / 60000)).padStart(2, '0')}:${String(Math.floor((r % 60000) / 1000)).padStart(2, '0')}`; el.classList.toggle('urgente', r < 120000); }
+    if (r === 0) terminar();
+  };
+  const pintar = () => {
+    const p = ronda[i]; const d = pide(p);
+    const bien = s.items.filter(({ r }) => r.max > 0 && r.puntos === r.max).length;
+    cont.innerHTML = `<div class="hoja"><div class="ronda-cabeza"><span>${esc(cfg.titulo)}${cfg.inmediato && s.items.length ? ` · <b class="en-vivo">${bien} de ${s.items.length} bien</b>` : ''}</span><span>Pregunta ${i + 1} de ${ronda.length}${cfg.minutos ? ' · <span class="reloj" id="r-reloj"></span>' : ''}</span></div>
+      <div class="barra"><span style="width:${(100 * i) / ronda.length}%"></span></div><div id="r-preg"></div></div>`;
+    if (cfg.minutos) tic();
+    const ultima = i === ronda.length - 1;
+    pintarPregunta($('#r-preg'), p, {
+      inmediato: !!cfg.inmediato, mostrarAD: !!p.ad && (!cfg.ad || i === 0 || p.ad !== cfg.ad.oaci), pedirSeccion: d.sec, pedirDato: d.dato, previa: resp[i],
+      extraBotones: cfg.inmediato ? '<button class="boton sec" id="r-fin" type="button">Terminar y ver mi informe</button>'
+        : `${i > 0 ? '<button class="boton sec" id="r-ant" type="button">Anterior</button>' : ''}<button class="boton sec" id="r-fin" type="button">Terminar ya</button>`,
+      alResponder: (r) => {
+        resp[i] = r;
+        if (cfg.inmediato) {
+          anotar(s, p, r);
+          $('#b-responder').insertAdjacentHTML('afterend', `<button class="boton" id="r-sig" type="button">${ultima ? 'Ver mi informe' : 'Siguiente'}</button>`);
+          $('#r-sig').onclick = () => { i++; i < ronda.length ? pintar() : terminar(); };
+          $('#r-sig').focus();
+        } else { i++; i < ronda.length ? pintar() : terminar(); }
+      },
+    });
+    const ant = $('#r-ant'); if (ant) ant.onclick = () => { i--; pintar(); };
+    $('#r-fin').onclick = () => {
+      if (cfg.inmediato) { terminar(); return; }
+      if (confirm('¿Terminar ahora? Las preguntas sin responder cuentan como error.')) terminar();
+    };
+  };
+  let terminado = false;
+  const terminar = () => {
+    if (terminado) return; terminado = true;
+    clearInterval(reloj); document.onkeydown = null;
+    if (!cfg.inmediato) ronda.forEach((p, k) => anotar(s, p, resp[k] || sinResponder(p)));
+    if (sesionAbierta === s) cerrarSesion();
+    mostrarPanel(true);
+    if (!s.items.length) { cont.innerHTML = '<div class="hoja"><h2>Sin respuestas</h2><p>No respondiste ninguna pregunta, así que no hay informe.</p></div>'; return; }
+    pintarInforme(cont, s, cfg);
+  };
+  if (cfg.minutos) { clearInterval(reloj); reloj = setInterval(tic, 1000); }
+  pintar();
+}
+
+function pintarInforme(cont, s, cfg) {
+  const an = analizar(s.items);
+  const anteriores = estado.sesiones.slice(0, -1);
+  const pctT = pct(an.puntos, an.max);
+  const conPartes = Object.entries(an.partes).filter(([, x]) => x.n);
+  let frase = '';
+  if (conPartes.length > 1) {
+    const orden = conPartes.slice().sort((a, b) => a[1].ok / a[1].n - b[1].ok / b[1].n);
+    const [pf, xf] = orden[0]; const [pb, xb] = orden[orden.length - 1];
+    if (xf.ok / xf.n < xb.ok / xb.n) frase = `Tu parte más floja en esta sesión fue <b>${NOMBRE_PARTE[pf]}</b> (${xf.ok} de ${xf.n}); la más fuerte, <b>${NOMBRE_PARTE[pb]}</b> (${xb.ok} de ${xb.n}).`;
+  }
+  let consejo = '';
+  if (!an.errores.length) consejo = 'Sin errores. Sube la exigencia: haz la prueba de otra parte o un simulacro con tiempo.';
+  else if (an.noUbica > an.malDato) consejo = 'La mayoría de tus errores fueron de <b>ubicación</b>: no llegaste a la sección correcta. Antes de buscar datos, repasa en Estudiar qué hay en cada sección de la parte.';
+  else if (an.malDato > an.noUbica) consejo = 'La mayoría de tus errores fueron de <b>lectura</b>: llegaste a la sección, pero elegiste otro dato. Abre la sección en el panel y lee la línea completa antes de responder.';
+  else consejo = 'Fallaste tanto la ubicación como el dato en la misma medida: estudia primero la sección en la guía y luego practícala.';
+  // Desempate: primero lo que ya fallaste en sesiones anteriores y lo que más fallas en total.
+  const malTotal = (sec) => (estado.porCita[sec] || {}).mal || 0;
+  const top = an.errores.slice().sort((a, b) => b.mal - a.mal || recurrencia(b.sec, anteriores) - recurrencia(a.sec, anteriores) || malTotal(b.sec) - malTotal(a.sec)).slice(0, 3);
+  const focoHtml = top.map((x) => {
+    const rep = recurrencia(x.sec, anteriores);
+    const porque = `Fallaste ${x.mal} de ${x.ok + x.mal} en esta sesión${rep ? ` · también la fallaste en ${rep} ${rep === 1 ? 'sesión anterior' : 'sesiones anteriores'}` : ''}. ${tipoDeError(x.malSec, x.malDato)}`;
+    return GUIA[x.sec] ? filaFoco(x, esc(porque)) : '';
+  }).join('');
+  cont.innerHTML = `<div class="hoja">
+    <p class="ayuda">${esc(cfg.titulo)} · ${esc(s.fecha)}</p>${SITIO ? '<p class="aviso-guardado" id="inf-guardado" aria-live="polite">Guardando tu resultado…</p>' : ''}
+    <div class="informe-cabeza"><div class="cifra">${pctT}<small> %</small></div><div><h2 style="margin:0">${an.puntos} de ${an.max} puntos</h2><p class="ayuda" style="margin:2px 0 0">${an.ok} de ${an.n} preguntas completas${cfg.pedirSeccion ? ' (sección y dato)' : ''}</p></div></div>
+    ${frase ? `<p>${frase}</p>` : ''}
+    <div class="barras-partes">${conPartes.map(([pt, x]) => `<div class="bp t-${pt}"><span class="cod">${NOMBRE_PARTE[pt]}</span><div class="pista"><span style="width:${pct(x.ok, x.n)}%"></span></div><span class="num">${x.ok} de ${x.n}</span></div>`).join('')}</div>
+    ${an.errores.length ? `<div class="diagnostico"><div><b>${an.noUbica}</b><span>veces no ubicaste la sección</span></div><div><b>${an.malDato}</b><span>veces ubicaste la sección pero fallaste el dato</span></div><div><b>${an.errores.length}</b><span>${an.errores.length === 1 ? 'sección con errores' : 'secciones con errores'}</span></div></div>` : ''}
+    <p class="consejo">${consejo}</p>
+  </div>
+  ${top.length ? `<div class="hoja"><h2>Enfócate en</h2><p class="ayuda">Las secciones donde más fallaste, en orden. Estudia la sección en la guía y practícala hasta que pase a verde.</p>
+    <ol class="foco">${focoHtml}</ol>
+    <div class="fila-botones"><button type="button" class="boton" id="inf-debiles">Practicar ${top.length === 1 ? 'esta sección' : `estas ${top.length} secciones`}</button>${cfg.otra ? '<button type="button" class="boton sec" id="inf-otra">Repetir con otras preguntas</button>' : ''}<button type="button" class="boton sec" id="inf-inicio">Ver mi progreso</button></div></div>`
+    : `<div class="hoja"><div class="fila-botones" style="margin:0">${cfg.otra ? '<button type="button" class="boton" id="inf-otra">Otra ronda</button>' : ''}<button type="button" class="boton sec" id="inf-inicio">Ver mi progreso</button></div></div>`}
+  <div class="hoja"><details class="revision" style="border:0;margin:0;padding:0" ${cfg.inmediato ? '' : 'open'}><summary>Corrección pregunta por pregunta (${s.items.length})</summary>
+    <ul class="lista-revision">${s.items.map(({ p, r }, k) => { const ok = r.max > 0 && r.puntos === r.max; return `<li><div class="cabeza-pregunta"><span>${k + 1}. ${ok ? '✔ Correcta' : '✘ ' + r.puntos + ' de ' + r.max} · <span class="t-${parte(p.citaPrincipal)}"><span class="cod" style="font-size:14px">${esc(p.citaPrincipal)}</span></span></span><button class="boton sec peq" type="button" data-k="${k}">Ver en el panel</button></div><p><b>${esc(p.q)}</b></p>${bloqueResultado(p, { ...r, pideSec: r.okSec !== null, pideDato: r.okDato !== null }, ok, false)}</li>`; }).join('')}</ul></details></div>`;
+  cont.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => { const p = s.items[+b.dataset.k].p; mostrarEnPanel(p.ver, p.evidencia); if (matchMedia('(max-width: 980px)').matches) $('#panel').scrollIntoView({ behavior: 'smooth' }); });
+  conectarFoco(cont, cfg.ad);
+  const deb = $('#inf-debiles'); if (deb) deb.onclick = () => practicarSecciones(top.map((x) => x.sec), cfg.ad);
+  const otra = $('#inf-otra'); if (otra) otra.onclick = cfg.otra;
+  $('#inf-inicio').onclick = () => irA('inicio');
+  panelVacio('Toca «Ver en el panel» en cualquier pregunta para leer aquí su sección del AIP.');
+  if (s.guardado) s.guardado.then((res) => { const el = $('#inf-guardado'); if (!el || !res) return; el.textContent = res.ok ? `Resultado guardado en tu progreso: ${an.puntos} de ${an.max} puntos.` : 'No pudimos guardar el resultado en tu cuenta; quedó registrado en este navegador.'; el.classList.toggle('error', !res.ok); });
+  window.scrollTo({ top: 0 });
+}
+function conectarFoco(cont, a) {
+  cont.querySelectorAll('[data-practicar]').forEach((b) => b.onclick = () => practicarSecciones([b.dataset.practicar], a));
+  cont.querySelectorAll('[data-estudiar]').forEach((b) => b.onclick = () => irA('estudiar', GUIA[b.dataset.estudiar].parte, b.dataset.estudiar));
+}
+// Práctica corta de una o varias secciones, con corrección inmediata.
+function practicarSecciones(secs, a) {
+  a = a || adEstudio();
+  secs = secs.filter(practicable);
+  const ronda = secs.length === 1 ? armarDeSecciones(secs, a, 8) : armarDeSecciones(secs, a, 3).slice(0, 12);
+  irA('practicar', 'libre', { sinVista: true });
+  const titulo = `Práctica de ${secs.join(', ')}`;
+  if (!ronda.length) { vista().innerHTML = `<div class="hoja"><h2>${esc(titulo)}</h2><p>Esta sección todavía no tiene preguntas en el banco. Léela en Estudiar.</p></div>`; return; }
+  vista().innerHTML = `${ronda.length < 4 ? `<div class="hoja"><p class="ayuda">${secs.length === 1 ? `${esc(secs[0])} tiene ${ronda.length} ${ronda.length === 1 ? 'pregunta' : 'preguntas'} en el banco.` : ''}</p></div>` : ''}<div id="zona-ronda"></div>`;
+  correrRonda($('#zona-ronda'), ronda, { titulo, modo: 'seccion', ad: a, nivel: 2, pedirSeccion: true, inmediato: true, otra: () => practicarSecciones(secs, a) });
+}
+
+// =====================================================================================
+// Navegación
+// =====================================================================================
+let modo = 'inicio';
+let submodo = '';
+const vista = () => $('#vista');
+const LEGADO = { practica: ['practicar', 'libre'], caceria: ['practicar', 'caceria'], repaso: ['practicar', 'repaso'], prueba: ['practicar', 'prueba'], briefing: ['herramientas', 'briefing'], roles: ['herramientas', 'roles'], ficha: ['herramientas', 'ficha'] };
+const SUB_DEF = { estudiar: 'gen', practicar: 'prueba', herramientas: 'briefing' };
+function marcarPestana(m) { document.querySelectorAll('nav.pestanas button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.modo === m))); }
+function irA(m, sub, extra = {}) {
+  if (LEGADO[m]) [m, sub] = LEGADO[m];
+  if (!VISTAS[m]) m = 'inicio';
+  cerrarSesion(); clearInterval(reloj); document.onkeydown = null;
+  modo = m; submodo = sub || SUB_DEF[m] || '';
+  marcarPestana(m);
+  mostrarPanel(m !== 'inicio' && m !== 'simulacro');
+  if (m !== 'buscar') try { history.replaceState(null, '', '#' + m + (submodo ? '/' + submodo : '')); } catch (e) { /* file:// sin historial */ }
+  if (extra.sinVista) return;
+  window.scrollTo({ top: 0 });
+  VISTAS[m](submodo, extra);
+}
+document.querySelectorAll('nav.pestanas button').forEach((b) => b.addEventListener('click', () => irA(b.dataset.modo)));
+if ($('#ir-inicio')) $('#ir-inicio').addEventListener('click', (e) => { e.preventDefault(); irA('inicio'); });
+function subnav(actual, items, etiqueta) {
+  return `<div class="sub" role="group" aria-label="${esc(etiqueta)}">${items.map(([id, html]) => `<button type="button" data-sub="${id}" aria-pressed="${id === actual}">${html}</button>`).join('')}</div>`;
+}
+function conectarSubnav(el) { el.querySelectorAll('[data-sub]').forEach((b) => b.onclick = () => irA(modo, b.dataset.sub)); }
+function conectarCasillas(el, alElegir) { el.querySelectorAll('[data-ir-sec]').forEach((b) => b.onclick = () => alElegir(b.dataset.irSec)); }
+
+// ------------------------------------------------------------------ Inicio
+function vInicio() {
+  const foco = focoGlobal().slice(0, 3);
+  const debil = ['gen', 'enr', 'ad'].map((pt) => [pt, resumenParte(pt)]).filter(([, r]) => r.n >= 5).sort((a, b) => a[1].acierto - b[1].acierto)[0];
+  const vistasTotal = POOL.filter((e) => estado.vistos[e.id]).length;
+  const banco = `El banco tiene <b>${POOL.length.toLocaleString('es-CO')} preguntas</b>${vistasTotal ? `; ya viste ${vistasTotal.toLocaleString('es-CO')}` : ''}. Cada prueba trae primero las que no has visto, en otro orden.`;
+  const saludo = !estado.total ? 'Empieza con una prueba corta de cada parte. Con esas respuestas el simulador sabe qué reforzar contigo.'
+    : foco.length ? `Llevas ${estado.total} respuestas. Hoy te conviene reforzar <b>${esc(foco[0].sec)}</b>${debil ? ` y, en general, la parte <b>${NOMBRE_PARTE[debil[0]]}</b>` : ''}.`
+      : `Llevas ${estado.total} respuestas y no hay secciones flojas recientes. Prueba un simulacro con tiempo.`;
+  const masFalladas = Object.entries(estado.conteo).sort((a, b) => b[1].n - a[1].n).slice(0, 6);
+  const ult = estado.historial.slice(-6).reverse();
+  vista().innerHTML = `
+  <div class="saludo"><h2 class="saludo-h">Hola${nombreSaludo ? ', ' + esc(nombreSaludo) : ''}</h2><p>${saludo}</p><p class="ayuda" style="font-size:15px">${banco}</p></div>
+  <div class="hoja" style="margin-top:16px"><h2>Enfócate en</h2>
+    ${foco.length ? `<p class="ayuda">Calculado con todas tus sesiones: pesa más lo reciente, lo que fallas seguido y lo que se repite de una sesión a otra.</p><ol class="foco">${foco.map((x) => filaFoco(x, esc(`Fallaste ${x.mal} de ${x.n} (${Math.round(100 * x.err)} % de error)${x.ses >= 2 ? ` · se repite en ${x.ses} de tus últimas sesiones` : ''}. ${tipoDeError(x.malSec, x.malDato)}`))).join('')}</ol>
+      <div class="fila-botones"><button class="boton" type="button" id="foco-todas">Practicar ${foco.length === 1 ? 'esta sección' : `estas ${foco.length} secciones`}</button></div>`
+      : `<p>${estado.total ? 'Ninguna sección está floja en tus últimas sesiones. Mantén el ritmo con una prueba de las tres partes.' : 'Todavía no hay respuestas. Haz una prueba corta de cada parte: al terminar verás aquí qué secciones reforzar.'}</p>
+      <div class="fila-botones">${['gen', 'enr', 'ad'].map((pt) => `<button class="boton ${pt === 'gen' ? '' : 'sec'}" type="button" data-prueba="${pt}">Prueba de ${NOMBRE_PARTE[pt]}</button>`).join('')}</div>`}
+  </div>
+  <div class="partes">${B.guia.map((P) => { const r = resumenParte(P.id); return `
+    <div class="hoja parte-tarjeta t-${P.id}">
+      <div class="cab"><span class="cod">${P.parte}</span><b>${esc(P.nombre)}</b></div>
+      <div class="cifras"><span><b>${r.acierto === null ? '—' : r.acierto + ' %'}</b>de acierto</span><span><b>${r.hechas} de ${r.total}</b>secciones practicadas</span><span><b>${r.preguntas.toLocaleString('es-CO')}</b>preguntas · ${r.vistas.toLocaleString('es-CO')} vistas</span></div>
+      ${mapaParte(P.id)}
+      <div class="fila-botones"><button class="boton" type="button" data-prueba="${P.id}">Prueba de ${P.parte}</button><button class="boton sec" type="button" data-estudiar-parte="${P.id}">Estudiar ${P.parte}</button></div>
+    </div>`; }).join('')}</div>
+  <div class="hoja">${LEYENDA.replace('class="leyenda"', 'class="leyenda" style="margin:0"')}</div>
+  <div class="dos" style="margin-top:16px">
+    <div class="hoja"><h2>Preguntas que más fallas</h2>
+      ${masFalladas.length ? `<ul class="lista">${masFalladas.map(([, k]) => `<li><span class="veces">${k.n}×</span><span><span class="t-${parte(k.sec)}"><span class="cod" style="font-size:14px">${esc(k.sec)}</span></span> ${esc(k.q)}</span></li>`).join('')}</ul>
+        <div class="fila-botones"><button class="boton sec" type="button" id="ir-repaso">Repasar mis fallos (${estado.fallos.length})</button></div>` : '<p class="ayuda">Aquí aparecerán las preguntas que falles más de una vez.</p>'}
+    </div>
+    <div class="hoja"><h2>Últimas sesiones</h2>
+      ${ult.length ? `<table class="datos"><tr><th>Fecha</th><th>Qué hiciste</th><th>Resultado</th></tr>${ult.map((h) => `<tr><td>${esc(h.fecha)}</td><td>${esc(h.modo)}</td><td>${h.puntos} de ${h.max} · ${pct(h.puntos, h.max)} %</td></tr>`).join('')}</table>
+        <div class="fila-botones"><button class="boton sec peq" type="button" id="borrar">Borrar mi progreso</button></div>` : '<p class="ayuda">Aquí verás tus pruebas, cacerías y simulacros.</p>'}
+    </div>
+  </div>`;
+  conectarFoco(vista());
+  vista().querySelectorAll('[data-prueba]').forEach((b) => b.onclick = () => irA('practicar', 'prueba', { parte: b.dataset.prueba }));
+  vista().querySelectorAll('[data-estudiar-parte]').forEach((b) => b.onclick = () => irA('estudiar', b.dataset.estudiarParte));
+  conectarCasillas(vista(), (sec) => irA('estudiar', GUIA[sec].parte, sec));
+  const ft = $('#foco-todas'); if (ft) ft.onclick = () => practicarSecciones(foco.map((x) => x.sec));
+  const rp = $('#ir-repaso'); if (rp) rp.onclick = () => irA('practicar', 'repaso');
+  const bb = $('#borrar'); if (bb) bb.onclick = () => { if (confirm(SITIO ? '¿Borrar el progreso de este simulador en este navegador? Tus intentos guardados en la cuenta siguen en tu panel.' : '¿Borrar todas las respuestas, fallos, sesiones e historial guardados en este navegador?')) { Object.assign(estado, { total: 0, ok: 0, porCita: {}, fallos: [], historial: [], sesiones: [], conteo: {}, vistos: {} }); guardar(); pintarProgreso(); vInicio(); } };
+}
+
+// ------------------------------------------------------------------ Estudiar (guía por partes)
+function vEstudiar(sub, extra = {}) {
+  const P = B.guia.find((x) => x.id === sub) || B.guia[0];
+  const r = resumenParte(P.id);
+  const a = adEstudio();
+  vista().innerHTML = `${subnav(P.id, B.guia.map((x) => [x.id, `<span class="cod t-${x.id}">${x.parte}</span>${esc(x.nombre)}`]), 'Partes del AIP')}
+  <div class="hoja parte-cabeza t-${P.id}">
+    <h2><span class="cod">${P.parte}</span>${esc(P.nombre)}</h2>
+    <p>${esc(P.resumen)}</p>
+    <p class="ayuda">${r.preguntas.toLocaleString('es-CO')} preguntas en esta parte (ya viste ${r.vistas.toLocaleString('es-CO')}) · ${r.hechas} de ${r.total} secciones practicadas${r.acierto === null ? '' : ` · ${r.acierto} % de acierto`}. Toca una casilla para ir a su sección.</p>
+    ${mapaParte(P.id)}
+    <div class="fila-botones"><button class="boton" type="button" id="e-prueba">Prueba de ${P.parte}</button>${P.id === 'ad' ? `<label class="campo">Fichas AD 2 de ${selectorAD('e-ad', false, a.oaci)}</label>` : ''}</div>
+  </div>
+  <div class="hoja">${P.capitulos.map((c) => `<section class="capitulo"><h3><span class="cod t-${P.id}">${esc(c.id.replace(/[abcd]$/, ''))}</span>${esc(c.titulo)}</h3>
+    ${c.secciones.map(([sec]) => filaSeccion(GUIA[sec], a)).join('')}</section>`).join('')}</div>`;
+  conectarSubnav(vista());
+  $('#e-prueba').onclick = () => irA('practicar', 'prueba', { parte: P.id });
+  const sel = $('#e-ad'); if (sel) sel.onchange = (e) => { estado.ultimoAD = e.target.value; guardar(); vEstudiar(P.id); };
+  conectarCasillas(vista(), (sec) => irASeccion(sec));
+  vista().querySelectorAll('[data-leer]').forEach((b) => b.onclick = () => { marcarFila(b.dataset.leer); verSeccion(b.dataset.leer); });
+  vista().querySelectorAll('[data-practicar]').forEach((b) => b.onclick = () => practicarSecciones([b.dataset.practicar]));
+  panelVacio('Toca «Leer» en cualquier sección para ver aquí su texto del AIP.');
+  if (extra.sec || typeof extra === 'string') irASeccion(extra.sec || extra);
+}
+function filaSeccion(g, a) {
+  const r = estado.porCita[g.sec]; const nv = nivel(g.sec); const n = r ? r.ok + r.mal : 0;
+  const titulo = /^AD 2\./.test(g.sec) ? `${tituloDe(g.sec)} · ${a.oaci}` : tituloDe(g.sec);
+  const nP = cuantasDe(g.sec);
+  const chip = nv === 'vacia' ? '<span class="dominio">Solo lectura</span>' : `<span class="dominio">${nP.toLocaleString('es-CO')} ${nP === 1 ? 'pregunta' : 'preguntas'}</span><span class="dominio ${nv}">${n ? `${r.ok} de ${n} · ${NOMBRE_NIVEL[nv]}` : 'Sin practicar'}</span>`;
+  return `<div class="sec-fila t-${g.parte}" id="fila-${esc(g.sec.replace(/\W+/g, '-'))}">
+    <div class="cod">${esc(g.sec)}</div>
+    <div><div class="sec-titulo">${esc(titulo)}</div><p class="sec-que">${esc(g.que)}</p>${g.sirve ? `<p class="sirve">En la simulación: ${esc(g.sirve)}</p>` : ''}</div>
+    <div class="sec-acc">${chip}<button type="button" class="boton sec peq" data-leer="${esc(g.sec)}">Leer</button>${practicable(g.sec) ? `<button type="button" class="boton peq" data-practicar="${esc(g.sec)}">Practicar</button>` : ''}</div>
+  </div>`;
+}
+function marcarFila(sec) {
+  document.querySelectorAll('.sec-fila.resaltada').forEach((x) => x.classList.remove('resaltada'));
+  const f = document.getElementById('fila-' + sec.replace(/\W+/g, '-')); if (f) f.classList.add('resaltada');
+  return f;
+}
+function irASeccion(sec) {
+  const f = marcarFila(sec);
+  if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  mostrarEnPanel(/^AD 2\.\d+$/.test(sec) ? { ad: adEstudio().oaci, n: +sec.split('.')[1] } : { gen: sec });
+}
+
+// ------------------------------------------------------------------ Practicar
+function vPracticar(sub, extra = {}) {
+  vista().innerHTML = `${subnav(sub, [['prueba', 'Prueba por parte'], ['caceria', 'Cacería'], ['libre', 'Práctica libre'], ['repaso', `Repaso de fallos${estado.fallos.length ? ` (${estado.fallos.length})` : ''}`]], 'Formas de practicar')}<div id="p-cont"></div>`;
+  conectarSubnav(vista());
+  const cont = $('#p-cont');
+  ({ prueba: vPrueba, caceria: vCaceria, libre: vLibre, repaso: vRepaso })[sub](cont, extra);
+}
+let cfgPrueba = { parte: 'gen', n: 15, ad: '' };
+function vPrueba(cont, extra = {}) {
+  if (extra.parte) cfgPrueba.parte = extra.parte;
+  mostrarPanel(false);
+  const opcion = (id, cod, nombre, det) => `<button type="button" class="op-grande t-${id === 'todas' ? 'x' : id}" data-parte="${id}" aria-pressed="${cfgPrueba.parte === id}"><span class="cod">${cod}</span><b>${nombre}</b><span>${det}</span></button>`;
+  const det = (pt) => { const r = resumenParte(pt); return `${r.preguntas.toLocaleString('es-CO')} preguntas · ${r.acierto === null ? 'sin intentos' : r.acierto + ' % de acierto'}`; };
+  cont.innerHTML = `<div class="hoja"><h2>Prueba por parte</h2>
+    <p>Preguntas de secciones distintas de la parte que elijas: escribes la sección, eliges el dato y ves la respuesta al momento, con la línea exacta del AIP. Cada prueba trae primero las preguntas que todavía no has visto, en otro orden. Al terminar ves tu puntaje por parte, qué tipo de error cometes y en qué secciones enfocarte.</p>
+    <div class="opciones-grandes" role="group" aria-label="Parte del AIP">${opcion('gen', 'GEN', 'Generalidades', det('gen'))}${opcion('enr', 'ENR', 'En ruta', det('enr'))}${opcion('ad', 'AD', 'Aeródromos', det('ad'))}${opcion('todas', 'GEN · ENR · AD', 'Las tres partes', 'Un tercio de cada parte, mezcladas')}</div>
+    <div class="controles">
+      <label class="campo">Preguntas <select id="pp-n">${[10, 15, 20, 30, 50].map((n) => `<option ${n === cfgPrueba.n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+      <label class="campo">Aeródromo para AD ${selectorAD('pp-ad', true, cfgPrueba.ad)}</label>
+    </div>
+    <div class="fila-botones"><button class="boton" id="pp-ir" type="button">Empezar la prueba</button></div></div><div id="pp-zona"></div>`;
+  cont.querySelectorAll('[data-parte]').forEach((b) => b.onclick = () => { cfgPrueba.parte = b.dataset.parte; cont.querySelectorAll('[data-parte]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); });
+  $('#pp-n').onchange = (e) => { cfgPrueba.n = +e.target.value; };
+  $('#pp-ad').onchange = (e) => { cfgPrueba.ad = e.target.value; };
+  $('#pp-ir').onclick = () => empezarPrueba(cont);
+  if (extra.parte && extra.empezar) empezarPrueba(cont);
+}
+function empezarPrueba(cont) {
+  const a = elegirAD(cfgPrueba.ad); const n = cfgPrueba.n;
+  const reparto = cfgPrueba.parte === 'todas' ? [['gen', Math.round(n / 3)], ['enr', Math.round(n / 3)], ['ad', n - 2 * Math.round(n / 3)]] : [[cfgPrueba.parte, n]];
+  const ronda = armarPrueba(reparto, a);
+  const nombre = cfgPrueba.parte === 'todas' ? 'las tres partes' : NOMBRE_PARTE[cfgPrueba.parte];
+  cont.innerHTML = '<div id="pp-ronda"></div>';
+  correrRonda($('#pp-ronda'), ronda, { titulo: `Prueba de ${nombre}`, modo: 'prueba', ad: a, nivel: 2, pedirSeccion: true, inmediato: true, otra: () => { irA('practicar', 'prueba', { sinVista: true }); vPracticar('prueba', {}); empezarPrueba($('#p-cont')); } });
+}
+function vCaceria(cont) {
+  mostrarPanel(false);
+  cont.innerHTML = `<div class="hoja"><h2>Cacería en el AIP</h2>
+    <p>10 preguntas sobre un aeródromo. Nivel 1: solo la sección. Nivel 2: la sección y el dato de su ficha. Nivel 3: escenarios que cruzan varias secciones. Ves la respuesta al momento; los fallos pasan al repaso y las preguntas que ya viste quedan para el final.</p>
+    <div class="controles"><label class="campo">Aeródromo ${selectorAD('c-ad', true, '')}</label>
+    <label class="campo">Nivel <select id="c-nivel"><option value="1">1 · solo la sección</option><option value="2" selected>2 · sección y dato</option><option value="3">3 · escenarios</option></select></label>
+    <button class="boton" id="c-ir" type="button">Empezar la ronda</button></div></div><div id="c-zona"></div>`;
+  $('#c-ir').onclick = () => {
+    const a = elegirAD($('#c-ad').value); const nv = +$('#c-nivel').value;
+    const ronda = []; const usadas = new Set();
+    // los fallos de este aeródromo vuelven primero
+    estado.fallos.filter((f) => f.ad === a.oaci && (nv !== 1 || f.tipo === 'seccion')).slice(0, 3).forEach((f) => { ronda.push(Object.assign({}, f, f.opciones ? { opciones: barajar(f.opciones) } : {})); usadas.add(f.sid || f.clave); });
+    const delAD = (e) => e.ad === a.oaci;
+    const mezcla = nv === 1 ? [[(e) => e.tipo === 'seccion' && delAD(e), 7], [(e) => e.tipo === 'seccion' && !e.ad, 3]]
+      : nv === 2 ? [[(e) => e.tipo === 'dato' && delAD(e), 10]]
+        : [[(e) => e.tipo === 'escenario' && (delAD(e) || !e.ad), 6], [(e) => e.tipo === 'dato' && delAD(e) && /^cruce-|^sol$/.test(e.fam), 4]];
+    for (const [filtro, n] of mezcla) ronda.push(...sacarDe(POOL.filter(filtro), Math.min(n, 10 - ronda.length), usadas));
+    if (ronda.length < 10) ronda.push(...sacarDe(POOL.filter(delAD), 10 - ronda.length, usadas));
+    cont.innerHTML = '<div id="c-ronda"></div>';
+    correrRonda($('#c-ronda'), barajar(ronda), { titulo: `Cacería ${a.oaci} · nivel ${nv}`, modo: 'caceria', ad: a, nivel: nv, pedirSeccion: true, inmediato: true, otra: () => irA('practicar', 'caceria') });
+  };
+}
+const TIPOS = [['seccion', '¿Dónde está?'], ['dato', 'Datos del aeródromo'], ['general', 'Reglas'], ['escenario', 'Escenarios']];
+let cfgLibre = { ad: '', tipos: ['seccion', 'dato', 'general', 'escenario'], partes: ['gen', 'enr', 'ad'], pedirSeccion: true };
+// Práctica libre: una sección al azar de las partes elegidas y, dentro de ella, una pregunta no vista del tipo elegido.
+function preguntaLibre(usadas) {
+  const a = cfgLibre.ad ? AD[cfgLibre.ad] : null;
+  const filtro = (e) => cfgLibre.tipos.includes(e.tipo);
+  const secs = SECCIONES_GUIA.filter((g) => cfgLibre.partes.includes(g.parte) && entradasDe(g.sec, a, filtro).length).map((g) => g.sec);
+  for (let k = 0; k < 20 && secs.length; k++) { const p = preguntaDeSeccion(ordenarPorFrescura(secs, a, usadas, filtro)[0], a, usadas, filtro); if (p) return p; }
+  usadas.clear();
+  return pGeneral();
+}
+function vLibre(cont) {
+  mostrarPanel(true);
+  const s = nuevaSesion('libre', 'Práctica libre'); const usadas = new Set();
+  cont.innerHTML = `<div class="hoja"><h2>Práctica libre</h2><p class="ayuda">Una pregunta tras otra, con la corrección y el texto del AIP al lado. Cuando quieras, termina y mira tu informe.</p>
+    <div class="chips" role="group" aria-label="Partes">${B.guia.map((P) => `<button type="button" class="chip" data-pt="${P.id}" aria-pressed="${cfgLibre.partes.includes(P.id)}">${P.parte} · ${esc(P.nombre)}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Tipos de pregunta">${TIPOS.map(([t, n]) => `<button type="button" class="chip" data-t="${t}" aria-pressed="${cfgLibre.tipos.includes(t)}">${n}</button>`).join('')}</div>
+    <div class="controles"><label class="campo">Aeródromo ${selectorAD('l-ad', true, cfgLibre.ad)}</label><label class="marcar"><input type="checkbox" id="l-sec" ${cfgLibre.pedirSeccion ? 'checked' : ''}> Pedir también la sección</label></div>
+  </div><div class="hoja" id="l-preg"></div>`;
+  $('#l-ad').onchange = (e) => { cfgLibre.ad = e.target.value; siguiente(); };
+  $('#l-sec').onchange = (e) => { cfgLibre.pedirSeccion = e.target.checked; siguiente(); };
+  const alternar = (lista, v) => (lista.includes(v) ? (lista.length > 1 ? lista.filter((x) => x !== v) : lista) : [...lista, v]);
+  cont.querySelectorAll('[data-pt]').forEach((c) => c.onclick = () => { cfgLibre.partes = alternar(cfgLibre.partes, c.dataset.pt); c.setAttribute('aria-pressed', String(cfgLibre.partes.includes(c.dataset.pt))); siguiente(); });
+  cont.querySelectorAll('[data-t]').forEach((c) => c.onclick = () => { cfgLibre.tipos = alternar(cfgLibre.tipos, c.dataset.t); c.setAttribute('aria-pressed', String(cfgLibre.tipos.includes(c.dataset.t))); siguiente(); });
+  function siguiente() {
+    const p = preguntaLibre(usadas);
+    pintarPregunta($('#l-preg'), p, {
+      inmediato: true, mostrarAD: !!p.ad, pedirSeccion: cfgLibre.pedirSeccion || p.tipo === 'seccion', pedirDato: p.tipo !== 'seccion',
+      cabecera: `Llevas ${s.items.length}`, extraBotones: `<button class="boton sec" id="b-sig" type="button">Siguiente</button>${s.items.length ? '<button class="boton sec" id="l-fin" type="button">Terminar y ver mi informe</button>' : ''}`,
+      alResponder: (r) => { anotar(s, p, r); if (!$('#l-fin')) $('#b-sig').insertAdjacentHTML('afterend', '<button class="boton sec" id="l-fin" type="button">Terminar y ver mi informe</button>'); $('#l-fin').onclick = fin; },
+    });
+    $('#b-sig').onclick = siguiente;
+    const lf = $('#l-fin'); if (lf) lf.onclick = fin;
+  }
+  function fin() { document.onkeydown = null; cerrarSesion(); cont.innerHTML = '<div id="l-inf"></div>'; pintarInforme($('#l-inf'), s, { titulo: 'Práctica libre', pedirSeccion: cfgLibre.pedirSeccion, inmediato: true, otra: () => irA('practicar', 'libre') }); }
+  siguiente();
+}
+function vRepaso(cont) {
+  mostrarPanel(true);
+  if (!estado.fallos.length) {
+    cont.innerHTML = `<div class="hoja"><h2>Repaso de fallos</h2><p>No hay preguntas pendientes. Las que falles en pruebas, cacerías, simulacros o práctica aparecen aquí hasta que las aciertes.</p><div class="fila-botones"><button class="boton" type="button" id="ir-p">Hacer una prueba</button></div></div>`;
+    $('#ir-p').onclick = () => irA('practicar', 'prueba'); panelVacio('Aquí verás la sección de cada pregunta que repases.'); return;
+  }
+  const s = sesionAbierta && sesionAbierta.modo === 'repaso' ? sesionAbierta : nuevaSesion('repaso', 'Repaso de fallos');
+  const p = estado.fallos[0];
+  const copia = Object.assign({}, p, p.opciones ? { opciones: barajar(p.opciones) } : {});
+  cont.innerHTML = `<div class="hoja"><h2>Repaso de fallos</h2><p class="ayuda">${estado.fallos.length} pendientes. Si la aciertas, sale de la lista; si no, pasa al final.</p></div><div class="hoja" id="rp"></div>`;
+  pintarPregunta($('#rp'), copia, {
+    inmediato: true, mostrarAD: !!p.ad, pedirSeccion: !!p.secciones, pedirDato: p.tipo !== 'seccion', cabecera: `Repasadas en esta sesión: ${s.items.length}`,
+    extraBotones: `<button class="boton sec" id="b-sig" type="button">Siguiente</button>${s.items.length ? '<button class="boton sec" id="rp-fin" type="button">Terminar y ver mi informe</button>' : ''}`,
+    alResponder: (r) => {
+      anotar(s, p, r, { repaso: true });
+      if (!(r.puntos === r.max)) { const k = estado.fallos.findIndex((f) => f.clave === p.clave); if (k >= 0) { estado.fallos.push(estado.fallos.splice(k, 1)[0]); guardar(); } }
+      if (!$('#rp-fin')) $('#b-sig').insertAdjacentHTML('afterend', '<button class="boton sec" id="rp-fin" type="button">Terminar y ver mi informe</button>');
+      $('#rp-fin').onclick = fin;
+    },
+  });
+  $('#b-sig').onclick = () => vRepaso(cont);
+  const rf = $('#rp-fin'); if (rf) rf.onclick = fin;
+  function fin() { document.onkeydown = null; cerrarSesion(); cont.innerHTML = '<div id="rp-inf"></div>'; pintarInforme($('#rp-inf'), s, { titulo: 'Repaso de fallos', pedirSeccion: true, inmediato: true, otra: () => irA('practicar', 'repaso') }); }
+}
+
+// ------------------------------------------------------------------ Simulacro
+function vSimulacro() {
+  vista().innerHTML = `<div class="hoja"><h2>Simulacro</h2>
+    <p>20 preguntas en 20 minutos sobre las tres partes (6 de GEN, 7 de ENR y 7 de AD con el aeródromo que te den), mezcladas y distintas en cada simulacro. Por defecto funciona como el examen: sin correcciones hasta el final. Si marcas la casilla, ves cada respuesta al momento. Lo que no alcances a responder cuenta como error.</p>
+    <div class="controles"><label class="campo">Aeródromo ${selectorAD('s-ad', true, '')}</label><label class="marcar"><input type="checkbox" id="s-corr" ${estado.corregirSimulacro ? 'checked' : ''}> Ver la respuesta al responder</label><button class="boton" id="s-ir" type="button">Empezar el simulacro</button></div></div><div id="s-zona"></div>`;
+  $('#s-corr').onchange = (e) => { estado.corregirSimulacro = e.target.checked; guardar(); };
+  $('#s-ir').onclick = () => {
+    const a = elegirAD($('#s-ad').value);
+    const ronda = armarPrueba([['gen', 6], ['enr', 7], ['ad', 7]], a);
+    vista().innerHTML = '<div id="s-zona"></div>';
+    correrRonda($('#s-zona'), ronda, { titulo: `Simulacro ${a.oaci}`, modo: 'simulacro', ad: a, nivel: 3, pedirSeccion: true, inmediato: !!estado.corregirSimulacro, minutos: 20, otra: () => irA('simulacro') });
+  };
+}
+
+// ------------------------------------------------------------------ Herramientas
+function vHerramientas(sub) {
+  vista().innerHTML = `${subnav(sub, [['briefing', 'Briefing'], ['roles', 'Juego de roles'], ['ficha', 'Ficha y búsqueda']], 'Herramientas')}<div id="h-cont"></div>`;
+  conectarSubnav(vista());
+  ({ briefing: vBriefing, roles: vRoles, ficha: vFicha })[sub]($('#h-cont'));
+}
+function vBriefing(cont) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  cont.innerHTML = `<div class="hoja"><h2>Ficha de briefing prevuelo</h2>
+    <p>Elige el vuelo y el simulador arma los 12 puntos de la plantilla con su fuente. Con «Ocultar los datos» practicas: busca cada valor en el eAIP y toca el recuadro para comprobarlo.</p>
+    <div class="controles">
+      <label class="campo">Salida ${selectorAD('b-sal', false, estado.ultimoAD || 'SKBQ')}</label>
+      <label class="campo">Destino ${selectorAD('b-des', true, '')}</label>
+      <label class="campo">Fecha <input type="date" id="b-fecha" value="${hoy}" min="2026-01-01" max="2026-12-31"></label>
+      <label class="campo">EOBT (UTC) <input type="time" id="b-hora" value="14:00"></label>
+      <label class="campo">Reglas <select id="b-reglas"><option>VFR</option><option>IFR</option></select></label>
+      <label class="marcar"><input type="checkbox" id="b-ocultar"> Ocultar los datos</label>
+    </div></div><div class="hoja" id="b-salida"></div>`;
+  ['b-sal', 'b-des', 'b-fecha', 'b-hora', 'b-reglas', 'b-ocultar'].forEach((id) => $('#' + id).addEventListener('change', pintarBriefing));
+  pintarBriefing();
+}
+function pintarBriefing() {
+  const a = AD[$('#b-sal').value]; estado.ultimoAD = a.oaci; guardar();
+  const desV = $('#b-des').value; const d = desV ? AD[desV] : null;
+  const fecha = $('#b-fecha').value || '2026-10-15';
+  const hora = ($('#b-hora').value || '14:00').replace(':', '');
+  const reglas = $('#b-reglas').value;
+  const min = aMin(hora);
+  const fest = festivoDe(fecha);
+  const s = solDe(a, fecha);
+  const hor = leerHorario(a.horas.AD, a, fecha);
+  const alertas = [];
+  if (fest) alertas.push(`Es festivo: ${fest.nombre} (GEN 2.1).`);
+  if (hor && !abierto(hor, min)) alertas.push(`A las ${hora} UTC el aeródromo está cerrado según ${a.oaci} AD 2.3 (${a.horas.AD}).`);
+  if (!hor) alertas.push(`El horario de ${a.oaci} AD 2.3 depende del día o no es un horario simple: léelo completo (${a.horas.AD}).`);
+  if (s && reglas === 'VFR' && (min > aMin(s.ss) || min < aMin(s.sr))) alertas.push(`VFR fuera de la luz del día: la puesta del sol es a las ${s.ss} UTC. Sin autorización de la UAEAC no hay VFR nocturno (ENR 1.2, num. 11).`);
+  if (s && reglas === 'VFR' && min <= aMin(s.ss) && min >= aMin(s.sr)) alertas.push(`Quedan ${aMin(s.ss) - min} min de luz hasta la puesta del sol (${s.ss} UTC). Compara con la ETA.`);
+  if (/^(NIL|No)\b/i.test(a.ssei)) alertas.push(`${a.oaci} no publica SSEI (AD 2.6): no puede operar tráfico con pasajeros (AD 1.2).`);
+  if (reglas === 'IFR' && /^VFR$/.test(a.transito)) alertas.push(`${a.oaci} solo admite tránsito VFR (AD 2.2).`);
+  const sd = d ? solDe(d, fecha) : null;
+  const filaSol = (x, ss) => !ss ? 'Sin tabla en el conjunto de datos GEN 2.7' : ss.exacta ? `SR ${ss.sr} · SS ${ss.ss} UTC (fila ${fechaFila(ss.filas[0])})` : `Filas vecinas: ${ss.filas.map((f) => `${fechaFila(f)} SR ${f.sr} SS ${f.ss}`).join(' · ')}. Criterio prudente: SR ${ss.sr} · SS ${ss.ss} UTC`;
+  const v = (txt) => `<span class="valor" tabindex="0">${txt}</span>`;
+  const frecs = a.frecs.length ? a.frecs.join(' · ') : 'NIL';
+  const filas = [
+    ['1. Vuelo', `${reglas} · ${a.oaci}${d ? ' → ' + d.oaci : ''} · EOBT ${hora} UTC (${deMin(min - 300)} hora local) · ${fecha}${fest ? ' · festivo: ' + esc(fest.nombre) : ''}`, 'GEN 2.1', 'gen'],
+    ['2. Horarios', `AD ${esc(a.horas.AD)} · ATS ${esc(a.horas.ATS)} · MET ${esc(a.horas.MET)} · AIS ${esc(a.horas.AIS)}`, `${a.oaci} AD 2.3`, 'ad'],
+    ['3. Luz del día', `${a.oaci}: ${filaSol(a, s)}${d ? `<br>${d.oaci}: ${filaSol(d, sd)}` : ''}`, 'GEN 2.7 · ENR 1.2', 'gen'],
+    ['4. Meteorología', `Oficina MET: ${esc(a.metOficina ? a.metOficina.valor : 'NIL')} · TAF: ${esc(a.taf ? a.taf.valor : 'NIL')}${a.met35 ? ` · GEN 3.5: ${esc(a.met35.informes.replace(/[,\s]+$/, ''))}${a.met35.automatico ? ', METAR automático' : ''}, ${esc(a.met35.horas)}` : ''} · Mínimos VMC: ${a.vmc ? esc(a.vmc.linea) : 'techo 1500 ft y 5 km'}<br><a class="enlace" target="_blank" rel="noopener" href="https://aviationweather.gov/api/data/metar?ids=${a.oaci}${d ? ',' + d.oaci : ''}&format=raw&hours=3">METAR en vivo</a> · <a class="enlace" target="_blank" rel="noopener" href="https://aviationweather.gov/api/data/taf?ids=${a.oaci}${d ? ',' + d.oaci : ''}&format=raw">TAF en vivo</a> (aviationweather.gov)`, `${a.oaci} AD 2.11 · GEN 3.5 · ENR 1.2`, 'ad'],
+    ['5. Pista', `${a.dimensiones.map((x) => `${x.rwy}: ${esc(x.dim)} m`).join(' · ') || esc(a.pistas.join(' · ')) || 'NIL'}<br>${a.distancias.map((x) => `${x.rwy}: TORA ${x.tora} · TODA ${x.toda} · ASDA ${x.asda} · LDA ${x.lda}`).join('<br>') || 'Distancias declaradas: NIL'}`, `${a.oaci} AD 2.12 · AD 2.13`, 'ad'],
+    ['6. Espacio aéreo', `${esc(a.espacio.nombre || 'NIL')} · clase ${esc(a.espacio.claseTexto || 'NIL')} · ${esc(a.espacio.vertical || '')} · altitud de transición ${esc(a.espacio.ta || 'NIL')}`, `${a.oaci} AD 2.17`, 'ad'],
+    ['7. Comunicaciones', esc(frecs), `${a.oaci} AD 2.18`, 'ad'],
+    ['8. Radioayudas', esc((a.secciones[19].x.split('\n').map((l) => l.trim()).filter((l) => /^(VOR|DME|NDB|LOC|GP|ILS)/.test(l)).map((l) => l.split(' | ').slice(0, 4).join(' · ')).join(' / ')) || 'NIL'), `${a.oaci} AD 2.19`, 'ad'],
+    ['9. Restricciones', `${esc(a.regla.slice(0, 260))}${a.regla.length > 260 ? '…' : ''}<br>Aves e información adicional: ${esc(a.suplementaria.slice(0, 200))}`, `${a.oaci} AD 2.20 · AD 2.23`, 'ad'],
+    ['10. Servicios', `Combustible: ${esc(a.comb)} · SSEI: ${esc(a.ssei)}${a.ssei12 ? ` (AD 1.2: CAT ${a.ssei12.cat}, ${a.ssei12.afff} L/min)` : ''}`, `${a.oaci} AD 2.4 · AD 2.6`, 'ad'],
+    ['11. NOTAM y SUP', 'Consultar en vivo los NOTAM de salida, ruta, destino y alterno, y los SUP vigentes. No están en la copia del AIP.', 'GEN 3.1 · GEN 0.3', 'gen'],
+    ['12. Plan de vuelo', `${a.aro ? `Oficina ARO/AIS ${esc(a.aro.nombre)} (${esc(a.aro.correo)})` : 'Sin oficina en ENR 1.10'} · presentar entre 120 h y 60 min antes de la EOBT: a más tardar a las ${deMin(min - 60)} UTC · torre ${esc(a.aftn ? a.aftn.dir : 'NIL')}${a.zpzg ? ' · FILING ' + esc(a.zpzg.dir) : ''}`, 'ENR 1.10 · ENR 1.11', 'enr'],
+  ];
+  const ocultar = $('#b-ocultar').checked;
+  $('#b-salida').innerHTML = `<p class="ad-nombre">${a.oaci}<small>${esc(a.nombre)} · ${esc(a.cat)} · ${esc(a.elev)}</small></p>
+    ${alertas.map((t) => `<p class="alerta">${t}</p>`).join('')}
+    <table class="datos ${ocultar ? 'oculto' : ''}"><tr><th>Punto</th><th>Qué decir</th><th>Fuente</th></tr>
+    ${filas.map(([p, t, f, c]) => `<tr><td><b>${p}</b></td><td>${ocultar && !/^(1\.|11\.)/.test(p) ? v(t) : t}</td><td class="fuente t-${c}">${esc(f)}</td></tr>`).join('')}</table>
+    <div class="fila-botones">${a.local && !SITIO ? `<a class="boton sec" href="eAIP-73-26/eAIP/${encodeURIComponent(a.local)}" target="_blank" rel="noopener">Abrir ${a.oaci} en el eAIP (copia local)</a>` : ''}<a class="boton sec" href="${esc(a.url)}" target="_blank" rel="noopener">eAIP oficial</a></div>`;
+  $('#b-salida').querySelectorAll('.valor').forEach((x) => { const ver = () => x.classList.add('visto'); x.onclick = ver; x.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ver(); } }; });
+  mostrarEnPanel({ ad: a.oaci, n: 3 });
+}
+function tarjetas(a, b) {
+  const fecha = '2026-10-15';
+  const s = solDe(a, fecha);
+  const sb = b && solDe(b, fecha);
+  const zr = azar(B.zonas.filter((z) => z.tipo === 'R'));
+  const manana = new Date(Date.now() + 86400000); const yy = String(manana.getUTCFullYear()).slice(2), mm = String(manana.getUTCMonth() + 1).padStart(2, '0'), dd = String(manana.getUTCDate()).padStart(2, '0');
+  const rwy = a.dimensiones[0] ? `${a.dimensiones[0].rwy}/${(a.dimensiones[1] || {}).rwy || ''}` : 'la pista';
+  const salidaNoche = s ? deMin(aMin(s.ss) + 40) : '2330';
+  return [
+    { n: 1, titulo: 'Briefing prevuelo', quien: 'Piloto', dice: `«Buenos días. Voy VFR de ${a.oaci} a ${b.oaci} el 15 de octubre, salgo a las 2:00 p. m. hora local. ¿Me da el briefing?»`,
+      clave: [
+        `Pasar la hora a UTC: 14:00 local = 1900 UTC (GEN 2.1, LMT + 5 = UTC).`,
+        `Horario de ${a.oaci}: AD ${a.horas.AD} · ATS ${a.horas.ATS} (${a.oaci} AD 2.3). De ${b.oaci}: AD ${b.horas.AD} (${b.oaci} AD 2.3).`,
+        `Puesta del sol el 15 OCT: ${a.oaci} ${s ? s.ss : 'sin tabla'} UTC · ${b.oaci} ${sb ? sb.ss : 'sin tabla'} UTC (GEN 2.7). La ETA debe quedar antes (ENR 1.2, num. 11).`,
+        `METAR y TAF en vivo, diciendo la fuente. Oficina MET: ${a.metOficina ? a.metOficina.valor : 'NIL'} (${a.oaci} AD 2.11).`,
+        `Espacio aéreo ${a.espacio.nombre || 'NIL'}, clase ${a.espacio.claseTexto || 'NIL'}, altitud de transición ${a.espacio.ta || 'NIL'} (${a.oaci} AD 2.17).`,
+        `Frecuencias: ${a.frecs.join(' · ') || 'NIL'} (${a.oaci} AD 2.18).`,
+        `Reglamentación local: «${a.regla.slice(0, 140)}» (${a.oaci} AD 2.20). NOTAM vigentes de salida, ruta y destino.`,
+        `Usó la plantilla de 12 puntos en orden y citó la sección de cada dato.`,
+      ] },
+    { n: 2, titulo: 'Una solicitud que choca con una restricción', quien: 'Piloto', dice: `«Quiero salir VFR de ${a.oaci} hoy 15 de octubre a las ${salidaNoche} UTC y pasar directo por la zona ${zr.id} ${zr.nombre}.»`,
+      clave: [
+        `Puesta del sol en ${a.oaci}: ${s ? s.ss : 'sin tabla'} UTC (GEN 2.7). Sale después: sin autorización de la UAEAC no hay VFR nocturno (ENR 1.2, num. 11).`,
+        `Horario del aeródromo a esa hora: ${a.horas.AD} (${a.oaci} AD 2.3).`,
+        `${zr.id} es restringida (${zr.limites}): permiso de la JOA con 72 h de antelación (ENR 5.1, num. 3.3).`,
+        `Ofreció una alternativa: salir antes de la puesta del sol o rodear la zona.`,
+      ] },
+    { n: 3, titulo: 'Un plan de vuelo con errores', quien: 'Piloto', dice: '«Le presento el plan para dentro de 40 minutos. Ah, y cambiamos el avión: ya no es el C172, es un PA28. La hora de salida se la pongo en hora local.»',
+      clave: [
+        'Menos de 60 min antes de la EOBT: fuera de plazo (ENR 1.10, tiempos del plan de vuelo).',
+        'El cambio de tipo de aeronave exige CNL y FPL nuevo, no un CHG (ENR 1.10).',
+        'La hora va en UTC, con 4 cifras (ENR 1.10, contenido del plan de vuelo).',
+        `La oficina que lo tramita es ${a.aro ? a.aro.nombre + ' (' + a.aro.correo + ')' : 'la que diga ENR 1.10'} (ENR 1.10, tablas).`,
+      ] },
+    { n: 4, titulo: 'Emitir un NOTAM', quien: 'Supervisor', dice: `«Mañana cierran la pista ${rwy} de ${a.oaci} de 1200 a 1600 UTC por trabajos. Redacte el NOTAM.»`,
+      clave: [
+        'Serie D: cierres de pista y trabajos en la pista (GEN 3.1, num. 3.4).',
+        `A) ${a.oaci} · B) ${yy}${mm}${dd}1200 · C) ${yy}${mm}${dd}1600, en UTC con formato YYMMDDHHMM (como el ejemplo de ENR 1.15, num. 4.1).`,
+        `E) en lenguaje claro: pista ${rwy} cerrada por trabajos, citando ${a.oaci} AD 2.12.`,
+        'Dijo que el código Q sale de la tabla OACI (Doc 8126), que no está en el AIP.',
+      ] },
+    { n: 5, titulo: 'Mensaje AFTN', quien: 'Piloto', dice: `«Voy IFR de ${a.oaci} a ${b.oaci}. ¿A quiénes se dirige mi plan?»`,
+      clave: [
+        `Torre de salida: ${a.aftn ? a.aftn.dir : 'no figura en ENR 1.11'} · torre de destino: ${b.aftn ? b.aftn.dir : 'no figura en ENR 1.11'} (ENR 1.11).`,
+        'El ACC de la FIR por la que vuela: SKEDZQZX (Bogotá) o SKECZQZX (Barranquilla) para IFR (ENR 1.11). La FIR se mira en ENR 2.1.',
+        'La TMA que corresponda: SKxxZRZX (ENR 1.11).',
+        `Si lo envía por FILING: ${a.zpzg ? a.zpzg.dir : 'la dirección ZPZG de su oficina'} (ENR 1.11).`,
+      ] },
+    { n: 6, titulo: 'SPECI: qué difundir y a quién', quien: 'Meteorólogo', dice: `«Acabo de emitir un SPECI por tormenta sobre ${a.oaci}. ¿A quién se lo hace llegar?»`,
+      clave: [
+        `Dependencias ATS que reciben MET en ${a.oaci}: ${a.metAts ? a.metAts.valor : 'NIL'} (${a.oaci} AD 2.11, num. 9).`,
+        `Tabla de GEN 3.5 de la estación: ${a.met35 ? a.met35.obs + '; ' + a.met35.informes + (a.met35.automatico ? '; METAR automático' : '') + '; horas ' + a.met35.horas : 'sin fila en GEN 3.5'}.`,
+        'Vigilancia de área (SIGMET) para las FIR Barranquilla y Bogotá (GEN 3.5, num. 2).',
+        'Avisó a las aeronaves afectadas en el briefing y mencionó los AIREP (GEN 3.5, num. 6).',
+      ] },
+    { n: 7, titulo: 'Contingencia y auditoría', quien: 'Supervisor', dice: `«Se cayó el ACC. En ${a.oaci} tengo un VFR listo para salir y un RPL de la tarde. Además, bomberos reporta que baja de categoría. ¿Qué hacemos?»`,
+      clave: [
+        'Contingencia ATS: se activa por NOTAM y solo se permiten vuelos IFR: el VFR no sale (ENR 1.15, num. 4 y 6.1).',
+        'Los RPL y los FPL vía FILING quedan suspendidos (ENR 1.15, num. 7).',
+        `SSEI de ${a.oaci}: ${a.ssei} (${a.oaci} AD 2.6)${a.ssei12 ? `, CAT ${a.ssei12.cat} en AD 1.2` : ''}. El cambio temporal se publica por NOTAM (AD 1.2).`,
+        'Citó la sección exacta de cada respuesta cuando el supervisor la pidió.',
+      ] },
+  ];
+}
+function vRoles(cont) {
+  cont.innerHTML = `<div class="hoja"><h2>Juego de roles</h2>
+    <p>Tú eres el operador AIS-COM-MET. Lee lo que dice el otro rol, escribe tu respuesta como la dirías y después abre la clave para corregirte. En grupo, una persona lee la tarjeta y el supervisor marca la clave.</p>
+    <div class="controles"><label class="campo">Aeródromo ${selectorAD('j-ad', false, estado.ultimoAD || 'SKBQ')}</label>
+    <label class="campo">Tarjeta <select id="j-n">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}">${n}</option>`).join('')}</select></label>
+    <button class="boton sec" type="button" id="j-otro">Otro destino</button></div></div><div class="hoja" id="j-zona"></div>`;
+  let destino = null;
+  const pintar = () => {
+    const a = AD[$('#j-ad').value]; estado.ultimoAD = a.oaci; guardar();
+    if (!destino || destino.oaci === a.oaci) destino = azar(B.aerodromos.filter((x) => x.oaci !== a.oaci && x.cat === 'Controlado'));
+    const t = tarjetas(a, destino)[+$('#j-n').value - 1];
+    $('#j-zona').innerHTML = `<div class="tarjeta-rol"><div class="quien">Tarjeta ${t.n} · ${esc(t.titulo)} · habla: ${esc(t.quien)}</div><p class="dice">${esc(t.dice)}</p></div>
+      <label class="campo" for="j-resp">Tu respuesta como operador</label><textarea id="j-resp" placeholder="Escribe lo que le dirías, con las secciones que citarías."></textarea>
+      <div class="fila-botones"><button class="boton" type="button" id="j-clave">Ver la clave y corregirme</button></div><div id="j-c"></div>`;
+    $('#j-clave').onclick = () => {
+      $('#j-c').innerHTML = `<h3>Clave: marca lo que dijiste</h3>${t.clave.map((c, i) => `<label class="check"><input type="checkbox" data-i="${i}"><span>${esc(c)}</span></label>`).join('')}
+        <div class="fila-botones"><button class="boton" type="button" id="j-guardar">Guardar mi puntaje</button><button class="boton sec" type="button" id="j-sig">Siguiente tarjeta</button></div><p id="j-pt" class="ayuda"></p>`;
+      $('#j-guardar').onclick = () => {
+        const n = $('#j-c').querySelectorAll('input:checked').length;
+        estado.historial.push({ fecha: ahoraLocal(), modo: `Rol ${t.n} ${a.oaci}`, puntos: n, max: t.clave.length }); guardar();
+        $('#j-pt').textContent = `Guardado: ${n} de ${t.clave.length}.`;
+      };
+      $('#j-sig').onclick = () => { const sel = $('#j-n'); sel.value = String((+sel.value % 7) + 1); pintar(); };
+      mostrarEnPanel({ ad: a.oaci, n: { 1: 3, 2: 20, 3: 3, 4: 12, 5: 2, 6: 11, 7: 6 }[t.n] });
+    };
+  };
+  $('#j-ad').onchange = pintar; $('#j-n').onchange = pintar; $('#j-otro').onclick = () => { destino = null; pintar(); };
+  panelVacio('Al abrir la clave, aquí aparece la sección del aeródromo que más usa esa tarjeta.');
+  pintar();
+}
+function vFicha(cont) {
+  cont.innerHTML = `<div class="hoja"><h2>Ficha y búsqueda</h2>
+    <p>Lee cualquier sección AD 2 o busca una palabra en las 25 secciones del aeródromo y en todo el texto de GEN, ENR y AD 1.</p>
+    <div class="controles"><label class="campo">Aeródromo ${selectorAD('f-ad', false, estado.ultimoAD || 'SKBQ')}</label>
+    <label class="campo" style="flex:1;min-width:200px">Buscar <input type="text" id="f-q" placeholder="JET A1, SKR, ILS, aves…"></label></div>
+    <div class="indice-secciones" id="f-idx"></div><div id="f-res"></div></div>`;
+  const pintarIdx = () => {
+    const a = AD[$('#f-ad').value]; estado.ultimoAD = a.oaci; guardar();
+    $('#f-idx').innerHTML = Array.from({ length: 25 }, (_, i) => i + 1).map((n) => `<button type="button" data-n="${n}" title="${esc(legible(a.secciones[n].t))}">2.${n}</button>`).join('');
+    $('#f-idx').querySelectorAll('button').forEach((b) => b.onclick = () => {
+      $('#f-idx').querySelectorAll('button').forEach((x) => x.removeAttribute('aria-current')); b.setAttribute('aria-current', 'true');
+      mostrarEnPanel({ ad: a.oaci, n: +b.dataset.n });
+      $('#f-res').innerHTML = `<p class="ayuda">${a.oaci} AD 2.${b.dataset.n} ${esc(legible(a.secciones[b.dataset.n].t))}: el texto está en el panel.</p>`;
+    });
+    buscar();
+  };
+  const buscar = () => {
+    const q = $('#f-q').value.trim(); const a = AD[$('#f-ad').value];
+    if (q.length < 2) { $('#f-res').innerHTML = ''; return; }
+    const ql = q.toLowerCase(); const res = [];
+    for (let n = 1; n <= 25; n++) a.secciones[n].x.split('\n').forEach((l) => { if (l.toLowerCase().includes(ql)) res.push({ ver: { ad: a.oaci, n }, cita: `${a.oaci} AD 2.${n}`, l: l.trim() }); });
+    for (const [k, t] of Object.entries(B.textos)) t.split('\n').forEach((l) => { if (l.toLowerCase().includes(ql)) res.push({ ver: { gen: k }, cita: k, l: l.trim() }); });
+    $('#f-res').innerHTML = `<p class="ayuda">${res.length} líneas con «${esc(q)}»${res.length > 60 ? ' (se muestran 60)' : ''}.</p><table class="datos">${res.slice(0, 60).map((r, i) => `<tr><td class="fuente t-${parte(r.cita.replace(/^S[KQ]\w\w /, ''))}"><button class="boton sec peq" type="button" data-i="${i}">${esc(r.cita)}</button></td><td>${esc(r.l.slice(0, 260))}</td></tr>`).join('')}</table>`;
+    $('#f-res').querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { const r = res[+b.dataset.i]; mostrarEnPanel(r.ver, r.l.slice(0, 60)); });
+  };
+  $('#f-ad').onchange = pintarIdx; $('#f-q').oninput = buscar;
+  panelVacio('Toca una sección 2.N o un resultado de la búsqueda para leerlo aquí.');
+  pintarIdx();
+}
+
+// ------------------------------------------------------------------ Buscar (preguntas al AIP)
+const EJEMPLOS = ['¿A qué hora abre SKBQ?', 'frecuencia de la torre de Rionegro', '¿Qué significa BCFG?', '¿Qué código SSR es falla de comunicaciones?', 'dirección AFTN FIR Bogotá', '¿En qué serie va un cierre de pista?', 'mínimos VMC por debajo de 10000 ft', 'SSEI de SKCL', 'TORA pista 05 SKBQ', 'indicador de lugar de Leticia'];
+function vBuscar(sub, extra = {}) {
+  const q = (extra.q ?? $('#q-buscar').value ?? '').trim();
+  $('#q-buscar').value = q;
+  vista().innerHTML = '<div id="b-res"></div>';
+  if (!INDICE) {
+    $('#b-res').innerHTML = '<div class="hoja"><p class="ayuda">Preparando el buscador con todo el AIP (solo la primera vez)…</p></div>';
+    setTimeout(() => { prepararIndice(); pintarBusqueda(q); }, 30);
+  } else pintarBusqueda(q);
+}
+function pintarBusqueda(q) {
+  const cont = $('#b-res'); if (!cont) return;
+  try { history.replaceState(null, '', '#buscar/' + encodeURIComponent(q)); } catch (e) { /* file:// */ }
+  const ejemplos = `<div class="ejemplos">${EJEMPLOS.map((x) => `<button type="button" class="chip" data-ej="${esc(x)}">${esc(x)}</button>`).join('')}</div>`;
+  if (q.length < 2) {
+    cont.innerHTML = `<div class="hoja"><h2>Pregúntale al AIP</h2><p>Escribe una pregunta como se la harías a un compañero, o una palabra, sigla, indicador o sección. El buscador mira las ${POOL.length.toLocaleString('es-CO')} preguntas del banco, la guía y todo el texto de la copia local (GEN, ENR, AD 1, las 74 fichas y las aerovías). Si nombras un aeródromo (SKBQ o Barranquilla), prioriza su ficha.</p>${ejemplos}
+      <p class="ayuda">Atajo: tecla <span class="m">/</span> para escribir desde cualquier pantalla. Lo que no está en la copia (NOTAM, SUP, METAR, TAF) se consulta en vivo.</p></div>`;
+    conectarEjemplos(cont); panelVacio('Aquí verás la sección de cada resultado que abras.'); return;
+  }
+  const r = buscarEnAIP(q); const c = r.c;
+  const entendi = c.ad ? `<div class="entendi">Aeródromo: <b>${c.ad.oaci}</b> · ${esc(c.ad.nombre)}</div>` : '';
+  const tarjeta = (d, k) => {
+    const p = d.p; const pt = parte(p.citaPrincipal);
+    const dato = p.tipo === 'seccion' ? `Se busca en ${p.secciones[0]}` : p.correcta;
+    return `<div class="respuesta t-${pt}"><p class="pregunta-b">${resaltar(p.q, c.grupos)}</p><p class="dato">${esc(dato)}</p>
+      <div class="evidencia">${esc(p.evidencia)}</div>
+      <div class="fila"><span class="cita">${esc(p.cita)}</span><button type="button" class="boton sec peq" data-resp="${k}">Ver en el AIP</button></div></div>`;
+  };
+  const nada = !r.respuestas.length && !r.lineas.length && !r.secciones.length;
+  cont.innerHTML = `<div class="hoja"><h2>${esc(q)}</h2>${entendi}
+    ${nada ? `<p>No encontré nada con «${esc(q)}» en la copia del AIP. Prueba con otra palabra, la sigla o el indicador, o busca la sección en Estudiar.</p>${ejemplos}` : ''}
+    ${r.respuestas.length ? `<h3>Respuesta directa</h3><p class="ayuda">Preguntas del banco que más se parecen a la tuya, con el dato y la línea literal del AIP.</p>${r.respuestas.map(tarjeta).join('')}` : ''}
+    ${r.secciones.length ? `<h3>Dónde buscarlo</h3>${r.secciones.map((g) => {
+      const cita = /^AD 2\./.test(g.sec) && c.ad ? `${c.ad.oaci} ${g.sec}` : g.sec;
+      return `<div class="sec-fila t-${g.parte}" style="grid-template-columns:96px minmax(0,1fr) auto"><div class="cod">${esc(cita)}</div><div><div class="sec-titulo">${esc(tituloDe(g.sec))}</div><p class="sec-que">${esc(g.que)}</p></div><div class="sec-acc"><button type="button" class="boton sec peq" data-leer-b="${esc(g.sec)}">Leer</button></div></div>`;
+    }).join('')}` : ''}
+    ${r.lineas.length ? `<h3>En el texto del AIP</h3><p class="ayuda">${r.lineas.length === 40 ? 'Las 40 líneas' : `${r.lineas.length} ${r.lineas.length === 1 ? 'línea' : 'líneas'}`} que mejor coinciden. Toca la cita para leer la sección completa.</p>
+      ${r.lineas.map((l, k) => `<div class="linea-res t-${parte(l.cita.replace(/^S[KQ]\w\w /, ''))}"><button type="button" class="boton sec peq" data-lin="${k}"><span class="cod" style="font-size:14px">${esc(l.cita)}</span></button><span class="txt">${resaltar(l.raw, c.grupos)}</span></div>`).join('')}` : ''}
+  </div>`;
+  cont.querySelectorAll('[data-resp]').forEach((b) => b.onclick = () => { const p = r.respuestas[+b.dataset.resp].p; mostrarEnPanel(p.ver, p.evidencia); irAlPanel(); });
+  cont.querySelectorAll('[data-lin]').forEach((b) => b.onclick = () => { const l = r.lineas[+b.dataset.lin]; mostrarEnPanel(l.ver, l.raw); irAlPanel(); });
+  cont.querySelectorAll('[data-leer-b]').forEach((b) => b.onclick = () => { const s = b.dataset.leerB; mostrarEnPanel(/^AD 2\.\d+$/.test(s) ? { ad: (c.ad || adEstudio()).oaci, n: +s.split('.')[1] } : { gen: s }); irAlPanel(); });
+  conectarEjemplos(cont);
+  // Abre de una vez en el panel la mejor fuente
+  if (r.respuestas.length) mostrarEnPanel(r.respuestas[0].p.ver, r.respuestas[0].p.evidencia);
+  else if (r.lineas.length) mostrarEnPanel(r.lineas[0].ver, r.lineas[0].raw);
+  else panelVacio('Sin resultados para mostrar.');
+}
+function conectarEjemplos(cont) { cont.querySelectorAll('[data-ej]').forEach((b) => b.onclick = () => { $('#q-buscar').value = b.dataset.ej; irA('buscar', '', { q: b.dataset.ej }); }); }
+function irAlPanel() { if (matchMedia('(max-width: 980px)').matches) $('#panel').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+let esperaBusqueda = null;
+$('#f-buscar').addEventListener('submit', (e) => { e.preventDefault(); $('#q-buscar').blur(); irA('buscar', '', { q: $('#q-buscar').value }); });
+$('#q-buscar').addEventListener('input', () => {
+  // Ya en la vista de búsqueda, los resultados se actualizan mientras escribes; en otra vista, espera a Enter
+  if (modo !== 'buscar') return;
+  clearTimeout(esperaBusqueda);
+  esperaBusqueda = setTimeout(() => pintarBusqueda($('#q-buscar').value.trim()), 280);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { e.preventDefault(); $('#q-buscar').focus(); $('#q-buscar').select(); }
+});
+
+const VISTAS = { inicio: vInicio, estudiar: vEstudiar, practicar: vPracticar, simulacro: vSimulacro, herramientas: vHerramientas, buscar: vBuscar };
+
+// =====================================================================================
+// Arranque
+// =====================================================================================
+if ($('#pie-fuente')) $('#pie-fuente').textContent = `Preguntas y textos de la copia local de la ${B.amdt}; banco generado el ${B.generado}. Material privado de estudio: para operar manda el eAIP oficial con sus NOTAM y SUP. El progreso se guarda solo en este navegador.`;
+pintarProgreso();
+{
+  const partes = (location.hash || '').slice(1).split('/').map((x) => { try { return decodeURIComponent(x); } catch (e) { return x; } });
+  const [m, sub, sec] = partes;
+  if (m === 'buscar') irA('buscar', '', { q: sub || '' });
+  else irA(m || 'inicio', sub, sec ? { sec } : {});
+}
+// En el sitio: trae el progreso de la cuenta (sesiones hechas en otros dispositivos) y el nombre del estudiante.
+if (SITIO) {
+  (async () => {
+    const nuevas = await sincronizarDesdePlataforma();
+    if (typeof obtenerPerfilEstudiante === 'function') {
+      try { const pf = await obtenerPerfilEstudiante(); if (pf && !pf.esEmail && pf.nombre) nombreSaludo = pf.nombre; } catch (e) { /* sin perfil: saludo genérico */ }
+    }
+    if (modo === 'inicio' || (nuevas && modo === 'estudiar')) VISTAS[modo](submodo, {});
+  })();
+}
+
+</script>
+</body>
+</html>
