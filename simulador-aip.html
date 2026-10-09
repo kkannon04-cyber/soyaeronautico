@@ -533,14 +533,11 @@ footer.pie b{color:var(--tinta)}
 </div>
 
 <section class="hero-simple">
-  <div class="eyebrow">Zona de Quizzes — Simulador</div>
   <h1>Simulador AIP Colombia</h1>
-  <p class="lead">Estudia el AIP de Colombia por partes (GEN, ENR y AD), practica con más de 15 000 preguntas sacadas del texto oficial y pregúntale al AIP lo que necesites. Al terminar cada prueba te dice en qué secciones enfocarte.</p>
   <div class="hero-note">
     <span>📌</span>
     <span><b>Fuente:</b> eAIP Colombia, AIRAC AMDT 73/26 (vigente desde el 01 OCT 2026). Cada respuesta cita su sección y la línea exacta del AIP. No reemplaza el eAIP oficial: los NOTAM, SUP, METAR y TAF se consultan en vivo.</span>
   </div>
-  <a href="quizzes.html" class="btn-volver-modulo-solido">← Volver a la Zona de Quizzes</a>
 </section>
 
 <header class="cabecera">
@@ -2381,13 +2378,24 @@ pintarProgreso();
   if (m === 'buscar') irA('buscar', '', { q: sub || '' });
   else irA(m || 'inicio', sub, sec ? { sec } : {});
 }
+// Nombre para el saludo, en el sitio. Solo con una sesión real y un nombre guardado en el perfil:
+// sin sesión, obtenerPerfilEstudiante() devuelve un nombre por defecto («Cristian Arcila») que no es el
+// del estudiante, y sin nombre guardado devuelve el correo. En esos casos el saludo queda en «Hola».
+async function cargarNombreEstudiante() {
+  nombreSaludo = '';
+  if (typeof obtenerPerfilEstudiante !== 'function' || typeof obtenerSesionActual !== 'function') return nombreSaludo;
+  try {
+    const sesion = await obtenerSesionActual();
+    const pf = sesion ? await obtenerPerfilEstudiante() : null;
+    if (pf && !pf.esEmail && pf.nombre) nombreSaludo = pf.nombre.trim().split(/\s+/)[0];
+  } catch (e) { /* sin perfil: saludo genérico */ }
+  return nombreSaludo;
+}
 // En el sitio: trae el progreso de la cuenta (sesiones hechas en otros dispositivos) y el nombre del estudiante.
 if (SITIO) {
   (async () => {
     const nuevas = await sincronizarDesdePlataforma();
-    if (typeof obtenerPerfilEstudiante === 'function') {
-      try { const pf = await obtenerPerfilEstudiante(); if (pf && !pf.esEmail && pf.nombre) nombreSaludo = pf.nombre; } catch (e) { /* sin perfil: saludo genérico */ }
-    }
+    await cargarNombreEstudiante();
     if (modo === 'inicio' || (nuevas && modo === 'estudiar')) VISTAS[modo](submodo, {});
   })();
 }
