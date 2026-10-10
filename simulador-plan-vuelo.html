@@ -625,6 +625,7 @@
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
+<script src="simulador-plan-vuelo-banco.js"></script>
 </head>
 <body>
 <script src="auth-gate.js"></script>
@@ -1940,13 +1941,71 @@ btnAyuda.addEventListener('click', () => {
   }
 
   // ---------- Generador de situaciones por nivel ----------
+  // Los ejercicios salen de planes de vuelo REALES (simulador-plan-vuelo-banco.js,
+  // ver la cabecera de ese archivo). Los generadores de abajo quedan como
+  // respaldo por si el banco no carga o un nivel se queda sin planes.
   function generarSituacion(nivel){
+    const real = situacionReal(nivel);
+    if(real) return real;
     if(nivel===1) return generarBasico();
     if(nivel===2) return generarIntermedio();
     if(nivel===3) return generarAvanzado();
     if(nivel===4) return generarEspecial();
     if(nivel===5) return generarCasoAIS();
     return generarEquipoCasilla18();
+  }
+
+  // ---------- Planes de vuelo reales ----------
+  // Cada fila del banco es [nivel, carpeta AMHS, mensaje FPL]; el nivel 6
+  // (equipo y casilla 18) se marca sumando 60 al nivel principal.
+  const NIVEL_TAG = {1:'NIVEL 1 · VFR', 2:'NIVEL 2 · IFR NACIONAL', 3:'NIVEL 3 · IFR INTERNACIONAL',
+    4:'NIVEL 4 · VUELOS ESPECIALES', 5:'NIVEL 5 · CASOS AIS', 6:'NIVEL 6 · EQUIPO Y CASILLA 18'};
+  const RECIENTES_MAX = 40;
+  const recientes = [];
+  function planesDelNivel(nivel){
+    const banco = typeof BANCO_FPL_REALES !== 'undefined' && Array.isArray(BANCO_FPL_REALES) ? BANCO_FPL_REALES : [];
+    return banco.filter(([nv]) => nivel === 6 ? nv >= 60 : nv % 60 === nivel);
+  }
+  function lugarReal(cod, nombre18){
+    if(cod === 'ZZZZ' || cod === 'AFIL') return nombre18 ? mayuscula(nombre18.toLowerCase()) : 'aeródromo sin indicador';
+    return nombreCorto(cod);
+  }
+  function situacionReal(nivel){
+    const pool = planesDelNivel(nivel);
+    if(!pool.length) return null;
+    // No repetir un plan hasta haber visto otros: con 90+ por nivel basta
+    // recordar los últimos 40 (o la mitad del nivel si tiene menos).
+    const memoria = Math.min(RECIENTES_MAX, Math.floor(pool.length / 2));
+    const libres = pool.filter(p => recientes.slice(-memoria).indexOf(p[2]) === -1);
+    const [, carpeta, msg] = choice(libres.length ? libres : pool);
+    recientes.push(msg);
+    if(recientes.length > RECIENTES_MAX) recientes.shift();
+
+    const p = parseFPL(msg);
+    if(!p.ok) return null;
+    const v = Object.assign({f3:'FPL'}, p.valores);
+    const r = redactarSituacion(v);
+    const d18 = trocear18(v.f18).datos;
+    const ruta15 = [v.f15v, v.f15n, v.f15r].join(' · ');
+    return {
+      nivelTag: `${NIVEL_TAG[nivel]} · PLAN REAL`,
+      titulo: `Plan de vuelo real — ${lugarReal(v.f13a, d18.DEP)} → ${lugarReal(v.f16d, d18.DEST)}`,
+      narrativa: sanitizarNarrativa(r.narrativa),
+      keys: [
+        ['Casilla 7', v.f7],
+        ['Casilla 8', `${v.f8r} · ${v.f8t}`],
+        ['Casilla 9', `${v.f9n || '—'} · ${v.f9t} · /${v.f9e}`],
+        ['Casilla 10', `${v.f10a} / ${v.f10b}`],
+        ['Casilla 13', `${v.f13a} · ${v.f13h}`],
+        ['Casilla 15', ruta15],
+        ['Casilla 16', [v.f16d + ' · ' + v.f16e, v.f16a1, v.f16a2].filter(Boolean).join(' · ')],
+        ['Casilla 18', v.f18 || '0']
+      ],
+      fuenteRuta: `Plan de vuelo real de septiembre de 2026, tomado de la carpeta de mensajes AMHS de ${nombreCorto(carpeta)}. ` +
+        'La ruta, el equipo y los demás datos son los que presentó el explotador; se eligió porque cumple el Doc 4444 y el AIP ENR 1.10. ' +
+        'La casilla 19 no viaja en el mensaje FPL, por eso esta situación no la trae.',
+      values: v
+    };
   }
 
   function baseHora(){ return pad2(randInt(10,23)) + pad2(randInt(0,59)); }
@@ -3629,7 +3688,9 @@ btnAyuda.addEventListener('click', () => {
       add('16','Casilla 16 — Destino, EET y alternos', false, `Se usó ${mono('ZZZZ')} como destino, así que el aeródromo real debe detallarse en la casilla 18 después de ${mono('DEST/')} (Doc 4444, Apéndice 2).`);
     } else if((a1 === 'ZZZZ' || a2 === 'ZZZZ') && !tiene18(norm(v.f18), 'ALTN')){
       add('16','Casilla 16 — Destino, EET y alternos', false, `Se usó ${mono('ZZZZ')} como aeródromo de alternativa, así que debe detallarse en la casilla 18 después de ${mono('ALTN/')} (Doc 4444, Apéndice 2).`);
-    } else if(a1 && a1 === d16){
+    } else if(a1 && a1 === d16 && a1 !== 'ZZZZ'){
+      // ZZZZ en los dos no es el mismo lugar: cada uno se detalla en DEST/ y ALTN/
+      // (helicópteros que van a un sitio sin indicador con alterno también sin él).
       add('16','Casilla 16 — Destino, EET y alternos', false, 'El aeródromo de alternativa no puede ser el mismo aeródromo de destino.');
     } else if(!igual(d16, exp.f16d) || !igual(e16, exp.f16e) || !igual(a1, exp.f16a1) || !igual(a2, exp.f16a2)){
       add('16','Casilla 16 — Destino, EET y alternos', false, `Se esperaba ${mono([exp.f16d + ' · ' + exp.f16e, exp.f16a1, exp.f16a2].filter(Boolean).join(' · '))}.`);
@@ -4567,7 +4628,136 @@ btnAyuda.addEventListener('click', () => {
     {cod:'SPCL', nom:'Pucallpa (David Abensur Rengifo), Perú'},
     {cod:'SPRU', nom:'Trujillo (Carlos Martínez de Pinillos), Perú'},
     {cod:'SEMT', nom:'Manta (Eloy Alfaro), Ecuador'},
-    {cod:'SETN', nom:'Esmeraldas (Carlos Concha Torres), Ecuador'}
+    {cod:'SETN', nom:'Esmeraldas (Carlos Concha Torres), Ecuador'},
+    // Lote 2026-10-10: nombres de BasesDeDatos/nav/aerodromos.json (OurAirports) y de la lista
+    // de designadores.html, para los aeródromos de los planes reales del banco de ejercicios.
+    {cod:'SKXE', nom:'Xielo (Cundinamarca)'},
+    {cod:'TBPB', nom:'Bridgetown (Grantley Adams), Barbados'},
+    {cod:'SKTI', nom:'Tg. Gustavo Rojas Pinilla (Tolima)'},
+    {cod:'KTPA', nom:'Tampa, Estados Unidos'},
+    {cod:'SKTL', nom:'Tolú (Golfo de Morrosquillo)'},
+    {cod:'SKPD', nom:'Inírida (César Gaviria)'},
+    {cod:'SKAP', nom:'Apiay (CT. Luis F. Gómez Niño)'},
+    {cod:'SPSO', nom:'Pisco (Captain Renán Elías Olivera), Perú'},
+    {cod:'SABE', nom:'Buenos Aires (Aeroparque Jorge Newbery), Argentina'},
+    {cod:'TFFR', nom:'Pointe-à-Pitre (Maryse Condé), Guadalupe (Francia)'},
+    {cod:'SBGL', nom:'Río de Janeiro (Galeão – Tom Jobim), Brasil'},
+    {cod:'SBKP', nom:'Campinas (Viracopos), Brasil'},
+    {cod:'KIAD', nom:'Washington (Dulles), Estados Unidos'},
+    {cod:'SKSA', nom:'Saravena (Colonizadores)'},
+    {cod:'SBEG', nom:'Manaus (Eduardo Gomes), Brasil'},
+    {cod:'SPQT', nom:'Iquitos (Coronel FAP Francisco Secada Vignetta), Perú'},
+    {cod:'TNCB', nom:'Kralendijk (Flamingo), Bonaire (Caribe Neerlandés)'},
+    {cod:'MMSM', nom:'Ciudad de México (Felipe Ángeles), México'},
+    {cod:'SKME', nom:'Tc. Luis Francisco Pinto (Tolima)'},
+    {cod:'SKAD', nom:'Acandí (Chocó)'},
+    {cod:'SQZJ', nom:'Pizarro (Chocó)'},
+    {cod:'SKSR', nom:'Santa Rosa del Sur (Bolívar)'},
+    {cod:'SKUR', nom:'Urrao (Antioquia)'},
+    {cod:'SVVA', nom:'Valencia (Arturo Michelena), Venezuela'},
+    {cod:'MRPV', nom:'San José (Tobías Bolaños), Costa Rica'},
+    {cod:'MKJS', nom:'Montego Bay (Sangster), Jamaica'},
+    {cod:'SVBC', nom:'Barcelona (General José Antonio Anzoátegui), Venezuela'},
+    {cod:'MHPR', nom:'Palmerola, Honduras'},
+    {cod:'SACO', nom:'Córdoba (Ingeniero Aeronáutico Ambrosio L. V. Taravella), Argentina'},
+    {cod:'KDFW', nom:'Dallas-Fort Worth, Estados Unidos'},
+    {cod:'SQQM', nom:'Mandala (Meta)'},
+    {cod:'SQOP', nom:'La Opia (Tolima)'},
+    {cod:'MRLB', nom:'Liberia (Daniel Oduber Quirós), Costa Rica'},
+    {cod:'MMAA', nom:'Acapulco (General Juan N. Álvarez), México'},
+    {cod:'CYUL', nom:'Montreal (Pierre Elliott Trudeau), Canadá'},
+    {cod:'MMCZ', nom:'Cozumel, México'},
+    {cod:'KLAX', nom:'Los Ángeles, Estados Unidos'},
+    {cod:'MHLM', nom:'San Pedro Sula (Ramón Villeda Morales), Honduras'},
+    {cod:'MMTO', nom:'Toluca (Adolfo López Mateos), México'},
+    {cod:'LPPT', nom:'Lisboa (Humberto Delgado), Portugal'},
+    {cod:'SBCF', nom:'Belo Horizonte (Tancredo Neves), Brasil'},
+    {cod:'CYHZ', nom:'Halifax (Stanfield), Canadá'},
+    {cod:'SAAR', nom:'Rosario (Islas Malvinas), Argentina'},
+    {cod:'SKUM', nom:'Cumaribo (Vichada)'},
+    {cod:'SKJU', nom:'Juradó (Chocó)'},
+    {cod:'SQGA', nom:'Gobernación de Antioquia (Antioquia)'},
+    {cod:'LEZG', nom:'Zaragoza, España'},
+    {cod:'SVCS', nom:'Charallave (Óscar Machado Zuloaga), Venezuela'},
+    {cod:'CYOW', nom:'Ottawa (Macdonald-Cartier), Canadá'},
+    {cod:'CYYZ', nom:'Toronto (Pearson), Canadá'},
+    {cod:'KBOS', nom:'Boston (Logan), Estados Unidos'},
+    {cod:'SCFA', nom:'Antofagasta (Andrés Sabella Gálvez), Chile'},
+    {cod:'SBBR', nom:'Brasília (Presidente Juscelino Kubitschek), Brasil'},
+    {cod:'SCDA', nom:'Iquique (Diego Aracena), Chile'},
+    {cod:'GCTS', nom:'Tenerife Sur, España'},
+    {cod:'GVAC', nom:'Espargos (Amílcar Cabral), Cabo Verde'},
+    {cod:'SPZO', nom:'Cusco (Alejandro Velasco Astete), Perú'},
+    {cod:'SKBM', nom:'Barrancominas (Guainía)'},
+    {cod:'SKGA', nom:'La Gaviota (Vichada)'},
+    {cod:'SKVF', nom:'Vigía del Fuerte (Antioquia)'},
+    {cod:'MPMG', nom:'Ciudad de Panamá (Albrook «Marcos A. Gelabert»), Panamá'},
+    {cod:'MPDA', nom:'David (Enrique Malek), Panamá'},
+    {cod:'SGAS', nom:'Asunción (Silvio Pettirossi), Paraguay'},
+    {cod:'LEPA', nom:'Palma de Mallorca, España'},
+    {cod:'KORD', nom:'Chicago (O\'Hare), Estados Unidos'},
+    {cod:'KMKE', nom:'Milwaukee (General Mitchell), Estados Unidos'},
+    {cod:'MMVR', nom:'Veracruz (General Heriberto Jara), México'},
+    {cod:'MHTG', nom:'Tegucigalpa (Toncontín), Honduras'},
+    {cod:'SQCZ', nom:'Corozito (Casanare)'},
+    {cod:'MMLO', nom:'Silao (Guanajuato), México'},
+    {cod:'SVMG', nom:'Isla de Margarita (Santiago Mariño), Venezuela'},
+    {cod:'KORF', nom:'Norfolk, Estados Unidos'},
+    {cod:'SBSJ', nom:'São José dos Campos (Professor Urbano Ernesto Stumpf), Brasil'},
+    {cod:'KBUF', nom:'Buffalo (Niagara), Estados Unidos'},
+    {cod:'SLLP', nom:'La Paz (El Alto), Bolivia'},
+    {cod:'KCLL', nom:'College Station (Easterwood Field), Estados Unidos'},
+    {cod:'SBBE', nom:'Belém (Val de Cans/Júlio Cezar Ribeiro), Brasil'},
+    {cod:'LTFM', nom:'Estambul, Turquía'},
+    {cod:'LPPR', nom:'Porto (Francisco de Sá Carneiro), Portugal'},
+    {cod:'MMMD', nom:'Mérida (Manuel Crescencio Rejón), México'},
+    {cod:'SPHI', nom:'Chiclayo (Capitán FAP José A. Quiñones González), Perú'},
+    {cod:'MMMY', nom:'Monterrey, México'},
+    {cod:'SKFG', nom:'Los Feria Girón (Tolima)'},
+    {cod:'LPAZ', nom:'Isla de Santa María (Azores), Portugal'},
+    {cod:'SQLG', nom:'Las Águilas (Valle del Cauca)'},
+    {cod:'SKVL', nom:'Puerto Boyacá (Velásquez)'},
+    {cod:'SKML', nom:'Montelíbano (El Pindo)'},
+    {cod:'SKCA', nom:'Capurganá (Chocó)'},
+    {cod:'SKMP', nom:'Mompós (San Bernardo)'},
+    {cod:'KOPF', nom:'Miami (Opa-locka Executive), Estados Unidos'},
+    {cod:'LPPD', nom:'Ponta Delgada (Azores), Portugal'},
+    {cod:'SULS', nom:'Punta del Este (Capitán de Corbeta C. A. Curbelo), Uruguay'},
+    {cod:'SKUA', nom:'Marandúa (CR. Luis Arturo Rodríguez Meneses)'},
+    {cod:'KSWF', nom:'Newburgh (Stewart), Estados Unidos'},
+    {cod:'TNCM', nom:'Sint Maarten (Princesa Juliana)'},
+    {cod:'KAFW', nom:'Fort Worth (Alliance), Estados Unidos'},
+    {cod:'KPSM', nom:'Portsmouth (Pease), Estados Unidos'},
+    {cod:'EDFH', nom:'Fráncfort-Hahn, Alemania'},
+    {cod:'SBGO', nom:'Goiânia (Santa Genoveva), Brasil'},
+    {cod:'LFPO', nom:'París (Orly), Francia'},
+    {cod:'LFRB', nom:'Brest (Brest Bretagne), Francia'},
+    {cod:'SLCB', nom:'Cochabamba (Jorge Wilsterman), Bolivia'},
+    {cod:'KEGI', nom:'Crestview (Duke Field), Estados Unidos'},
+    {cod:'KPHL', nom:'Filadelfia, Estados Unidos'},
+    {cod:'EHRD', nom:'Rotterdam (Rotterdam The Hague), Países Bajos'},
+    {cod:'LFLL', nom:'Lyon (Saint-Exupéry), Francia'},
+    {cod:'LEAL', nom:'Alicante (Alicante-Elche Miguel Hernández), España'},
+    {cod:'KAEX', nom:'Alexandria, Estados Unidos'},
+    {cod:'SKMO', nom:'Puerto Gaitán (Morelia)'},
+    {cod:'SKJA', nom:'Majaguillo (Casanare)'},
+    {cod:'SQWB', nom:'Los Lobitos (Casanare)'},
+    {cod:'KCHS', nom:'Charleston, Estados Unidos'},
+    {cod:'KBHM', nom:'Birmingham (Birmingham-Shuttlesworth), Estados Unidos'},
+    {cod:'SKNX', nom:'Lomas del Viento (Valle del Cauca)'},
+    {cod:'SKIR', nom:'Mapiripán (Meta)'},
+    {cod:'SKQR', nom:'San Vicente de Chucurí (Santander)'},
+    {cod:'SKHL', nom:'Helicentro (Cundinamarca)'},
+    {cod:'MDJB', nom:'La Isabela, República Dominicana'},
+    {cod:'MDST', nom:'Santiago (Cibao), República Dominicana'},
+    {cod:'KTMB', nom:'Miami (Miami Executive), Estados Unidos'},
+    {cod:'KBWI', nom:'Baltimore (Baltimore/Washington Thurgood Marshall), Estados Unidos'},
+    {cod:'MMMM', nom:'Morelia (General Francisco J. Mujica), México'},
+    {cod:'SKPB', nom:'Puerto Bolívar (Puerto Bolívar - Portete)'},
+    {cod:'KAUS', nom:'Austin (Austin Bergstrom), Estados Unidos'},
+    {cod:'LEST', nom:'Santiago de Compostela (Rosalía de Castro), España'},
+    {cod:'CYYT', nom:'St. John\'s, Canadá'},
+    {cod:'KADW', nom:'Camp Springs (Base Conjunta Andrews), Estados Unidos'}
   ];
   const AERONAVES_EXTRA = [
     {tipo:'AT45', nombre:'ATR 42-500'},
@@ -4723,7 +4913,21 @@ btnAyuda.addEventListener('click', () => {
     {tipo:'ULAC', nombre:'avión ultraliviano'},
     {tipo:'GLID', nombre:'planeador'},
     {tipo:'GYRO', nombre:'autogiro'},
-    {tipo:'BALL', nombre:'globo'}
+    {tipo:'BALL', nombre:'globo'},
+    // Lote 2026-10-10, nombres de aeronaves-data.js (EUROCONTROL)
+    {tipo:'B773', nombre:'Boeing 777-300'},
+    {tipo:'DH8C', nombre:'Bombardier Dash 8 Q300'},
+    {tipo:'ASTR', nombre:'IAI Astra (Gulfstream G100)'},
+    {tipo:'LJ55', nombre:'Learjet 55'},
+    {tipo:'MD82', nombre:'McDonnell Douglas MD-82'},
+    {tipo:'PA23', nombre:'Piper Apache'},
+    {tipo:'LJ31', nombre:'Learjet 31'},
+    {tipo:'C550', nombre:'Cessna 550 Citation II'},
+    {tipo:'C17', nombre:'Boeing C-17 Globemaster III'},
+    {tipo:'MU2', nombre:'Mitsubishi MU-2 (LR-1)'},
+    {tipo:'HDJT', nombre:'Honda HA-420 HondaJet'},
+    {tipo:'C303', nombre:'Cessna T303 Crusader'},
+    {tipo:'E135', nombre:'Embraer ERJ-135'}
   ];
   const FIRS = {
     SKED:'Bogotá', SKEC:'Barranquilla', MPZL:'Panamá', SPIM:'Lima', SEGU:'Guayaquil', SEFG:'Guayaquil',
@@ -4736,7 +4940,8 @@ btnAyuda.addEventListener('click', () => {
     EGTT:'Londres', EGPX:'Escocia', EISN:'Shannon', LFFF:'París', LFRR:'Brest',
     EHAA:'Ámsterdam', EDGG:'Langen', EDUU:'Rin (UAC)', LIRR:'Roma', LIMM:'Milán',
     SCFZ:'Antofagasta', SCEZ:'Santiago', SLLF:'La Paz', SAEF:'Ezeiza', SACF:'Córdoba', SAMF:'Mendoza',
-    SUEO:'Montevideo', SGFA:'Asunción', SOOO:'Rochambeau', SYGC:'Georgetown', SMPM:'Paramaribo'
+    SUEO:'Montevideo', SGFA:'Asunción', SOOO:'Rochambeau', SYGC:'Georgetown', SMPM:'Paramaribo',
+    KZDC:'Washington', KZBW:'Boston', KZTL:'Atlanta', KZOB:'Cleveland', KZID:'Indianápolis', KZAU:'Chicago', KZFW:'Fort Worth', SARR:'Resistencia', MMID:'Mérida', SBCW:'Curitiba', CZUL:'Montreal', MTEG:'Puerto Príncipe', MMEX:'México'
   };
   // Doc 4444, Ap. 2, casilla 18, indicador STS/.
   const STS_PROSA = {
