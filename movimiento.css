@@ -1,0 +1,110 @@
+/* =====================================================================
+   MOVIMIENTO — lenguaje de animación común de SoyAeronáutico (2026-10-11)
+
+   Una sola gramática para todo el sitio, enlazada al final del <head> de
+   cada página (después de su <style> propio, para que gane en empates):
+
+   · Las ventanas LLEGAN (menú móvil, desplegable «Módulos», avisos):
+     entran asentándose con una curva de desaceleración; al cerrar no hay
+     animación, para no hacer esperar a nadie.
+   · Los botones RESPONDEN: al pulsarlos se hunden un poco, igual en todas
+     partes.
+   · Las respuestas SE ANUNCIAN como una luz de aviso: el acierto se
+     enciende en verde una vez; el error da una sacudida corta.
+   · Con «reducir movimiento» activo no hay desplazamientos: sólo color y
+     opacidad, que siguen diciendo qué pasó.
+
+   Sólo toca clases que ya existen en el sitio. No cambia colores, tamaños
+   ni la disposición de nada.
+   ===================================================================== */
+
+:root{
+  --mov-rapido: 140ms;
+  --mov-normal: 220ms;
+  --mov-entrada: 420ms;
+  --mov-curva: cubic-bezier(0.16, 1, 0.3, 1);   /* llegada que se asienta */
+}
+
+@keyframes movAparece   { from{ opacity:0; } to{ opacity:1; } }
+@keyframes movLlega     { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+@keyframes movPop       { from{ opacity:0; transform:translateY(-6px) scale(0.98); } to{ opacity:1; transform:none; } }
+@keyframes movCajon     { from{ transform:translateX(100%); } to{ transform:none; } }
+@keyframes movLateral   { from{ opacity:0; transform:translateX(14px); } to{ opacity:1; transform:none; } }
+@keyframes movAviso     { from{ opacity:0; transform:translateY(12px) scale(0.98); } to{ opacity:1; transform:none; } }
+@keyframes movAcierto   { 0%{ box-shadow:0 0 0 0 rgba(46,158,109,0.45); } 100%{ box-shadow:0 0 0 10px rgba(46,158,109,0); } }
+@keyframes movGiro     { from{ opacity:0; transform:rotate(-90deg) scale(0.6); } to{ opacity:1; transform:none; } }
+@keyframes movFallo     { 0%,100%{ transform:none; } 20%{ transform:translateX(-5px); } 40%{ transform:translateX(5px); } 60%{ transform:translateX(-3px); } 80%{ transform:translateX(3px); } }
+
+/* ---------- Ventanas ---------- */
+
+/* Menú del teléfono: el fondo se oscurece y el cajón entra desde la derecha;
+   los enlaces llegan en cascada corta (tope ~250 ms). */
+.mobile-nav.open .mobile-nav-backdrop{ animation: movAparece var(--mov-normal) ease-out both; }
+.mobile-nav.open .mobile-nav-panel{ animation: movCajon var(--mov-entrada) var(--mov-curva) both; }
+.mobile-nav.open .mobile-nav-links a{ animation: movLateral 360ms var(--mov-curva) both; }
+.mobile-nav.open .mobile-nav-links a:nth-child(1){ animation-delay: 60ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(2){ animation-delay: 80ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(3){ animation-delay: 100ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(4){ animation-delay: 120ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(5){ animation-delay: 140ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(6){ animation-delay: 160ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(7){ animation-delay: 180ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(8){ animation-delay: 200ms; }
+.mobile-nav.open .mobile-nav-links a:nth-child(n+9){ animation-delay: 220ms; }
+
+/* Desplegable «Módulos» de la barra superior. */
+.nav-dropdown.open .nav-dropdown-menu-inner,
+.nav-dropdown:hover .nav-dropdown-menu-inner{ animation: movPop var(--mov-normal) var(--mov-curva) both; transform-origin: top center; }
+
+/* Paneles: campana de novedades, avisos flotantes, tarjeta de resultado
+   final de los chequeos rápidos y de los quizzes. */
+.notif-panel:not([hidden]){ animation: movPop var(--mov-normal) var(--mov-curva) both; transform-origin: top right; }
+.aviso.show{ animation: movAviso 320ms var(--mov-curva) both; }
+.finish-card, #finishCard{ animation: movLlega 520ms var(--mov-curva) both; }
+
+/* Paneles del estudiante y del profesor: al cambiar de vista (Panel ↔
+   Actividades) la nueva llega en lugar de aparecer de golpe, y la ficha de
+   un estudiante se despliega con su contenido. */
+#vistaPanel:not([hidden]), #vistaActividades:not([hidden]){ animation: movLlega 320ms var(--mov-curva) both; }
+.est-resultado[open] .est-cuerpo{ animation: movLlega 320ms var(--mov-curva) both; }
+
+/* ---------- Botones: misma respuesta al pulsar en todo el sitio ---------- */
+.nav-login-btn, .hero-cta, .btn-start, .btn-launch, .btn, .metar-btn, .chip, .opt-btn,
+.mobile-nav-close, .menu-btn, .theme-toggle, .theme-toggle-btn, .nav-icon-btn, .notif-btn{
+  transition-property: background-color, border-color, color, box-shadow, filter, opacity, transform;
+  transition-duration: var(--mov-normal);
+  transition-timing-function: var(--mov-curva);
+}
+.nav-login-btn:active, .hero-cta:active, .btn-start:active, .btn-launch:active:not(:disabled), .btn:active:not(:disabled),
+.metar-btn:active:not(:disabled), .chip:active, .opt-btn:active:not(:disabled), .mobile-nav-close:active,
+.menu-btn:active, .theme-toggle:active, .theme-toggle-btn:active, .nav-icon-btn:active, .notif-btn:active{
+  transform: scale(0.97);
+  transition-duration: var(--mov-rapido);
+}
+/* Al cambiar de tema, el ícono que aparece (sol o luna) entra girando. */
+.theme-toggle .icon-sun, .theme-toggle .icon-moon,
+.theme-toggle-btn .icon-sun, .theme-toggle-btn .icon-moon{ animation: movGiro 480ms var(--mov-curva) both; }
+
+/* ---------- Respuestas de los quizzes y chequeos rápidos ---------- */
+.opt-btn.correct, .opt-btn.selected-correct{ animation: movAcierto 640ms ease-out 1; }
+.opt-btn.reveal-correct{ animation: movAcierto 640ms ease-out 180ms 1; }
+.opt-btn.incorrect, .opt-btn.selected-wrong{ animation: movFallo 380ms ease-in-out 1; }
+
+/* ---------- Menos movimiento ---------- */
+@media (prefers-reduced-motion: reduce){
+  .mobile-nav.open .mobile-nav-panel,
+  .mobile-nav.open .mobile-nav-links a,
+  .nav-dropdown.open .nav-dropdown-menu-inner,
+  .nav-dropdown:hover .nav-dropdown-menu-inner,
+  .notif-panel:not([hidden]),
+  .aviso.show,
+  .finish-card, #finishCard,
+  #vistaPanel:not([hidden]), #vistaActividades:not([hidden]),
+  .est-resultado[open] .est-cuerpo{ animation: movAparece 160ms linear both; }
+  .opt-btn.incorrect, .opt-btn.selected-wrong{ animation: none; }
+  .nav-login-btn:active, .hero-cta:active, .btn-start:active, .btn-launch:active, .btn:active,
+  .metar-btn:active, .chip:active, .opt-btn:active, .mobile-nav-close:active, .menu-btn:active,
+  .theme-toggle:active, .theme-toggle-btn:active, .nav-icon-btn:active, .notif-btn:active{ transform: none; }
+  .theme-toggle .icon-sun, .theme-toggle .icon-moon,
+  .theme-toggle-btn .icon-sun, .theme-toggle-btn .icon-moon{ animation: movAparece 160ms linear both; }
+}

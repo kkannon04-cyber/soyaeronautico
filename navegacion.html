@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Navegación aérea en 6 bloques: clases de navegación, hora y husos horarios, velocidades, altímetro y reglajes QNH/QFE/QNE, VOR, DME y viento.">
 <title>Navegación Aérea | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +15,7 @@
     --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
     --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
     --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545;
-    --vfr:#2E9E6D; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+    --vfr:#2E9E6D; --vfr-texto:#1F7A53; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
     --live:#2E9E6D; --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
@@ -25,7 +26,7 @@
     --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
     --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
     --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F;
-    --vfr:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+    --vfr:#4FA88C; --vfr-texto:#4FA88C; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
     --live:#4FA88C; --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
@@ -53,7 +54,7 @@
   nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
   nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
   nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
-  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active{ color:var(--vfr-texto); font-weight:600; }
   nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
   /* ---------- DROPDOWN "MÓDULOS" ---------- */
@@ -70,7 +71,7 @@
   }
   .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
   .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
-  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr-texto); font-weight:600; }
   .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
   .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
@@ -89,7 +90,7 @@
     transition:background .15s, color .15s;
   }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
-  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown-menu a.active{ color:var(--vfr-texto); font-weight:600; }
 
   .nav-divider{ width:1px; height:18px; background:var(--hairline); }
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
@@ -113,7 +114,7 @@
   @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
   .hero-simple{ max-width:900px; margin:0 auto; padding:48px 32px 8px; }
-  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:14px; }
   .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
   .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
@@ -197,12 +198,13 @@
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 
 <div class="sticky-header">
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+    <a class="brand" href="index.html">
       <div class="brand-mark">
         <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
           <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>

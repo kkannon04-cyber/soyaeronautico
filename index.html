@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Portal de estudio gratuito para operadores AIS·COM·MET en Colombia: módulos de teoría, quizzes, simuladores, METAR en vivo y un panel con tu progreso.">
 <title>SoyAeronáutico — Portal AIS·COM·MET</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +23,7 @@
     --hairline:#E1E7EF;
     --shadow-rgb:15,23,42;
     --danger:#D64545;
-    --vfr:#2E9E6D;
+    --vfr:#2E9E6D; --vfr-texto:#1F7A53;
     --mvfr:#3E7BFA;
     --ifr:#D64545;
     --lifr:#8B5CF6;
@@ -49,7 +50,7 @@
     --hairline:#2A3548;
     --shadow-rgb:0,0,0;
     --danger:#C9564F;
-    --vfr:#4FA88C;
+    --vfr:#4FA88C; --vfr-texto:#4FA88C;
     --mvfr:#4A8FD1;
     --ifr:#C9564F;
     --lifr:#B15FC7;
@@ -137,7 +138,7 @@
   nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{
     right:0;
   }
-  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active{ color:var(--vfr-texto); font-weight:600; }
   nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
   /* ---------- DROPDOWN "MÓDULOS" ---------- */
@@ -154,7 +155,7 @@
   }
   .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
   .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
-  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr-texto); font-weight:600; }
   .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
   .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
@@ -173,7 +174,7 @@
     transition:background .15s, color .15s;
   }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
-  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown-menu a.active{ color:var(--vfr-texto); font-weight:600; }
 
   .nav-divider{ width:1px; height:18px; background:var(--hairline); }
   .nav-icon-btn{
@@ -208,51 +209,126 @@
     .menu-btn{display:block;}
   }
 
-  /* ---------- HERO (banner con foto de fondo, como el Desing Model) ---------- */
   .eyebrow{
     font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em;
     color:var(--accent); text-transform:uppercase; margin-bottom:14px; display:inline-block;
   }
+  /* ---------- HERO: foto del equipo + «Tu briefing de hoy» (rediseño 2026-10-11) ----------
+     La foto sigue a sangre; el saludo queda a la izquierda y el briefing —la lista de
+     chequeo del estudiante, con su estado real— a la derecha, como un instrumento más. */
+  /* Fondo azul con el cielo animado (cielo.js): aeronaves en planta cruzando
+     con estelas tenues. La foto del equipo vive ahora en Quiénes somos. */
   .hero-fifa{
-    position:relative; width:100%; min-height:440px;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; border-bottom:1px solid var(--hairline);
+    position:relative; width:100%; background:var(--navy); overflow:hidden;
+    border-bottom:1px solid var(--hairline);
   }
-  .hero-bg{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; object-position:center 30%; z-index:0;
+  .cielo{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0; transition:opacity .9s ease; }
+  .cielo.listo{ opacity:1; }
+  .hero-grid{
+    position:relative; z-index:1; width:100%; max-width:1200px; margin:0 auto; padding:84px 32px 88px;
+    display:grid; grid-template-columns:minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:"texto brief";
+    column-gap:56px; row-gap:24px; align-items:center;
   }
-  .hero-overlay{
-    position:absolute; inset:0; z-index:1;
-    background:linear-gradient(0deg, rgba(6,16,32,0.88) 0%, rgba(6,16,32,0.45) 100%);
-  }
-  .hero-content{
-    position:relative; z-index:2; text-align:center;
-    padding:48px 24px; max-width:760px; color:#FFFFFF;
-  }
-  .hero-content .eyebrow{ color:#8FB6F2; }
-  .hero-byline{
-    margin:24px 0 0; font-family:'IBM Plex Mono', monospace;
-    font-size:0.72rem; letter-spacing:0.08em; color:#A9BFDD;
-    text-shadow:0 2px 8px rgba(0,0,0,0.45);
-  }
-  .hero-byline strong{ color:#FFFFFF; font-weight:600; }
+  .hero-content{ grid-area:texto; }
+  .briefing{ grid-area:brief; align-self:center; }
+  .hero-content{ color:#FFFFFF; max-width:600px; }
   .hero-content h1{
-    font-size:clamp(2rem, 4.6vw, 3.4rem); line-height:1.12; margin-bottom:18px;
-    text-shadow:0 4px 16px rgba(0,0,0,0.4);
+    font-size:clamp(2.2rem, 4.4vw, 3.5rem); line-height:1.08; letter-spacing:-0.02em;
+    margin:0 0 20px; text-wrap:balance; text-shadow:0 4px 18px rgba(0,0,0,0.35);
   }
   .hero-content p.lead{
-    color:#DCE5F3; font-size:clamp(0.95rem, 1.8vw, 1.1rem); line-height:1.6;
-    margin:0 auto 30px; max-width:620px;
+    color:#D3DEEE; font-size:clamp(0.98rem, 1.5vw, 1.08rem); line-height:1.65;
+    margin:0 0 28px; max-width:58ch;
   }
+  .hero-byline{ margin:18px 0 0; font-size:0.86rem; color:#C9D6EA; }
+  .hero-byline strong{ color:#FFFFFF; font-weight:600; }
   .hero-cta{
-    display:inline-block; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
     background:var(--accent); color:var(--on-accent);
-    font-family:'Archivo'; font-weight:700; font-size:1.02rem;
-    padding:14px 32px; border-radius:8px;
-    transition:transform .2s, filter .2s;
+    font-family:'Archivo'; font-weight:700; font-size:1rem;
+    padding:14px 28px; border-radius:8px;
   }
   .hero-cta:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+  .hero-ctas{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  /* Acción secundaria: misma forma, sin relleno, para no competir con la principal. */
+  .hero-cta.hero-cta-sec{ background:rgba(255,255,255,0.06); color:#FFFFFF; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.55); }
+  .hero-cta.hero-cta-sec:hover{ background:rgba(255,255,255,0.14); }
+  .hero-cta:focus-visible{ outline:2px solid #FFFFFF; outline-offset:3px; }
+
+  /* Briefing */
+  .briefing{
+    background:var(--bg); color:var(--text); border-radius:16px; padding:22px 22px 18px;
+    box-shadow:0 28px 60px -28px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.12);
+  }
+  [data-theme="dark"] .briefing{ background:var(--panel); }
+  .briefing-cab{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .briefing-cab h2{ font-size:1.15rem; margin:0; }
+  .briefing-hora{ font-size:0.76rem; font-weight:600; color:var(--text-muted); letter-spacing:0.04em; white-space:nowrap; }
+  /* Medidor de cuatro celdas: las apagadas se dibujan, no se esconden. */
+  .briefing-medidor{ display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin:14px 0 6px; }
+  .briefing-medidor span{ height:5px; border-radius:2px; background:var(--hairline); transition:background-color .3s ease; }
+  .briefing-medidor span.on{ background:var(--vfr); }
+  .briefing-pasos{ list-style:none; margin:0; padding:0; }
+  .paso a{
+    display:grid; grid-template-columns:26px minmax(0, 1fr) 14px; gap:14px; align-items:center;
+    padding:13px 8px; margin:0 -8px; border-radius:10px; color:inherit; text-decoration:none;
+    transition:background-color .18s ease;
+  }
+  .paso + .paso a{ border-top:1px solid var(--hairline); border-radius:0 0 10px 10px; }
+  .paso a:hover{ background:var(--panel-alt); }
+  [data-theme="dark"] .paso a:hover{ background:var(--panel-alt); }
+  .paso a:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+  .paso-celda{
+    width:24px; height:24px; border-radius:6px; display:grid; place-items:center;
+    border:1.5px solid var(--text-muted); background:transparent;
+    transition:background-color .25s ease, border-color .25s ease;
+  }
+  .paso-celda svg{ width:16px; height:16px; fill:none; stroke:#FFFFFF; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  .paso-celda path{ stroke-dasharray:20; stroke-dashoffset:20; transition:stroke-dashoffset .36s cubic-bezier(.16,1,.3,1) .12s; }
+  .paso.hecho .paso-celda{ background:var(--vfr); border-color:var(--vfr); }
+  .paso.hecho .paso-celda path{ stroke-dashoffset:0; }
+  .paso-texto{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .paso-texto strong{ font-family:'Archivo', sans-serif; font-size:0.97rem; font-weight:700; line-height:1.3; color:var(--text-muted); transition:color .25s ease; }
+  .paso.hecho .paso-texto strong, .briefing:not(.con-sesion) .paso-texto strong{ color:var(--text); }
+  .briefing:not(.con-sesion) .paso-flecha{ color:var(--text-muted); }
+  .paso-estado{ font-size:0.82rem; color:var(--text-muted); line-height:1.4; }
+  .paso-estado b{ color:var(--text); font-weight:600; }
+  .paso-flecha{ display:flex; color:var(--hairline); transition:transform .2s cubic-bezier(.16,1,.3,1), color .2s; }
+  .paso.hecho .paso-flecha{ color:var(--text-muted); }
+  .flecha{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .briefing-pie a .flecha{ width:14px; height:14px; vertical-align:-2px; }
+  .paso a:hover .paso-flecha{ color:var(--accent); transform:translateX(3px); }
+  .briefing-pie{ margin:12px 0 0; padding-top:12px; border-top:1px solid var(--hairline); font-size:0.82rem; color:var(--text-muted); line-height:1.5; }
+  .briefing-pie a{ color:var(--accent); font-weight:600; text-decoration:none; }
+  .briefing-pie a:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* Entrada de la portada: el saludo y el briefing llegan una sola vez, al cargar. */
+  @keyframes heroLlega{ from{ opacity:0.6; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+  .hero-content{ animation:heroLlega .6s cubic-bezier(.16,1,.3,1) both; }
+  .briefing{ animation:heroLlega .6s cubic-bezier(.16,1,.3,1) .12s both; }
+  .briefing .paso{ animation:heroLlega .45s cubic-bezier(.16,1,.3,1) both; }
+  .briefing .paso:nth-child(1){ animation-delay:.22s; }
+  .briefing .paso:nth-child(2){ animation-delay:.28s; }
+  .briefing .paso:nth-child(3){ animation-delay:.34s; }
+  .briefing .paso:nth-child(4){ animation-delay:.40s; }
+  @media (prefers-reduced-motion: reduce){
+    .hero-content, .briefing, .briefing .paso{ animation:none; }
+    .paso-celda path{ transition:none; }
+    .paso a:hover .paso-flecha{ transform:none; }
+  }
+
+  @media (max-width:960px){
+    .hero-grid{ grid-template-columns:1fr; grid-template-areas:"texto" "brief"; row-gap:28px; padding:56px 24px 40px; }
+    .hero-content{ max-width:640px; }
+  }
+  @media (max-width:640px){
+    .hero-grid{ padding:36px 16px 28px; row-gap:24px; }
+    .hero-content p.lead{ margin-bottom:24px; }
+    .hero-cta{ padding:13px 20px; font-size:0.95rem; }
+    .briefing{ padding:18px 16px 14px; border-radius:14px; }
+  }
 
   /* ---------- LIVE TICKER: reloj Zulu + búsqueda METAR en línea ---------- */
   .live-ticker-wrapper{
@@ -344,8 +420,6 @@
     .ticker-results-area{ padding:0 16px 18px; }
   }
   @media (max-width:640px){
-    .hero-fifa{ min-height:360px; }
-    .hero-content{ padding:32px 20px; }
   }
 
   /* ---------- NOTAM STRIP ---------- */
@@ -355,9 +429,8 @@
   .notam-inner{
     display:flex; align-items:center; gap:16px;
     background:var(--notam-grad);
-    border:1px solid var(--hairline); border-left:3px solid var(--accent);
+    border:1px solid var(--hairline);
     border-radius:10px; padding:18px 24px;
-    box-shadow:var(--shadow-notam);
   }
   .notam-tag{
     font-family:'IBM Plex Mono'; font-size:0.7rem; font-weight:600; letter-spacing:0.1em;
@@ -382,13 +455,19 @@
     pointer-events:none;
   }
   .notam-slide.is-active{ opacity:1; visibility:visible; pointer-events:auto; }
-  .notam-dots{ display:flex; gap:6px; flex-shrink:0; align-self:center; }
+  .notam-dots{ display:flex; gap:0; flex-shrink:0; align-self:center; }
+  /* El botón mide 24×24 px (área táctil mínima); el punto visible sigue de 7 px. */
   .notam-dot{
-    width:7px; height:7px; border-radius:50%; padding:0; border:none;
-    background:var(--hairline); cursor:pointer; transition:background .2s, transform .2s;
+    width:24px; height:24px; padding:0; border:none; background:none; cursor:pointer;
+    display:grid; place-items:center; border-radius:50%;
   }
-  .notam-dot:hover{ background:var(--accent); }
-  .notam-dot.is-active{ background:var(--accent); transform:scale(1.35); }
+  .notam-dot::before{
+    content:''; width:7px; height:7px; border-radius:50%;
+    background:var(--hairline); transition:background .2s, transform .2s;
+  }
+  .notam-dot:hover::before{ background:var(--accent); }
+  .notam-dot.is-active::before{ background:var(--accent); transform:scale(1.35); }
+  .notam-dot:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
   @media (max-width:640px){
     .notam-inner{ flex-wrap:wrap; }
     .notam-slide{ flex-wrap:wrap; }
@@ -414,10 +493,10 @@
     display:flex; flex-direction:column;
     text-decoration:none; color:inherit;
     background:var(--bg); border:1px solid var(--hairline); border-radius:14px;
-    overflow:hidden; box-shadow:var(--shadow-instrument);
+    overflow:hidden;
     transition:transform .25s cubic-bezier(.4,0,.2,1), border-color .25s, box-shadow .25s;
   }
-  .module-card-fifa:hover{ transform:translateY(-4px); border-color:var(--accent); }
+  .module-card-fifa:hover{ transform:translateY(-4px); border-color:var(--accent); box-shadow:var(--shadow-card); }
   .mc-cover{
     height:120px; position:relative; flex-shrink:0; overflow:hidden;
     display:flex; align-items:flex-start; justify-content:flex-start;
@@ -456,6 +535,108 @@
   .mc-body p{ color:var(--text-muted); font-size:0.82rem; line-height:1.5; margin:0 0 14px; flex:1; }
   .mc-cta{ font-weight:600; font-size:0.86rem; color:var(--accent); display:flex; align-items:center; gap:6px; }
   .module-card-fifa:hover .mc-cta{ gap:10px; }
+
+  /* Los seis módulos como una lista tipo horario (rediseño 2026-10-11): cada fila
+     lleva el código, el nombre, lo que trae y TU avance en celdas, la misma
+     lógica del briefing. La jerarquía la dan el peso y la caja, no el tamaño. */
+  .mods-cab{
+    display:grid; grid-template-columns:132px minmax(0,1fr) 230px 20px; gap:24px;
+    padding:0 12px 10px; font-family:'IBM Plex Mono'; font-size:0.7rem; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted);
+  }
+  .modules-grid-fifa{ display:flex; flex-direction:column; gap:0; }
+  .module-card-fifa{
+    display:grid; grid-template-columns:132px minmax(0,1fr) 230px 20px; gap:24px; align-items:center;
+    padding:14px 12px; border:0; border-top:1px solid var(--hairline); border-radius:0;
+    background:transparent; overflow:visible; box-shadow:none;
+    transition:background-color .2s ease;
+  }
+  .module-card-fifa:last-child{ border-bottom:1px solid var(--hairline); }
+  .module-card-fifa:hover{ transform:none; border-color:var(--hairline); box-shadow:none; background:var(--panel); }
+  .module-card-fifa .mc-cover{ width:132px; height:76px; border-radius:10px; }
+  .module-card-fifa .mc-code{ margin:8px; }
+  .module-card-fifa .mc-icon{ width:50px; height:50px; right:-4px; bottom:-6px; }
+  .module-card-fifa .mc-body{ padding:0; }
+  .module-card-fifa .mc-body h3{ font-size:1.05rem; margin-bottom:4px; }
+  .module-card-fifa .mc-body p{ margin:0; max-width:62ch; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .module-card-fifa .mc-cta{ display:none; }
+  .mc-avance{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .mc-cuenta{ font-size:0.82rem; color:var(--text-muted); }
+  .mc-cuenta b{ font-family:'IBM Plex Mono'; font-size:1rem; font-weight:600; color:var(--text); margin-right:2px; }
+  .mc-cuenta.completo b{ color:var(--vfr); }
+  .mc-celdas{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:3px; }
+  .mc-celdas span{ height:5px; border-radius:2px; background:var(--hairline); }
+  .mc-celdas span.on{ background:var(--vfr); }
+  .mc-sig{ font-size:0.78rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mc-sig b{ color:var(--text); font-weight:600; }
+  .mc-ok{ display:inline-flex; align-items:center; gap:4px; color:var(--vfr); font-weight:600; }
+  .mc-ok svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  .mc-ir{ display:flex; color:var(--text-muted); transition:transform .2s cubic-bezier(.16,1,.3,1), color .2s; }
+  .module-card-fifa:hover .mc-ir{ color:var(--accent); transform:translateX(3px); }
+  .mc-cover.bg-nav{ background:linear-gradient(135deg, #1E1B4B, #4F46E5); }
+  .mc-cover.bg-ntm{ background:linear-gradient(135deg, #3B0764, #9333EA); }
+  .module-card-fifa:focus-visible, .tool-card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+  /* Herramientas de consulta y práctica: fila aparte, más compacta que los módulos. */
+  .tools-head{ margin:56px 0 18px; }
+  .tools-head h3{ font-size:1.2rem; margin-bottom:4px; }
+  .tools-head p{ color:var(--text-muted); font-size:0.92rem; margin:0; }
+  .tools-grid{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px; }
+  .tool-card{
+    display:flex; align-items:flex-start; gap:12px; padding:10px 8px; margin:0 -8px;
+    text-decoration:none; color:inherit; border-radius:10px;
+    transition:background-color .2s;
+  }
+  .tool-card:hover{ background:var(--panel); }
+  .tool-card:hover .tool-body strong{ color:var(--accent); }
+  .tool-thumb{ width:44px; height:44px; flex-shrink:0; border-radius:10px; overflow:hidden; background:var(--panel-alt); display:flex; align-items:center; justify-content:center; color:var(--accent); }
+  .tool-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .tool-body{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .tool-body strong{ font-family:'Archivo', sans-serif; font-size:0.95rem; font-weight:700; line-height:1.25; }
+  .tool-body strong{ transition:color .2s; }
+  .tool-body span{ font-size:0.8rem; color:var(--text-muted); line-height:1.45; display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  @media (prefers-reduced-motion: reduce){ .tool-card:hover, .module-card-fifa:hover{ transform:none; } }
+
+  /* Banda para profesores */
+  .profes-band{
+    margin-top:56px; padding:28px 32px; border-radius:16px;
+    background:var(--navy); color:#FFFFFF;
+    display:flex; align-items:center; justify-content:space-between; gap:20px 40px; flex-wrap:wrap;
+  }
+  .profes-texto{ flex:1 1 460px; min-width:0; }
+  .profes-band h3{ font-size:1.3rem; margin:0 0 8px; }
+  .profes-band p{ margin:0; color:#C9D6EA; font-size:0.93rem; line-height:1.6; max-width:68ch; }
+  .profes-band .profes-nota{ margin-top:8px; font-size:0.8rem; color:#9FB3CF; }
+  .profes-cta{ flex-shrink:0; }
+  .profes-cta[hidden]{ display:none; }
+  [data-theme="dark"] .profes-band{ background:var(--panel-alt); }
+  @media (max-width:640px){ .profes-band{ margin-top:40px; padding:22px 20px; } .profes-band h3{ font-size:1.15rem; } }
+
+  @media (max-width:1000px){
+    .mods-cab{ grid-template-columns:132px minmax(0,1fr) 20px; }
+    .mods-cab span:nth-child(3){ display:none; }
+    .module-card-fifa{ grid-template-columns:132px minmax(0,1fr) 20px; row-gap:8px; }
+    .module-card-fifa .mc-cover{ grid-row:span 2; }
+    .mc-avance{ grid-column:2; grid-row:2; max-width:320px; }
+    .mc-ir{ grid-column:3; grid-row:1 / span 2; }
+    .tools-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  }
+  /* En el teléfono cada módulo es una fila: portada a la izquierda y texto a
+     la derecha. Antes eran siete tarjetas de foto a todo el ancho, una
+     encima de otra. */
+  @media (max-width:640px){
+    .mods-cab{ display:none; }
+    .module-card-fifa{ grid-template-columns:84px minmax(0,1fr); gap:6px 14px; padding:14px 4px; align-items:start; }
+    .module-card-fifa .mc-cover{ width:84px; height:64px; grid-row:span 2; }
+    .module-card-fifa .mc-code{ margin:6px; font-size:0.62rem; padding:2px 6px; }
+    .module-card-fifa .mc-icon{ width:40px; height:40px; }
+    .module-card-fifa .mc-body h3{ font-size:0.98rem; }
+    .module-card-fifa .mc-body p{ font-size:0.8rem; }
+    .mc-avance{ grid-column:2; }
+    .mc-ir{ display:none; }
+    .tools-head{ margin-top:40px; }
+    .tools-grid{ grid-template-columns:1fr; gap:2px; }
+  }
 
   /* ---------- MOBILE NAV DRAWER ---------- */
   .mobile-nav{
@@ -538,7 +719,7 @@
     .metar-btn{ width:100%; padding:14px; }
   }
   @media (max-width:400px){
-    .hero-content h1{ font-size:1.7rem; }
+    .hero-content h1{ font-size:1.9rem; }
     .zulu-time{ font-size:1.4rem; }
   }
 
@@ -597,11 +778,11 @@
   .news-title{
     font-family:'Archivo'; font-weight:700; font-size:0.98rem;
     line-height:1.35; color:var(--text);
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
   }
   .news-excerpt{
     font-size:0.82rem; color:var(--text-muted); line-height:1.5;
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
     flex:1;
   }
   .news-cta{
@@ -639,11 +820,12 @@
     .news-grid{ grid-template-columns:1fr; }
   }
 </style>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 
 <header class="topbar">
-  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+  <a class="brand" href="index.html">
     <div class="brand-mark">
       <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
         <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -727,15 +909,61 @@
   </div>
 </div>
 
+<main id="contenido">
 <section class="hero-fifa">
-  <img class="hero-bg" src="ASSETS/equipo-cea-hero.jpg" alt="Equipo de operadores aeronáuticos en jornada de campo, junto a un vehículo de rescate y extinción de incendios y personal de bomberos aeroportuarios.">
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <span class="eyebrow">AIS · COM · MET</span>
-    <h1>Bienvenido a bordo, compañero.</h1>
-    <p class="lead">Gracias por elegir este camino. Como operador AIS·COM·MET vas a ser una pieza clave en la aviación: el puente entre pilotos, controladores y meteorólogos. Cada reporte que redactes, cada frecuencia que operes y cada dato que verifiques ayuda a mantener el cielo seguro para todos.</p>
-    <a href="#modulos" class="hero-cta">Comenzar a Estudiar</a>
-    <p class="hero-byline">Un proyecto creado por <strong>Cristian Arcila</strong></p>
+  <canvas class="cielo" data-cielo aria-hidden="true"></canvas>
+  <div class="hero-grid">
+    <div class="hero-content">
+      <h1>Bienvenido a bordo, compañero.</h1>
+      <p class="lead">Gracias por elegir este camino. Como operador AIS·COM·MET vas a ser una pieza clave en la aviación: el puente entre pilotos, controladores y meteorólogos. Cada reporte que redactes, cada frecuencia que operes y cada dato que verifiques ayuda a mantener el cielo seguro para todos.</p>
+      <div class="hero-ctas">
+        <a href="#modulos" class="hero-cta">Comenzar a estudiar</a>
+        <a href="quizzes.html" class="hero-cta hero-cta-sec">Ir a los quizzes</a>
+      </div>
+      <p class="hero-byline">Un proyecto creado por <strong>Cristian Arcila</strong> · gratis con tu registro</p>
+    </div>
+
+    <!-- Briefing: cuatro pasos con estado real. Sin sesión es una guía; con
+         sesión, cada paso se marca con el progreso guardado (ver
+         pintarBriefing al final de la página). -->
+    <aside class="briefing" id="briefing" aria-labelledby="briefingTitulo">
+      <div class="briefing-cab">
+        <h2 id="briefingTitulo">Tu briefing de hoy</h2>
+        <span class="briefing-hora mono" id="briefingHora">--- · --:-- Z</span>
+      </div>
+      <div class="briefing-medidor" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <ol class="briefing-pasos">
+        <li class="paso" data-paso="estudiar">
+          <a href="#modulos">
+            <span class="paso-celda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg><span class="sr-only paso-sr">Pendiente:</span></span>
+            <span class="paso-texto"><strong>Estudia un módulo</strong><span class="paso-estado">Seis módulos con guías y chequeos rápidos.</span></span>
+            <span class="paso-flecha"><svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </li>
+        <li class="paso" data-paso="practicar">
+          <a href="quizzes.html">
+            <span class="paso-celda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg><span class="sr-only paso-sr">Pendiente:</span></span>
+            <span class="paso-texto"><strong>Presenta un quiz o un simulador</strong><span class="paso-estado">Calificación inmediata; puedes repetirlo cuantas veces quieras.</span></span>
+            <span class="paso-flecha"><svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </li>
+        <li class="paso" data-paso="medir">
+          <a href="Panel_estudiante.html">
+            <span class="paso-celda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg><span class="sr-only paso-sr">Pendiente:</span></span>
+            <span class="paso-texto"><strong>Revisa tu nota</strong><span class="paso-estado">Tu panel guarda el mejor intento de cada quiz.</span></span>
+            <span class="paso-flecha"><svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </li>
+        <li class="paso" data-paso="grupo">
+          <a href="Panel_estudiante.html">
+            <span class="paso-celda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg><span class="sr-only paso-sr">Pendiente:</span></span>
+            <span class="paso-texto"><strong>Únete al grupo de tu profesor</strong><span class="paso-estado">Con el código de clase ves sus actividades y fechas.</span></span>
+            <span class="paso-flecha"><svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          </a>
+        </li>
+      </ol>
+      <p class="briefing-pie" id="briefingPie">Es gratis. <a href="login.html">Crea tu cuenta o inicia sesión <svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a> para guardar tu progreso.</p>
+    </aside>
   </div>
 </section>
 
@@ -799,15 +1027,18 @@
 
 <section class="sections" id="modulos">
   <div class="sections-head">
-    <div class="eyebrow">Módulos de estudio</div>
-    <h2>Siete frentes, un solo parcial.</h2>
+    <h2>Seis módulos, un solo parcial.</h2>
     <p>Cada módulo trae guías, glosario cruzado y su propio banco de preguntas.</p>
   </div>
 
+  <!-- Los seis módulos del menú «Módulos». Designadores, Glosario, Aeronaves
+       y la Zona de Quizzes son herramientas de consulta y práctica: van en su
+       propia fila, debajo (2026-10-11). -->
+  <div class="mods-cab" aria-hidden="true"><span>Módulo</span><span>Contenido</span><span>Tu avance</span></div>
   <div class="modules-grid-fifa">
-    <a class="module-card-fifa" href="meteorologia.html">
+    <a class="module-card-fifa" href="meteorologia.html" data-paginas="meteorologia-generalidades,meteorologia-nubosidad,meteorologia-variables">
       <div class="mc-cover bg-met has-photo">
-        <img class="mc-cover-photo" src="ASSETS/met-hero.jpg" alt="">
+        <img class="mc-cover-photo" src="ASSETS/opt/met-hero.jpg" alt="">
         <span class="mc-code">MET</span>
       </div>
       <div class="mc-body">
@@ -816,9 +1047,9 @@
         <span class="mc-cta">Estudiar el módulo →</span>
       </div>
     </a>
-    <a class="module-card-fifa" href="ats.html">
+    <a class="module-card-fifa" href="ats.html" data-paginas="ats">
       <div class="mc-cover bg-ats has-photo">
-        <img class="mc-cover-photo" src="ASSETS/atc.jpg" alt="">
+        <img class="mc-cover-photo" src="ASSETS/opt/atc.jpg" alt="">
         <span class="mc-code">ATS</span>
       </div>
       <div class="mc-body">
@@ -827,20 +1058,9 @@
         <span class="mc-cta">Estudiar el módulo →</span>
       </div>
     </a>
-    <a class="module-card-fifa" href="designadores.html">
-      <div class="mc-cover bg-des has-photo">
-        <img class="mc-cover-photo" src="ASSETS/designadores.jpg" alt="">
-        <span class="mc-code">DES</span>
-      </div>
-      <div class="mc-body">
-        <h3>Designadores de Lugar</h3>
-        <p>Más de 1.000 indicadores ICAO de aeródromos colombianos, filtrables por departamento.</p>
-        <span class="mc-cta">Explorar →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="plan-de-vuelo.html">
+    <a class="module-card-fifa" href="plan-de-vuelo.html" data-paginas="plan-de-vuelo">
       <div class="mc-cover bg-fpl has-photo">
-        <img class="mc-cover-photo" src="ASSETS/plan%20de%20vuelo.jpg" alt="">
+        <img class="mc-cover-photo" src="ASSETS/opt/plan-de-vuelo.jpg" alt="">
         <span class="mc-code">FPL</span>
       </div>
       <div class="mc-body">
@@ -849,9 +1069,9 @@
         <span class="mc-cta">Estudiar el módulo →</span>
       </div>
     </a>
-    <a class="module-card-fifa" href="fraseologia.html">
+    <a class="module-card-fifa" href="fraseologia.html" data-paginas="fraseologia-fundamentos,fraseologia-oaci,fraseologia-fases,fraseologia-tierra,fraseologia-emergencias">
       <div class="mc-cover bg-fra has-photo">
-        <img class="mc-cover-photo" src="ASSETS/fraseologia.jpg" alt="">
+        <img class="mc-cover-photo" src="ASSETS/opt/fraseologia.jpg" alt="">
         <span class="mc-code">FRA</span>
       </div>
       <div class="mc-body">
@@ -860,35 +1080,82 @@
         <span class="mc-cta">Practicar en voz →</span>
       </div>
     </a>
-    <a class="module-card-fifa" href="glosario.html">
-      <div class="mc-cover bg-glo has-photo">
-        <img class="mc-cover-photo" src="ASSETS/glosario.jpg" alt="">
-        <span class="mc-code">GLO</span>
+    <a class="module-card-fifa" href="navegacion.html" data-paginas="navegacion-fundamentos,navegacion-tiempo,navegacion-velocidad,navegacion-altimetria,navegacion-radioayudas,navegacion-viento-unidades">
+      <div class="mc-cover bg-nav">
+        <span class="mc-code">NAV</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z" fill="currentColor" fill-opacity="0.35"/></svg>
       </div>
       <div class="mc-body">
-        <h3>Glosario Aeronáutico</h3>
-        <p>NOTAM, RVSM, PBN y demás términos técnicos, buscables al instante.</p>
-        <span class="mc-cta">Buscar términos →</span>
+        <h3>Navegación Aérea</h3>
+        <p>Hora y husos horarios, velocidades, altímetro con sus reglajes QNH/QFE/QNE, VOR, DME y viento, en 6 bloques progresivos.</p>
+        <span class="mc-cta">Estudiar el módulo →</span>
       </div>
     </a>
-    <a class="module-card-fifa" href="quizzes.html">
-      <div class="mc-cover bg-qui has-photo">
-        <img class="mc-cover-photo" src="ASSETS/quizzes.jpg" alt="">
-        <span class="mc-code">QUI</span>
+    <a class="module-card-fifa" href="notam.html" data-paginas="notam-fundamentos,notam-formato,notam-codigo-q,notam-especiales">
+      <div class="mc-cover bg-ntm">
+        <span class="mc-code">NOTAM</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2.5h7l4 4V21a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z"/><path d="M14 2.5V7h4"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/></svg>
       </div>
       <div class="mc-body">
-        <h3>Zona de Quizzes</h3>
-        <p>Bancos de preguntas por módulo con calificación inmediata para tu autoevaluación.</p>
-        <span class="mc-cta">Hacer quizzes →</span>
+        <h3>NOTAM</h3>
+        <p>Para qué sirve, el código Q letra por letra, el formato casilla por casilla y sus primos SNOWTAM, ASHTAM y Trigger NOTAM.</p>
+        <span class="mc-cta">Estudiar el módulo →</span>
       </div>
     </a>
+  </div>
+
+  <div class="tools-head">
+    <h3>Herramientas de consulta y práctica</h3>
+    <p>Para buscar un dato rápido o ponerte a prueba.</p>
+  </div>
+  <div class="tools-grid">
+    <a class="tool-card" href="designadores.html">
+      <span class="tool-thumb"><img src="ASSETS/opt/designadores.jpg" alt=""></span>
+      <span class="tool-body">
+        <strong>Designadores de Lugar</strong>
+        <span>Más de 1.000 indicadores ICAO de aeródromos colombianos, filtrables por departamento.</span>
+      </span>
+    </a>
+    <a class="tool-card" href="glosario.html">
+      <span class="tool-thumb"><img src="ASSETS/opt/glosario.jpg" alt=""></span>
+      <span class="tool-body">
+        <strong>Glosario Aeronáutico</strong>
+        <span>NOTAM, RVSM, PBN y demás términos técnicos, buscables al instante.</span>
+      </span>
+    </a>
+    <a class="tool-card" href="aeronaves.html">
+      <span class="tool-thumb tool-thumb-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c.8 0 1.3.9 1.3 2v5l7.2 4.2v2l-7.2-2.2v4.3l2.2 1.7v1.5L12 20.2 8.5 21v-1.5l2.2-1.7v-4.3L3.5 15.7v-2l7.2-4.2v-5c0-1.1.5-2 1.3-2Z"/></svg>
+      </span>
+      <span class="tool-body">
+        <strong>Aeronaves</strong>
+        <span>Designador OACI, categoría de estela, performance y reconocimiento visual de cada tipo.</span>
+      </span>
+    </a>
+    <a class="tool-card" href="quizzes.html">
+      <span class="tool-thumb"><img src="ASSETS/opt/quizzes.jpg" alt=""></span>
+      <span class="tool-body">
+        <strong>Zona de Quizzes</strong>
+        <span>Bancos de preguntas por módulo con calificación inmediata para tu autoevaluación.</span>
+      </span>
+    </a>
+  </div>
+
+  <!-- Profesores: el sistema de grupos y actividades existe; las cuentas de
+       profesor las activa el autor (no hay registro abierto de profesores). -->
+  <div class="profes-band" id="profesores">
+    <div class="profes-texto">
+      <h3>¿Eres profesor del curso?</h3>
+      <p>Crea un grupo, comparte su código y asigna exámenes, lecturas, planes de vuelo o mensajería AFTN con fecha límite. Ves los resultados de cada estudiante con la nota de su mejor intento y los descargas en Excel.</p>
+      <p class="profes-nota">Las cuentas de profesor las activa el autor del sitio.</p>
+    </div>
+    <a class="hero-cta profes-cta" href="login.html" id="profesCta">Iniciar sesión</a>
   </div>
 </section>
 
 <!-- ===== NOTICIAS AERONÁUTICAS ===== -->
 <section class="news-section" id="noticias">
   <div class="news-head">
-    <div class="eyebrow">Mundo Aeronáutico</div>
     <div class="news-head-row">
       <h2>Noticias del sector</h2>
       <span class="news-updated mono" id="newsUpdated"></span>
@@ -900,6 +1167,7 @@
   </div>
 </section>
 
+</main>
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
   <span>Datos METAR: aviationweather.gov (NOAA)</span>
@@ -1372,6 +1640,163 @@
     const btnMobile = document.getElementById('navLoginBtnMobile');
     if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
     if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+</script>
+<script src="cielo.js"></script>
+<script src="modulos.js"></script>
+<script src="progreso.js"></script>
+<script>
+  // ---------- TU BRIEFING DE HOY ----------
+  // Cuatro pasos con estado real. Sin sesión la tarjeta es una guía y nada
+  // se marca. Con sesión: «Estudia» y «Practica» se marcan si hubo actividad
+  // HOY; «Revisa tu nota» si ya hay alguna nota; «Grupo» si está en uno.
+  (function(){
+    const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    const horaEl = document.getElementById('briefingHora');
+    function pintarHora(){
+      const d = new Date(), p = n => String(n).padStart(2, '0');
+      horaEl.textContent = `${p(d.getUTCDate())} ${MESES[d.getUTCMonth()]} · ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} Z`;
+    }
+    pintarHora();
+    setInterval(pintarHora, 30000);
+  })();
+
+  // Avance por módulo en la lista: celdas encendidas = páginas completadas.
+  // Sin sesión (hechas vacío) sólo muestra cuántas páginas trae cada módulo.
+  function pintarAvanceModulos(hechas){
+    const ICONO_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg>';
+    const FLECHA = '<svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+    const conSesion = hechas.size > 0 || document.getElementById('briefing').classList.contains('con-sesion');
+    document.querySelectorAll('.module-card-fifa[data-paginas]').forEach(card => {
+      const paginas = card.dataset.paginas.split(',');
+      const n = paginas.filter(p => hechas.has(p)).length;
+      const total = paginas.length;
+      let av = card.querySelector('.mc-avance');
+      if (!av) {
+        av = document.createElement('span'); av.className = 'mc-avance';
+        card.appendChild(av);
+        const ir = document.createElement('span'); ir.className = 'mc-ir'; ir.innerHTML = FLECHA;
+        card.appendChild(ir);
+      }
+      const celdas = paginas.map(p => `<span class="${hechas.has(p) ? 'on' : ''}"></span>`).join('');
+      let cuenta, sig = '';
+      if (!conSesion) {
+        cuenta = `<span class="mc-cuenta"><b>${total}</b> página${total === 1 ? '' : 's'}</span>`;
+      } else if (n === total) {
+        cuenta = `<span class="mc-cuenta completo"><b>${n}/${total}</b> <span class="mc-ok">${ICONO_OK}Completo</span></span>`;
+      } else {
+        cuenta = `<span class="mc-cuenta"><b>${n}/${total}</b> página${total === 1 ? '' : 's'}</span>`;
+        const proxima = paginas.find(p => !hechas.has(p));
+        if (n > 0 && proxima && typeof nombreDeTema === 'function') {
+          const nombre = nombreDeTema(proxima).replace(/^[^·]*·\s*/, '');
+          sig = `<span class="mc-sig">Sigue en <b>${nombre}</b></span>`;
+          card.setAttribute('href', proxima + '.html');
+        }
+      }
+      av.innerHTML = cuenta + `<span class="mc-celdas" aria-hidden="true">${celdas}</span>` + sig;
+    });
+  }
+  pintarAvanceModulos(new Set());
+
+  (async function pintarBriefing(){
+    if (typeof obtenerSesionActual !== 'function') return;
+    let sesion = null;
+    try { sesion = await obtenerSesionActual(); } catch (e) { return; }
+    if (!sesion) return;
+    document.getElementById('briefing').classList.add('con-sesion');
+
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    const diaLocal = iso => { const d = new Date(iso); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
+    const hoy = diaLocal(new Date().toISOString());
+
+    const [intentos, completados, stats, rol, grupos] = await Promise.all([
+      obtenerIntentos().catch(() => []),
+      obtenerModulosCompletados().catch(() => []),
+      obtenerEstadisticas().catch(() => null),
+      obtenerRolUsuario().catch(() => null),
+      obtenerGruposDelEstudiante().catch(() => ({ grupos: [] }))
+    ]);
+    const hechas = new Set((completados || []).map(c => c.pagina));
+
+    // Módulos: las páginas de cada uno vienen en data-paginas de su tarjeta.
+    const modulos = Array.from(document.querySelectorAll('.module-card-fifa[data-paginas]')).map(card => ({
+      card, url: card.getAttribute('href'), nombre: card.querySelector('h3').textContent,
+      paginas: card.dataset.paginas.split(',')
+    }));
+    pintarAvanceModulos(hechas);
+
+    const pasos = {};
+    document.querySelectorAll('.briefing .paso').forEach(li => { pasos[li.dataset.paso] = li; });
+    const estado = (clave, html, href) => {
+      const li = pasos[clave];
+      li.querySelector('.paso-estado').innerHTML = html;
+      if (href) li.querySelector('a').setAttribute('href', href);
+    };
+    const marcados = [];
+
+    // 1 · Estudia: ¿completó hoy alguna página? Y dónde sigue.
+    if ((completados || []).some(c => c.fecha && diaLocal(c.fecha) === hoy)) marcados.push('estudiar');
+    const aMedias = modulos.find(m => { const n = m.paginas.filter(p => hechas.has(p)).length; return n > 0 && n < m.paginas.length; });
+    const sinEmpezar = modulos.find(m => !m.paginas.some(p => hechas.has(p)));
+    if (aMedias) {
+      const sig = aMedias.paginas.find(p => !hechas.has(p));
+      const nombre = typeof nombreDeTema === 'function' ? nombreDeTema(sig) : aMedias.nombre;
+      estado('estudiar', `Sigue en <b>${esc(nombre)}</b>.`, sig + '.html');
+    } else if (sinEmpezar) {
+      estado('estudiar', `Próximo: <b>${esc(sinEmpezar.nombre)}</b>.`, sinEmpezar.url);
+    } else {
+      estado('estudiar', 'Completaste los seis módulos: repasa el que quieras.');
+    }
+
+    // 2 · Practica: intentos de hoy.
+    const deHoy = (intentos || []).filter(i => diaLocal(i.fecha) === hoy);
+    if (deHoy.length) {
+      marcados.push('practicar');
+      const mejor = Math.max(...deHoy.map(i => i.porcentaje));
+      estado('practicar', `Hoy: <b>${deHoy.length} intento${deHoy.length === 1 ? '' : 's'}</b> · mejor ${mejor}%.`);
+    } else if (stats && stats.totalIntentos) {
+      const n = Object.keys(stats.porModulo).length;
+      estado('practicar', `Llevas ${n} quiz${n === 1 ? '' : 'zes'} o simulador${n === 1 ? '' : 'es'} practicado${n === 1 ? '' : 's'}; hoy, ninguno.`);
+    }
+
+    // 3 · Mide: la nota general (media del mejor intento de cada quiz).
+    if (stats && stats.notaGeneral !== null && stats.notaGeneral !== undefined) {
+      marcados.push('medir');
+      estado('medir', `Nota general <b>${stats.notaGeneral}%</b>, con tu mejor intento en cada quiz.`);
+    }
+
+    // 4 · Grupo, o el panel del profesor si la cuenta es de profesor.
+    if (rol === 'teacher') {
+      pasos.grupo.querySelector('strong').textContent = 'Revisa a tus grupos';
+      estado('grupo', 'Actividades, entregas y resultados en tu panel.', 'panel-profesor.html');
+      marcados.push('grupo');
+    } else if (grupos && grupos.grupos && grupos.grupos.length) {
+      const g = grupos.grupos;
+      const nombreG = g[0].grupos ? g[0].grupos.nombre : (g[0].nombre || '');
+      marcados.push('grupo');
+      estado('grupo', g.length === 1 ? `Estás en <b>${esc(nombreG)}</b>. Mira tus actividades.` : `Estás en <b>${g.length} grupos</b>. Mira tus actividades.`, 'Panel_estudiante.html#actividades');
+    }
+
+    const pie = document.getElementById('briefingPie');
+    pie.textContent = marcados.length === 4 ? 'Briefing completo. Buen turno.' : `Hoy: ${marcados.length} de 4 pasos listos.`;
+    const cta = document.getElementById('profesCta');
+    // Con sesión, «Iniciar sesión» ya no tiene sentido: el profesor va a su
+    // panel y el estudiante no necesita esta acción.
+    if (cta && rol === 'teacher') { cta.textContent = 'Ir al panel del profesor'; cta.href = 'panel-profesor.html'; }
+    else if (cta) { cta.hidden = true; }
+
+    // Se encienden en orden, una celda tras otra (el «momento» de la portada).
+    const celdas = document.querySelectorAll('.briefing-medidor span');
+    // Cada celda del medidor corresponde a SU paso (posición), no al orden de encendido.
+    const ORDEN = ['estudiar', 'practicar', 'medir', 'grupo'];
+    ORDEN.filter(k => marcados.includes(k)).forEach((k, i) => {
+      setTimeout(() => {
+        pasos[k].classList.add('hecho');
+        pasos[k].querySelector('.paso-sr').textContent = 'Hecho:';
+        const celda = celdas[ORDEN.indexOf(k)];
+        if (celda) celda.classList.add('on');
+      }, 450 + i * 180);
+    });
   })();
 </script>
 

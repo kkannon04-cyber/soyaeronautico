@@ -622,7 +622,9 @@ async function obtenerIncidentesDeGrupo(grupoId) {
   return { ok: true, porEstudianteActividad };
 }
 
-// Resumen estudiante × actividad: intentos, mejor, promedio y último.
+// Resumen estudiante × actividad: intentos, mejor y último. La nota que
+// cuenta es el MEJOR intento; el promedio de intentos se quitó a pedido
+// del usuario (2026-10-11).
 // Incluye a los estudiantes inscritos que todavía no han presentado
 // (fila con 0 intentos), que es justo lo que el profesor necesita ver.
 function resumirResultados(estudiantes, actividades, resultados) {
@@ -634,7 +636,7 @@ function resumirResultados(estudiantes, actividades, resultados) {
         filas.push({
           estudiante: est.nombre, estudianteId: est.id,
           actividad: act.titulo, actividadId: act.id, tipo: act.tipo,
-          intentos: 0, mejor: null, promedio: null, ultimo: null, ultimaFecha: null
+          intentos: 0, mejor: null, ultimo: null, ultimaFecha: null
         });
         return;
       }
@@ -645,7 +647,6 @@ function resumirResultados(estudiantes, actividades, resultados) {
         actividad: act.titulo, actividadId: act.id, tipo: act.tipo,
         intentos: propios.length,
         mejor: Math.max(...porcentajes),
-        promedio: Math.round(porcentajes.reduce((s, p) => s + p, 0) / porcentajes.length),
         ultimo: ordenados[0].porcentaje,
         ultimaFecha: ordenados[0].fecha
       });
@@ -737,12 +738,11 @@ function _fechaArchivo() {
 // Una fila por estudiante y actividad (con quienes no han presentado).
 function exportarResumenCSV(nombreGrupo, filasResumen) {
   const contenido = construirCSV(
-    ['Estudiante', 'Actividad', 'Tipo', 'Intentos', 'Mejor %', 'Promedio %', 'Último %', 'Última entrega'],
+    ['Estudiante', 'Actividad', 'Tipo', 'Intentos', 'Mejor %', 'Último %', 'Última entrega'],
     filasResumen.map(f => [
       f.estudiante, f.actividad, f.tipo === 'examen' ? 'Examen' : 'Texto',
       f.intentos,
       f.mejor === null ? 'Sin presentar' : f.mejor,
-      f.promedio === null ? '' : f.promedio,
       f.ultimo === null ? '' : f.ultimo,
       _fechaLegible(f.ultimaFecha)
     ])

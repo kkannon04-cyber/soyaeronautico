@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nubosidad y meteoros: cómo se forman y clasifican las nubes y cómo reconocer los fenómenos meteorológicos que afectan la aviación.">
   <title>Meteorología · Nubosidad y Meteoros | SoyAeronáutico</title>
   <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +16,7 @@
       --accent:#1657C6; --accent-rgb:22,87,198; --navy:#0A2647;
       --text:#0F1B2D; --text-muted:#5B6B7F; --muted-rgb:91,107,127;
       --hairline:#E1E7EF; --shadow-rgb:15,23,42; --danger:#D64545; --danger-rgb:214,69,69;
-      --vfr:#2E9E6D; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
+      --vfr:#2E9E6D; --vfr-texto:#1F7A53; --vfr-rgb:46,158,109; --mvfr:#3E7BFA; --ifr:#D64545; --lifr:#8B5CF6; --warn:#E08E3E;
       --live:#2E9E6D; --live-rgb:46,158,109;
       --topbar-bg:rgba(255,255,255,0.85);
       --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
@@ -27,7 +28,7 @@
       --accent:#4F8EF7; --accent-rgb:79,142,247; --navy:#0A2647;
       --text:#EDEFF3; --text-muted:#8894A8; --muted-rgb:136,148,168;
       --hairline:#2A3548; --shadow-rgb:0,0,0; --danger:#C9564F; --danger-rgb:201,86,79;
-      --vfr:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
+      --vfr:#4FA88C; --vfr-texto:#4FA88C; --vfr-rgb:79,168,140; --mvfr:#4A8FD1; --ifr:#C9564F; --lifr:#B15FC7; --warn:#D19A55;
       --live:#4FA88C; --live-rgb:79,168,140;
       --topbar-bg:rgba(11,18,32,0.85);
       --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
@@ -53,7 +54,7 @@
     nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
     nav.desktop-nav a:hover{ color:var(--text); }
     nav.desktop-nav a:hover::after{ right:0; }
-    nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+    nav.desktop-nav a.active{ color:var(--vfr-texto); font-weight:600; }
     nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
     /* ---------- DROPDOWN "MÓDULOS" ---------- */
@@ -70,7 +71,7 @@
     }
     .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
     .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
-    .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+    .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr-texto); font-weight:600; }
     .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
     .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
     .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
@@ -89,7 +90,7 @@
       transition:background .15s, color .15s;
     }
     .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
-    .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+    .nav-dropdown-menu a.active{ color:var(--vfr-texto); font-weight:600; }
 
     .nav-divider{ width:1px; height:18px; background:var(--hairline); }
     .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
@@ -131,7 +132,7 @@
 
     /* ===== contenido ===== */
     .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
-    .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+    .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:14px; }
     .hero-simple h1{ font-size:clamp(1.7rem, 4vw, 2.4rem); line-height:1.2; margin-bottom:14px; }
     .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
     .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
@@ -165,7 +166,7 @@
     .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; margin:16px 0; }
     .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
     .mnemo{ background:var(--panel-alt); border-left:4px solid var(--vfr); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:0.87rem; line-height:1.55; }
-    .mnemo b{ color:var(--vfr); }
+    .mnemo b{ color:var(--vfr-texto); }
 
     /* ===== galería de imágenes (nubes, meteoros) ===== */
     .cloud-gallery{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:16px; margin:20px 0; }
@@ -176,7 +177,7 @@
 
     /* ===== quiz ===== */
     .quiz-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px; margin:26px 0 0; }
-    .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .quiz-tag{ font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--vfr-texto); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
     .quiz-q{ font-weight:600; margin-bottom:14px; font-size:0.95rem; }
     .quiz-options{ display:flex; flex-direction:column; gap:9px; }
     .opt-btn{ text-align:left; background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.88rem; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:.15s; }
@@ -246,12 +247,13 @@
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 
 <div class="sticky-header">
   <header class="topbar">
-    <a class="brand" href="meteorologia.html" aria-label="Ir al inicio — SoyAeronáutico">
+    <a class="brand" href="meteorologia.html">
       <div class="brand-mark">
         <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
           <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -430,9 +432,9 @@
         <li><b>Cirrocumulus (Cc):</b> pequeños grumos o glóbulos blancos dispuestos en hileras (“cielo enladrillado” o “escamado”). Asociados a corrientes en chorro y turbulencia.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/7.jpg" alt="Cirrus"><div class="cap">Cirrus — filamentos</div></div>
-        <div class="cloud-card"><img src="ASSETS/8.jpg" alt="Cirrostratus"><div class="cap">Cirrostratus — velo (con halo)</div></div>
-        <div class="cloud-card"><img src="ASSETS/9.jpg" alt="Cirrocumulus"><div class="cap">Cirrocumulus — grumos</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/7.jpg" alt="Cirrus"><div class="cap">Cirrus — filamentos</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/8.jpg" alt="Cirrostratus"><div class="cap">Cirrostratus — velo (con halo)</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/9.jpg" alt="Cirrocumulus"><div class="cap">Cirrocumulus — grumos</div></div>
       </div>
       <div class="mnemo"><b>🧠 Dato clave:</b> el halo (anillo alrededor del Sol o la Luna) es producido por cirrostratus y es un indicador de aproximación de un frente.</div>
     </div>
@@ -458,8 +460,8 @@
         <li><b>Altostratus (As):</b> manto grisáceo o azulado, uniforme, que cubre total o parcialmente el cielo. Puede dejar ver el Sol como a través de un vidrio opaco. No produce lluvia, pero puede generar coronas.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/21.jpg" alt="Altocumulus"><div class="cap">Altocumulus — empedrado</div></div>
-        <div class="cloud-card"><img src="ASSETS/10.jpg" alt="Altostratus"><div class="cap">Altostratus — manto uniforme</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/21.jpg" alt="Altocumulus"><div class="cap">Altocumulus — empedrado</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/10.jpg" alt="Altostratus"><div class="cap">Altostratus — manto uniforme</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="4">
@@ -485,9 +487,9 @@
         <li><b>Nimbostratus (Ns):</b> capa gris oscura que oculta el Sol, con precipitación continua o intermitente que llega al suelo.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/11.jpg" alt="Stratus"><div class="cap">Stratus — capa uniforme</div></div>
-        <div class="cloud-card"><img src="ASSETS/12.jpg" alt="Stratocumulus"><div class="cap">Stratocumulus — bancos</div></div>
-        <div class="cloud-card"><img src="ASSETS/22.jpg" alt="Nimbostratus"><div class="cap">Nimbostratus — lluvia continua</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/11.jpg" alt="Stratus"><div class="cap">Stratus — capa uniforme</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/12.jpg" alt="Stratocumulus"><div class="cap">Stratocumulus — bancos</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/22.jpg" alt="Nimbostratus"><div class="cap">Nimbostratus — lluvia continua</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="5">
@@ -512,10 +514,10 @@
         <li><b>Cumulonimbus (Cb):</b> nube densa y potente, con gran desarrollo vertical. Su parte superior se extiende en forma de yunque o penacho. Producen chubascos, tormentas eléctricas, granizo y turbulencia severa.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/13.jpg" alt="Cumulus"><div class="cap">Cumulus — coliflor</div></div>
-        <div class="cloud-card"><img src="ASSETS/23.jpg" alt="Cumulus congestus"><div class="cap">Cumulus congestus — en desarrollo</div></div>
-        <div class="cloud-card"><img src="ASSETS/14.jpg" alt="Cumulonimbus"><div class="cap">Cumulonimbus — yunque</div></div>
-        <div class="cloud-card"><img src="ASSETS/3.jpg" alt="Cumulonimbus con relámpago"><div class="cap">Cumulonimbus — tormenta eléctrica</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/13.jpg" alt="Cumulus"><div class="cap">Cumulus — coliflor</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/23.jpg" alt="Cumulus congestus"><div class="cap">Cumulus congestus — en desarrollo</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/14.jpg" alt="Cumulonimbus"><div class="cap">Cumulonimbus — yunque</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/3.jpg" alt="Cumulonimbus con relámpago"><div class="cap">Cumulonimbus — tormenta eléctrica</div></div>
       </div>
       <div class="mnemo"><b>⚠️ Peligro:</b> el Cumulonimbus es la nube más peligrosa para la aviación. Produce tormentas, granizo, turbulencia severa, hielo y microbursts. ¡Evítala siempre!</div>
     </div>
@@ -575,9 +577,9 @@
         </table>
       </div>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/15.jpg" alt="Niebla"><div class="cap">Niebla — visibilidad &lt; 1 km</div></div>
-        <div class="cloud-card"><img src="ASSETS/5.jpg" alt="Lluvia"><div class="cap">Lluvia — gotas > 0.5 mm</div></div>
-        <div class="cloud-card"><img src="ASSETS/19.jpg" alt="Nieve"><div class="cap">Nieve — cristales de hielo</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/15.jpg" alt="Niebla"><div class="cap">Niebla — visibilidad &lt; 1 km</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/5.jpg" alt="Lluvia"><div class="cap">Lluvia — gotas > 0.5 mm</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/19.jpg" alt="Nieve"><div class="cap">Nieve — cristales de hielo</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="8">
@@ -605,8 +607,8 @@
         <li><b>Rayos crepusculares:</b> rayos de sol que irradian desde aberturas en nubes.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/8.jpg" alt="Halo"><div class="cap">Halo — anillo alrededor del Sol</div></div>
-        <div class="cloud-card"><img src="ASSETS/25.jpg" alt="Arco iris"><div class="cap">Arco iris — espectro visible</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/8.jpg" alt="Halo"><div class="cap">Halo — anillo alrededor del Sol</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/25.jpg" alt="Arco iris"><div class="cap">Arco iris — espectro visible</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="9">
@@ -632,8 +634,8 @@
         <li><b>Tempestad de polvo/arena:</b> partículas levantadas por viento fuerte, reducen drásticamente la visibilidad.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/16.jpg" alt="Calima"><div class="cap">Calima — polvo en suspensión</div></div>
-        <div class="cloud-card"><img src="ASSETS/24.jpg" alt="Humo"><div class="cap">Humo/smog — partículas en el aire</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/16.jpg" alt="Calima"><div class="cap">Calima — polvo en suspensión</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/24.jpg" alt="Humo"><div class="cap">Humo/smog — partículas en el aire</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="10">
@@ -659,8 +661,8 @@
         <li><b>Aurora polar:</b> luminiscencia en el cielo nocturno en zonas polares, producida por partículas cargadas del Sol que interactúan con la atmósfera.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/17.jpg" alt="Relámpago"><div class="cap">Relámpago — descarga eléctrica</div></div>
-        <div class="cloud-card"><img src="ASSETS/20.jpg" alt="Aurora polar"><div class="cap">Aurora polar — luminiscencia</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/17.jpg" alt="Relámpago"><div class="cap">Relámpago — descarga eléctrica</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/20.jpg" alt="Aurora polar"><div class="cap">Aurora polar — luminiscencia</div></div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="11">
@@ -687,8 +689,8 @@
         <li><b>Niebla orográfica:</b> se forma cuando el aire húmedo asciende por una ladera montañosa y se enfría adiabáticamente.</li>
       </ul>
       <div class="cloud-gallery">
-        <div class="cloud-card"><img src="ASSETS/26.jpg" alt="Niebla de radiación"><div class="cap">Niebla de radiación — bosque</div></div>
-        <div class="cloud-card"><img src="ASSETS/15.jpg" alt="Niebla de advección"><div class="cap">Niebla de advección — pista</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/26.jpg" alt="Niebla de radiación"><div class="cap">Niebla de radiación — bosque</div></div>
+        <div class="cloud-card"><img src="ASSETS/opt/15.jpg" alt="Niebla de advección"><div class="cap">Niebla de advección — pista</div></div>
       </div>
       <div class="mnemo"><b>🧠 Importante:</b> la niebla reduce drásticamente la visibilidad y es una de las causas más frecuentes de retrasos y desvíos en aeródromos.</div>
     </div>

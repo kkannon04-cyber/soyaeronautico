@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Iniciar sesión · SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,14 +14,14 @@
     --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
     --accent:#1657C6; --accent-rgb:22,87,198;
     --text:#0F1B2D; --text-muted:#5B6B7F;
-    --hairline:#E1E7EF; --vfr:#2E9E6D;
+    --hairline:#E1E7EF; --vfr:#2E9E6D; --vfr-texto:#1F7A53;
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
   [data-theme="dark"]{
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
     --accent:#4F8EF7; --accent-rgb:79,142,247;
     --text:#EDEFF3; --text-muted:#8894A8;
-    --hairline:#2A3548; --vfr:#4FA88C;
+    --hairline:#2A3548; --vfr:#4FA88C; --vfr-texto:#4FA88C;
     --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
   }
   *{box-sizing:border-box;}
@@ -41,7 +42,7 @@
     width:100%; max-width:380px; margin:0 auto; background:var(--panel); border:1px solid var(--hairline);
     border-radius:16px; padding:32px 28px; box-shadow:var(--shadow-card);
   }
-  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.16em; color:var(--vfr); text-transform:uppercase; margin-bottom:10px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.72rem; letter-spacing:0.16em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:10px; }
   .auth-card h1{ font-size:1.4rem; margin-bottom:6px; }
   .auth-card p.sub{ color:var(--text-muted); font-size:0.85rem; margin:0 0 22px; line-height:1.5; }
 
@@ -118,6 +119,7 @@
   }
   .credito-autor strong{ color:inherit; font-weight:600; }
 </style>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 <header>

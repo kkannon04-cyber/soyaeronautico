@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
   <title>Actividad asignada · SoyAeronáutico</title>
   <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +21,7 @@
       --text-muted: #5B6B7F;
       --hairline: #E1E7EF;
       --danger: #D64545;
-      --vfr: #2E9E6D;
+      --vfr: #2E9E6D; --vfr-texto:#1F7A53;
       --mvfr: #3E7BFA;
       --topbar-bg: rgba(255,255,255,0.85);
       --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
@@ -35,7 +36,7 @@
       --text-muted: #8894A8;
       --hairline: #2A3548;
       --danger: #C9564F;
-      --vfr: #4FA88C;
+      --vfr: #4FA88C; --vfr-texto:#4FA88C;
       --mvfr: #4A8FD1;
       --topbar-bg: rgba(11,18,32,0.85);
       --shadow-card: 0 12px 30px -18px rgba(0,0,0,0.55);
@@ -54,7 +55,7 @@
     .btn-volver-panel:hover { background:rgba(var(--accent-rgb),0.08); }
 
     .contenedor { max-width:900px; margin:0 auto; padding:36px 32px 60px; }
-    .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:12px; }
+    .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:12px; }
     h1.titulo { font-size:clamp(1.5rem, 3.4vw, 2.1rem); line-height:1.25; margin-bottom:10px; }
     .meta-actividad { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
     .meta-chip { font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); background:var(--panel); border:1px solid var(--hairline); padding:5px 12px; border-radius:20px; }
@@ -122,12 +123,13 @@
   <script src="supabase-config.js"></script>
   <script src="modulos.js"></script>
 <script src="progreso.js"></script>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 <script src="auth-gate.js"></script>
 
 <header class="topbar">
-  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+  <a class="brand" href="index.html">
     <div class="brand-mark">
       <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
         <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>

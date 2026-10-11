@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Panel del Estudiante · SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +24,9 @@
     --border-color: #e2e8f0;
     --success: #10b981;
     --warning: #f59e0b;
+    /* Amarillo de "en progreso" (nota bajo 70 %, módulo a medias). Más vivo que el
+       #b45309 anterior, que se veía marrón; en claro se oscurece lo justo para leerse. */
+    --amarillo-texto: #d97706;
     --danger: #ef4444;
     --font-main: 'IBM Plex Sans', sans-serif;
     --font-heading: 'Archivo', sans-serif;
@@ -40,10 +44,10 @@
     --text-main: #EDEFF3;
     --text-muted: #8894A8;
     --border-color: #2A3548;
+    --amarillo-texto: #fbbf24;
   }
   [data-theme="dark"] .clock-widget,
   [data-theme="dark"] #tabCta:hover { background-color: #17223A; }
-  [data-theme="dark"] .name-edit-btn:hover,
   [data-theme="dark"] .module-badge,
   [data-theme="dark"] .achievement.unlocked { background: rgba(79,142,247,0.16); }
   [data-theme="dark"] .ring-bg { stroke: var(--border-color); }
@@ -102,6 +106,8 @@
   .nav-item:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
   .nav-item svg { flex-shrink: 0; opacity: 0.85; }
   .nav-item.active svg, .nav-item:hover svg { opacity: 1; }
+  .nav-sep { margin: 14px 16px 4px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 1px; color: #8899b3; text-transform: uppercase; }
+  .nav-sep-primero { margin-top: 2px; }
 
   #authNavSlot { margin-top: auto; padding: 16px 12px; }
   .nav-item.exit { color: #94a3b8; }
@@ -146,12 +152,6 @@
   .welcome-section { margin-bottom: 28px; display: flex; align-items: flex-start; gap: 14px; }
   .welcome-section h2 { font-size: 1.6rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
   .welcome-section p { color: var(--text-muted); font-size: 0.95rem; }
-  .name-edit-btn { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: 6px; }
-  .name-edit-btn:hover { color: var(--primary); border-color: var(--primary); background: #eff6ff; }
-  .name-edit-form { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
-  .name-edit-form input { font-size: 0.9rem; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; }
-  .name-edit-form input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.25); }
-  .name-edit-form button { font-size: 0.85rem; font-weight: 600; padding: 8px 16px; border-radius: 6px; border: none; background: var(--primary); color: #fff; cursor: pointer; }
 
   /* Grid de Tarjetas KPI */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
@@ -164,7 +164,7 @@
   .stat-card .kpi-data { display: flex; flex-direction: column; width: 100%; }
   .stat-card span.label { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: var(--text-muted); }
   .stat-card strong { font-size: 1.5rem; font-weight: 700; margin-top: 4px; color: var(--text-main); }
-  #statIntentos, #statPromedio { font-family: var(--font-mono); }
+  #statIntentos, #statNota { font-family: var(--font-mono); }
 
   /* Anillo de progreso (viewBox 150x150, r=62, mostrado a 64x64px) */
   .ring-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
@@ -213,6 +213,54 @@
   .module-progress { margin-top: 12px; width: 100%; max-width: 250px; height: 6px; border-radius: 4px; background: var(--border-color); overflow: hidden; }
   .module-progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; }
   .module-progress-fill.ok { background: var(--success); }
+  .module-progress-fill.medio { background: var(--warning); }
+
+  /* Mosaico de práctica (Módulos de aprendizaje / Progreso por quiz /
+     Simuladores). Antes cada elemento era una fila a todo el ancho con un
+     botón grande: 22 filas apiladas. Ahora la tarjeta entera es el enlace y
+     lo practicado va primero. */
+  .acordeon-cuenta { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; color: var(--text-muted); margin-left: 8px; letter-spacing: 0.02em; }
+  .prac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .prac-tile {
+    display: flex; flex-direction: column; gap: 6px; min-width: 0;
+    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .prac-tile:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 10px 24px -14px rgba(15,23,42,0.25); }
+  .prac-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .prac-badge { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prac-tile h4 { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; line-height: 1.3; margin: 0; }
+  .prac-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin: 0; }
+  .prac-dato { display: flex; align-items: baseline; gap: 8px; margin-top: auto; padding-top: 6px; }
+  .prac-pct { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 700; line-height: 1; color: var(--amarillo-texto); }
+  .prac-pct.ok { color: var(--success); }
+  .prac-dato span { font-size: 0.76rem; color: var(--text-muted); }
+  .prac-tile .module-progress { margin-top: 2px; max-width: none; height: 5px; }
+  .prac-accion { font-size: 0.8rem; font-weight: 600; color: var(--primary); margin-top: 6px; display: flex; align-items: center; gap: 6px; transition: gap 0.2s ease; }
+  .prac-tile:hover .prac-accion { gap: 10px; }
+  .prac-pend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+  .prac-pend.sola { margin-top: 0; }
+  .prac-pend-etq { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; margin-right: 4px; }
+  .prac-pend-item { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px dashed var(--text-muted); border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-main); transition: border-color .2s, color .2s, background-color .2s; }
+  .prac-pend-item:hover { border-style: solid; border-color: var(--primary); color: var(--primary); }
+  .prac-pend-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .pend-flecha { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+  .prac-tile.nuevo { background: transparent; border-style: dashed; }
+  .prac-tile.nuevo:hover { border-style: solid; background: var(--card-bg); }
+  .prac-tile.nuevo .prac-pct { color: var(--text-muted); }
+  [data-theme="dark"] .prac-pct.ok { color: var(--success); }
+  @media (prefers-reduced-motion: reduce) { .prac-tile, .prac-accion { transition: none; } .prac-tile:hover { transform: none; } }
+  @media (max-width: 520px) { .prac-grid { grid-template-columns: 1fr 1fr; gap: 10px; } .prac-tile { padding: 13px; } .prac-pct { font-size: 1.15rem; } }
+  @media (max-width: 360px) { .prac-grid { grid-template-columns: 1fr; } }
+  /* KPIs en 2×2 en el teléfono (la nota general ocupa la fila completa). */
+  @media (max-width: 560px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+    .stats-grid .stat-card { padding: 14px; }
+    .stats-grid .stat-card:first-child { grid-column: 1 / -1; }
+    .stats-grid .stat-card strong { font-size: 1.1rem; }
+    #statMejorModulo { font-size: 0.92rem !important; }
+    #statUltima { font-size: 0.85rem !important; }
+  }
   .btn-launch { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
   .btn-launch:hover{ background-color: var(--primary-hover); }
   .btn-launch:active{ transform:translateY(1px); }
@@ -287,7 +335,7 @@
   .attempt-item:last-child { border-bottom: none; }
   .attempt-item .attempt-name { font-size: 0.88rem; font-weight: 600; display: block; }
   .attempt-item .attempt-date { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-  .attempt-score { font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; color: #b45309; flex-shrink: 0; }
+  .attempt-score { font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; color: var(--amarillo-texto); flex-shrink: 0; }
   .attempt-score.ok { color: var(--success); }
   .empty-state { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; padding: 12px 0; }
   .empty-state a { color: var(--primary); font-weight: 600; }
@@ -443,6 +491,7 @@
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 <script src="auth-gate.js"></script>
@@ -464,6 +513,7 @@
       </div>
     </a>
     <div class="nav-menu">
+      <div class="nav-sep nav-sep-primero">Mi panel</div>
       <a class="nav-item active" href="Panel_estudiante.html" id="navPanel" data-vista="panel" aria-current="page">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
         Panel Principal
@@ -474,21 +524,14 @@
         Actividades
         <span class="nav-contador" id="navActividadesContador" style="display:none;">0</span>
       </a>
+      <div class="nav-sep">Estudiar</div>
       <a class="nav-item" href="ats.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 21 10.4 6M14.5 21 13.6 6"/><path d="M8.5 9h7v3h-7z"/><path d="M12 4v2"/></svg>
         ATS
       </a>
-      <a class="nav-item" href="designadores.html">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-.3.7l-7 7a1 1 0 0 1-1.4 0l-5.3-5.3a1 1 0 0 1 0-1.4l7-7A1 1 0 0 1 11 3Z"/><circle cx="15" cy="8" r="1.1" fill="currentColor" stroke="none"/></svg>
-        Designadores
-      </a>
       <a class="nav-item" href="meteorologia.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.2 18.2a4.1 4.1 0 0 1-.5-8.1 5.1 5.1 0 0 1 9.9-2 4.6 4.6 0 0 1 1.3 9.1 4 4 0 0 1-.5 0H7.2Z"/></svg>
         Meteorología
-      </a>
-      <a class="nav-item" href="metar-taf.html">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2.5h7l4 4V21a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z"/><path d="M14 2.5V7h4"/><path d="M8.5 12h7M8.5 15.5h7M8.5 9h3"/></svg>
-        METAR y TAF
       </a>
       <a class="nav-item" href="plan-de-vuelo.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 9 8l4 5 3-6 4 11"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="20" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
@@ -498,13 +541,35 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.7 14.2v-3.7a7.3 7.3 0 0 1 14.6 0v3.7"/><rect x="4" y="13" width="3" height="5.5" rx="1"/><rect x="17" y="13" width="3" height="5.5" rx="1"/></svg>
         Fraseología
       </a>
+      <a class="nav-item" href="navegacion.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.2 8.8-2.1 4.3-4.3 2.1 2.1-4.3 4.3-2.1Z"/></svg>
+        Navegación
+      </a>
+      <a class="nav-item" href="notam.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5v19"/><path d="M6 4l12 3.5L6 11"/></svg>
+        NOTAM
+      </a>
+      <div class="nav-sep">Practicar</div>
+      <a class="nav-item" href="quizzes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg>
+        Zona de Quizzes
+      </a>
+      <div class="nav-sep">Consultar</div>
+      <a class="nav-item" href="designadores.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-.3.7l-7 7a1 1 0 0 1-1.4 0l-5.3-5.3a1 1 0 0 1 0-1.4l7-7A1 1 0 0 1 11 3Z"/><circle cx="15" cy="8" r="1.1" fill="currentColor" stroke="none"/></svg>
+        Designadores
+      </a>
+      <a class="nav-item" href="metar-taf.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2.5h7l4 4V21a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z"/><path d="M14 2.5V7h4"/><path d="M8.5 12h7M8.5 15.5h7M8.5 9h3"/></svg>
+        METAR y TAF
+      </a>
       <a class="nav-item" href="glosario.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5c-1.8-1.3-4-2-6.5-2A1.5 1.5 0 0 0 4 4.5v13A1.5 1.5 0 0 0 5.5 19c2.2 0 4.2.6 6 1.8V5Z"/><path d="M12 5c1.8-1.3 4-2 6.5-2A1.5 1.5 0 0 1 20 4.5v13a1.5 1.5 0 0 1-1.5 1.5c-2.2 0-4.2.6-6 1.8V5Z"/></svg>
         Glosario
       </a>
-      <a class="nav-item" href="quizzes.html">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg>
-        Zona de Quizzes
+      <a class="nav-item" href="aeronaves.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c.8 0 1.3.9 1.3 2v5l7.2 4.2v2l-7.2-2.2v4.3l2.2 1.7v1.5L12 20.2 8.5 21v-1.5l2.2-1.7v-4.3L3.5 15.7v-2l7.2-4.2v-5c0-1.1.5-2 1.3-2Z"/></svg>
+        Aeronaves
       </a>
       <!-- Solo aparece si la cuenta tiene rol de profesor (ver renderNavProfesor) -->
       <div id="profesorNavSlot"></div>
@@ -563,7 +628,7 @@
       <!-- Saludo -->
       <div class="welcome-section">
         <div>
-          <h2 id="welcomeHeading">Bienvenido de nuevo, <span id="nombreEstudiante">Estudiante</span> <button class="name-edit-btn" id="editNombreBtn" aria-label="Editar nombre" title="Editar nombre">✎</button></h2>
+          <h2 id="welcomeHeading">Bienvenido de nuevo, <span id="nombreEstudiante">Estudiante</span></h2>
           <p>Continúa mejorando tu preparación aeronáutica.</p>
         </div>
       </div>
@@ -576,11 +641,11 @@
               <circle class="ring-bg" cx="75" cy="75" r="62"></circle>
               <circle class="ring-fill" id="ringFill" cx="75" cy="75" r="62"></circle>
             </svg>
-            <div class="ring-center"><span id="statPromedio">—</span></div>
+            <div class="ring-center"><span id="statNota">—</span></div>
           </div>
           <div class="kpi-data">
-            <span class="label">Promedio general</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top:2px;">Rendimiento global</span>
+            <span class="label">Nota general</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top:2px;">Tu mejor intento en cada quiz</span>
           </div>
         </div>
 
@@ -639,7 +704,7 @@
 
           <div class="panel-card">
             <button type="button" class="panel-header acordeon-toggle" data-acordeon="modulos-aprendizaje" aria-expanded="true">
-              <span>Módulos de aprendizaje</span>
+              <span>Módulos de aprendizaje <span class="acordeon-cuenta" id="cuentaAprendizaje"></span></span>
               <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <div class="panel-body-wrap"><div class="panel-body">
@@ -649,7 +714,7 @@
 
           <div class="panel-card">
             <button type="button" class="panel-header acordeon-toggle" data-acordeon="progreso-quiz" aria-expanded="true">
-              <span>Progreso por quiz</span>
+              <span>Progreso por quiz <span class="acordeon-cuenta" id="cuentaQuizzes"></span></span>
               <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <div class="panel-body-wrap"><div class="panel-body">
@@ -659,7 +724,7 @@
 
           <div class="panel-card">
             <button type="button" class="panel-header acordeon-toggle" data-acordeon="simuladores" aria-expanded="true">
-              <span>Simuladores</span>
+              <span>Simuladores <span class="acordeon-cuenta" id="cuentaSimuladores"></span></span>
               <svg class="acordeon-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <div class="panel-body-wrap"><div class="panel-body">
@@ -864,8 +929,6 @@
   const nombreSpan = document.getElementById('nombreEstudiante');
   const nombreTop = document.getElementById('nombreEstudianteTop');
   const avatarInitials = document.getElementById('avatarInitials');
-  const welcomeHeading = document.getElementById('welcomeHeading');
-  const editNombreBtn = document.getElementById('editNombreBtn');
 
   function iniciales(nombre){
     return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'ES';
@@ -880,48 +943,8 @@
     return perfil;
   }
 
-  editNombreBtn.addEventListener('click', async () => {
-    const actual = await obtenerPerfilEstudiante();
-    const nombreActual = actual.esEmail ? '' : actual.nombre;
-    const apellidoActual = actual.esEmail ? '' : actual.apellido;
-    const container = welcomeHeading.parentElement;
-    const form = document.createElement('div');
-    form.className = 'name-edit-form';
-
-    const inputNombre = document.createElement('input');
-    inputNombre.type = 'text';
-    inputNombre.id = 'nombreInput';
-    inputNombre.maxLength = 40;
-    inputNombre.value = nombreActual;
-    inputNombre.placeholder = 'Nombre';
-
-    const inputApellido = document.createElement('input');
-    inputApellido.type = 'text';
-    inputApellido.id = 'apellidoInput';
-    inputApellido.maxLength = 40;
-    inputApellido.value = apellidoActual;
-    inputApellido.placeholder = 'Apellido';
-
-    const guardarBtn = document.createElement('button');
-    guardarBtn.type = 'button';
-    guardarBtn.id = 'guardarNombreBtn';
-    guardarBtn.textContent = 'Guardar';
-
-    form.append(inputNombre, inputApellido, guardarBtn);
-    welcomeHeading.style.display = 'none';
-    container.appendChild(form);
-    inputNombre.focus();
-    inputNombre.select();
-    async function guardar(){
-      guardarBtn.disabled = true;
-      await guardarPerfilEstudiante(inputNombre.value, inputApellido.value);
-      await renderNombre();
-      form.remove();
-      welcomeHeading.style.display = '';
-    }
-    guardarBtn.addEventListener('click', guardar);
-    form.addEventListener('keydown', e => { if(e.key === 'Enter') guardar(); });
-  });
+  // La edición del nombre desde el panel se quitó (2026-10-11): no surtía
+  // efecto. El nombre sale del perfil con el que el estudiante se registró.
 
   // ---------- MÓDULOS DE QUIZ CON PROGRESO ----------
   // Derivados del catálogo único (modulos.js). La sección es explícita en el
@@ -939,13 +962,26 @@
     { id: 'notam', nombre: 'NOTAM', url: 'notam.html', paginas: ['notam-fundamentos', 'notam-formato', 'notam-codigo-q', 'notam-especiales'] }
   ];
 
+  // Bloque del mosaico: tarjetas para lo practicado y, debajo, una fila de
+  // enlaces compactos para lo que aún no tiene intentos. Así la columna no se
+  // llena de tarjetas vacías y lo que ya hiciste queda arriba.
+  function bloquePractica(tarjetasHtml, pendientes, etiqueta){
+    const FL = '<svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+    let html = tarjetasHtml.length ? `<div class="prac-grid">${tarjetasHtml.join('')}</div>` : '';
+    if (pendientes.length) {
+      html += `<div class="prac-pend${tarjetasHtml.length ? '' : ' sola'}"><span class="prac-pend-etq">${etiqueta} · ${pendientes.length}</span>`
+        + pendientes.map(p => `<a class="prac-pend-item" href="${p.url}">${escaparHTML(p.nombre)}${FL}</a>`).join('')
+        + '</div>';
+    }
+    return html;
+  }
+
   async function renderModulosAprendizaje(){
     const completados = await obtenerModulosCompletados();
     const paginasCompletadas = new Set(completados.map(m => m.pagina));
 
     const contenedor = document.getElementById('modulosAprendizajeContainer');
-    contenedor.innerHTML = '';
-    MODULOS_APRENDIZAJE.forEach(m => {
+    const tarjetas = MODULOS_APRENDIZAJE.map(m => {
       const total = m.paginas.length;
       const hechas = m.paginas.filter(p => paginasCompletadas.has(p)).length;
       const pct = Math.round((hechas / total) * 100);
@@ -957,20 +993,24 @@
       const destino = (hechas > 0 && hechas < total && pendiente) ? pendiente + '.html' : m.url;
       const etiquetaPendiente = (hechas > 0 && hechas < total && pendiente && typeof nombreDeTema === 'function')
         ? nombreDeTema(pendiente) : null;
-      const item = document.createElement('div');
-      item.className = 'module-item';
-      item.innerHTML = `
-        <div class="module-info">
-          <div class="module-badge">${total} página${total === 1 ? '' : 's'}</div>
+      const html = `
+        <a class="prac-tile ${hechas === 0 ? 'nuevo' : ''}" href="${destino}">
+          <span class="prac-badge">${total} página${total === 1 ? '' : 's'}</span>
           <h4>${m.nombre}</h4>
-          <p>${hechas} de ${total} página${total === 1 ? '' : 's'} completada${hechas === 1 ? '' : 's'}${
-            etiquetaPendiente ? ` · sigue en <b>${escaparHTML(etiquetaPendiente)}</b>` : ''}</p>
-          <div class="module-progress"><div class="module-progress-fill ${hechas === total ? 'ok' : ''}" style="width:${pct}%"></div></div>
-        </div>
-        <a href="${destino}"><button class="btn-launch">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'}</button></a>
-      `;
-      contenedor.appendChild(item);
+          ${etiquetaPendiente ? `<p class="prac-desc">Sigue en ${escaparHTML(etiquetaPendiente)}</p>` : ''}
+          <div class="prac-dato"><strong class="prac-pct ${hechas === total ? 'ok' : ''}">${hechas}/${total}</strong><span>página${total === 1 ? '' : 's'}</span></div>
+          <div class="module-progress"><div class="module-progress-fill ${hechas === total ? 'ok' : hechas > 0 ? 'medio' : ''}" style="width:${pct}%"></div></div>
+          <span class="prac-accion">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'} <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+        </a>`;
+      return { hechas, html };
     });
+    // Lo empezado en tarjetas; lo que no, en una fila compacta de enlaces.
+    contenedor.innerHTML = bloquePractica(
+      tarjetas.filter(t => t.hechas > 0).map(t => t.html),
+      MODULOS_APRENDIZAJE.filter((m, i) => tarjetas[i].hechas === 0).map(m => ({ url: m.url, nombre: m.nombre })),
+      'Sin empezar');
+    const empezados = tarjetas.filter(t => t.hechas > 0).length;
+    document.getElementById('cuentaAprendizaje').textContent = `${empezados} de ${tarjetas.length} empezados`;
 
     return paginasCompletadas;
   }
@@ -1391,7 +1431,7 @@
         return MODULOS.every(m => cubiertos.has(m.id));
       } },
     { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9.2"/><path d="M15.2 8.2 13 13l-4.8 2.2L10.6 11l4.6-2.8Z" fill="#fff" opacity="0.85"/></svg>', nombre: 'Explorador', check: ({ intentos }) => intentos.some(i => SIMULADORES_CON_PROGRESO.includes(i.modulo)) },
-    { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 14.9 8.5 21.5 9.4 16.8 14 17.9 20.6 12 17.5 6.1 20.6 7.2 14 2.5 9.4 9.1 8.5 12 2.5Z"/></svg>', nombre: 'Piloto experto', check: ({ stats }) => stats.totalIntentos >= 10 && stats.promedioGeneral !== null && stats.promedioGeneral >= 90 },
+    { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 14.9 8.5 21.5 9.4 16.8 14 17.9 20.6 12 17.5 6.1 20.6 7.2 14 2.5 9.4 9.1 8.5 12 2.5Z"/></svg>', nombre: 'Piloto experto', check: ({ stats }) => stats.totalIntentos >= 10 && stats.notaGeneral !== null && stats.notaGeneral >= 90 },
     { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.3 21 10.9 11 12 5l1.1 6 .6 10Z"/><rect x="8.6" y="8.6" width="6.8" height="3" rx="0.6"/><path d="M12 4V2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>', nombre: 'Experto en ATS', check: ({ paginasCompletadas }) =>
         MODULOS_APRENDIZAJE.find(m => m.id === 'ats').paginas.every(p => paginasCompletadas.has(p)) },
     { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.3a6.2 6.2 0 0 0-6.2 6.2c0 4.6 6.2 12.2 6.2 12.2s6.2-7.6 6.2-12.2A6.2 6.2 0 0 0 12 2.3Z"/><circle cx="12" cy="8.4" r="2.3" fill="#fff" opacity="0.9"/></svg>', nombre: 'Navegante', check: ({ paginasCompletadas }) =>
@@ -1439,55 +1479,65 @@
 
     // Stat cards
     document.getElementById('statIntentos').textContent = stats.totalIntentos;
-    document.getElementById('statPromedio').textContent = stats.promedioGeneral !== null ? `${stats.promedioGeneral}%` : '—';
-    actualizarAnillo(stats.promedioGeneral);
+    document.getElementById('statNota').textContent = stats.notaGeneral !== null ? `${stats.notaGeneral}%` : '—';
+    actualizarAnillo(stats.notaGeneral);
 
     let mejorModuloTexto = '—';
     if (stats.totalIntentos > 0) {
-      const entradas = Object.values(stats.porModulo).sort((a, b) => b.promedio - a.promedio);
-      mejorModuloTexto = `${entradas[0].nombreModulo} (${entradas[0].promedio}%)`;
+      const entradas = Object.values(stats.porModulo).sort((a, b) => b.mejor - a.mejor);
+      mejorModuloTexto = `${entradas[0].nombreModulo} (${entradas[0].mejor}%)`;
     }
     document.getElementById('statMejorModulo').textContent = mejorModuloTexto;
     document.getElementById('statUltima').textContent = stats.ultimaActividad ? formatFecha(stats.ultimaActividad) : 'Sin actividad';
 
-    // Progreso por módulo
-    const modulosContainer = document.getElementById('modulosContainer');
-    modulosContainer.innerHTML = '';
-    MODULOS.forEach(m => {
-      const info = stats.porModulo[m.id];
-      const item = document.createElement('div');
-      item.className = 'module-item';
-      item.innerHTML = `
-        <div class="module-info">
-          <div class="module-badge">${m.badge}</div>
-          <h4>${m.nombre}</h4>
-          <p>${info ? `${info.intentos} intento${info.intentos === 1 ? '' : 's'} · mejor ${info.mejor}% · promedio ${info.promedio}%` : 'Aún sin intentos registrados.'}</p>
-          ${info ? `<div class="module-progress"><div class="module-progress-fill ${info.mejor >= 70 ? 'ok' : ''}" style="width:${info.mejor}%"></div></div>` : ''}
-        </div>
-        <a href="${m.url}"><button class="btn-launch">${info ? 'Practicar de nuevo' : 'Comenzar'}</button></a>
-      `;
-      modulosContainer.appendChild(item);
-    });
+    // Una tarjeta del mosaico: con intentos muestra el MEJOR (es la nota que
+    // cuenta); sin intentos, la descripción y la invitación a empezar.
+    function tarjetaPractica(item, info, { badge, desc, accionNueva }){
+      if (info) {
+        return `
+          <a class="prac-tile" href="${item.url}">
+            ${badge ? `<span class="prac-badge">${badge}</span>` : ''}
+            <h4>${item.nombre}</h4>
+            <div class="prac-dato"><strong class="prac-pct ${info.mejor >= 70 ? 'ok' : ''}">${info.mejor}%</strong><span>mejor · ${info.intentos} intento${info.intentos === 1 ? '' : 's'}</span></div>
+            <div class="module-progress"><div class="module-progress-fill ${info.mejor >= 70 ? 'ok' : 'medio'}" style="width:${info.mejor}%"></div></div>
+            <span class="prac-accion">Practicar de nuevo <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+          </a>`;
+      }
+      return `
+        <a class="prac-tile nuevo" href="${item.url}">
+          ${badge ? `<span class="prac-badge">${badge}</span>` : ''}
+          <h4>${item.nombre}</h4>
+          ${desc ? `<p class="prac-desc">${desc}</p>` : ''}
+          <span class="prac-accion">${accionNueva} <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
+        </a>`;
+    }
+
+    // Lo practicado primero (lo más reciente arriba) y luego lo pendiente,
+    // en el orden del catálogo.
+    function ordenarPracticados(lista){
+      const hechos = lista.filter(x => x.info).sort((a, b) => b.info.ultimaFecha.localeCompare(a.info.ultimaFecha));
+      return hechos.concat(lista.filter(x => !x.info));
+    }
+
+    // Progreso por quiz
+    const quizzes = ordenarPracticados(MODULOS.map(m => ({ m, info: stats.porModulo[m.id] })));
+    document.getElementById('modulosContainer').innerHTML = bloquePractica(
+      quizzes.filter(x => x.info).map(({ m, info }) => tarjetaPractica(m, info, { badge: m.badge })),
+      quizzes.filter(x => !x.info).map(({ m }) => ({ url: m.url, nombre: m.nombre })),
+      'Sin intentos');
+    document.getElementById('cuentaQuizzes').textContent =
+      `${quizzes.filter(x => x.info).length} de ${quizzes.length} practicados`;
 
     // Simuladores (Simulador NALA no guarda intentos: es un puesto de
-    // trabajo libre sin un "correctas/total" real que reportar; los otros
-    // 2 sí llaman a guardarIntento() y muestran el mismo progreso que un quiz)
-    const simuladoresContainer = document.getElementById('simuladoresContainer');
-    simuladoresContainer.innerHTML = '';
-    SIMULADORES.forEach(s => {
-      const info = s.id ? stats.porModulo[s.id] : null;
-      const item = document.createElement('div');
-      item.className = 'module-item';
-      item.innerHTML = `
-        <div class="module-info">
-          <h4>${s.nombre}</h4>
-          <p>${info ? `${info.intentos} intento${info.intentos === 1 ? '' : 's'} · mejor ${info.mejor}% · promedio ${info.promedio}%` : s.desc}</p>
-          ${info ? `<div class="module-progress"><div class="module-progress-fill ${info.mejor >= 70 ? 'ok' : ''}" style="width:${info.mejor}%"></div></div>` : ''}
-        </div>
-        <a href="${s.url}"><button class="btn-launch">${info ? 'Practicar de nuevo' : 'Abrir'}</button></a>
-      `;
-      simuladoresContainer.appendChild(item);
-    });
+    // trabajo libre sin un "correctas/total" real que reportar; los demás
+    // sí llaman a guardarIntento() y muestran el mismo progreso que un quiz)
+    const simuladores = ordenarPracticados(SIMULADORES.map(s => ({ m: s, info: s.id ? stats.porModulo[s.id] : null })));
+    document.getElementById('simuladoresContainer').innerHTML = bloquePractica(
+      simuladores.filter(x => x.info).map(({ m, info }) => tarjetaPractica(m, info, { badge: '' })),
+      simuladores.filter(x => !x.info).map(({ m }) => ({ url: m.url, nombre: m.nombre })),
+      'Sin intentos');
+    document.getElementById('cuentaSimuladores').textContent =
+      `${simuladores.filter(x => x.info).length} de ${simuladores.length} practicados`;
 
     // Historial reciente
     const historialContainer = document.getElementById('historialContainer');
@@ -1688,7 +1738,7 @@
           ${mostrarGrupo && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
           <h4>${escaparHTML(a.titulo)}</h4>
           <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
-          ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : ''}" style="width:${a.mejor}%"></div></div>` : ''}
+          ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : 'medio'}" style="width:${a.mejor}%"></div></div>` : ''}
         </div>
         <div class="module-acciones">
           ${accion}

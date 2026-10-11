@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nueve quizzes con calificación inmediata y siete simuladores del puesto de trabajo AIS·COM·MET: METAR, plan de vuelo, NALA, AFTN, fraseología y AIP Colombia.">
 <title>Zona de Quizzes · SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +20,7 @@
     --text-muted:#5B6B7F;
     --hairline:#E1E7EF;
     --vfr:#2E9E6D;
+    --vfr-texto:#1F7A53; /* verde VFR oscurecido para texto pequeño sobre blanco (AA) */
     --live:#2E9E6D;
     --live-rgb:46,158,109;
     --topbar-bg:rgba(255,255,255,0.85);
@@ -35,6 +37,7 @@
     --text-muted:#8894A8;
     --hairline:#2A3548;
     --vfr:#4FA88C;
+    --vfr-texto:#4FA88C;
     --live:#4FA88C;
     --live-rgb:79,168,140;
     --topbar-bg:rgba(11,18,32,0.85);
@@ -70,7 +73,7 @@
   nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
   nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
   nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
-  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active{ color:var(--vfr-texto); font-weight:600; }
   nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
   /* ---------- DROPDOWN "MÓDULOS" ---------- */
@@ -87,7 +90,7 @@
   }
   .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
   .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
-  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr-texto); font-weight:600; }
   .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
   .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
@@ -106,7 +109,7 @@
     transition:background .15s, color .15s;
   }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
-  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown-menu a.active{ color:var(--vfr-texto); font-weight:600; }
 
   .nav-divider{ width:1px; height:18px; background:var(--hairline); }
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
@@ -137,20 +140,45 @@
   @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
   @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
-  .hero-simple{ max-width:960px; margin:0 auto; padding:48px 32px 20px; }
-  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; margin-bottom:14px; }
+  /* Cabecera y grilla comparten el mismo ancho y margen: antes la cabecera
+     medía 960 px y la grilla 900 px, y los títulos no quedaban alineados. */
+  .hero-simple{ max-width:1120px; margin:0 auto; padding:48px 32px 8px; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:14px; }
   .hero-simple h1{ font-size:clamp(1.7rem, 3.8vw, 2.4rem); line-height:1.2; margin-bottom:8px; }
-  .hero-simple p.lead{ color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; }
+  .hero-simple p.lead{ color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:640px; margin:0; }
 
-  .quiz-index{ max-width:900px; margin:0 auto; padding:20px 32px 60px; }
-  .quiz-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
-  .quiz-listing-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 22px; box-shadow:var(--shadow-card); transition:transform .2s, border-color .2s; }
-  .quiz-listing-card:hover{ transform:translateY(-4px); border-color:var(--accent); }
-  .quiz-listing-card .badge{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.65rem; font-weight:600; color:var(--accent); background:rgba(var(--accent-rgb),0.12); padding:2px 12px; border-radius:12px; margin-bottom:10px; }
-  .quiz-listing-card h3{ font-size:1.1rem; margin-bottom:6px; }
-  .quiz-listing-card p{ color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin:0 0 16px; }
-  .quiz-listing-card .btn-start{ display:inline-block; background:var(--accent); color:#fff; padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s; border:none; cursor:pointer; font-family:'IBM Plex Sans'; text-decoration:none; }
-  .quiz-listing-card .btn-start:hover{ filter:brightness(1.08); }
+  .quiz-index{ max-width:1120px; margin:0 auto; padding:28px 32px 72px; }
+  .quiz-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr)); gap:18px; }
+  /* La tarjeta entera es el enlace; el botón queda pegado al pie para que
+     todos queden a la misma altura en cada fila. */
+  .quiz-listing-card{ display:flex; flex-direction:column; align-items:flex-start; color:inherit; text-decoration:none; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:22px; box-shadow:var(--shadow-card); transition:transform .2s, border-color .2s; }
+  a.quiz-listing-card:hover{ transform:translateY(-4px); border-color:var(--accent); }
+  a.quiz-listing-card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  .quiz-listing-card .badge{ display:inline-block; font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; color:var(--accent); background:rgba(var(--accent-rgb),0.12); padding:2px 10px; border-radius:12px; margin-bottom:10px; }
+  .quiz-listing-card h3{ font-size:1.08rem; line-height:1.3; margin-bottom:6px; }
+  .quiz-listing-card p{ color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin:0 0 18px; }
+  .card-pie{ margin-top:auto; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .quiz-listing-card .btn-start{ display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:var(--on-accent); padding:8px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; transition:filter .15s, gap .2s; font-family:'IBM Plex Sans'; }
+  a.quiz-listing-card:hover .btn-start{ filter:brightness(1.08); gap:10px; }
+  /* Mejor intento del estudiante en ese quiz o simulador (sólo si ya lo hizo). */
+  .mejor-chip{ font-family:'IBM Plex Mono'; font-size:0.74rem; color:var(--text-muted); white-space:nowrap; }
+  .mejor-chip b{ font-weight:600; color:var(--text); }
+  .mejor-chip.ok b{ color:var(--vfr-texto); }
+  .quiz-listing-card.proximamente{ border:2px dashed var(--hairline); background:transparent; box-shadow:none; }
+  .quiz-listing-card.proximamente .badge{ color:var(--text-muted); background:transparent; padding-left:0; }
+  .quiz-listing-card.proximamente h3, .quiz-listing-card.proximamente p{ color:var(--text-muted); }
+  @media (prefers-reduced-motion: reduce){ a.quiz-listing-card:hover{ transform:none; } }
+  @media (max-width:600px){
+    .hero-simple{ padding:32px 16px 4px; }
+    .quiz-index{ padding:20px 16px 48px; }
+    .quiz-grid{ gap:12px; }
+    .quiz-listing-card{ padding:16px 18px; border-radius:12px; }
+    .quiz-listing-card .badge{ margin-bottom:8px; }
+    .quiz-listing-card h3{ font-size:1rem; margin-bottom:4px; }
+    .quiz-listing-card p{ font-size:0.84rem; margin-bottom:12px; }
+    .quiz-listing-card .btn-start{ padding:6px 16px; font-size:0.8rem; }
+    body > footer{ padding:20px 16px; flex-direction:column; gap:6px; }
+  }
 
   .cat-saltos{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
   .cat-saltos a{ display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border:1px solid var(--hairline); border-radius:30px; background:var(--panel); color:var(--text); font-weight:600; font-size:0.85rem; text-decoration:none; transition:border-color .2s; }
@@ -214,10 +242,11 @@
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+  <a class="brand" href="index.html">
     <div class="brand-mark">
       <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
         <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -299,6 +328,7 @@
   </div>
 </div>
 
+<main id="contenido">
 <section class="hero-simple">
   <div class="eyebrow">Zona de Quizzes</div>
   <h1>Quizzes y simuladores</h1>
@@ -316,73 +346,100 @@
       <p>Preguntas de opción múltiple por módulo.</p>
     </div>
     <div class="quiz-grid">
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-ats.html">
         <div class="badge">50 preguntas</div>
         <h3>Servicios de Tránsito Aéreo (ATS)</h3>
         <p>Espacio aéreo, FIS, alerta y comunicaciones.</p>
-        <a href="quiz-ats.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-ats.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-fpl.html">
         <div class="badge">25 preguntas</div>
         <h3>Plan de Vuelo — nivel medio-alto</h3>
         <p>Normativa, plazos y llenado del FPL en Colombia.</p>
-        <a href="quiz-fpl.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-fpl.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-notam.html">
         <div class="badge">25 preguntas</div>
         <h3>NOTAM</h3>
         <p>Formato, código Q, series, SNOWTAM y ASHTAM.</p>
-        <a href="quiz-notam.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-notam.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-ais-com.html">
         <div class="badge">Entrenamiento · 173 preguntas</div>
         <h3>Entrenamiento AIS/COM</h3>
         <p>El cuestionario básico completo: COM, AIS, MET y cartas.</p>
-        <a href="quiz-ais-com.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-ais-com.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-meteorologia.html">
         <div class="badge">194 preguntas</div>
         <h3>Quiz Meteorología</h3>
         <p>El examen completo de Meteorología Aeronáutica.</p>
-        <a href="quiz-meteorologia.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-meteorologia.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-navegacion-tiempo-altimetria.html">
         <div class="badge">25 preguntas</div>
         <h3>Navegación — Quiz I: Tiempo y Altimetría</h3>
         <p>Cálculo de UTC, husos horarios y reglajes altimétricos.</p>
-        <a href="quiz-navegacion-tiempo-altimetria.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-navegacion-tiempo-altimetria.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-navegacion-radioayudas-viento.html">
         <div class="badge">25 preguntas</div>
         <h3>Navegación — Quiz II: Radioayudas y Viento</h3>
         <p>Radiales VOR, QDM/QDR, DME y viento cruzado.</p>
-        <a href="quiz-navegacion-radioayudas-viento.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-navegacion-radioayudas-viento.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-designadores.html">
         <div class="badge">196 aeródromos</div>
         <h3>Designadores de Aeródromos</h3>
         <p>Códigos OACI, nombres y FIR de Colombia y el mundo.</p>
-        <a href="quiz-designadores.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-designadores.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="quiz-fraseologia.html">
         <div class="badge">50 preguntas</div>
         <h3>Fraseología Aeronáutica — Parte 1 · Teórico</h3>
         <p>Fraseología OACI, fases de vuelo y emergencias.</p>
-        <a href="quiz-fraseologia.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="quiz-fraseologia.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card" style="border:2px dashed var(--hairline); background:transparent;">
-        <div class="badge" style="color:var(--text-muted); background:transparent;">Próximamente</div>
-        <h3 style="color:var(--text-muted);">Más quizzes</h3>
-        <p style="color:var(--text-muted);">PBN y más están en desarrollo.</p>
+      <div class="quiz-listing-card proximamente">
+        <div class="badge">Próximamente</div>
+        <h3>Más quizzes</h3>
+        <p>PBN y más están en desarrollo.</p>
       </div>
     </div>
   </section>
@@ -393,58 +450,80 @@
       <p>Practica la tarea real, con corrección al instante.</p>
     </div>
     <div class="quiz-grid">
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="simulador-metar.html">
         <div class="badge">Simulador</div>
         <h3>Simulador METAR</h3>
         <p>Codifica METAR de escenarios reales.</p>
-        <a href="simulador-metar.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="simulador-metar.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="simulador-plan-vuelo.html">
         <div class="badge">Simulador</div>
         <h3>Simulador Plan de Vuelo</h3>
         <p>Llena el FPL casilla por casilla con validación.</p>
-        <a href="simulador-plan-vuelo.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="simulador-plan-vuelo.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="Simulador-NALA.html">
         <div class="badge">Simulador CWP</div>
         <h3>Simulador NALA — Plan de Vuelo y Radar</h3>
         <p>Puesto de trabajo con planes, AFTN y radar en vivo.</p>
-        <a href="Simulador-NALA.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="Simulador-NALA.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="terminal-aftn.html">
         <div class="badge">Simulador · Anexo 10</div>
         <h3>Terminal AFTN / AMHS</h3>
         <p>Redacta y trata mensajes AFTN, solo o en sala.</p>
-        <a href="terminal-aftn.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="terminal-aftn.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="simulador-fraseologia.html">
         <div class="badge">Simulador · Voz + Mapa</div>
         <h3>Fraseología Aeronáutica — Parte 2 · Simulador ATC</h3>
         <p>Eres el controlador: instruye por voz y míralo volar.</p>
-        <a href="simulador-fraseologia.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="simulador-fraseologia.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="simulador-memoria.html">
         <div class="badge">Simulador · Memoria</div>
         <h3>Memoria y Agilidad Mental</h3>
         <p>Memoriza secuencias de códigos cada vez más largas.</p>
-        <a href="simulador-memoria.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="simulador-memoria.html" hidden></span>
+        </div>
+      </a>
 
-      <div class="quiz-listing-card">
+      <a class="quiz-listing-card" href="simulador-aip.html">
         <div class="badge">Simulador · AIP Colombia</div>
         <h3>Simulador AIP Colombia</h3>
         <p>Estudia GEN, ENR y AD, practica y pregúntale al AIP.</p>
-        <a href="simulador-aip.html" class="btn-start">Comenzar →</a>
-      </div>
+        <div class="card-pie">
+          <span class="btn-start">Comenzar →</span>
+          <span class="mejor-chip" data-url="simulador-aip.html" hidden></span>
+        </div>
+      </a>
     </div>
   </section>
 </div>
 
+</main>
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos.</span>
   <span>Módulo ATS — Curso Básico Operador de Estación Aeronáutica</span>
@@ -549,6 +628,28 @@
     const btnMobile = document.getElementById('navLoginBtnMobile');
     if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
     if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+</script>
+<script src="modulos.js"></script>
+<script src="progreso.js"></script>
+<script>
+  // Mejor intento del estudiante en cada tarjeta (la misma nota que cuenta en
+  // su panel). Sin intentos, la tarjeta queda igual que siempre.
+  (async function pintarMejores(){
+    if (typeof obtenerEstadisticas !== 'function' || typeof MODULOS_CATALOGO === 'undefined') return;
+    let stats;
+    try { stats = await obtenerEstadisticas(); } catch (e) { return; }
+    if (!stats || !stats.totalIntentos) return;
+    const idPorUrl = {};
+    MODULOS_CATALOGO.forEach(m => { idPorUrl[m.url] = m.id; });
+    document.querySelectorAll('.mejor-chip[data-url]').forEach(chip => {
+      const info = stats.porModulo[idPorUrl[chip.dataset.url]];
+      if (!info) return;
+      chip.innerHTML = `Tu mejor: <b>${info.mejor}%</b>`;
+      chip.classList.toggle('ok', info.mejor >= 70);
+      chip.title = `${info.intentos} intento${info.intentos === 1 ? '' : 's'}`;
+      chip.hidden = false;
+    });
   })();
 </script>
 </body>

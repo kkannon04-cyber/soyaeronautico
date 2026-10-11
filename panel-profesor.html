@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Panel del Profesor · SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -119,7 +120,62 @@
   .panel-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 22px; margin-bottom: 22px; }
   .panel-card > h3 { font-size: 1.05rem; margin-bottom: 4px; }
   .panel-card > .card-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+  /* Actividades: lo ya creado arriba y, debajo, el bloque para crear. */
+  .sub-seccion { font-size: 1.15rem; margin: 34px 0 14px; padding-top: 22px; border-top: 1px solid var(--border-color); }
+  .par-tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 0 22px; }
+  .par-tarjetas > .panel-card { display: flex; flex-direction: column; }
+  .par-tarjetas > .panel-card > .fila-campos { margin-top: auto; }
 
+  /* Briefing del profesor (mismo lenguaje que la portada y el panel del estudiante) */
+  .resumen-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 22px; align-items: start; }
+  .resumen-grid > .panel-card { margin-bottom: 0; }
+  .briefing-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .briefing-cab h3 { font-size: 1.05rem; }
+  .briefing-hora { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; white-space: nowrap; }
+  .briefing-medidor { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 14px 0 6px; }
+  .briefing-medidor span { height: 5px; border-radius: 2px; background: var(--border-color); transition: background-color .3s ease; }
+  .briefing-medidor span.on { background: var(--success); }
+  .briefing-pasos { list-style: none; margin: 0; padding: 0; }
+  .briefing-pasos .paso button {
+    width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) 16px; gap: 14px; align-items: center;
+    padding: 13px 8px; margin: 0 -8px; width: calc(100% + 16px); background: none; border: 0; border-radius: 10px;
+    text-align: left; color: inherit; cursor: pointer; font-family: var(--font-main); transition: background-color .18s ease;
+  }
+  .briefing-pasos .paso + .paso button { border-top: 1px solid var(--border-color); border-radius: 0 0 10px 10px; }
+  .briefing-pasos .paso button:hover { background: rgba(37,99,235,0.05); }
+  .briefing-pasos .paso button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .paso-celda { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; border: 1.5px solid var(--text-muted); transition: background-color .25s ease, border-color .25s ease; }
+  .paso-celda svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .paso-celda path { stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset .36s cubic-bezier(.16,1,.3,1) .12s; }
+  .paso.hecho .paso-celda { background: var(--success); border-color: var(--success); }
+  .paso.hecho .paso-celda path { stroke-dashoffset: 0; }
+  .paso-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .paso-texto strong { font-family: var(--font-heading); font-size: 0.95rem; color: var(--text-muted); }
+  .paso.hecho .paso-texto strong { color: var(--text-main); }
+  .paso-estado { font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; }
+  .paso-estado b { color: var(--text-main); font-weight: 600; }
+  .paso-flecha { display: flex; color: var(--text-muted); transition: transform .2s cubic-bezier(.16,1,.3,1), color .2s; }
+  .briefing-pasos .paso button:hover .paso-flecha { color: var(--primary); transform: translateX(3px); }
+  .flecha { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .briefing-pie-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 12px 0 0; width: 100%; border: 0; border-top: 1px solid var(--border-color); background: none; color: var(--primary); font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: var(--font-main); text-align: left; }
+  .briefing-pie-link .flecha { width: 14px; height: 14px; transition: transform .2s cubic-bezier(.16,1,.3,1); }
+  .briefing-pie-link:hover .flecha { transform: translateX(3px); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .venc-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+  .venc-item:last-child { border-bottom: 0; }
+  .venc-item h5 { margin: 0 0 2px; font-size: 0.88rem; font-family: var(--font-heading); }
+  .venc-item p { margin: 0; font-size: 0.76rem; color: var(--text-muted); }
+  .venc-chip { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .venc-hoy { background: rgba(239,68,68,0.12); color: var(--danger); }
+  .venc-pronto { background: rgba(245,158,11,0.16); color: #b45309; }
+  .venc-lejos { background: rgba(37,99,235,0.10); color: var(--primary); }
+  [data-theme="dark"] .venc-pronto { color: var(--warning); }
+  /* Bancos y grupos en dos columnas cuando hay ancho */
+  .dos-col { display: grid; gap: 0 22px; align-items: start; }
+  .dos-col-angosta { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .dos-col-ancha { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  #listaGrupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: 0 18px; }
+  @media (max-width: 1150px) { .resumen-grid, .dos-col-angosta, .dos-col-ancha { grid-template-columns: 1fr; } .resumen-grid { gap: 0; } .resumen-grid > .panel-card { margin-bottom: 22px; } }
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 26px; }
   .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
   .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); border-color: var(--primary); }
@@ -187,12 +243,27 @@
   /* === RESULTADOS AGRUPADOS POR ESTUDIANTE === */
   .est-resultado { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; background: var(--card-bg); transition: border-color 0.15s; }
   .est-resultado:hover, .est-resultado[open] { border-color: var(--primary); }
-  .est-resultado > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 13px 16px; border-radius: 10px; }
+  /* Fila resumen en columnas fijas: antes cada dato fluía con flex-wrap y
+     caía en una posición distinta en cada estudiante, así que no se podía
+     comparar de un vistazo. La cabecera usa la misma plantilla. */
+  .est-cabecera, .est-resultado > summary {
+    display: grid; align-items: center; column-gap: 14px;
+    grid-template-columns: minmax(150px, 1fr) 92px 118px 64px 118px 58px 16px;
+  }
+  .est-cabecera { padding: 0 17px 8px; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); }
+  .est-resultado > summary { list-style: none; cursor: pointer; padding: 13px 16px; border-radius: 10px; }
   .est-resultado > summary::-webkit-details-marker { display: none; }
   .est-resultado > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-  .est-resultado .est-nombre { font-weight: 600; font-size: 0.95rem; flex: 1 1 200px; min-width: 0; }
-  .est-resultado .est-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 0.8rem; color: var(--text-muted); }
+  .est-resultado .est-nombre { font-weight: 600; font-size: 0.95rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .est-resultado .est-col { min-width: 0; font-size: 0.82rem; color: var(--text-muted); }
+  .est-resultado .est-etq { display: none; }
+  .est-resultado .est-nota .pct { font-size: 1rem; }
   .est-resultado .est-dato { font-family: var(--font-mono); white-space: nowrap; }
+  .card-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 18px; }
+  .card-cabecera h3 { font-size: 1.05rem; margin-bottom: 4px; }
+  .card-cabecera .card-sub { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0; max-width: 560px; }
+  .seccion-head-fila { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 28px; flex-wrap: wrap; }
+  .selector-grupo { margin-bottom: 0; width: min(320px, 100%); }
   .est-resultado .est-flecha { color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0; }
   .est-resultado[open] .est-flecha { transform: rotate(90deg); color: var(--primary); }
   .est-resultado .est-cuerpo { border-top: 1px solid var(--border-color); padding: 14px 16px 16px; }
@@ -201,11 +272,22 @@
   .intentos-todos > summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--primary); padding: 4px 0; }
   .intentos-todos[open] > summary { margin-bottom: 12px; }
   @media (prefers-reduced-motion: reduce) { .est-resultado .est-flecha { transition: none; } }
+  /* En pantallas angostas la fila se vuelve una ficha: nombre y flecha
+     arriba, los datos debajo con su etiqueta. */
+  @media (max-width: 860px) {
+    .est-cabecera { display: none; }
+    .est-resultado > summary { grid-template-columns: repeat(4, auto) 1fr; row-gap: 10px; column-gap: 16px; }
+    .est-resultado .est-nombre { grid-column: 1 / 5; white-space: normal; }
+    .est-resultado .est-flecha { grid-column: 5; grid-row: 1; justify-self: end; }
+    .est-resultado .est-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .est-resultado .est-etq { display: block; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.4px; text-transform: uppercase; }
+    .est-resultado .est-estado, .est-resultado .est-alerta { align-self: end; }
+    .est-resultado .est-alerta:empty { display: none; }
+  }
   @media (max-width: 600px) {
-    .est-resultado > summary { gap: 8px 12px; }
-    .est-resultado .est-nombre { flex: 1 1 0; }
-    .est-resultado .est-flecha { order: 2; }
-    .est-resultado .est-meta { order: 3; flex-basis: 100%; }
+    .est-resultado > summary { grid-template-columns: 1fr 1fr auto; }
+    .est-resultado .est-nombre { grid-column: 1 / 3; }
+    .est-resultado .est-flecha { grid-column: 3; }
     .est-resultado .est-dato { white-space: normal; }
     .est-resultado .est-cuerpo { padding: 12px; }
   }
@@ -255,6 +337,12 @@
     .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); }
     .sidebar.open { transform: translateX(0); box-shadow: 8px 0 30px rgba(0,0,0,0.35); }
   }
+  /* KPIs en dos columnas en el teléfono: antes eran 4-5 tarjetas altas apiladas. */
+  @media (max-width: 560px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 14px; }
+    .stat-card strong { font-size: 1.35rem; }
+  }
   @media (max-width: 480px) {
     .topbar { padding: 0 14px; gap: 10px; }
     .clock-widget span:first-child { display: none; }
@@ -282,6 +370,7 @@
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
 <script src="profesor.js"></script>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 <script src="auth-gate.js" data-rol-requerido="teacher"></script>
@@ -368,17 +457,22 @@
         <div class="stat-card"><span class="label">Bancos</span><strong id="kpiBancos">0</strong></div>
         <div class="stat-card"><span class="label">Preguntas</span><strong id="kpiPreguntas">0</strong></div>
       </div>
-      <div class="panel-card">
-        <h3>Cómo empezar</h3>
-        <p class="card-sub">Tres pasos, en este orden:</p>
-        <ol style="font-size:0.9rem;line-height:1.9;padding-left:20px;color:var(--text-muted);">
-          <li><strong style="color:var(--text-main);">Crea un grupo</strong> y comparte su código con tus estudiantes: con ese código se vinculan a tu clase desde su panel.</li>
-          <li><strong style="color:var(--text-main);">Crea uno o varios bancos de preguntas</strong> (por tema, por unidad o por parcial) y llénalos una por una o pegando varias de golpe.</li>
-          <li><strong style="color:var(--text-main);">Crea una actividad</strong> —examen o lectura con pregunta de comprensión— eligiendo de qué bancos salen las preguntas, y publícala cuando esté lista.</li>
-        </ol>
-        <div class="acciones" style="margin-top:18px;">
-          <button class="btn btn-primario" type="button" data-ir="grupos">Ir a mis grupos</button>
-          <button class="btn btn-secundario" type="button" data-ir="banco">Ir a mis bancos</button>
+      <!-- Briefing del profesor: el mismo componente de la portada, con el
+           estado real de su cuenta (antes era un texto fijo «Cómo empezar»). -->
+      <div class="resumen-grid">
+        <div class="panel-card briefing">
+          <div class="briefing-cab">
+            <h3>Tu briefing</h3>
+            <span class="briefing-hora" id="profHora">--- · --:-- Z</span>
+          </div>
+          <div class="briefing-medidor" id="profMedidor" aria-hidden="true"><span></span><span></span><span></span></div>
+          <ol class="briefing-pasos" id="profPasos"></ol>
+          <button type="button" class="briefing-pie-link" data-ir="resultados">Ver los resultados de tus grupos <svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="panel-card">
+          <h3>Cierran pronto</h3>
+          <p class="card-sub">Actividades publicadas con fecha límite en los próximos 14 días.</p>
+          <div id="profCierres"></div>
         </div>
       </div>
     </section>
@@ -414,6 +508,7 @@
         <p>Organiza tus preguntas en los bancos que quieras —uno por tema, por curso o por parcial— y reutilízalos al armar cada examen. No hay límite de bancos ni de preguntas.</p>
       </div>
 
+      <div class="dos-col dos-col-angosta">
       <div class="panel-card">
         <h3>Crear un banco</h3>
         <p class="card-sub">Por ejemplo: “ATS — básico”, “Meteorología parcial 1”, “Simulacro final”.</p>
@@ -438,6 +533,9 @@
         <div id="listaBancos"></div>
       </div>
 
+      </div>
+
+      <div class="dos-col dos-col-ancha">
       <div class="panel-card">
         <h3 id="tituloFormPregunta">Nueva pregunta</h3>
         <p class="card-sub">Cuatro opciones, una correcta. El tema es opcional y sirve para filtrar dentro del banco.</p>
@@ -492,6 +590,8 @@
         <button class="btn btn-secundario" id="btnImportar" type="button">Importar preguntas</button>
       </div>
 
+      </div>
+
       <div class="panel-card">
         <h3>Mis preguntas (<span id="conteoBanco">0</span>)</h3>
         <div class="fila-campos" style="margin-top:12px;">
@@ -516,34 +616,45 @@
         <p>Un <strong>examen</strong> es un conjunto de preguntas del banco. Una <strong>lectura</strong> es un texto que el estudiante debe leer, más una pregunta de comprensión. Un <strong>plan de vuelo</strong> es una situación que el estudiante resuelve diligenciando el formulario OACI completo. Una actividad de <strong>mensajería AFTN</strong> le pide redactar uno o varios mensajes completos en la terminal AFTN/AMHS.</p>
       </div>
 
-      <!-- El plan de vuelo no sale del banco de preguntas: se arma en el
-           propio simulador, que es donde está el formulario OACI. -->
-      <div class="panel-card">
-        <h3>Actividad de plan de vuelo</h3>
-        <p class="card-sub">El simulador genera la situación de vuelo, tú la revisas y la ajustas, y el formulario que dejes diligenciado queda como clave de respuestas. La calificación la hace el servidor, casilla por casilla.</p>
-        <div class="fila-campos">
-          <div class="campo">
-            <label for="pvGrupo">Grupo</label>
-            <select id="pvGrupo"></select>
-          </div>
-          <div class="campo" style="display:flex;align-items:flex-end;">
-            <button class="btn btn-primario" id="btnCrearPlanVuelo" type="button">Armar la situación en el simulador</button>
-          </div>
-        </div>
+      <div class="panel-card" id="cardActividadesCreadas">
+        <h3>Actividades creadas</h3>
+        <div id="filtrosGrupoActividades" style="margin:12px 0;"></div>
+        <div id="listaActividades"></div>
       </div>
 
-      <!-- La mensajería AFTN tampoco sale del banco: se arma en la terminal,
-           donde está el compositor de mensajes con la revisión del Anexo 10. -->
-      <div class="panel-card">
-        <h3>Actividad de mensajería AFTN</h3>
-        <p class="card-sub">Describes la situación y dejas redactado cada mensaje correcto (puedes partir de un caso de estudio). El servidor califica prioridad, destinatarios, remitente, hora de depósito y texto de cada mensaje.</p>
-        <div class="fila-campos">
-          <div class="campo">
-            <label for="afGrupo">Grupo</label>
-            <select id="afGrupo"></select>
+      <h3 class="sub-seccion">Crear una actividad</h3>
+      <!-- Plan de vuelo y AFTN se arman en su propio simulador; van lado a lado
+           porque cada una es sólo un grupo y un botón. -->
+      <div class="par-tarjetas">
+        <!-- El plan de vuelo no sale del banco de preguntas: se arma en el
+             propio simulador, que es donde está el formulario OACI. -->
+        <div class="panel-card">
+          <h3>Actividad de plan de vuelo</h3>
+          <p class="card-sub">El simulador genera la situación de vuelo, tú la revisas y la ajustas, y el formulario que dejes diligenciado queda como clave de respuestas. La calificación la hace el servidor, casilla por casilla.</p>
+          <div class="fila-campos">
+            <div class="campo">
+              <label for="pvGrupo">Grupo</label>
+              <select id="pvGrupo"></select>
+            </div>
+            <div class="campo" style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primario" id="btnCrearPlanVuelo" type="button">Armar la situación en el simulador</button>
+            </div>
           </div>
-          <div class="campo" style="display:flex;align-items:flex-end;">
-            <button class="btn btn-primario" id="btnCrearAftn" type="button">Armar la actividad en la terminal</button>
+        </div>
+
+        <!-- La mensajería AFTN tampoco sale del banco: se arma en la terminal,
+             donde está el compositor de mensajes con la revisión del Anexo 10. -->
+        <div class="panel-card">
+          <h3>Actividad de mensajería AFTN</h3>
+          <p class="card-sub">Describes la situación y dejas redactado cada mensaje correcto (puedes partir de un caso de estudio). El servidor califica prioridad, destinatarios, remitente, hora de depósito y texto de cada mensaje.</p>
+          <div class="fila-campos">
+            <div class="campo">
+              <label for="afGrupo">Grupo</label>
+              <select id="afGrupo"></select>
+            </div>
+            <div class="campo" style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primario" id="btnCrearAftn" type="button">Armar la actividad en la terminal</button>
+            </div>
           </div>
         </div>
       </div>
@@ -635,22 +746,16 @@
         </div>
       </div>
 
-      <div class="panel-card">
-        <h3>Actividades creadas</h3>
-        <div id="filtrosGrupoActividades" style="margin:12px 0;"></div>
-        <div id="listaActividades"></div>
-      </div>
     </section>
 
     <!-- ============ RESULTADOS ============ -->
     <section class="seccion" id="seccion-resultados">
-      <div class="seccion-head">
-        <h2>Resultados</h2>
-        <p>Quién ha presentado, cómo le fue y qué preguntas está fallando el grupo. Puedes descargar todo para abrirlo en Excel.</p>
-      </div>
-
-      <div class="panel-card">
-        <div class="campo" style="margin-bottom:0;">
+      <div class="seccion-head seccion-head-fila">
+        <div>
+          <h2>Resultados</h2>
+          <p>Quién ha presentado, cómo le fue y qué preguntas está fallando el grupo. Puedes descargar todo para abrirlo en Excel.</p>
+        </div>
+        <div class="campo selector-grupo">
           <label for="rGrupo">Grupo</label>
           <select id="rGrupo"></select>
         </div>
@@ -708,6 +813,12 @@ function fechaCorta(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) +
          ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Sólo el día, para la fila resumen de cada estudiante (la hora sigue en el detalle).
+function fechaDia(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function clasePct(p) {
@@ -1737,8 +1848,17 @@ async function cargarResultados() {
   const stats = estadisticaPorPregunta(resultadosRes.resultados, estado.banco);
 
   const entregas = resultadosRes.resultados.length;
-  const promedioGrupo = entregas === 0 ? null
-    : Math.round(resultadosRes.resultados.reduce((s, r) => s + r.porcentaje, 0) / entregas);
+  // Nota de un estudiante = media de su MEJOR intento en cada actividad
+  // calificada que ya presentó. La del grupo es la media de esas notas
+  // (antes era el promedio de todos los intentos sueltos).
+  const notaDe = estudianteId => {
+    const calificadas = filas.filter(f => f.estudianteId === estudianteId && f.intentos > 0 && f.tipo !== 'texto');
+    return calificadas.length === 0 ? null
+      : Math.round(calificadas.reduce((s, f) => s + f.mejor, 0) / calificadas.length);
+  };
+  const notasEstudiantes = estudiantesRes.estudiantes.map(e => notaDe(e.id)).filter(n => n !== null);
+  const notaGrupo = notasEstudiantes.length === 0 ? null
+    : Math.round(notasEstudiantes.reduce((s, n) => s + n, 0) / notasEstudiantes.length);
 
   // Fila de un intento con sus acciones. `lista` distingue la ficha del
   // estudiante ('e') de la lista cronológica ('t') para no repetir ids.
@@ -1770,9 +1890,7 @@ async function cargarResultados() {
   const fichas = estudiantesRes.estudiantes.map(est => {
     const propias = filas.filter(f => f.estudianteId === est.id);
     const entregadas = propias.filter(f => f.intentos > 0);
-    const calificadas = entregadas.filter(f => f.tipo !== 'texto');
-    const promedio = calificadas.length === 0 ? null
-      : Math.round(calificadas.reduce((s, f) => s + f.mejor, 0) / calificadas.length);
+    const nota = notaDe(est.id);
     const ultima = entregadas.map(f => f.ultimaFecha).sort().pop() || null;
     const intentos = resultadosRes.resultados.filter(r => r.estudianteId === est.id);
     const cambiosPestana = propias.reduce((s, f) => s + (incidentesPorEA[`${est.id}|${f.actividadId}`] || 0), 0);
@@ -1785,27 +1903,24 @@ async function cargarResultados() {
       <details class="est-resultado" data-estudiante="${esc(est.id)}">
         <summary>
           <span class="est-nombre">${esc(est.nombre)}</span>
-          <span class="est-meta">
-            <span class="est-dato">${entregadas.length}/${propias.length} entregadas</span>
-            ${pendientes > 0
+          <span class="est-col est-entregas"><span class="est-etq">Entregadas</span><span class="est-dato">${entregadas.length}/${propias.length}</span></span>
+          <span class="est-col est-estado">${pendientes > 0
               ? `<span class="badge-estado borrador">${pendientes} pendiente${pendientes === 1 ? '' : 's'}</span>`
-              : '<span class="badge-estado publicada">Al día</span>'}
-            <span class="est-dato">Prom. <span class="pct ${clasePct(promedio)}">${promedio === null ? '—' : promedio + '%'}</span></span>
-            <span class="est-dato">${ultima ? 'Últ. ' + fechaCorta(ultima) : 'Sin entregas'}</span>
-            ${cambiosPestana > 0 ? `<span class="badge-estado incidente" title="Cambios de pestaña o ventana minimizada durante sus actividades">⚠ ${cambiosPestana}</span>` : ''}
-          </span>
+              : '<span class="badge-estado publicada">Al día</span>'}</span>
+          <span class="est-col est-nota" title="Media del mejor intento en cada actividad calificada"><span class="est-etq">Nota</span><span class="pct ${clasePct(nota)}">${nota === null ? '—' : nota + '%'}</span></span>
+          <span class="est-col est-ultima"><span class="est-etq">Última</span><span class="est-dato">${ultima ? fechaDia(ultima) : 'Sin entregas'}</span></span>
+          <span class="est-col est-alerta">${cambiosPestana > 0 ? `<span class="badge-estado incidente" title="Cambios de pestaña o ventana minimizada durante sus actividades">⚠ ${cambiosPestana}</span>` : ''}</span>
           <svg class="est-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </summary>
         <div class="est-cuerpo">
           <div class="sub-titulo">ACTIVIDADES DEL GRUPO</div>
           <div class="tabla-scroll"><table class="tabla-datos">
-            <thead><tr><th>Actividad</th><th>Intentos</th><th>Mejor</th><th>Promedio</th><th>Último</th><th>Última entrega</th></tr></thead>
+            <thead><tr><th>Actividad</th><th>Intentos</th><th>Mejor intento</th><th>Último</th><th>Última entrega</th></tr></thead>
             <tbody>${ordenadas.map(f => `
               <tr>
                 <td>${esc(f.actividad)}${badgeIncidentes(f.estudianteId, f.actividadId)}</td>
                 <td>${f.intentos}</td>
                 ${celdaResultado(f.tipo, f.mejor, 'Sin presentar')}
-                ${celdaResultado(f.tipo, f.promedio, '—')}
                 ${celdaResultado(f.tipo, f.ultimo, '—')}
                 <td>${f.ultimaFecha ? fechaCorta(f.ultimaFecha) : '—'}</td>
               </tr>`).join('')}
@@ -1825,19 +1940,23 @@ async function cargarResultados() {
       <div class="stat-card"><span class="label">Estudiantes</span><strong>${estudiantesRes.estudiantes.length}</strong></div>
       <div class="stat-card"><span class="label">Actividades</span><strong>${actividadesGrupo.length}</strong></div>
       <div class="stat-card"><span class="label">Entregas</span><strong>${entregas}</strong></div>
-      <div class="stat-card"><span class="label">Promedio del grupo</span><strong class="pct ${clasePct(promedioGrupo)}">${promedioGrupo === null ? '—' : promedioGrupo + '%'}</strong></div>
+      <div class="stat-card" title="Media de las notas de los estudiantes; cada uno cuenta con su mejor intento por actividad"><span class="label">Nota del grupo</span><strong class="pct ${clasePct(notaGrupo)}">${notaGrupo === null ? '—' : notaGrupo + '%'}</strong></div>
     </div>
 
     <div class="panel-card">
-      <h3>Resumen por estudiante</h3>
-      <p class="card-sub">Haz clic en un estudiante para ver sus actividades, lo que ya entregó y lo que tiene pendiente. Incluye a quienes todavía no han presentado.</p>
-      <div class="acciones" style="margin-bottom:16px;">
-        <button class="btn btn-primario btn-mini" id="btnExportarResumen">Descargar resumen (Excel)</button>
-        <button class="btn btn-secundario btn-mini" id="btnExportarDetalle">Descargar detalle de intentos (Excel)</button>
+      <div class="card-cabecera">
+        <div>
+          <h3>Resumen por estudiante</h3>
+          <p class="card-sub">Abre un estudiante para ver sus actividades e intentos. La nota cuenta su mejor intento en cada actividad.</p>
+        </div>
+        <div class="acciones">
+          <button class="btn btn-primario btn-mini" id="btnExportarResumen">Descargar resumen (Excel)</button>
+          <button class="btn btn-secundario btn-mini" id="btnExportarDetalle">Detalle de intentos (Excel)</button>
+        </div>
       </div>
       ${filas.length === 0
         ? '<div class="vacio">Todavía no hay estudiantes o actividades en este grupo.</div>'
-        : fichas}
+        : `<div class="est-cabecera" aria-hidden="true"><span>Estudiante</span><span>Entregadas</span><span>Estado</span><span>Nota</span><span>Última entrega</span><span></span><span></span></div>${fichas}`}
     </div>
 
     <div class="panel-card">
@@ -1909,6 +2028,61 @@ function renderKPIs() {
   document.getElementById('kpiActividades').textContent = estado.actividades.filter(a => a.activa).length;
   document.getElementById('kpiBancos').textContent = estado.bancos.length;
   document.getElementById('kpiPreguntas').textContent = estado.banco.length;
+  renderBriefingProfesor();
+}
+
+// Briefing del profesor: tres pasos con su estado real y las actividades
+// que cierran en las próximas dos semanas. Se repinta con los KPIs.
+function renderBriefingProfesor() {
+  const lista = document.getElementById('profPasos');
+  if (!lista) return;
+  const grupos = estado.grupos.length;
+  const alumnos = estado.grupos.reduce((s, g) => s + g.estudiantes, 0);
+  const bancos = estado.bancos.length;
+  const preguntas = estado.banco.length;
+  const publicadas = estado.actividades.filter(a => a.activa).length;
+  const borradores = estado.actividades.length - publicadas;
+  const pasos = [
+    { ir: 'grupos', titulo: 'Crea un grupo', hecho: grupos > 0,
+      estado: grupos > 0 ? `<b>${grupos} grupo${grupos === 1 ? '' : 's'}</b> · ${alumnos} estudiante${alumnos === 1 ? '' : 's'} inscrito${alumnos === 1 ? '' : 's'}.`
+                         : 'Comparte su código: tus estudiantes se unen desde su panel.' },
+    { ir: 'banco', titulo: 'Arma un banco de preguntas', hecho: preguntas > 0,
+      estado: preguntas > 0 ? `<b>${bancos} banco${bancos === 1 ? '' : 's'}</b> · ${preguntas} pregunta${preguntas === 1 ? '' : 's'}.`
+                            : 'Por tema, por unidad o por parcial; una por una o varias de golpe.' },
+    { ir: 'actividades', titulo: 'Publica una actividad', hecho: publicadas > 0,
+      estado: publicadas > 0 ? `<b>${publicadas} publicada${publicadas === 1 ? '' : 's'}</b>${borradores ? ` · ${borradores} sin publicar` : ''}.`
+                             : 'Examen, lectura, plan de vuelo o mensajería AFTN.' }
+  ];
+  const celda = '<span class="paso-celda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg></span>';
+  const flecha = '<svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+  lista.innerHTML = pasos.map(p => `
+    <li class="paso ${p.hecho ? 'hecho' : ''}">
+      <button type="button" data-ir-paso="${p.ir}">
+        ${celda}<span class="sr-only">${p.hecho ? 'Hecho:' : 'Pendiente:'}</span>
+        <span class="paso-texto"><strong>${p.titulo}</strong><span class="paso-estado">${p.estado}</span></span>
+        <span class="paso-flecha">${flecha}</span>
+      </button>
+    </li>`).join('');
+  lista.querySelectorAll('[data-ir-paso]').forEach(btn => btn.addEventListener('click', () => mostrarSeccion(btn.dataset.irPaso)));
+  document.querySelectorAll('#profMedidor span').forEach((c, i) => c.classList.toggle('on', pasos[i].hecho));
+
+  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const d = new Date(), p2 = n => String(n).padStart(2, '0');
+  document.getElementById('profHora').textContent = `${p2(d.getUTCDate())} ${MESES[d.getUTCMonth()]} · ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} Z`;
+
+  const ahora = Date.now(), limite = ahora + 14 * 86400000;
+  const cierres = estado.actividades
+    .filter(a => a.activa && a.fechaLimite && new Date(a.fechaLimite).getTime() >= ahora && new Date(a.fechaLimite).getTime() <= limite)
+    .sort((x, y) => x.fechaLimite.localeCompare(y.fechaLimite));
+  const cont = document.getElementById('profCierres');
+  cont.innerHTML = cierres.length === 0
+    ? '<div class="vacio">Ninguna actividad publicada cierra en los próximos 14 días.</div>'
+    : cierres.map(a => {
+        const dias = Math.ceil((new Date(a.fechaLimite).getTime() - ahora) / 86400000);
+        const chip = dias <= 0 ? 'Hoy' : dias === 1 ? 'Mañana' : `En ${dias} días`;
+        const clase = dias <= 1 ? 'venc-hoy' : dias <= 3 ? 'venc-pronto' : 'venc-lejos';
+        return `<div class="venc-item"><div><h5>${esc(a.titulo)}</h5><p>${esc(a.grupoNombre || '')} · cierra el ${fechaCorta(a.fechaLimite)}</p></div><span class="venc-chip ${clase}">${chip}</span></div>`;
+      }).join('');
 }
 
 // ============================================================

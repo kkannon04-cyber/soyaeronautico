@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Misión, visión y principios de SoyAeronáutico, el portal de estudio AIS·COM·MET creado por Cristian Arcila para el curso de operador de estación aeronáutica.">
 <title>Quiénes somos | SoyAeronáutico</title>
 <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +23,7 @@
     --hairline:#E1E7EF;
     --shadow-rgb:15,23,42;
     --danger:#D64545;
-    --vfr:#2E9E6D;
+    --vfr:#2E9E6D; --vfr-texto:#1F7A53;
     --mvfr:#3E7BFA;
     --ifr:#D64545;
     --lifr:#8B5CF6;
@@ -46,7 +47,7 @@
     --hairline:#2A3548;
     --shadow-rgb:0,0,0;
     --danger:#C9564F;
-    --vfr:#4FA88C;
+    --vfr:#4FA88C; --vfr-texto:#4FA88C;
     --mvfr:#4A8FD1;
     --ifr:#C9564F;
     --lifr:#B15FC7;
@@ -67,7 +68,7 @@
   h1,h2,h3,h4{font-family:'Archivo', sans-serif; margin:0;}
   .mono{font-family:'IBM Plex Mono', monospace;}
   a{color:inherit;}
-  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr); text-transform:uppercase; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; }
 
   /* ---------- STICKY HEADER ---------- */
   .sticky-header{ position:sticky; top:0; z-index:50; background:var(--bg); }
@@ -92,7 +93,7 @@
   nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
   nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
   nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
-  nav.desktop-nav a.active{ color:var(--vfr); font-weight:600; }
+  nav.desktop-nav a.active{ color:var(--vfr-texto); font-weight:600; }
   nav.desktop-nav a.active::after{ right:0; background:var(--vfr); }
 
   /* ---------- DROPDOWN "MÓDULOS" ---------- */
@@ -109,7 +110,7 @@
   }
   .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
   .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
-  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown.active .nav-dropdown-btn{ color:var(--vfr-texto); font-weight:600; }
   .nav-dropdown.active .nav-dropdown-btn::after{ right:0; background:var(--vfr); }
   .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
   .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
@@ -128,7 +129,7 @@
     transition:background .15s, color .15s;
   }
   .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
-  .nav-dropdown-menu a.active{ color:var(--vfr); font-weight:600; }
+  .nav-dropdown-menu a.active{ color:var(--vfr-texto); font-weight:600; }
 
   .nav-divider{ width:1px; height:18px; background:var(--hairline); }
   .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
@@ -152,84 +153,110 @@
   @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
   @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
-  /* ---------- HERO (mismo patrón que la portada) ---------- */
-  .hero-fifa{
-    position:relative; width:100%; min-height:380px;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; border-bottom:1px solid var(--hairline);
-    background:linear-gradient(135deg, var(--navy), var(--accent));
+  /* ---------- PORTADA: la foto del equipo, con sombras en los bordes ---------- */
+  .hero-foto{
+    position:relative; width:100%; height:clamp(420px, 72vh, 700px); overflow:hidden;
+    background:#0B1D36; border-bottom:1px solid var(--hairline);
   }
-  .hero-bg{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; object-position:center 30%; z-index:0;
+  .hero-foto img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 44%; }
+  /* Viñeta: sombras suaves en los cuatro bordes y una franja más oscura abajo
+     para leer el título sin tapar las caras (que quedan hacia la mitad). */
+  .hero-foto::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    box-shadow: inset 0 0 140px 30px rgba(4,12,26,0.55);
+    background: linear-gradient(0deg, rgba(4,12,26,0.78) 0%, rgba(4,12,26,0.25) 26%, rgba(4,12,26,0) 42%);
   }
-  .hero-overlay{
-    position:absolute; inset:0; z-index:1;
-    background:linear-gradient(0deg, rgba(6,16,32,0.88) 0%, rgba(6,16,32,0.45) 100%);
+  .hero-foto-texto{
+    position:absolute; z-index:1; left:0; right:0; bottom:0;
+    max-width:1200px; margin:0 auto; padding:0 32px 36px; color:#FFFFFF;
+    animation:heroLlega .6s cubic-bezier(.16,1,.3,1) both;
   }
-  .hero-content{
-    position:relative; z-index:2; text-align:center;
-    padding:48px 24px; max-width:760px; color:#FFFFFF;
+  .hero-foto-texto h1{ font-size:clamp(2.1rem, 4.4vw, 3.4rem); line-height:1.05; letter-spacing:-0.02em; margin:0 0 8px; text-shadow:0 2px 14px rgba(0,0,0,0.45); }
+  .hero-foto-texto p{ margin:0; font-size:clamp(0.98rem, 1.5vw, 1.1rem); color:#E3EAF5; text-shadow:0 1px 8px rgba(0,0,0,0.5); }
+  .nowrap{ white-space:nowrap; }
+  @keyframes heroLlega{ from{ opacity:0.6; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .hero-foto-texto{ animation:none; } }
+  /* En el teléfono la foto es baja: el título pasa debajo para no tapar al equipo. */
+  @media (max-width:640px){
+    .hero-foto{ height:auto; overflow:visible; border-bottom:0; background:none; }
+    .hero-foto img{ position:static; display:block; height:auto; aspect-ratio:1800 / 1012; }
+    .hero-foto::after{ bottom:auto; height:0; padding-top:56.2%; background:none; box-shadow: inset 0 0 60px 10px rgba(4,12,26,0.45); }
+    .hero-foto-texto{ position:static; color:var(--text); padding:20px 16px 0; }
+    .hero-foto-texto h1, .hero-foto-texto p{ text-shadow:none; }
+    .hero-foto-texto p{ color:var(--text-muted); }
   }
-  .hero-content .eyebrow{ color:#8FB6F2; margin-bottom:14px; display:block; }
-  .hero-content h1{
-    font-size:clamp(2rem, 4.6vw, 3.2rem); line-height:1.15; margin-bottom:18px;
-    text-shadow:0 4px 16px rgba(0,0,0,0.35);
-  }
-  .hero-content p.lead{
-    color:#DCE5F3; font-size:clamp(0.95rem, 1.8vw, 1.1rem); line-height:1.6;
-    margin:0 auto; max-width:620px;
-  }
-  @media (max-width:640px){ .hero-fifa{ min-height:320px; } .hero-content{ padding:32px 20px; } }
 
-  /* ---------- INTRO ---------- */
-  .intro{ max-width:760px; margin:0 auto; padding:56px 32px 8px; text-align:center; }
-  .intro .eyebrow{ display:block; margin-bottom:14px; }
-  .intro p{ color:var(--text); font-size:1rem; line-height:1.75; margin:0; }
+  /* Misión y visión: dos enunciados grandes, lado a lado */
+  .mision-vision{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:48px; }
+  .mv h2{ font-family:'IBM Plex Mono', monospace; font-size:0.78rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; padding-top:14px; border-top:2px solid var(--text); }
+  .mv p{ margin:0; font-family:'Archivo', sans-serif; font-size:clamp(1.15rem, 1.9vw, 1.45rem); font-weight:600; line-height:1.4; letter-spacing:-0.005em; color:var(--text); }
+  @media (max-width:900px){ .mision-vision{ grid-template-columns:1fr; gap:36px; } }
 
-  /* ---------- SECCIONES (mismo patrón que la portada) ---------- */
-  .sections{ max-width:1200px; margin:0 auto; padding:56px 32px; }
-  .sections-head{ margin-bottom:32px; padding-bottom:16px; border-bottom:2px solid var(--text); }
-  .sections-head .eyebrow{ margin-bottom:10px; display:block; }
-  .sections-head h2{ font-size:1.6rem; margin-bottom:10px; }
-  .sections-head p{ color:var(--text-muted); max-width:560px; margin:0; }
+  /* Botones (usados en el cierre) */
+  .hero-cta{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    background:var(--accent); color:var(--on-accent);
+    font-family:'Archivo'; font-weight:700; font-size:1rem; padding:14px 28px; border-radius:8px;
+  }
+  .hero-cta:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+  .hero-cta:focus-visible{ outline:2px solid #FFFFFF; outline-offset:3px; }
+  @media (prefers-reduced-motion: reduce){ .hero-cta:hover{ transform:none; } }
 
-  .modules-grid-fifa{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px; }
-  .module-card-fifa{
-    display:flex; flex-direction:column;
-    text-decoration:none; color:inherit;
-    background:var(--bg); border:1px solid var(--hairline); border-radius:14px;
-    overflow:hidden; box-shadow:var(--shadow-instrument);
-    transition:transform .25s cubic-bezier(.4,0,.2,1), border-color .25s, box-shadow .25s;
-  }
-  .module-card-fifa:hover{ transform:translateY(-4px); border-color:var(--accent); }
-  .mc-cover{ height:100px; position:relative; flex-shrink:0; overflow:hidden; }
-  .mc-cover.bg-qui{ background:linear-gradient(135deg, #78350F, #F59E0B); }
-  .mc-cover.bg-des{ background:linear-gradient(135deg, #701A75, #D946EF); }
-  .mc-cover.bg-fra{ background:linear-gradient(135deg, #0C4A6E, #0EA5E9); }
-  .mc-cover.bg-glo{ background:linear-gradient(135deg, #111827, #6B7280); }
-  .mc-cover.has-photo .mc-cover-photo{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 38%;
-  }
-  .mc-cover.has-photo::after{
-    content:''; position:absolute; inset:0;
-    background:linear-gradient(180deg, rgba(4,12,26,0.05) 0%, rgba(4,12,26,0.55) 100%);
-  }
-  .mc-code{
-    position:relative; z-index:1;
-    margin:14px; font-family:'IBM Plex Mono'; font-size:0.72rem; font-weight:600; letter-spacing:0.06em;
-    color:#FFF; background:rgba(0,0,0,0.28); backdrop-filter:blur(4px);
-    padding:4px 9px; border-radius:4px; border:1px solid rgba(255,255,255,0.25);
-    display:inline-block;
-  }
-  .mc-body{ padding:18px 20px 20px; display:flex; flex-direction:column; flex:1; }
-  .mc-body h3{ font-size:1.02rem; margin-bottom:6px; }
-  .mc-body p{ color:var(--text-muted); font-size:0.82rem; line-height:1.5; margin:0 0 14px; flex:1; }
-  .mc-cta{ font-weight:600; font-size:0.86rem; color:var(--accent); display:flex; align-items:center; gap:6px; }
-  .module-card-fifa:hover .mc-cta{ gap:10px; }
+  /* ---------- SECCIONES ---------- */
+  .sections{ max-width:1200px; margin:0 auto; padding:72px 32px 0; }
+  .sections-head{ margin-bottom:8px; padding-bottom:16px; border-bottom:2px solid var(--text); }
+  .sections-head h2{ font-size:1.6rem; margin-bottom:8px; }
+  .sections-head p{ color:var(--text-muted); max-width:60ch; margin:0; line-height:1.6; }
 
-  .card-box{ background:var(--panel); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px; max-width:900px; margin:0 auto; }
-  .card-box h4{ font-size:0.92rem; margin-bottom:8px; color:var(--accent); }
+  /* Qué encuentras: lista en filas, en el orden del briefing de la portada. */
+  .pasos-lista{ list-style:none; margin:0; padding:0; }
+  .pasos-lista li{
+    display:grid; grid-template-columns:200px minmax(0,1fr) auto; gap:24px; align-items:baseline;
+    padding:22px 0; border-bottom:1px solid var(--hairline);
+  }
+  .paso-nombre{ font-family:'Archivo', sans-serif; font-weight:800; font-size:1.25rem; letter-spacing:-0.01em; }
+  .paso-desc{ margin:0; color:var(--text); line-height:1.65; max-width:68ch; }
+  .paso-desc span{ color:var(--text-muted); }
+  .paso-ir{ display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-weight:600; font-size:0.9rem; color:var(--accent); text-decoration:none; }
+  .paso-ir svg, .consulta a svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .2s cubic-bezier(.16,1,.3,1); }
+  .paso-ir:hover svg, .consulta a:hover svg{ transform:translateX(3px); }
+  .consulta{ margin:18px 0 0; color:var(--text-muted); font-size:0.92rem; line-height:1.7; }
+  .consulta a{ color:var(--text); font-weight:600; text-decoration:underline; text-decoration-color:var(--hairline); text-underline-offset:3px; }
+  .consulta a:hover{ color:var(--accent); text-decoration-color:currentColor; }
+
+  /* Cómo está hecho: tres columnas con regla superior, sin cajas. */
+  .principios{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:32px; margin-top:24px; }
+  .principios h3{ font-size:1.05rem; margin:0 0 8px; padding-top:14px; border-top:1px solid var(--text); }
+  .principios p{ margin:0; color:var(--text-muted); line-height:1.65; font-size:0.94rem; }
+
+  /* Fuentes y autoría */
+  .creditos{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; margin-top:24px; }
+  .creditos h3{ font-size:1.05rem; margin:0 0 8px; }
+  .creditos p{ margin:0 0 10px; color:var(--text-muted); line-height:1.65; font-size:0.94rem; }
+  .creditos strong{ color:var(--text); }
+
+  /* Cierre */
+  .cierre{
+    max-width:1200px; margin:72px auto 72px; padding:0 32px;
+  }
+  .cierre-band{
+    background:var(--navy); color:#FFFFFF; border-radius:16px; padding:32px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px 40px; flex-wrap:wrap;
+  }
+  .cierre-band h2{ font-size:1.4rem; margin:0 0 6px; }
+  .cierre-band p{ margin:0; color:#C9D6EA; }
+  [data-theme="dark"] .cierre-band{ background:var(--panel-alt); }
+
+  @media (max-width:900px){
+    .pasos-lista li{ grid-template-columns:1fr; gap:6px; }
+    .principios, .creditos{ grid-template-columns:1fr; gap:24px; }
+  }
+  @media (max-width:640px){
+    .sections{ padding:52px 16px 0; }
+    .sections-head h2{ font-size:1.35rem; }
+    .cierre{ padding:0 16px; margin:52px auto; }
+    .cierre-band{ padding:24px 20px; }
+  }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
@@ -283,12 +310,13 @@
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 </style>
+<link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
 
 <div class="sticky-header">
   <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Ir al inicio — SoyAeronáutico">
+    <a class="brand" href="index.html">
       <div class="brand-mark">
         <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
           <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -375,95 +403,110 @@
 
 </div>
 
-<section class="hero-fifa">
-  <img class="hero-bg" src="ASSETS/equipo-cea-hero.jpg" alt="Equipo de operadores aeronáuticos en jornada de campo, junto a un vehículo de rescate y extinción de incendios y personal de bomberos aeroportuarios.">
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <span class="eyebrow">Sobre el proyecto</span>
+<main id="contenido">
+<!-- La foto del equipo es la portada de esta página: a todo lo ancho, con
+     sombras suaves en los bordes y el título sobre la franja inferior, lejos
+     de las caras. -->
+<section class="hero-foto">
+  <img src="ASSETS/opt/equipo-cea-hero.jpg" alt="Equipo de operadores aeronáuticos en jornada de campo, junto a un vehículo de rescate y extinción de incendios y personal de bomberos aeroportuarios.">
+  <div class="hero-foto-texto">
     <h1>Quiénes somos</h1>
-    <p class="lead">SoyAeronáutico es una plataforma educativa pensada para estudiantes y profesionales de aviación que se están preparando en Servicios de Tránsito Aéreo, Comunicaciones y Meteorología aeronáutica (AIS · COM · MET), con herramientas prácticas para estudiar, practicar y medir el propio progreso.</p>
+    <p>Un portal de estudio para el oficio <span class="nowrap">AIS · COM · MET</span>, gratis con tu registro.</p>
   </div>
 </section>
 
-<section class="intro">
-  <span class="eyebrow">Qué es SoyAeronáutico</span>
-  <p>Nació como un portal de estudio independiente para acompañar a quienes se forman como operadores de estación aeronáutica AIS · COM · MET, y a cualquier estudiante o profesional de aviación que quiera repasar procedimientos, fraseología y meteorología de forma práctica. En vez de quedarse solo en la teoría, la idea es poder practicar con cuestionarios, simuladores y un panel de progreso propio.</p>
+<!-- Misión y visión: BORRADOR redactado a partir de PRODUCT.md; el autor
+     debe revisarlo y ajustarlo con sus propias palabras. -->
+<section class="sections mision-vision" aria-label="Misión y visión">
+  <div class="mv">
+    <h2>Misión</h2>
+    <p>Acompañar a quienes se forman como operadores de estación aeronáutica <span class="nowrap">AIS · COM · MET</span> en Colombia con un lugar gratuito para estudiar la teoría, practicar el trabajo real y medir su avance, con terminología y datos aeronáuticos correctos.</p>
+  </div>
+  <div class="mv">
+    <h2>Visión</h2>
+    <p>Ser la plataforma de referencia en español para prepararse en <span class="nowrap">AIS · COM · MET</span>: el lugar donde estudiantes y profesores del curso estudian, practican y siguen su progreso juntos.</p>
+  </div>
+</section>
+
+<section class="sections" id="que-encuentras">
+  <div class="sections-head">
+    <h2>Qué encuentras aquí</h2>
+    <p>En el mismo orden en que se prepara un parcial: primero la teoría, luego la práctica, después tu nota y, si tu profesor lo usa, el trabajo de clase.</p>
+  </div>
+  <ol class="pasos-lista">
+    <li>
+      <span class="paso-nombre">Estudia</span>
+      <p class="paso-desc">Seis módulos teóricos: Meteorología, ATS, Plan de Vuelo, Fraseología, Navegación y NOTAM. <span>Cada página trae chequeos rápidos para comprobar lo que acabas de leer.</span></p>
+      <a class="paso-ir" href="index.html#modulos">Ver módulos <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </li>
+    <li>
+      <span class="paso-nombre">Practica</span>
+      <p class="paso-desc">Nueve quizzes con calificación inmediata y siete simuladores del puesto de trabajo. <span>METAR, plan de vuelo OACI, NALA, terminal AFTN/AMHS, fraseología ATC por voz, memoria y el AIP de Colombia.</span></p>
+      <a class="paso-ir" href="quizzes.html">Zona de Quizzes <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </li>
+    <li>
+      <span class="paso-nombre">Mide</span>
+      <p class="paso-desc">Tu panel guarda tu nota con el mejor intento de cada quiz. <span>También tu racha de estudio, tus logros y los temas que conviene repasar.</span></p>
+      <a class="paso-ir" href="Panel_estudiante.html">Ir a mi panel <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </li>
+    <li>
+      <span class="paso-nombre">En clase</span>
+      <p class="paso-desc">Con el código de tu profesor te unes a su grupo y presentas sus exámenes, lecturas, planes de vuelo y mensajería AFTN. <span>El profesor revisa los resultados y los descarga en Excel.</span></p>
+      <a class="paso-ir" href="Panel_estudiante.html#actividades">Mis actividades <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </li>
+  </ol>
+  <p class="consulta">Y para consultar en cualquier momento: <a href="designadores.html">designadores de aeródromos</a>, <a href="glosario.html">glosario</a>, <a href="aeronaves.html">aeronaves</a> y <a href="metar-taf.html">METAR y TAF en vivo</a>.</p>
 </section>
 
 <section class="sections">
   <div class="sections-head">
-    <span class="eyebrow">Qué ofrecemos</span>
-    <h2>Cuatro formas de prepararte.</h2>
-    <p>Cada herramienta apunta a un objetivo distinto dentro de la misma preparación.</p>
+    <h2>Nuestros principios</h2>
   </div>
-  <div class="modules-grid-fifa">
-    <a class="module-card-fifa" href="quizzes.html">
-      <div class="mc-cover bg-qui has-photo">
-        <img class="mc-cover-photo" src="ASSETS/quizzes.jpg" alt="">
-        <span class="mc-code">QUI</span>
-      </div>
-      <div class="mc-body">
-        <h3>Quizzes</h3>
-        <p>Cuestionarios por módulo — ATS, Plan de Vuelo, Designadores de Aeródromos y Fraseología — con retroalimentación inmediata.</p>
-        <span class="mc-cta">Hacer quizzes →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="simulador-metar.html">
-      <div class="mc-cover bg-des has-photo">
-        <img class="mc-cover-photo" src="ASSETS/atc.jpg" alt="">
-        <span class="mc-code">SIM</span>
-      </div>
-      <div class="mc-body">
-        <h3>Simuladores</h3>
-        <p>Práctica guiada: reportes METAR, llenado de plan de vuelo OACI, fraseología ATC por voz y un puesto de trabajo tipo NALA/CWP.</p>
-        <span class="mc-cta">Ver simuladores →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="Panel_estudiante.html">
-      <div class="mc-cover bg-fra"><span class="mc-code">PAN</span></div>
-      <div class="mc-body">
-        <h3>Panel del estudiante</h3>
-        <p>Progreso guardado, racha de estudio e insignias por logros, para ver cómo avanza tu preparación con el tiempo.</p>
-        <span class="mc-cta">Ir a mi panel →</span>
-      </div>
-    </a>
-    <a class="module-card-fifa" href="glosario.html">
-      <div class="mc-cover bg-glo has-photo">
-        <img class="mc-cover-photo" src="ASSETS/glosario.jpg" alt="">
-        <span class="mc-code">GLO</span>
-      </div>
-      <div class="mc-body">
-        <h3>Glosario y guías</h3>
-        <p>Material de referencia sobre meteorología, comunicaciones y procedimientos aeronáuticos.</p>
-        <span class="mc-cta">Buscar términos →</span>
-      </div>
-    </a>
+  <div class="principios">
+    <div>
+      <h3>Terminología correcta</h3>
+      <p>Usamos la terminología aeronáutica de la OACI y nos mantenemos cerca de la normativa RAC y del AIP de Colombia. Cuando algo depende de una norma, lo indicamos.</p>
+    </div>
+    <div>
+      <h3>Practicar no castiga</h3>
+      <p>Puedes repetir cualquier quiz las veces que quieras: tu nota cuenta siempre tu mejor intento.</p>
+    </div>
+    <div>
+      <h3>Pensado para Colombia</h3>
+      <p>Designadores SK, las FIR de Bogotá y Barranquilla y el AIP de Colombia, con los aeródromos del país como ejemplos.</p>
+    </div>
   </div>
 </section>
 
-<section class="sections" style="padding-top:0;">
+<section class="sections">
   <div class="sections-head">
-    <span class="eyebrow">Nuestro enfoque</span>
-    <h2>Precisión antes que cantidad.</h2>
+    <h2>Autoría y fuentes</h2>
   </div>
-  <div class="card-box">
-    <h4>Terminología aeronáutica correcta</h4>
-    <p style="margin:0;">Buscamos usar terminología aeronáutica correcta y mantenernos cerca de la normativa OACI/RAC en cada herramienta. Este es un portal de estudio independiente — el contenido tiene fines educativos y no reemplaza la documentación oficial (AIP, OACI, RAC).</p>
-  </div>
-</section>
-
-<section class="sections" style="padding-top:0;">
-  <div class="sections-head">
-    <span class="eyebrow">Autoría</span>
-    <h2>Quién está detrás de SoyAeronáutico.</h2>
-  </div>
-  <div class="card-box">
-    <h4>Cristian Arcila — creador y autor del proyecto</h4>
-    <p style="margin:0 0 12px;">SoyAeronáutico fue creado y desarrollado por <strong>Cristian Arcila</strong>, autor de su contenido educativo, de sus simuladores y de las herramientas de consulta que integran la plataforma.</p>
-    <p style="margin:0;">El contenido original, el material didáctico, los simuladores y el diseño de este sitio son propiedad intelectual de Cristian Arcila &copy; 2026. Todos los derechos reservados. Los datos meteorológicos y las imágenes de satélite provienen de fuentes públicas oficiales (NOAA, CIRA/RAMMB) y se acreditan en cada herramienta.</p>
+  <div class="creditos">
+    <div>
+      <h3>Quién lo hace</h3>
+      <p>SoyAeronáutico fue creado y desarrollado por <strong>Cristian Arcila</strong>, autor de su contenido educativo, de sus simuladores y de las herramientas de consulta que integran la plataforma.</p>
+      <p>El contenido original, el material didáctico, los simuladores y el diseño de este sitio son propiedad intelectual de Cristian Arcila &copy; 2026. Todos los derechos reservados.</p>
+    </div>
+    <div>
+      <h3>De dónde salen los datos</h3>
+      <p>Los datos meteorológicos y las imágenes de satélite provienen de fuentes públicas oficiales (NOAA, CIRA/RAMMB) y se acreditan en cada herramienta.</p>
+      <p>Es un portal de estudio independiente: su contenido tiene fines educativos y no reemplaza la documentación oficial (AIP, OACI, RAC).</p>
+    </div>
   </div>
 </section>
 
+<section class="cierre">
+  <div class="cierre-band">
+    <div>
+      <h2>Empieza por tu briefing de hoy.</h2>
+      <p>En la portada ves qué te falta: estudiar, practicar, tu nota y tu grupo.</p>
+    </div>
+    <a class="hero-cta" href="index.html">Ir al inicio</a>
+  </div>
+</section>
+
+</main>
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>SoyAeronáutico — AIS · COM · MET</span>

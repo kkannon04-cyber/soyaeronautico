@@ -247,9 +247,12 @@ async function obtenerUltimosIntentos(n = 5) {
 async function obtenerEstadisticas() {
   const intentos = await obtenerIntentos();
   if (intentos.length === 0) {
-    return { totalIntentos: 0, promedioGeneral: null, ultimaActividad: null, porModulo: {} };
+    return { totalIntentos: 0, notaGeneral: null, ultimaActividad: null, porModulo: {} };
   }
 
+  // Cada quiz o simulador cuenta sólo con su MEJOR intento: repetirlo y
+  // sacar menos no baja la nota (decisión del usuario, 2026-10-11; antes
+  // se mostraba el promedio de todos los intentos).
   const porModulo = {};
   intentos.forEach(i => {
     if (!porModulo[i.modulo]) {
@@ -257,24 +260,21 @@ async function obtenerEstadisticas() {
         nombreModulo: i.nombreModulo,
         intentos: 0,
         mejor: 0,
-        sumaPorcentaje: 0,
         ultimaFecha: i.fecha
       };
     }
     const m = porModulo[i.modulo];
     m.intentos++;
     m.mejor = Math.max(m.mejor, i.porcentaje);
-    m.sumaPorcentaje += i.porcentaje;
     if (i.fecha > m.ultimaFecha) m.ultimaFecha = i.fecha;
   });
-  Object.values(porModulo).forEach(m => {
-    m.promedio = Math.round(m.sumaPorcentaje / m.intentos);
-  });
 
-  const promedioGeneral = Math.round(intentos.reduce((s, i) => s + i.porcentaje, 0) / intentos.length);
+  // Nota general = media de los mejores intentos de cada módulo practicado.
+  const mejores = Object.values(porModulo).map(m => m.mejor);
+  const notaGeneral = Math.round(mejores.reduce((s, p) => s + p, 0) / mejores.length);
   const ultimaActividad = intentos.reduce((max, i) => (i.fecha > max ? i.fecha : max), intentos[0].fecha);
 
-  return { totalIntentos: intentos.length, promedioGeneral, ultimaActividad, porModulo };
+  return { totalIntentos: intentos.length, notaGeneral, ultimaActividad, porModulo };
 }
 
 // ---------- MÓDULOS DE APRENDIZAJE COMPLETADOS ----------
