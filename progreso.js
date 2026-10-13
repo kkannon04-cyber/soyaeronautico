@@ -123,6 +123,51 @@ function _detalleSeguro(detalle) {
   }
 }
 
+// ---------- COLA DE INTENTOS PENDIENTES ----------
+// Filas que no se pudieron enviar por un fallo de red. Solo guardan intentos del propio usuario
+// (usuario_id de su sesión): al enviarlas se comprueba que la sesión siga siendo la misma.
+const AIS_PENDIENTES_KEY = 'aisIntentosPendientes';
+const AIS_PENDIENTES_MAX = 50;
+function _leerPendientes() {
+  try { return JSON.parse(localStorage.getItem(AIS_PENDIENTES_KEY) || '[]') || []; } catch (e) { return []; }
+}
+function _escribirPendientes(lista) {
+  try {
+    if (lista.length) localStorage.setItem(AIS_PENDIENTES_KEY, JSON.stringify(lista.slice(-AIS_PENDIENTES_MAX)));
+    else localStorage.removeItem(AIS_PENDIENTES_KEY);
+    return true;
+  } catch (e) { return false; }
+}
+function _encolarIntentoPendiente(fila) {
+  return _escribirPendientes(_leerPendientes().concat(fila));
+}
+// Texto para el estudiante cuando guardarIntento() no pudo enviar la nota.
+function textoNoGuardado(res) {
+  return (res && res.pendiente)
+    ? '⚠️ Sin conexión con el servidor: tu resultado quedó guardado en este navegador y se enviará solo la próxima vez que abras el sitio.'
+    : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
+}
+let _enviandoPendientes = null;
+function enviarIntentosPendientes() {
+  if (_enviandoPendientes) return _enviandoPendientes;
+  _enviandoPendientes = (async () => {
+    const lista = _leerPendientes();
+    if (!lista.length) return 0;
+    const sesion = await obtenerSesionActual();
+    if (!sesion) return 0;
+    const cliente = obtenerClienteAuth();
+    const mias = lista.filter(f => f.usuario_id === sesion.user.id);
+    const ajenas = lista.filter(f => f.usuario_id !== sesion.user.id);
+    if (!mias.length) return 0;
+    const { error } = await cliente.from('intentos').insert(mias);
+    if (error) return 0;
+    _escribirPendientes(ajenas);
+    invalidarCacheIntentos();
+    return mias.length;
+  })().catch(() => 0).finally(() => { _enviandoPendientes = null; });
+  return _enviandoPendientes;
+}
+
 async function guardarIntento(modulo, nombreModulo, correctas, total, detalle) {
   // Lista blanca en un solo sitio (modulos.js). Falla ruidosamente aquí en vez
   // de en silencio contra un constraint de la base, que es el bug que este
@@ -161,10 +206,14 @@ async function guardarIntento(modulo, nombreModulo, correctas, total, detalle) {
     }
 
     if (error) {
+      // Sin conexión (o con un corte momentáneo) la nota no se pierde: queda en una cola de este
+      // navegador y se envía sola en la próxima lectura o guardado (enviarIntentosPendientes).
       console.error('No se pudo guardar el intento en Supabase:', error.message);
-      return { ok: false, error: error.message };
+      const pendiente = _encolarIntentoPendiente(Object.assign({}, fila, { fecha: new Date().toISOString() }));
+      return { ok: false, pendiente, error: error.message };
     }
     invalidarCacheIntentos();
+    enviarIntentosPendientes();
     return { ok: true };
   }
 
@@ -195,24 +244,35 @@ async function guardarIntento(modulo, nombreModulo, correctas, total, detalle) {
 // El Panel del Estudiante pedía esta misma tabla 5 veces por carga (panel,
 // racha, logros y historial). Un memo de una carga lo deja en 1 sin cambiar
 // ninguna firma: quien necesite datos frescos pasa { refrescar: true }.
-let _intentosCache = null;
+// La columna `detalle` pesa hasta 20 KB por intento y solo la usan «Qué repasar» del panel y el
+// Simulador AIP: el resto (portada, Zona de Quizzes, nota) pide las columnas ligeras. Quien la
+// necesite pasa { conDetalle: true }; esa caché también sirve a las lecturas ligeras.
+let _intentosCache = null;          // sin detalle
+let _intentosCacheDetalle = null;   // con detalle
 
 function invalidarCacheIntentos() {
   _intentosCache = null;
+  _intentosCacheDetalle = null;
 }
 
 async function obtenerIntentos(opciones) {
   const refrescar = !!(opciones && opciones.refrescar);
-  if (!refrescar && _intentosCache) return _intentosCache;
+  const conDetalle = !!(opciones && opciones.conDetalle);
+  if (!refrescar) {
+    if (_intentosCacheDetalle) return _intentosCacheDetalle;
+    if (!conDetalle && _intentosCache) return _intentosCache;
+  }
 
   const sesion = await obtenerSesionActual();
   let resultado;
 
   if (sesion) {
+    // Antes de leer, se envían las notas que quedaron pendientes por un corte de red.
+    if (_leerPendientes().length) await enviarIntentosPendientes();
     const cliente = obtenerClienteAuth();
     const { data, error } = await cliente
       .from('intentos')
-      .select('*')
+      .select(conDetalle ? '*' : 'id, modulo, nombre_modulo, fecha, correctas, total, porcentaje')
       .eq('usuario_id', sesion.user.id)
       .order('fecha', { ascending: false });
     if (error) { console.error('No se pudieron leer los intentos:', error.message); return []; }
@@ -224,18 +284,19 @@ async function obtenerIntentos(opciones) {
       correctas: i.correctas,
       total: i.total,
       porcentaje: i.porcentaje,
-      detalle: i.detalle || null
+      detalle: conDetalle ? (i.detalle || null) : null
     }));
   } else {
     resultado = obtenerIntentosLocal();
   }
 
-  _intentosCache = resultado;
+  if (conDetalle || !sesion) _intentosCacheDetalle = resultado;
+  else _intentosCache = resultado;
   return resultado;
 }
 
-async function obtenerIntentosPorModulo(modulo) {
-  const intentos = await obtenerIntentos();
+async function obtenerIntentosPorModulo(modulo, opciones) {
+  const intentos = await obtenerIntentos(Object.assign({ conDetalle: true }, opciones || {}));
   return intentos.filter(i => i.modulo === modulo);
 }
 
@@ -347,7 +408,7 @@ async function obtenerPerfilEstudiante() {
       esEmail = true;
     }
   } else {
-    nombre = localStorage.getItem(AIS_NOMBRE_KEY) || 'Cristian Arcila';
+    nombre = localStorage.getItem(AIS_NOMBRE_KEY) || 'Estudiante';
     apellido = localStorage.getItem(AIS_APELLIDO_KEY) || '';
   }
 
@@ -1011,3 +1072,98 @@ async function obtenerEntregaAftn(resultadoId) {
   if (error) return { ok: false, error: error.message };
   return { ok: true, entrega: data };
 }
+
+// ---------- CIERRE DE LOS QUIZZES DE PÁGINA ÚNICA ----------
+// En los quizzes con las preguntas apiladas (quiz-ats, quiz-notam…), el resultado (#finishNote)
+// aparece al final de la página y, si la última pregunta respondida no era la de abajo, quedaba
+// fuera de la vista. Al mostrarse se lleva a la vista y se ofrece «Ver solo las falladas».
+// Se engancha solo en las páginas que tienen #finishNote y tarjetas .question-card.
+(function prepararCierreQuiz() {
+  function iniciar() {
+    const nota = document.getElementById('finishNote');
+    if (!nota || !document.querySelector('.question-card')) return;
+    const estilo = document.createElement('style');
+    estilo.textContent = 'body.solo-falladas .question-card:not(.wrong){display:none}'
+      + '.btn-solo-falladas{margin-top:8px;background:none;border:1px solid currentColor;border-radius:30px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;color:inherit}';
+    document.head.appendChild(estilo);
+    let visible = nota.classList.contains('show');
+    new MutationObserver(() => {
+      const ahora = nota.classList.contains('show');
+      if (ahora && !visible) {
+        const reducir = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        nota.scrollIntoView({ block: 'center', behavior: reducir ? 'auto' : 'smooth' });
+        if (document.querySelector('.question-card.wrong') && !nota.querySelector('.btn-solo-falladas')) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'btn-solo-falladas';
+          b.textContent = 'Ver solo las falladas';
+          b.addEventListener('click', () => {
+            const activo = document.body.classList.toggle('solo-falladas');
+            b.textContent = activo ? 'Ver todas las preguntas' : 'Ver solo las falladas';
+            const primera = document.querySelector(activo ? '.question-card.wrong' : '.question-card');
+            if (primera) primera.scrollIntoView({ block: 'start' });
+          });
+          nota.appendChild(b);
+        }
+      }
+      if (!ahora) {
+        document.body.classList.remove('solo-falladas');
+        nota.querySelectorAll('.btn-solo-falladas, .cierre-intento').forEach(x => x.remove());
+      }
+      if (ahora && !visible) setTimeout(() => pintarCierreIntento(nota), 1500);
+      visible = ahora;
+    }).observe(nota, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Tras guardar: si este intento mejora la nota, los temas más fallados con su teoría y un único
+  // siguiente paso. Todo sale de datos que ya existen (intentos.detalle y modulos.js).
+  async function pintarCierreIntento(nota) {
+    try {
+      if (typeof MODULOS_CATALOGO === 'undefined') return;
+      const archivo = (location.pathname.split('/').pop() || '').replace(/\.html$/i, '') + '.html';
+      const mod = MODULOS_CATALOGO.find(m => m.url.toLowerCase() === archivo.toLowerCase());
+      if (!mod) return;
+      const lista = (await obtenerIntentos({ conDetalle: true, refrescar: true })).filter(i => i.modulo === mod.id);
+      if (!lista.length) return;
+      const este = lista.slice().sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))[0];
+      if (Date.now() - new Date(este.fecha).getTime() > 5 * 60000) return;   // no es el que se acaba de guardar
+      const anteriores = lista.filter(i => i !== este);
+      const mejorAntes = anteriores.length ? Math.max(...anteriores.map(i => i.porcentaje)) : null;
+      const caja = document.createElement('div');
+      caja.className = 'cierre-intento';
+      caja.style.cssText = 'margin-top:10px;font-size:0.88rem;line-height:1.5;';
+      const partes = [];
+      partes.push(mejorAntes === null || este.porcentaje > mejorAntes
+        ? `<b>Nuevo mejor intento: ${este.porcentaje} %</b> (es la nota que cuenta en tu panel).`
+        : `Tu mejor: <b>${mejorAntes} %</b> (este intento: ${este.porcentaje} %). Cuenta siempre el mejor.`);
+      const fallos = new Map();
+      ((este.detalle && este.detalle.preguntas) || []).forEach(p => {
+        if (!p.ok && p.tema) fallos.set(p.tema, (fallos.get(p.tema) || 0) + 1);
+      });
+      const flojos = [...fallos.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
+      if (flojos.length) {
+        partes.push('Repasa: ' + flojos.map(([t, n]) => {
+          const url = typeof urlDeTema === 'function' ? urlDeTema(t) : null;
+          const nombre = typeof nombreDeTema === 'function' ? nombreDeTema(t) : t;
+          return url ? `<a href="${url}">${nombre}</a> (${n} fallada${n === 1 ? '' : 's'})` : `${nombre} (${n})`;
+        }).join(' · '));
+      }
+      let siguiente = null;
+      if (este.porcentaje >= 90) {
+        const hechos = new Set((await obtenerIntentos()).map(i => i.modulo));
+        const otro = MODULOS_CATALOGO.find(m => m.seccion === 'modulos' && !hechos.has(m.id));
+        if (otro) siguiente = { url: otro.url, texto: `Siguiente: ${otro.nombre}` };
+      } else if (flojos.length && typeof urlDeTema === 'function' && urlDeTema(flojos[0][0])) {
+        siguiente = { url: urlDeTema(flojos[0][0]), texto: `Siguiente: repasar ${nombreDeTema(flojos[0][0])}` };
+      }
+      caja.innerHTML = partes.map(p => `<div>${p}</div>`).join('')
+        + (siguiente ? `<div style="margin-top:8px;"><a class="btn-solo-falladas" style="display:inline-block;text-decoration:none;" href="${siguiente.url}">${siguiente.texto} →</a></div>` : '');
+      const previa = nota.querySelector('.cierre-intento');
+      if (previa) previa.remove();
+      if (nota.classList.contains('show')) nota.appendChild(caja);
+    } catch (e) { /* el cierre es un extra: si falla, el resultado ya está en pantalla */ }
+  }
+  if (typeof document === 'undefined') return;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+})();

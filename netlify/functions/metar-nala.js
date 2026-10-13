@@ -108,10 +108,11 @@ async function consultar(tipo, icao, hours){
 exports.handler = async (event) => {
   const params = event.queryStringParameters || {};
   const icao = (params.icao || '').trim().toUpperCase();
-  const hours = /^[0-9]{1,3}$/.test(params.hours || '') ? params.hours : '3';
+  // NALA siempre pide 3 h: se fija en el servidor, así cada aeródromo tiene una sola clave de caché.
+  const hours = '3';
 
+  // Sin Access-Control-Allow-Origin: NALA llama desde el mismo origen.
   const CORS = {
-    "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type":                 "application/json",

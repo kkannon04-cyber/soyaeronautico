@@ -241,6 +241,8 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  .hero-cuenta{ margin-top:12px; font-size:0.9rem; color:var(--text-muted); }
+  .hero-cuenta a{ color:var(--accent); font-weight:600; }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -526,7 +528,7 @@
 </main>
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos.</span>
-  <span>Módulo ATS — Curso Básico Operador de Estación Aeronáutica</span>
+  <span>Zona de Quizzes — Curso Básico Operador de Estación Aeronáutica</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
 
@@ -616,14 +618,24 @@
   })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.
+  // Sin sesión, avisa antes de elegir: los quizzes y simuladores piden cuenta (auth-gate.js) y
+  // el salto al login dejaba de ser una sorpresa.
+  function avisarCuentaNecesaria(){
+    const lead = document.querySelector('.hero-simple .lead') || document.querySelector('.lead');
+    if (!lead || document.getElementById('avisoCuenta')) return;
+    const p = document.createElement('p');
+    p.id = 'avisoCuenta'; p.className = 'hero-cuenta';
+    p.innerHTML = 'Necesitas una cuenta gratuita para presentar quizzes y simuladores y guardar tu nota. <a href="login.html">Iniciar sesión o crear cuenta</a>';
+    lead.insertAdjacentElement('afterend', p);
+  }
   (async function actualizarBotonSesion(){
     if (typeof sbClient === 'undefined' || !sbClient) return;
     const { data } = await sbClient.auth.getSession();
-    if (!data || !data.session) return;
+    if (!data || !data.session) { avisarCuentaNecesaria(); return; }
     const btnDesktop = document.getElementById('navLoginBtn');
     const btnMobile = document.getElementById('navLoginBtnMobile');
     if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }

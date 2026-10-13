@@ -21,21 +21,29 @@
   // válido en cuanto el script hace su primer await.
   const rolRequerido = (document.currentScript && document.currentScript.dataset.rolRequerido) || null;
 
+  // Colores del tema guardado (los mismos tokens del sitio): con el tema oscuro, el velo ya no es
+  // un fogonazo blanco a pantalla completa en cada quiz o simulador.
+  let oscuro = false;
+  try { oscuro = localStorage.getItem('aisTheme') === 'dark'; } catch (e) {}
+  const C = oscuro
+    ? { bg: '#0B1220', texto: '#8894A8', acento: '#4F8EF7', sobreAcento: '#0B1220', borde: '#2A3548' }
+    : { bg: '#FFFFFF', texto: '#5B6B7F', acento: '#1657C6', sobreAcento: '#FFFFFF', borde: '#E1E7EF' };
+
   const overlay = document.createElement('div');
   overlay.id = 'authGateOverlay';
   overlay.setAttribute('style',
     'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;' +
-    'background:#FFFFFF;color:#5B6B7F;font-family:\'IBM Plex Sans\',Arial,sans-serif;font-size:0.9rem;'
+    'background:' + C.bg + ';color:' + C.texto + ';font-family:\'IBM Plex Sans\',Arial,sans-serif;font-size:0.9rem;'
   );
   // Logo del sitio (mismo SVG estático usado en el resto de páginas) en vez de
   // solo texto plano, para que el salto a login.html se sienta parte del sitio.
   overlay.innerHTML =
     '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;">' +
-      '<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" style="color:#1657C6;">' +
+      '<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" style="color:' + C.acento + ';">' +
         '<circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
         '<path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>' +
         '<path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>' +
-        '<circle cx="20" cy="20" r="2.6" fill="#FFFFFF" stroke="currentColor" stroke-width="1.3"/>' +
+        '<circle cx="20" cy="20" r="2.6" fill="' + C.bg + '" stroke="currentColor" stroke-width="1.3"/>' +
       '</svg>' +
       '<span>Verificando acceso…</span>' +
     '</div>';
@@ -55,17 +63,17 @@
   // los de siempre (Reintentar / Ir al login).
   function mostrarSalida(mensaje, acciones) {
     const botonesPorDefecto =
-      '<button id="authGateReintentar" style="background:#1657C6;color:#fff;border:none;padding:9px 18px;' +
+      '<button id="authGateReintentar" style="background:' + C.acento + ';color:' + C.sobreAcento + ';border:none;padding:9px 18px;' +
         'border-radius:30px;font-weight:700;font-size:0.85rem;cursor:pointer;">Reintentar</button>' +
-      '<a href="login.html" style="background:none;border:1px solid #E1E7EF;color:#5B6B7F;padding:9px 18px;' +
+      '<a href="login.html" style="background:none;border:1px solid ' + C.borde + ';color:' + C.texto + ';padding:9px 18px;' +
         'border-radius:30px;font-weight:600;font-size:0.85rem;text-decoration:none;">Ir al login</a>';
     overlay.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:340px;text-align:center;padding:24px;">' +
-        '<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" style="color:#1657C6;">' +
+        '<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true" style="color:' + C.acento + ';">' +
           '<circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
           '<path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>' +
           '<path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>' +
-          '<circle cx="20" cy="20" r="2.6" fill="#FFFFFF" stroke="currentColor" stroke-width="1.3"/>' +
+          '<circle cx="20" cy="20" r="2.6" fill="' + C.bg + '" stroke="currentColor" stroke-width="1.3"/>' +
         '</svg>' +
         '<span style="line-height:1.5;">' + mensaje + '</span>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">' +
@@ -114,9 +122,9 @@
             rolRequerido === 'teacher'
               ? 'Esta sección es solo para cuentas de profesor. Si eres instructor y necesitas acceso, escríbele al administrador del sitio.'
               : 'Tu cuenta no tiene permisos para ver esta sección.',
-            '<a href="Panel_estudiante.html" style="background:#1657C6;color:#fff;border:none;padding:9px 18px;' +
+            '<a href="Panel_estudiante.html" style="background:' + C.acento + ';color:' + C.sobreAcento + ';border:none;padding:9px 18px;' +
               'border-radius:30px;font-weight:700;font-size:0.85rem;text-decoration:none;">Ir a mi panel</a>' +
-            '<a href="index.html" style="background:none;border:1px solid #E1E7EF;color:#5B6B7F;padding:9px 18px;' +
+            '<a href="index.html" style="background:none;border:1px solid ' + C.borde + ';color:' + C.texto + ';padding:9px 18px;' +
               'border-radius:30px;font-weight:600;font-size:0.85rem;text-decoration:none;">Ir al inicio</a>'
           );
           return;

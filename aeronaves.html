@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --vfr-texto:#1F7A53;
     --bg:#FFFFFF;
     --panel:#F5F8FC;
     --panel-alt:#EAF1FB;
@@ -38,6 +39,7 @@
     --on-accent:#FFFFFF;
   }
   [data-theme="dark"]{
+    --vfr-texto:#4FA88C;
     --bg:#0B1220;
     --panel:#121C2E;
     --panel-alt:#17223A;
@@ -201,7 +203,7 @@
     background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; user-select:none;
   }
   .filter-chip:hover{ border-color:var(--accent); color:var(--text); }
-  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 
   .sort-row{ display:flex; gap:6px; align-items:center; margin-top:10px; flex-wrap:wrap; }
   .sort-label{ font-family:'IBM Plex Mono'; font-size:0.68rem; color:var(--text-muted); letter-spacing:0.05em; text-transform:uppercase; margin-right:2px; }
@@ -455,8 +457,8 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
-  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
 
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -618,7 +620,7 @@
 <p class="source-note" id="fuente"></p>
 
 <footer>
-  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>Fuente: EUROCONTROL Aircraft Performance Database · Fotografías: Wikimedia Commons</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
@@ -1171,7 +1173,7 @@
 })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

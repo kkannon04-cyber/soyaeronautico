@@ -118,7 +118,7 @@
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
-  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.active .n{ background:var(--accent); color:var(--on-accent); }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -189,7 +189,7 @@
   /* ---- escalera de velocidades (IAS -> CAS -> TAS -> GS) ---- */
   .speed-stairs{ display:flex; flex-direction:column; gap:8px; margin:18px 0; }
   .speed-step{ display:flex; align-items:center; gap:14px; background:var(--panel); border:1px solid var(--hairline); border-radius:10px; padding:12px 16px; }
-  .speed-step .sp-tag{ flex-shrink:0; width:52px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.82rem; background:var(--accent); color:#fff; }
+  .speed-step .sp-tag{ flex-shrink:0; width:52px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:700; font-size:0.82rem; background:var(--accent); color:var(--on-accent); }
   .speed-step .sp-desc{ font-size:0.85rem; color:var(--text-muted); }
   .speed-step .sp-desc b{ color:var(--text); }
   .speed-step .sp-arrow{ color:var(--text-muted); font-size:1.1rem; margin-left:auto; flex-shrink:0; }
@@ -258,8 +258,9 @@
   .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
   .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>

@@ -118,7 +118,7 @@
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
-  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.active .n{ background:var(--accent); color:var(--on-accent); }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -201,7 +201,7 @@
   .alt-setting-btns{ display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 4px; }
   .alt-setting-btn{ font-family:'IBM Plex Mono'; font-size:0.78rem; font-weight:700; padding:9px 16px; border-radius:8px; border:1px solid var(--hairline); background:var(--bg); color:var(--text-muted); cursor:pointer; transition:.15s; }
   .alt-setting-btn:hover{ border-color:var(--accent); color:var(--accent); }
-  .alt-setting-btn.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .alt-setting-btn.on{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 
   .alt-controls{ margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 20px; }
   .alt-ctl label{ font-family:'IBM Plex Mono'; font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
@@ -262,8 +262,9 @@
   .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
   .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -844,7 +845,7 @@
       <div class="ats-table-wrap">
       <table class="ats-table">
         <tr><th>Gradiente Vertical de Presión</th><th>Valor</th></tr>
-        <tr><td>De 0 a 10.000 pies</td><td class="mono">Disminuye ≈1 in Hg (33,52 hPa) por cada 1.000 ft</td></tr>
+        <tr><td>De 0 a 10.000 pies</td><td class="mono">Disminuye ≈1 in Hg (33,86 hPa) por cada 1.000 ft</td></tr>
         <tr><td>De 10.000 a 50.000 pies</td><td class="mono">Disminuye ≈3/4 in Hg (25 hPa) por cada 1.000 ft</td></tr>
       </table>
       </div>
@@ -852,9 +853,9 @@
       <table class="ats-table">
         <tr><th>Gradiente Vertical de Temperatura</th><th>Valor</th></tr>
         <tr><td>Cálculo rápido</td><td class="mono">Aumenta o disminuye 2°C por cada 1.000 ft</td></tr>
-        <tr><td>De 0 a 33.000 pies</td><td class="mono">Disminuye 2°C por cada 1.000 ft</td></tr>
-        <tr><td>De 33.000 a 53.000 pies</td><td class="mono">Permanece constante</td></tr>
-        <tr><td>Por encima de 53.000 pies</td><td class="mono">Aumenta progresivamente</td></tr>
+        <tr><td>De 0 a 36.089 pies (11 km, tropopausa ISA)</td><td class="mono">Disminuye 1,98°C por cada 1.000 ft (6,5°C/km)</td></tr>
+        <tr><td>De 36.089 a 65.617 pies (11 a 20 km)</td><td class="mono">Permanece constante en −56,5°C</td></tr>
+        <tr><td>Por encima de 65.617 pies (20 km)</td><td class="mono">Aumenta progresivamente (1°C/km hasta 32 km)</td></tr>
       </table>
       </div>
       <div class="card-box">
@@ -869,12 +870,12 @@
           <div class="tool-field"><label>Altitud (pies, 0–50.000)</label><input type="number" id="isaInput" placeholder="Ej: 18000" min="0" max="60000"></div>
         </div>
         <div class="tool-output" id="isaOutput">— escribe una altitud arriba —</div>
-        <div class="tool-note">Usa las reglas rápidas de este bloque (temperatura: 2°C/1.000ft hasta 33.000ft, luego constante; presión: 1"Hg/1.000ft hasta 10.000ft, luego 0,75"Hg/1.000ft). Es una aproximación de estudio, no un valor certificado para vuelo real.</div>
+        <div class="tool-note">Temperatura: gradiente ISA (OACI Doc 7488), 1,98°C/1.000 ft hasta la tropopausa (36.089 ft), −56,5°C constante hasta 65.617 ft. Presión: regla rápida de este bloque (1"Hg/1.000 ft hasta 10.000 ft, luego 0,75"Hg/1.000 ft). Es una aproximación de estudio, no un valor certificado para vuelo real.</div>
       </div>
     </div>
     <div class="quiz-card" data-quiz="10">
       <div class="quiz-tag">🎯 Chequeo rápido 10/10 — ¡última pregunta!</div>
-      <div class="quiz-q">Según el gradiente térmico ISA, ¿qué ocurre con la temperatura entre los 33.000 y los 53.000 pies?</div>
+      <div class="quiz-q">Según el gradiente térmico ISA, ¿qué ocurre con la temperatura entre los 36.089 y los 65.617 pies (11 a 20 km)?</div>
       <div class="quiz-options">
         <button class="opt-btn" data-correct="false">Sigue disminuyendo 2°C por cada 1.000 ft</button>
         <button class="opt-btn" data-correct="true">Permanece constante</button>
@@ -1161,11 +1162,14 @@
   const isaInput = document.getElementById('isaInput');
   const isaOutput = document.getElementById('isaOutput');
 
+  // Atmósfera tipo OACI (Doc 7488): −6,5°C/km hasta 11 km (36.089 ft), −56,5°C constante hasta
+  // 20 km (65.617 ft) y +1°C/km por encima, hasta 32 km.
   function computeIsaTemp(alt){
-    if(alt <= 33000) return 15 - 2 * (alt / 1000);
-    const at33 = 15 - 2 * 33;
-    if(alt <= 53000) return at33;
-    return null; // "aumenta progresivamente", sin tasa fija en la regla rápida
+    const km = alt * 0.3048 / 1000;
+    if(km <= 11) return 15 - 6.5 * km;
+    if(km <= 20) return -56.5;
+    if(km <= 32) return -56.5 + (km - 20);
+    return null;
   }
 
   function computeIsaPressureInHg(alt){
@@ -1184,7 +1188,7 @@
     const alt = Math.max(0, Number(raw));
     const temp = computeIsaTemp(alt);
     const pres = computeIsaPressureInHg(alt);
-    const tempTxt = temp === null ? 'por encima de 53.000 ft la temperatura aumenta progresivamente (sin tasa fija en la regla rápida)' : `${temp.toFixed(1)}°C`;
+    const tempTxt = temp === null ? 'por encima de 32 km la atmósfera tipo OACI usa otros gradientes' : `${temp.toFixed(1)}°C`;
     const presTxt = pres === null ? 'fuera del rango de la regla rápida (por encima de 50.000 ft)' : `${pres.toFixed(2)}" Hg`;
     isaOutput.textContent = `A ${alt.toLocaleString('es-CO')} ft → Temperatura ISA ≈ ${tempTxt} · Presión ISA ≈ ${presTxt}`;
   }

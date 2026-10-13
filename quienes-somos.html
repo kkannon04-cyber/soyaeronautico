@@ -309,6 +309,7 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -611,7 +612,7 @@
   })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

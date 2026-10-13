@@ -50,11 +50,13 @@ async function fetchConTimeout(url, ms){
 exports.handler = async (event) => {
   const params = event.queryStringParameters || {};
   const icao = (params.icao || '').trim().toUpperCase();
-  const from = parseInt(params.from, 10);
-  const to = parseInt(params.to, 10);
+  // metar-taf.html pide como mucho las últimas 72 h: el rango se recorta a 7 días hacia atrás
+  // desde «to», y «to» no puede quedar más de una hora en el futuro.
+  const to = Math.min(parseInt(params.to, 10), Date.now() + 3600000);
+  const from = Math.max(parseInt(params.from, 10), to - 7 * 24 * 3600000);
 
+  // Sin Access-Control-Allow-Origin: la página llama desde el mismo origen.
   const CORS = {
-    "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type":                 "application/json",

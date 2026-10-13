@@ -80,7 +80,9 @@ const ad = aeropuertos
 const nav = navaids
   .map(n => [n.ident, n.name, n.type, ent(n.frequency_khz), num(n.latitude_deg, 5), num(n.longitude_deg, 5),
              n.iso_country, num(n.magnetic_variation_deg, 1), n.dme_channel || ''])
-  .filter(r => r[0] && r[4] != null && r[5] != null)
+  // OurAirports es editable por cualquiera: solo pasan identificadores con forma de radioayuda
+  // (letras y cifras, como los aeródromos con OACI), que NALA pinta en sus etiquetas.
+  .filter(r => /^[A-Z0-9]{1,7}$/.test(r[0]) && r[4] != null && r[5] != null)
   .sort((x, y) => x[0].localeCompare(y[0]) || x[6].localeCompare(y[6]));
 
 const cabecera = (extra) => ({

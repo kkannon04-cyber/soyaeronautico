@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --on-accent:#FFFFFF;
     --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
     --accent:#1657C6; --accent-rgb:22,87,198;
     --text:#0F1B2D; --text-muted:#5B6B7F;
@@ -18,6 +19,7 @@
     --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
   }
   [data-theme="dark"]{
+    --on-accent:#0B1220;
     --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
     --accent:#4F8EF7; --accent-rgb:79,142,247;
     --text:#EDEFF3; --text-muted:#8894A8;
@@ -34,7 +36,7 @@
   a{color:var(--accent); text-decoration:none;}
 
   header{ padding:20px 32px; }
-  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; color:var(--text); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; color:var(--text); }
   .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); }
 
   .auth-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -58,7 +60,7 @@
   input:focus{ outline:2px solid rgba(var(--accent-rgb),0.35); outline-offset:1px; }
 
   .submit-btn{
-    width:100%; margin-top:22px; background:var(--accent); color:#fff; border:none;
+    width:100%; margin-top:22px; background:var(--accent); color:var(--on-accent); border:none;
     padding:11px; border-radius:30px; font-weight:700; font-size:0.92rem; cursor:pointer;
   }
   .submit-btn:hover{ filter:brightness(1.08); }
@@ -100,7 +102,7 @@
   .reenvio p{ margin:0 0 8px; }
   .reenvio b{ color:var(--text); }
   .reenvio-acciones{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:4px 0 8px; }
-  .reenvio-btn{ background:var(--accent); color:#fff; border:none; border-radius:30px; padding:8px 14px; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; }
+  .reenvio-btn{ background:var(--accent); color:var(--on-accent); border:none; border-radius:30px; padding:8px 14px; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; }
   .reenvio-btn:disabled{ opacity:0.6; cursor:default; }
   .reenvio-link{ background:none; border:none; padding:0; color:var(--accent); font:inherit; font-weight:600; cursor:pointer; }
   .reenvio-nota{ color:var(--text-muted); font-size:0.76rem; margin:0 !important; }
@@ -139,7 +141,7 @@
 <div class="auth-wrap">
   <div style="width:100%;">
     <div class="setup-warning" id="setupWarning">
-      Supabase todavía no está configurado en <code>supabase-config.js</code>, así que no es posible crear cuentas ni iniciar sesión por ahora. El resto del sitio sigue funcionando en modo invitado.
+      Supabase todavía no está configurado en <code>supabase-config.js</code>, así que no es posible crear cuentas ni iniciar sesión por ahora. Las páginas de estudio siguen disponibles; los quizzes y simuladores necesitan el servicio de cuentas.
     </div>
     <div class="auth-card">
       <div class="eyebrow">Panel del Estudiante</div>
@@ -196,8 +198,9 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
+<script src="modulos.js"></script>
 <script>
   const savedTheme = localStorage.getItem('aisTheme');
   if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
@@ -239,8 +242,43 @@
     'simulador-fraseologia.html': 'el Simulador ATC por voz',
     'Panel_estudiante.html': 'tu Panel del Estudiante',
   };
-  const nextPagina = new URLSearchParams(window.location.search).get('next');
-  const contextoNext = NOMBRES_PAGINAS[nextPagina] || null;
+  // Páginas protegidas a las que se puede volver: todo el catálogo de modulos.js (fuente única de
+  // urls) más las páginas de cuenta y de actividades del profesor. Lista cerrada, para no permitir
+  // redirecciones abiertas a otros sitios.
+  const PAGINAS_VALIDAS = [
+    'Panel_estudiante.html', 'panel-profesor.html', 'tomar-actividad.html', 'revision-actividad.html',
+    ...((typeof MODULOS_CATALOGO !== 'undefined') ? MODULOS_CATALOGO.map(m => m.url) : []),
+  ];
+  // Parámetros que se conservan al volver: el código de invitación del profesor y los ids de las
+  // actividades y resultados que llegan por las notificaciones.
+  const PARAMS_NEXT = ['codigo', 'id', 'actividad', 'resultado'];
+
+  // En producción Netlify sirve las páginas sin extensión (/quiz-ats), así que auth-gate.js manda
+  // next=quiz-ats o next=Panel_estudiante?codigo=XXXX. Se normaliza a «archivo.html» + parámetros
+  // de la lista blanca; cualquier otra cosa se descarta.
+  function normalizarNext(crudo){
+    if(!crudo) return null;
+    const [ruta, consulta = ''] = String(crudo).split('?');
+    let pagina = ruta.replace(/^\/+/, '').split('/').pop();
+    if(pagina && !/\.html$/i.test(pagina)) pagina += '.html';
+    pagina = PAGINAS_VALIDAS.find(p => p.toLowerCase() === (pagina || '').toLowerCase());
+    if(!pagina) return null;
+    const entrada = new URLSearchParams(consulta), salida = new URLSearchParams();
+    PARAMS_NEXT.forEach(k => {
+      const v = entrada.get(k);
+      if(v && /^[A-Za-z0-9_-]{1,64}$/.test(v)) salida.set(k, v);
+    });
+    const qs = salida.toString();
+    return { pagina, url: pagina + (qs ? '?' + qs : ''), params: salida };
+  }
+  const nextInfo = normalizarNext(new URLSearchParams(window.location.search).get('next'));
+  const nextPagina = nextInfo ? nextInfo.url : null;
+  const modNext = (nextInfo && typeof MODULOS_CATALOGO !== 'undefined') ? MODULOS_CATALOGO.find(m => m.url === nextInfo.pagina) : null;
+  const contextoNext = !nextInfo ? null
+    : nextInfo.params.get('codigo') ? 'el grupo de tu profesor'
+    : (NOMBRES_PAGINAS[nextInfo.pagina] || (modNext ? modNext.nombre : null)
+       || ({ 'panel-profesor.html': 'el Panel del Profesor', 'tomar-actividad.html': 'tu actividad', 'revision-actividad.html': 'la revisión de tu actividad' })[nextInfo.pagina]
+       || null);
 
   function setModo(nuevo){
     modo = nuevo;
@@ -262,7 +300,8 @@
   }
   tabLogin.addEventListener('click', () => setModo('login'));
   tabSignup.addEventListener('click', () => setModo('signup'));
-  setModo('login');
+  // Quien llega con el enlace de invitación del profesor casi siempre es nuevo: abre «Crear cuenta».
+  setModo(nextInfo && nextInfo.params.get('codigo') ? 'signup' : 'login');
 
   togglePasswordBtn.addEventListener('click', () => {
     const mostrando = passwordInput.type === 'password';
@@ -271,18 +310,10 @@
     togglePasswordBtn.setAttribute('aria-label', mostrando ? 'Ocultar contraseña' : 'Mostrar contraseña');
   });
 
-  // Página a la que volver tras iniciar sesión: la que el usuario intentaba
-  // usar (?next=quiz-ats.html), restringida a una lista conocida para evitar
-  // redirecciones abiertas a otros sitios.
-  const PAGINAS_VALIDAS = [
-    'Panel_estudiante.html', 'quiz-ats.html', 'quiz-fpl.html', 'quiz-designadores.html',
-    'quiz-fraseologia.html', 'quiz-navegacion-tiempo-altimetria.html', 'quiz-navegacion-radioayudas-viento.html',
-    'simulador-metar.html', 'simulador-plan-vuelo.html',
-    'Simulador-NALA.html', 'simulador-fraseologia.html'
-  ];
+  // Página a la que volver tras iniciar sesión: la que el usuario intentaba usar, ya normalizada
+  // y validada por normalizarNext() (arriba).
   function destinoTrasLogin() {
-    const next = new URLSearchParams(window.location.search).get('next');
-    return PAGINAS_VALIDAS.includes(next) ? next : 'Panel_estudiante.html';
+    return nextPagina || 'Panel_estudiante.html';
   }
 
   // URL de retorno para los correos de Supabase (confirmación de registro y
@@ -290,7 +321,7 @@
   // volver del correo, destinoTrasLogin() pueda mandar al usuario de vuelta a
   // la página que quería usar en primer lugar, no siempre al panel.
   function loginConNext() {
-    const suffix = PAGINAS_VALIDAS.includes(nextPagina) ? ('?next=' + encodeURIComponent(nextPagina)) : '';
+    const suffix = nextPagina ? ('?next=' + encodeURIComponent(nextPagina)) : '';
     return window.location.origin + '/login.html' + suffix;
   }
 

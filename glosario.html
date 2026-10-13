@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --vfr-texto:#1F7A53;
     --bg:#FFFFFF;
     --panel:#F5F8FC;
     --panel-alt:#EAF1FB;
@@ -35,6 +36,7 @@
     --on-accent:#FFFFFF;
   }
   [data-theme="dark"]{
+    --vfr-texto:#4FA88C;
     --bg:#0B1220;
     --panel:#121C2E;
     --panel-alt:#17223A;
@@ -189,7 +191,7 @@
   }
   .filter-chip:focus{ outline:2px solid var(--accent); outline-offset:2px; }
   .filter-chip:hover{ border-color:var(--accent); color:var(--text); }
-  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .filter-chip.active{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 
   .result-meta{
     max-width:900px; margin:14px auto 0; padding:0 32px;
@@ -324,6 +326,7 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -461,7 +464,7 @@
 <p class="source-note">Listado extraído del capítulo "Abbreviations — Decode" de OACI (PANS-ABC, Doc 8400, 8.ª edición, 2010) para el servicio de telecomunicaciones aeronáuticas y la información aeronáutica. Las categorías (General/MET/COM/NAV/ATS/NOTAM) se asignaron automáticamente para facilitar el filtrado y pueden no ser exactas en todos los casos — ante la duda, usa el buscador de texto libre. No reemplaza al documento oficial.</p>
 
 <footer>
-  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>Fuente: OACI Doc 8400 (PANS-ABC)</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
@@ -709,7 +712,7 @@
   })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

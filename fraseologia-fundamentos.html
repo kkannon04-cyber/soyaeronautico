@@ -99,7 +99,7 @@
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
-  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.active .n{ background:var(--accent); color:var(--on-accent); }
   @media (max-width:700px){ .subtab span:not(.n){ display:none; } }
 
   .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
@@ -113,7 +113,7 @@
   .hero-cta{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
   .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
   .btn:active{ transform:translateY(1px); }
-  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary{ background:var(--accent); color:var(--on-accent); }
   .btn-primary:hover{ filter:brightness(1.08); }
   .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
   .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
@@ -176,7 +176,7 @@
   .phrase-gloss{ font-size:0.81rem; color:var(--text-muted); margin-top:5px; line-height:1.5; }
   .speak-btn{ flex-shrink:0; width:40px; height:40px; border-radius:8px; border:1px solid var(--hairline); background:var(--bg); color:var(--accent); cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:.15s; }
   .speak-btn:hover{ border-color:var(--accent); background:var(--panel-alt); }
-  .speak-btn.speaking{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .speak-btn.speaking{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
   .no-tts-note{ font-size:0.78rem; color:var(--text-muted); text-align:center; padding:10px; display:none; }
   body.no-tts .speak-btn{ display:none; }
   body.no-tts .no-tts-note{ display:block; }
@@ -188,7 +188,7 @@
   .tool-row input[type=text]:focus{ border-color:var(--accent); }
   .seg{ display:flex; border:1px solid var(--hairline); border-radius:8px; overflow:hidden; }
   .seg button{ background:var(--bg); color:var(--text-muted); border:none; padding:10px 14px; font-family:'IBM Plex Mono'; font-size:0.74rem; cursor:pointer; }
-  .seg button.active{ background:var(--accent); color:#fff; }
+  .seg button.active{ background:var(--accent); color:var(--on-accent); }
   .tool-output{ background:var(--bg); border:1px dashed var(--hairline); border-radius:8px; padding:14px; font-family:'IBM Plex Mono'; font-size:1.05rem; color:var(--vfr); letter-spacing:0.5px; min-height:24px; word-break:break-word; }
 
   /* ---- glosario buscable (reutiliza el patrón de glosario.html) ---- */
@@ -237,8 +237,9 @@
   .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
   .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>

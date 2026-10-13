@@ -104,7 +104,7 @@
   .hero-cta{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
   .btn{ font-family:'IBM Plex Sans'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:8px; border:none; cursor:pointer; transition:filter .15s, transform .1s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
   .btn:active{ transform:translateY(1px); }
-  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary{ background:var(--accent); color:var(--on-accent); }
   .btn-primary:hover{ filter:brightness(1.08); }
   .btn-outline{ background:transparent; border:1px solid var(--hairline); color:var(--text); }
   .btn-outline:hover{ border-color:var(--accent); color:var(--accent); }
@@ -144,6 +144,7 @@
   .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
   .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -438,7 +439,7 @@
   })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

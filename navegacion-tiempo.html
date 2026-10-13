@@ -118,7 +118,7 @@
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
-  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.active .n{ background:var(--accent); color:var(--on-accent); }
 
   /* ---------- PROGRESO DE CHEQUEOS ---------- */
   .quiz-progress{ padding:10px 32px 12px; border-bottom:1px solid var(--hairline); background:var(--bg); }
@@ -209,7 +209,7 @@
   .tool-row input:focus{ border-color:var(--accent); }
   .seg{ display:flex; border:1px solid var(--hairline); border-radius:8px; overflow:hidden; }
   .seg button{ background:var(--bg); color:var(--text-muted); border:none; padding:10px 14px; font-family:'IBM Plex Mono'; font-size:0.74rem; cursor:pointer; }
-  .seg button.active{ background:var(--accent); color:#fff; }
+  .seg button.active{ background:var(--accent); color:var(--on-accent); }
   .tool-output{ background:var(--bg); border:1px dashed var(--hairline); border-radius:8px; padding:14px; font-family:'IBM Plex Mono'; font-size:1.05rem; color:var(--vfr); letter-spacing:0.5px; min-height:24px; word-break:break-word; }
   .tool-note{ font-size:0.76rem; color:var(--text-muted); margin-top:8px; }
 
@@ -247,8 +247,9 @@
   .mobile-nav-footer{ margin-top:auto; padding:20px 24px 0; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--hairline); }
   .mobile-nav-footer .theme-toggle{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--hairline); color:var(--text-muted); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans'; transition:color .2s, border-color .2s; }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>

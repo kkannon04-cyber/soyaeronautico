@@ -61,11 +61,15 @@ async function fetchConTimeout(url, ms){
 exports.handler = async (event) => {
   const params = event.queryStringParameters || {};
   const icao = (params.icao || '').trim().toUpperCase();
-  const hours = /^[0-9]{1,3}$/.test(params.hours || '') ? params.hours : '24';
+  // Las páginas piden 24 h (portada) o hasta 72 h (metar-taf.html): no se acepta más, para que
+  // nadie pueda usar la función para bajar históricos largos de aviationweather.gov.
+  const horasPedidas = /^[0-9]{1,3}$/.test(params.hours || '') ? Number(params.hours) : 24;
+  const hours = String(Math.min(Math.max(horasPedidas, 1), 72));
   const type = params.type === 'taf' ? 'taf' : 'metar';
 
+  // Sin Access-Control-Allow-Origin: las páginas del sitio llaman desde el mismo origen, y así
+  // otras webs no pueden usar a sus visitantes como proxy de esta función.
   const CORS = {
-    "Access-Control-Allow-Origin":  "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type":                 "application/json",

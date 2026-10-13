@@ -318,8 +318,9 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -430,6 +431,7 @@
 
   <div class="hero-cta-row">
     <a href="quiz-fpl.html" class="btn-quiz-fpl"><span>📝</span> Ir al Quiz completo de 25 preguntas</a>
+    <a href="simulador-plan-vuelo.html" class="btn-quiz-fpl"><span>✍️</span> Practicar el FPL casilla por casilla</a>
     <a href="Simulador-NALA.html" class="btn-quiz-fpl btn-sim-nala"><span>🛫</span> Practicar en el Simulador NALA</a>
   </div>
 

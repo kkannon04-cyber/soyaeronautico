@@ -9,10 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://aviationweather.gov">
-<link rel="preconnect" href="https://r.jina.ai">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --vfr-texto:#1F7A53;
     --bg:#FFFFFF;
     --panel:#F5F8FC;
     --panel-alt:#EAF1FB;
@@ -34,6 +34,7 @@
   }
 
   [data-theme="dark"]{
+    --vfr-texto:#4FA88C;
     --bg:#0B1220;
     --panel:#121C2E;
     --panel-alt:#17223A;
@@ -154,7 +155,7 @@
 
   /* ---------- PAGE HERO ---------- */
   .page-hero{ max-width:1200px; margin:0 auto; padding:48px 32px 8px; }
-  .btn-quiz-ats{ display:inline-block; background:var(--accent); color:#fff; padding:12px 28px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:16px; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.95rem; }
+  .btn-quiz-ats{ display:inline-block; background:var(--accent); color:var(--on-accent); padding:12px 28px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:16px; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.95rem; }
   .btn-quiz-ats:hover{ filter:brightness(1.08); transform:translateY(-2px); }
   .btn-quiz-ats span{ margin-right:8px; }
   .btn-quiz-ats.alt{ background:none; color:var(--accent); border:1px solid var(--accent); }
@@ -323,6 +324,7 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -497,7 +499,7 @@
 </div>
 
 <footer>
-  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>Datos METAR/TAF: aviationweather.gov (NOAA)</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
@@ -708,16 +710,13 @@
       ? `ids=${icao}&format=json`
       : `ids=${icao}&format=json&hours=${horas}`;
     const targetUrl = `https://aviationweather.gov/api/data/${tipo}?${params}`;
-    const encoded = encodeURIComponent(targetUrl);
-
+    // Solo fuentes de confianza: la función propia del sitio y, de respaldo, aviationweather.gov
+    // directo. Antes se sumaban cinco proxies públicos de terceros y ganaba el primero en
+    // responder: cualquiera de ellos podía devolver un METAR viejo o alterado y se mostraba
+    // como real (auditoría del 12 OCT 2026).
     const attempts = [
       fetchWithTimeout(`/.netlify/functions/metar?icao=${icao}&type=${tipo}&hours=${horas}`, 7000, false),
-      fetchWithTimeout(targetUrl, 7000, false),
-      fetchWithTimeout(`https://r.jina.ai/${targetUrl}`, 7000, true),
-      fetchWithTimeout(`https://api.allorigins.win/raw?url=${encoded}`, 7000, false),
-      fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${targetUrl}`, 7000, false),
-      fetchWithTimeout(`https://corsproxy.io/?url=${encoded}`, 7000, false),
-      fetchWithTimeout(`https://thingproxy.freeboard.io/fetch/${targetUrl}`, 7000, false)
+      fetchWithTimeout(targetUrl, 7000, false)
     ];
 
     try{
@@ -1010,6 +1009,11 @@
     if(tafSoloVigente){
       mensajeFinal += ' El historial completo de TAF no está disponible ahora mismo; se muestra sólo el boletín vigente.';
     }
+    // aviationweather.gov solo entrega las últimas 72 h de METAR/SPECI (y el historial de TAF se
+    // recorta a 7 días): si el periodo pedido empieza antes, se dice en vez de callarlo.
+    if(quiereMetarSpeci && Date.now() - inicioMs > 72 * 3600000){
+      mensajeFinal += ' Los METAR/SPECI solo cubren las últimas 72 horas: lo anterior no está disponible en la fuente.';
+    }
 
     pintarResultados(icao, reportes, tafData, quiereMetarSpeci, quiereTaf, mensajeFinal, huboRespaldo || tafSoloVigente);
   }
@@ -1083,7 +1087,7 @@
     if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
   })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

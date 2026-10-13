@@ -621,8 +621,9 @@
     .importar-no-entendido ul { margin:6px 0 0; padding-left:20px; }
     .importar-ok { margin-top:12px; border-left:3px solid var(--vfr);
       background:rgba(46,158,109,0.10); border-radius:8px; padding:11px 14px; font-size:0.85rem; }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -1313,7 +1314,7 @@
 </div>
 
 <footer>
-  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>Simulador basado en RAC 215 Apéndice 7, PANS-ATM Doc 4444 y AIP Colombia ENR 1.10</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
@@ -3479,7 +3480,8 @@ btnAyuda.addEventListener('click', () => {
   function tiene18(v18, ind){ return new RegExp('\\b' + ind + '\\/').test(v18); }
 
   function igual(a,b){ return norm(a) === norm(b); }
-  function mono(t){ return `<span class="mono">${t}</span>`; }
+  // Escapa siempre: aquí llegan valores que escribió el estudiante y que el profesor ve al revisar.
+  function mono(t){ return `<span class="mono">${esc(t)}</span>`; }
   function letras(lista){ return lista && lista.length ? lista.join(', ') : 'ninguna'; }
 
 
@@ -3969,7 +3971,7 @@ btnAyuda.addEventListener('click', () => {
       const el = document.getElementById('saveMsg');
       if (!el) return;
       if (res && res.ok) { el.textContent = '✅ Resultado guardado en tu progreso.'; el.style.color = 'var(--vfr)'; }
-      else { el.textContent = '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.'; el.style.color = 'var(--danger)'; }
+      else { el.textContent = textoNoGuardado(res); el.style.color = 'var(--danger)'; }
     });
   }
 
@@ -4537,7 +4539,7 @@ btnAyuda.addEventListener('click', () => {
     {cod:'SKMD', nom:'Medellín (Enrique Olaya Herrera)'},
     {cod:'SKSM', nom:'Santa Marta (Simón Bolívar)'},
     {cod:'MPTO', nom:'Ciudad de Panamá (Tocumen), Panamá'},
-    {cod:'MPPA', nom:'Ciudad de Panamá (Albrook «Marcos A. Gelabert»), Panamá'},
+    {cod:'MPPA', nom:'Panamá Pacífico (antigua base Howard), Panamá'},
     {cod:'MPSM', nom:'Río Hato (Scarlett Martínez), Panamá'},
     {cod:'MSLP', nom:'San Salvador (Monseñor Óscar Arnulfo Romero), El Salvador'},
     // Nacionales
@@ -4569,7 +4571,7 @@ btnAyuda.addEventListener('click', () => {
     {cod:'SKOC', nom:'Ocaña (Aguas Claras)'},
     {cod:'SKCU', nom:'Caucasia (Juan H. White)'},
     {cod:'SKMG', nom:'Magangué (Baracoa)'},
-    {cod:'SKGY', nom:'Bogotá (Guaymaral)'},
+    {cod:'SKGY', nom:'Chía (Flaminio Suárez Camacho, Guaymaral)'},
     {cod:'SKGO', nom:'Cartago (Santa Ana)'},
     {cod:'SKGB', nom:'Cali (Base Aérea Marco Fidel Suárez)'},
     {cod:'SKMB', nom:'Timbiquí'},
@@ -5726,10 +5728,11 @@ btnAyuda.addEventListener('click', () => {
 
     const plan = a.plan || {};
     renderSituacion({
-      titulo: plan.titulo || a.titulo,
+      // Enunciado escrito por el profesor: se escapa, igual que la narrativa se sanea.
+      titulo: esc(plan.titulo || a.titulo),
       narrativa: sanitizarNarrativa(plan.narrativa),
       nivelTag: plan.nivelTag || 'ACTIVIDAD ASIGNADA',
-      fuenteRuta: plan.fuenteRuta || '',
+      fuenteRuta: esc(plan.fuenteRuta || ''),
       keys: [],
       values: null
     });
@@ -5980,10 +5983,10 @@ btnAyuda.addEventListener('click', () => {
     const plan = e.enunciado || {};
 
     renderSituacion({
-      titulo: plan.titulo || e.actividad_titulo,
+      titulo: esc(plan.titulo || e.actividad_titulo),
       narrativa: sanitizarNarrativa(plan.narrativa),
       nivelTag: plan.nivelTag || 'ACTIVIDAD ASIGNADA',
-      fuenteRuta: plan.fuenteRuta || '',
+      fuenteRuta: esc(plan.fuenteRuta || ''),
       keys: [],
       values: null
     });

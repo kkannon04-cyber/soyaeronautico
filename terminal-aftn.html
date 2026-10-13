@@ -346,7 +346,7 @@
   .fa-chks{ display:flex; flex-wrap:wrap; gap:4px; }
   .fa-chk{ display:inline-flex; align-items:center; gap:4px; border:1px solid var(--hairline); border-radius:6px; padding:3px 7px; font-size:.66rem; cursor:pointer; background:var(--panel); }
   .fa-chk input{ margin:0; accent-color:var(--accent); }
-  .fa-chk b{ font-family:monospace; font-size:.74rem; }
+  .fa-chk b{ font-family:var(--font-ui); font-size:.74rem; }
   .fa-quitar{ background:none; border:1px solid var(--hairline); color:var(--text-muted); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:.7rem; }
   .fa-quitar:hover{ border-color:var(--danger); color:var(--danger); }
   .fa-nota{ font-size:.62rem; color:var(--text-muted); flex:1 1 100%; line-height:1.4; }
@@ -479,7 +479,7 @@
     .act-inner{ padding:14px 16px 30px; }
   }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -1667,7 +1667,7 @@ const TA = {};
     const destOk = a.length > 0 && a.join(' ') === b.join(' ');
     const faltan = b.filter(x => !a.includes(x)), sobran = a.filter(x => !b.includes(x));
     out.push({ label: etq + 'Indicadores de destinatario', ok: destOk,
-      explica: destOk ? b.join(' ') : `Se esperaba <b>${b.join(' ')}</b>.` + (faltan.length ? ` Faltan: ${faltan.map(x => `${x} (${esc(TA.describirDir(x))})`).join('; ')}.` : '') + (sobran.length ? ` Sobran: ${sobran.join(' ')}.` : '') });
+      explica: destOk ? b.join(' ') : `Se esperaba <b>${b.join(' ')}</b>.` + (faltan.length ? ` Faltan: ${faltan.map(x => `${x} (${esc(TA.describirDir(x))})`).join('; ')}.` : '') + (sobran.length ? ` Sobran: ${sobran.map(esc).join(' ')}.` : '') });
     const origOk = TA.norm(e.orig) !== '' && TA.norm(e.orig) === TA.norm(k.orig);
     out.push({ label: etq + 'Indicador de remitente', ok: origOk,
       explica: origOk ? k.orig : `Se esperaba <b>${esc(k.orig)}</b> (${esc(TA.describirDir(k.orig))})${e.orig ? `, escribiste ${esc(e.orig)}` : ''}.` });
@@ -1675,7 +1675,7 @@ const TA = {};
     if(TA.norm(k.hora)) horaOk = TA.norm(e.hora) === TA.norm(k.hora);
     else horaOk = TA.horaValida(TA.norm(e.hora));
     out.push({ label: etq + 'Hora de depósito', ok: horaOk,
-      explica: horaOk ? (e.hora || '') : (TA.norm(k.hora) ? `Se esperaba <b>${esc(k.hora)}</b> (DDHHMM).` : 'Debe ser un grupo fecha-hora DDHHMM válido.') });
+      explica: horaOk ? esc(e.hora || '') : (TA.norm(k.hora) ? `Se esperaba <b>${esc(k.hora)}</b> (DDHHMM).` : 'Debe ser un grupo fecha-hora DDHHMM válido.') });
     const tx = TA.norm(e.texto);
     let textoOk, explicaTexto;
     if((k.textoModo || 'exacto') === 'claves'){
@@ -2661,7 +2661,7 @@ const TA = {};
       zona.hidden = false;
       const resueltas = (red.estado && red.estado.resueltas || 0) + t.filter(x => x.hecha).length;
       zona.innerHTML = `<h4>SITUACIONES ${resueltas}/${resueltas + t.filter(x => !x.hecha).length}</h4>` + t.map((x, i) =>
-        `<button type="button" class="tarea ${x.hecha ? 'hecha' : 'pend'}" data-consigna="${i}" title="Ver qué hay que hacer"><span>${x.hecha ? '✓' : (x.fallos ? '✗' : '•')}</span><span>${x.titulo}${x.hecha ? '' : ' <small>(ver)</small>'}${x.fallos && !x.hecha ? ` <small>(${x.fallos} intento${x.fallos === 1 ? '' : 's'} fallido${x.fallos === 1 ? '' : 's'})</small>` : ''}</span></button>`).join('');
+        `<button type="button" class="tarea ${x.hecha ? 'hecha' : 'pend'}" data-consigna="${i}" title="Ver qué hay que hacer"><span>${x.hecha ? '✓' : (x.fallos ? '✗' : '•')}</span><span>${esc(x.titulo)}${x.hecha ? '' : ' <small>(ver)</small>'}${x.fallos && !x.hecha ? ` <small>(${x.fallos} intento${x.fallos === 1 ? '' : 's'} fallido${x.fallos === 1 ? '' : 's'})</small>` : ''}</span></button>`).join('');
       zona.querySelectorAll('[data-consigna]').forEach(el => el.addEventListener('click', () => TA.mostrarSituacion(t[Number(el.dataset.consigna)])));
     }
 

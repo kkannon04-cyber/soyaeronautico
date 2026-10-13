@@ -121,7 +121,7 @@
   .hero-note b{ color:var(--text); }
 
   .quiz-cta-row{ display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
-  .btn-quiz-nav{ display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; padding:12px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.9rem; }
+  .btn-quiz-nav{ display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:var(--on-accent); padding:12px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; transition:filter .15s, transform .15s; font-family:'IBM Plex Sans'; text-decoration:none; font-size:0.9rem; }
   .btn-quiz-nav:hover{ filter:brightness(1.08); transform:translateY(-2px); }
   .btn-quiz-nav.alt{ background:none; color:var(--accent); border:1px solid var(--accent); }
 
@@ -199,6 +199,7 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -483,7 +484,7 @@
   })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script>
   // Si el estudiante ya inició sesión, el botón lleva directo a su panel.

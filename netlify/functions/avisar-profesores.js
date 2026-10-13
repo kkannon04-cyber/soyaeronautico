@@ -42,8 +42,13 @@ function secretoValido(recibido, esperado) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// El nombre lo escribe el propio usuario en su perfil: va escapado dentro del HTML del correo.
+function escHtml(t) {
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function armarHtml(nombre) {
-  const saludo = nombre ? `Hola ${nombre},` : 'Hola,';
+  const saludo = nombre ? `Hola ${escHtml(nombre)},` : 'Hola,';
   return `
     <div style="font-family:'IBM Plex Sans',Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#0F1B2D;">
       <p style="font-family:Archivo,Arial,sans-serif;font-weight:800;font-size:18px;color:#1657C6;margin:0 0 24px;">SoyAeronáutico</p>

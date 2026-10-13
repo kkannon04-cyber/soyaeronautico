@@ -255,8 +255,9 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -504,7 +505,7 @@
 </div>
 
 <footer>
-  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
   <span>Simulador basado en RAC 203, Anexo 3 OACI y Manual de claves OMM-N.306</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
 </footer>
@@ -668,7 +669,7 @@ setInterval(updateZuluMini, 1000);
     return { visMain:vis, wx:[{code:'TSRA', natural:'Tormenta eléctrica con lluvia'}], clouds, cavok:false, nsc:false, vv:null, cbTcuDirs:dirs, cbTcuType:'CB' };
   }});
 
-  // --- Tier 3: tormenta en vecindad (VCTS, 8-16km => vis>=8000) ---
+  // --- Tier 3: tormenta en vecindad (VCTS: la tormenta está a 8-16 km; eso no fija la visibilidad reinante, que aquí se elige buena) ---
   CASOS.push({ tier:3, id:'tormenta_vecindad', gen(){
     const vis = choice([8000,9999]);
     const dirs = chance(0.5) ? [choice(DIRS)] : [DIRS[0], DIRS[1]];
@@ -826,14 +827,17 @@ setInterval(updateZuluMini, 1000);
       cbTcuDirs:dirs, cbTcuType:'TCU', vc:{code:'VCSH', dirs} };
   }});
 
-  // --- Tier 3: chubascos de llovizna ---
-  CASOS.push({ tier:3, id:'chubascos_llovizna', gen(){
+  // --- Tier 3: precipitación mixta, lluvia con llovizna ---
+  // Antes era «SHDZ», que no existe: el descriptor SH solo acompaña a RA, SN, PL, GS y GR
+  // (OACI Anexo 3, Apéndice 3, tabla A3-1). La precipitación mixta se cifra en un solo grupo
+  // con el tipo predominante primero.
+  CASOS.push({ tier:3, id:'lluvia_llovizna', gen(){
     const vis = choice([5000,6000,7000]);
     const clouds = [
       {amount:'BKN', heightFt: randInt(9,15)*100, type:null},
       {amount:'BKN', heightFt: randInt(40,70)*100, type:null}
     ];
-    return { visMain:vis, wx:[{code:'SHDZ', natural:'Chubascos de llovizna'}], clouds, cavok:false, nsc:false, vv:null };
+    return { visMain:vis, wx:[{code:'-RADZ', natural:'Lluvia leve mezclada con llovizna (predomina la lluvia)'}], clouds, cavok:false, nsc:false, vv:null };
   }});
 
   // --- Tier 3: cielo oscurecido sin poder evaluar la visibilidad vertical (VV///) ---
@@ -939,13 +943,20 @@ setInterval(updateZuluMini, 1000);
     // Tendencia
     const trend = chance(cfg.trend) ? 'NOSIG' : null;
 
-    // RE (fenómeno reciente) — solo si hay un fenómeno de precipitación/tormenta elegible
+    // RE (tiempo reciente): fenómeno observado desde el último informe ordinario o en la última
+    // hora, pero NO en el momento de la observación (OACI Anexo 3, Apéndice 3). Por eso solo se
+    // genera cuando no hay precipitación ni tormenta en el tiempo presente, y nunca con VC.
+    const RECIENTES = [
+      { code:'RA',   natural:'lluvia' },
+      { code:'DZ',   natural:'llovizna' },
+      { code:'SHRA', natural:'chubascos de lluvia' },
+      { code:'TSRA', natural:'tormenta con lluvia' },
+    ];
     let re = null;
-    if(chance(cfg.re) && draft.wx.length){
-      const base = draft.wx[0].code.replace(/^[+-]/,'');
-      if(/RA|DZ|TS/.test(base)){
-        re = { code:'RE'+base, natural:`Se observó ${draft.wx[0].natural.toLowerCase()} durante la hora anterior (fenómeno reciente).` };
-      }
+    const presente = draft.wx.map(w => w.code).join(' ');
+    if(chance(cfg.re) && !/RA|DZ|SN|TS|SH|GR|GS|PL/.test(presente)){
+      const r = choice(RECIENTES);
+      re = { code:'RE'+r.code, natural:`Se observó ${r.natural} durante la hora anterior, pero ya no en el momento de la observación (tiempo reciente).` };
     }
 
     // Wind shear
@@ -1591,7 +1602,7 @@ setInterval(updateZuluMini, 1000);
           examSaveMsg.textContent = '✅ Resultado guardado en tu progreso.';
           examSaveMsg.style.color = 'var(--vfr)';
         } else {
-          examSaveMsg.textContent = '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
+          examSaveMsg.textContent = textoNoGuardado(res);
           examSaveMsg.style.color = 'var(--danger)';
         }
       });

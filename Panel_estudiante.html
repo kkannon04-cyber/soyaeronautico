@@ -90,11 +90,11 @@
   }
   .logo-icon {
     width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center;
-    justify-content: center; color: var(--primary);
+    justify-content: center; color: #4F8EF7; /* azul de marca sobre la barra lateral, siempre oscura */
   }
   .logo-icon svg { display: block; }
-  .logo-text h1 { font-size: 1.1rem; margin: 0; font-weight: 700; }
-  .logo-text p { font-family: var(--font-mono); font-size: 0.7rem; color: #94a3b8; letter-spacing: 1px; }
+  .logo-text h1 { font-size: 1.05rem; margin: 0; font-weight: 800; letter-spacing: 0.02em; }
+  .logo-text p { font-family: var(--font-mono); font-size: 0.7rem; color: #94a3b8; letter-spacing: 0.08em; }
   .nav-menu { padding: 16px 12px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
   .nav-item {
     padding: 12px 16px; display: flex; align-items: center; gap: 12px;
@@ -446,8 +446,10 @@
   }
   .achievement .achievement-icon svg { width: 24px; height: 24px; display: block; }
   .achievement .achievement-label { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); line-height: 1.3; }
-  .achievement.locked { opacity: 0.4; filter: grayscale(1); }
+  .achievement.locked { opacity: 0.6; filter: grayscale(1); }
+  .achievement .achievement-como { font-size: 0.66rem; color: var(--text-muted); line-height: 1.3; }
   .achievement.unlocked { border-color: var(--primary); background: #eff6ff; }
+  .historial-ver-mas { margin: 4px 16px 14px; background: none; border: none; color: var(--primary); font-weight: 600; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
   .achievement.unlocked .achievement-label { color: var(--text-main); }
 
   /* === SIDEBAR RESPONSIVE (drawer en móvil) === */
@@ -487,7 +489,7 @@
     }
   }catch(e){ /* modo privado o almacenamiento bloqueado: la barra queda visible */ }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -645,7 +647,7 @@
           </div>
           <div class="kpi-data">
             <span class="label">Nota general</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top:2px;">Tu mejor intento en cada quiz</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top:2px;">Media de tu mejor intento en cada quiz y simulador</span>
           </div>
         </div>
 
@@ -901,7 +903,7 @@
         e.preventDefault();
         const cliente = obtenerClienteAuth();
         if (cliente) await cliente.auth.signOut();
-        window.location.reload();
+        window.location.href = 'index.html';
       });
       estadoSesion.textContent = 'Sesión iniciada';
       if(tabCta) {
@@ -911,7 +913,8 @@
           e.preventDefault();
           const cliente = obtenerClienteAuth();
           if (cliente) await cliente.auth.signOut();
-          window.location.reload();
+          // Salida voluntaria: a la portada, no al aviso de «inicia sesión para continuar».
+          window.location.href = 'index.html';
         };
       }
     } else {
@@ -1044,8 +1047,11 @@
   const SEMANAS_HEATMAP = 12;
   const DIAS_HEATMAP = SEMANAS_HEATMAP * 7;
 
+  // Día LOCAL (YYYY-MM-DD). Con toISOString() era el día UTC: en Colombia (UTC-5) lo estudiado
+  // después de las 19:00 caía en el día siguiente y el calendario de la noche no se encendía.
   function claveDia(date){
-    return date.toISOString().slice(0, 10); // YYYY-MM-DD
+    const p = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
   }
 
   function calcularRacha(diasConActividad){
@@ -1083,7 +1089,7 @@
     const intentos = await obtenerIntentos();
     const conteoPorDia = new Map();
     intentos.forEach(i => {
-      const dia = i.fecha.slice(0, 10);
+      const dia = claveDia(new Date(i.fecha));
       conteoPorDia.set(dia, (conteoPorDia.get(dia) || 0) + 1);
     });
 
@@ -1175,6 +1181,25 @@
 
     // Sin datos no se muestra una tarjeta vacía: todo el histórico anterior a
     // esta función no guardaba el detalle de las respuestas.
+    const titulo = card.querySelector('.panel-header span');
+    if (titulo) titulo.textContent = 'Qué repasar';
+    // Cuenta nueva, sin ningún intento: un primer paso claro en vez de 22 enlaces equivalentes.
+    if (!hayDatos && intentos.length === 0) {
+      card.style.display = 'block';
+      if (titulo) titulo.textContent = 'Por dónde empezar';
+      contenedor.innerHTML = `
+        <div class="module-item">
+          <div class="module-info">
+            <h4>Servicios de Tránsito Aéreo (ATS)</h4>
+            <p class="repaso-ok" style="margin:4px 0 0;">Lee la teoría y presenta el quiz de 50 preguntas. Tu nota queda guardada aquí.</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a class="btn-launch secundario" href="ats.html" style="text-decoration:none;">Leer la teoría</a>
+            <a class="btn-launch" href="quiz-ats.html" style="text-decoration:none;">Presentar el quiz</a>
+          </div>
+        </div>`;
+      return;
+    }
     if (!hayDatos) { card.style.display = 'none'; return; }
     card.style.display = 'block';
 
@@ -1418,7 +1443,28 @@
   })();
 
   // ---------- LOGROS / INSIGNIAS ----------
-  const SIMULADORES_CON_PROGRESO = ['simulador-metar', 'simulador-plan-vuelo', 'simulador-fraseologia'];
+  // Todos los simuladores del catálogo (NALA, terminal AFTN, AIP, memoria…) más el METAR, que vive
+  // entre los quizzes: antes solo contaban tres y practicar NALA no desbloqueaba «Explorador».
+  const SIMULADORES_CON_PROGRESO = ['simulador-metar', ...MODULOS_CATALOGO.filter(m => m.seccion === 'simuladores').map(m => m.id)];
+
+  // Qué hay que hacer para cada logro: se muestra en la propia insignia, para que sirva de objetivo.
+  const LOGRO_COMO = {
+    'Primer despegue': 'Termina tu primer quiz o simulador',
+    'Racha de 3 días': 'Practica 3 días seguidos',
+    'Racha de 7 días': 'Practica 7 días seguidos',
+    'Racha de 30 días': 'Practica 30 días seguidos',
+    'Vuelo perfecto': 'Saca 100 % en cualquier quiz o simulador',
+    'Políglota AIS': 'Presenta todos los quizzes de la Zona de Quizzes',
+    'Explorador': 'Practica en cualquier simulador',
+    'Piloto experto': '10 intentos y nota general de 90 % o más',
+    'Experto en ATS': 'Completa la teoría de ATS',
+    'Navegante': 'Completa la teoría de Plan de Vuelo',
+    'Meteorólogo': 'Completa las páginas de Meteorología',
+    'Fraseólogo': 'Completa las páginas de Fraseología',
+    'Piloto Instrumental': 'Completa las páginas de Navegación',
+    'Experto en NOTAM': 'Completa las páginas de NOTAM',
+    'AIS Graduado': 'Completa la teoría de todos los módulos',
+  };
 
   const LOGROS = [
     { icono: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="3,12 21,4 13,20 10,13"/><polygon points="10,13 15,9 21,4" opacity="0.55"/></svg>', nombre: 'Primer despegue', check: ({ stats }) => stats.totalIntentos >= 1 },
@@ -1458,10 +1504,12 @@
       const desbloqueado = logro.check(contexto);
       const tile = document.createElement('div');
       tile.className = `achievement ${desbloqueado ? 'unlocked' : 'locked'}`;
-      tile.title = desbloqueado ? logro.nombre : `${logro.nombre} (bloqueado)`;
+      const como = LOGRO_COMO[logro.nombre] || '';
+      tile.title = `${logro.nombre}${como ? ': ' + como : ''}${desbloqueado ? '' : ' (pendiente)'}`;
       tile.innerHTML = `
         <span class="achievement-icon">${logro.icono}</span>
         <span class="achievement-label">${logro.nombre}</span>
+        ${como ? `<span class="achievement-como">${como}</span>` : ''}
       `;
       contenedor.appendChild(tile);
     });
@@ -1479,6 +1527,11 @@
 
     // Stat cards
     document.getElementById('statIntentos').textContent = stats.totalIntentos;
+    // «de nuevo» solo para quien ya practicó alguna vez.
+    const saludo = document.getElementById('welcomeHeading');
+    if (saludo && saludo.firstChild && saludo.firstChild.nodeType === 3) {
+      saludo.firstChild.textContent = stats.totalIntentos > 0 ? 'Bienvenido de nuevo, ' : 'Bienvenido, ';
+    }
     document.getElementById('statNota').textContent = stats.notaGeneral !== null ? `${stats.notaGeneral}%` : '—';
     actualizarAnillo(stats.notaGeneral);
 
@@ -1540,8 +1593,25 @@
       `${simuladores.filter(x => x.info).length} de ${simuladores.length} practicados`;
 
     // Historial reciente
+    await pintarHistorial(5);
+  }
+
+  // Historial reciente: 5 intentos y un enlace para ver los 20 últimos en el mismo sitio.
+  async function pintarHistorial(n){
     const historialContainer = document.getElementById('historialContainer');
-    const ultimos = await obtenerUltimosIntentos(5);
+    const ultimos = await obtenerUltimosIntentos(n);
+    let verMas = document.getElementById('historialVerMas');
+    if (!verMas) {
+      verMas = document.createElement('button');
+      verMas.type = 'button';
+      verMas.id = 'historialVerMas';
+      verMas.className = 'historial-ver-mas';
+      historialContainer.insertAdjacentElement('afterend', verMas);
+    }
+    const total = (await obtenerIntentos()).length;
+    verMas.hidden = total <= 5;
+    verMas.textContent = n > 5 ? 'Ver solo los 5 últimos' : `Ver los ${Math.min(20, total)} últimos`;
+    verMas.onclick = () => pintarHistorial(n > 5 ? 5 : 20);
     if (ultimos.length === 0) {
       historialContainer.innerHTML = `<li class="empty-state">Aún no has completado ningún quiz. Empieza en la <a href="quizzes.html">Zona de Quizzes</a>.</li>`;
     } else {
@@ -2051,7 +2121,7 @@
     const paginasCompletadas = await renderModulosAprendizaje();
     const racha = await renderRacha();
     await renderLogros(racha, paginasCompletadas);
-    renderQueRepasar(await obtenerIntentos());
+    renderQueRepasar(await obtenerIntentos({ conDetalle: true }));
     await renderNavProfesor(sesion);
     await renderMiGrupo();
     const actividades = await renderActividadesAsignadas();

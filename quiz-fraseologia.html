@@ -140,7 +140,7 @@
   .hero-simple p.lead { color:var(--text-muted); font-size:1rem; line-height:1.6; max-width:700px; margin-bottom:4px; }
   .hero-note { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin:22px 0 10px; font-size:0.9rem; color:var(--text-muted); }
   .hero-note b { color:var(--text); }
-  .btn-volver-modulo-solido { display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .btn-volver-modulo-solido { display:inline-block; background:var(--accent); color:var(--on-accent); padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
   .btn-volver-modulo-solido:hover { filter:brightness(1.08); }
 
   .quiz-container { max-width:900px; margin:0 auto; padding:20px 32px 60px; }
@@ -163,7 +163,7 @@
   .q-message-text { font-family:'IBM Plex Mono'; font-size:0.88rem; flex:1; min-width:200px; line-height:1.5; }
   .q-play-btn { flex-shrink:0; background:var(--panel-alt); border:1px solid var(--hairline); color:var(--accent); border-radius:8px; padding:6px 12px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Sans'; transition:.15s; }
   .q-play-btn:hover { border-color:var(--accent); background:var(--bg); }
-  .q-play-btn.playing { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .q-play-btn.playing { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
   body.no-tts .q-play-btn { display:none; }
   .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; }
   .options { display:flex; flex-direction:column; gap:8px; }
@@ -252,8 +252,9 @@
     transition:color .2s, border-color .2s;
   }
   .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -776,7 +777,7 @@
         finishMsg.textContent = 'Guardando tu resultado…';
         finishNote.classList.add('show');
         guardarIntento('quiz-fraseologia', 'Fraseología Aeronáutica', correctAnswers, total, typeof construirDetalleIntento === 'function' ? construirDetalleIntento('quiz-fraseologia', questions.map((q, i) => ({ ok: aciertos[i], pregunta: q }))) : null).then(res => {
-          finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
+          finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : textoNoGuardado(res);
         });
       } else {
         finishNote.classList.add('show');

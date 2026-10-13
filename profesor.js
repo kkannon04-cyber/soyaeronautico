@@ -700,7 +700,10 @@ function estadisticaPorPregunta(resultados, banco) {
 
 function _celdaCSV(valor) {
   if (valor === null || valor === undefined) return '';
-  const texto = String(valor);
+  let texto = String(valor);
+  // Una celda de texto que empieza por = + - @ Excel la toma como fórmula: se le antepone un
+  // apóstrofo. Los números (notas, porcentajes) no se tocan.
+  if (typeof valor !== 'number' && /^[=+\-@\t\r]/.test(texto)) texto = "'" + texto;
   return /[";\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
 }
 

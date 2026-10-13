@@ -13,6 +13,8 @@
 
     /* Mismo sistema visual que los quizzes del portal (quiz-ats.html) */
     :root {
+      --danger-rgb:214,69,69;
+      --on-accent:#FFFFFF;
       --bg: #FFFFFF;
       --panel: #F5F8FC;
       --panel-alt: #EAF1FB;
@@ -28,6 +30,8 @@
       --shadow-card: 0 12px 30px -18px rgba(15,23,42,0.18);
     }
     [data-theme="dark"] {
+      --danger-rgb:201,86,79;
+      --on-accent:#0B1220;
       --bg: #0B1220;
       --panel: #121C2E;
       --panel-alt: #17223A;
@@ -49,7 +53,7 @@
     .mono { font-family:'IBM Plex Mono', monospace; }
 
     .topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); gap:14px; }
-    .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; color:var(--text); }
+    .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; color:var(--text); }
     .brand-mark { width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
     .brand-mark svg { display:block; }
     .btn-volver-panel { display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 18px; border-radius:30px; font-weight:600; font-size:0.82rem; white-space:nowrap; }
@@ -84,12 +88,12 @@
     .opt-btn:hover:not(:disabled) { border-color:var(--accent); background:var(--panel-alt); }
     .opt-btn.elegida { border-color:var(--accent); background:rgba(var(--accent-rgb),0.10); font-weight:600; }
     .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(46,158,109,0.14); font-weight:600; }
-    .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(214,69,69,0.12); font-weight:600; }
+    .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); font-weight:600; }
     .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(46,158,109,0.08); }
     .opt-btn:disabled { cursor:default; }
 
     .barra-entrega { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-    .btn-entregar { background:var(--accent); color:#fff; border:none; padding:11px 26px; border-radius:30px; font-weight:700; font-size:0.9rem; cursor:pointer; font-family:'IBM Plex Sans'; }
+    .btn-entregar { background:var(--accent); color:var(--on-accent); border:none; padding:11px 26px; border-radius:30px; font-weight:700; font-size:0.9rem; cursor:pointer; font-family:'IBM Plex Sans'; }
     .btn-entregar:hover:not(:disabled) { filter:brightness(1.08); }
     .btn-entregar:disabled { opacity:0.55; cursor:not-allowed; }
     .btn-secundario { background:none; border:1px solid var(--hairline); color:var(--text); padding:10px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; cursor:pointer; font-family:'IBM Plex Sans'; }
@@ -122,12 +126,12 @@
 
     /* Revision: solo lectura */
     .opt-btn.marcada-correcta { border-color: var(--vfr); background: rgba(46,158,109,0.12); }
-    .opt-btn.marcada-elegida  { border-color: var(--danger); background: rgba(214,69,69,0.10); }
+    .opt-btn.marcada-elegida  { border-color: var(--danger); background: rgba(var(--danger-rgb),0.10); }
     .opt-btn.oculta-correcta  { opacity: 0.55; }
     .chip-estado { display:inline-block; font-size:0.72rem; font-weight:600; padding:3px 9px;
                    border-radius:20px; margin-left:8px; font-family:'IBM Plex Mono', monospace; }
     .chip-ok   { background: rgba(46,158,109,0.15); color: var(--vfr); }
-    .chip-mal  { background: rgba(214,69,69,0.13); color: var(--danger); }
+    .chip-mal  { background: rgba(var(--danger-rgb),0.13); color: var(--danger); }
     .chip-corr { background: rgba(var(--accent-rgb),0.13); color: var(--accent); }
     .comentario-profesor { background: var(--panel-alt); border-left: 3px solid var(--accent);
                            border-radius: 10px; padding: 14px 16px; margin: 18px 0; font-size: 0.92rem; }
@@ -137,7 +141,7 @@
                    padding: 14px 16px; margin: 18px 0; color: var(--text-muted); font-size: 0.9rem; }
 
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
   <script src="supabase-config.js"></script>
   <script src="modulos.js"></script>
   <script src="progreso.js"></script>

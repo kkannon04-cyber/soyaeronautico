@@ -119,7 +119,7 @@
   .subtab{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px 10px 0 0; font-size:0.85rem; font-weight:600; color:var(--text-muted); text-decoration:none; border:1px solid transparent; border-bottom:none; white-space:nowrap; }
   .subtab .n{ font-family:'IBM Plex Mono'; font-size:0.68rem; background:var(--panel-alt); color:var(--text-muted); border-radius:5px; padding:1px 6px; }
   .subtab.active{ color:var(--accent); background:var(--panel); border-color:var(--hairline); }
-  .subtab.active .n{ background:var(--accent); color:#fff; }
+  .subtab.active .n{ background:var(--accent); color:var(--on-accent); }
 
   .hero-simple{ max-width:900px; margin:0 auto; padding:40px 32px 8px; }
   .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:14px; }
@@ -127,7 +127,7 @@
   .hero-simple p.lead{ color:var(--text-muted); font-size:1.02rem; line-height:1.6; max-width:720px; margin-bottom:10px; }
   .hero-note{ display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--warn); border-radius:10px; padding:14px 18px; margin:22px 0 6px; font-size:0.88rem; color:var(--text-muted); }
   .hero-note b{ color:var(--text); }
-  .btn-volver-modulo-solido{ display:inline-block; background:var(--accent); color:#fff; padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
+  .btn-volver-modulo-solido{ display:inline-block; background:var(--accent); color:var(--on-accent); padding:10px 24px; border-radius:30px; font-weight:600; border:none; cursor:pointer; margin-top:12px; transition:filter .15s; font-family:'IBM Plex Sans'; text-decoration:none; }
   .btn-volver-modulo-solido:hover{ filter:brightness(1.08); }
 
   .quiz-container{ max-width:900px; margin:0 auto; padding:20px 32px 60px; }
@@ -203,8 +203,9 @@
   .setup-resumen{ font-size:0.9rem; color:var(--text-muted); line-height:1.55; margin:4px 0 0; }
   .btn-empezar:disabled{ opacity:0.5; cursor:not-allowed; filter:none; }
   .opt-letra{ font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); }
+  @media (max-width:600px){ body > footer{ padding:20px 16px; flex-direction:column; gap:6px; } }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
@@ -824,7 +825,7 @@
           ? construirDetalleIntento(MODULO_ID, questions.map((q, i) => ({ ok: aciertos[i], pregunta: q })))
           : null;
         guardarIntento(MODULO_ID, MODULO_NOMBRE, correctAnswers, total, detalle).then(res => {
-          finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : '⚠️ No pudimos guardar tu resultado. Verifica tu conexión e inténtalo de nuevo.';
+          finishMsg.textContent = (res && res.ok) ? mensajesTier[tier] : textoNoGuardado(res);
         });
       } else {
         finishNote.classList.add('show');
