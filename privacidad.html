@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de privacidad · SoyAeronáutico</title>
+<meta name="description" content="Cómo SoyAeronáutico recoge, usa y protege tus datos personales, y cómo ejercer tus derechos de habeas data (Ley 1581 de 2012).">
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Mismo sistema visual que login.html y las páginas de actividades */
+  :root{
+    --bg:#FFFFFF; --panel:#F5F8FC; --panel-alt:#EAF1FB;
+    --accent:#1657C6; --accent-rgb:22,87,198;
+    --text:#0F1B2D; --text-muted:#5B6B7F;
+    --hairline:#E1E7EF; --vfr:#2E9E6D; --vfr-texto:#1F7A53;
+    --topbar-bg:rgba(255,255,255,0.85);
+  }
+  [data-theme="dark"]{
+    --bg:#0B1220; --panel:#121C2E; --panel-alt:#17223A;
+    --accent:#4F8EF7; --accent-rgb:79,142,247;
+    --text:#EDEFF3; --text-muted:#8894A8;
+    --hairline:#2A3548; --vfr:#4FA88C; --vfr-texto:#4FA88C;
+    --topbar-bg:rgba(11,18,32,0.85);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2{ font-family:'Archivo', sans-serif; }
+  a{ color:var(--accent); }
+
+  .topbar{ position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; color:var(--text); text-decoration:none; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); }
+  .btn-volver{ display:inline-block; color:var(--accent); border:1px solid var(--accent); padding:8px 18px; border-radius:30px; font-weight:600; font-size:0.82rem; text-decoration:none; white-space:nowrap; }
+  .btn-volver:hover{ background:rgba(var(--accent-rgb),0.08); }
+
+  main{ max-width:820px; margin:0 auto; padding:40px 32px 60px; line-height:1.7; }
+  .eyebrow{ font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:12px; }
+  h1{ font-size:clamp(1.6rem, 3.6vw, 2.2rem); line-height:1.2; margin:0 0 10px; }
+  .vigencia{ color:var(--text-muted); font-size:0.88rem; margin:0 0 28px; }
+  .resumen{ background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:16px 20px; margin-bottom:34px; }
+  .resumen ul{ margin:8px 0 0; padding-left:20px; }
+  h2{ font-size:1.2rem; margin:36px 0 8px; padding-top:8px; border-top:1px solid var(--hairline); }
+  p, li{ font-size:0.95rem; }
+  ul{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  table{ width:100%; border-collapse:collapse; font-size:0.88rem; margin:10px 0; }
+  th, td{ text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--hairline); }
+  th{ font-family:'IBM Plex Mono'; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .tabla-scroll{ overflow-x:auto; }
+  .contacto{ background:var(--panel-alt); border-radius:10px; padding:14px 18px; }
+
+  .credito-autor{ border-top:1px solid rgba(128,128,128,0.22); margin-top:20px; padding:20px 24px; text-align:center; font-size:0.78rem; color:var(--text-muted); }
+  .credito-autor strong{ color:inherit; font-weight:600; }
+
+  @media (max-width:600px){
+    .topbar{ padding:12px 16px; }
+    main{ padding:28px 16px 48px; }
+  }
+</style>
+<link rel="stylesheet" href="movimiento.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <span>SoyAeronáutico</span>
+  </a>
+  <a class="btn-volver" href="index.html">Volver al inicio</a>
+</header>
+
+<main>
+  <div class="eyebrow">Datos personales</div>
+  <h1>Política de privacidad</h1>
+  <p class="vigencia">Vigente desde el 13 de octubre de 2026.</p>
+
+  <div class="resumen">
+    <strong>En pocas palabras</strong>
+    <ul>
+      <li>Usamos tus datos sólo para que puedas estudiar en SoyAeronáutico: tu cuenta, tu progreso y las actividades de tu profesor.</li>
+      <li>No vendemos tus datos, no mostramos publicidad y no usamos herramientas de analítica o rastreo.</li>
+      <li>Puedes pedir en cualquier momento conocer, corregir o borrar tus datos escribiendo a <a href="mailto:kkannon04@gmail.com">kkannon04@gmail.com</a>.</li>
+    </ul>
+  </div>
+
+  <h2>1. Quién es el responsable</h2>
+  <p>SoyAeronáutico es un portal de estudio independiente creado por <strong>Cristian Arcila</strong>, responsable del tratamiento de los datos personales que se recogen en <a href="https://soyaeronautico.com">soyaeronautico.com</a>. Esta política se rige por la Ley 1581 de 2012 de Colombia (protección de datos personales) y sus decretos reglamentarios.</p>
+  <p class="contacto">Contacto para todo lo relacionado con tus datos: <a href="mailto:kkannon04@gmail.com"><strong>kkannon04@gmail.com</strong></a></p>
+
+  <h2>2. Qué datos recogemos</h2>
+  <div class="tabla-scroll"><table>
+    <thead><tr><th>Dato</th><th>Cuándo</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td>Nombre, apellido y correo electrónico</td><td>Al crear tu cuenta</td><td>Identificarte, enviarte el correo de confirmación o de recuperación de contraseña y mostrar tu nombre a tu profesor.</td></tr>
+      <tr><td>Datos de tu cuenta de Google (nombre, correo y foto de perfil de Google)</td><td>Sólo si eliges «Continuar con Google»</td><td>Crear tu cuenta e iniciar sesión sin contraseña. No recibimos tu contraseña de Google ni otros datos de tu cuenta de Google.</td></tr>
+      <tr><td>Contraseña</td><td>Si te registras con correo</td><td>Iniciar sesión. Se guarda cifrada por el servicio de cuentas; nadie puede leerla, tampoco nosotros.</td></tr>
+      <tr><td>Foto de perfil</td><td>Sólo si decides subirla</td><td>Mostrarla en tu panel. Se guarda comprimida y puedes quitarla cuando quieras.</td></tr>
+      <tr><td>Progreso de estudio: intentos en quizzes y simuladores, páginas completadas</td><td>Mientras usas el sitio con tu cuenta</td><td>Mostrarte tu avance, tus notas y qué repasar.</td></tr>
+      <tr><td>Grupos, actividades, exámenes, respuestas, notas y comentarios del profesor</td><td>Si te unes al grupo de un profesor</td><td>Que tu profesor te asigne actividades, las califique y te dé retroalimentación.</td></tr>
+      <tr><td>Avisos de cambio de pestaña durante una actividad</td><td>Mientras presentas una actividad asignada</td><td>Informar a tu profesor; se te avisa en pantalla cuando ocurre.</td></tr>
+      <tr><td>Mensajes que escribes en las herramientas de práctica (por ejemplo, la terminal AFTN)</td><td>Cuando las usas</td><td>Que funcione el ejercicio y, si es una actividad, que tu profesor la revise.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Si usas el sitio sin cuenta, tu progreso se guarda sólo en tu navegador (almacenamiento local) y no nos llega.</p>
+
+  <h2>3. Quién más trata tus datos</h2>
+  <p>Para funcionar, SoyAeronáutico usa estos proveedores, que tratan los datos sólo por nuestra cuenta y para prestar su servicio:</p>
+  <ul>
+    <li><strong>Supabase</strong>: base de datos, cuentas de usuario y almacenamiento de la foto de perfil.</li>
+    <li><strong>Netlify</strong>: alojamiento del sitio web.</li>
+    <li><strong>Resend</strong>: envío de los correos de confirmación y de recuperación de contraseña.</li>
+    <li><strong>Google</strong>: sólo si eliges iniciar sesión con Google.</li>
+  </ul>
+  <p>Algunos de estos proveedores pueden almacenar los datos en servidores ubicados fuera de Colombia. Al crear tu cuenta autorizas esa transferencia, limitada a lo necesario para prestarte el servicio.</p>
+  <p>Tu profesor ve tu nombre, tu correo y tus entregas sólo en los grupos a los que tú te uniste. Los demás estudiantes no ven tus datos ni tus notas.</p>
+  <p>Al cargar las páginas, tu navegador también descarga tipografías de Google Fonts y librerías de jsDelivr; esos servicios pueden registrar tu dirección IP como cualquier sitio web.</p>
+
+  <h2>4. Almacenamiento en tu navegador</h2>
+  <p>Guardamos en tu navegador la sesión iniciada y algunas preferencias (modo oscuro, borradores de respuestas, notificaciones vistas). No usamos cookies de publicidad ni de seguimiento.</p>
+
+  <h2>5. Cuánto tiempo conservamos tus datos</h2>
+  <ul>
+    <li>Los datos de tu cuenta y tu progreso, mientras tengas la cuenta activa o hasta que pidas borrarlos.</li>
+    <li><strong>Exámenes asignados por un profesor:</strong> tus entregas, notas y el historial de correcciones se conservan como <strong>registro académico</strong>, para poder atender cualquier reclamo sobre una calificación. Se mantienen con tu nombre y correo aunque salgas del grupo o elimines tu cuenta, y sólo los ven tú y el profesor que te evaluó.</li>
+  </ul>
+
+  <h2>6. Tus derechos</h2>
+  <p>Como titular de tus datos tienes derecho a:</p>
+  <ul>
+    <li>Conocer, actualizar y rectificar tus datos. Tu foto de perfil la puedes cambiar o quitar tú mismo desde tu panel; para corregir cualquier otro dato, escríbenos.</li>
+    <li>Pedir prueba de la autorización que nos diste.</li>
+    <li>Ser informado sobre el uso que les damos.</li>
+    <li>Revocar la autorización y pedir que borremos tus datos, salvo los que debamos conservar como registro académico (punto 5).</li>
+    <li>Presentar quejas ante la Superintendencia de Industria y Comercio después de haber hecho tu solicitud con nosotros.</li>
+    <li>Acceder gratuitamente a tus datos.</li>
+  </ul>
+
+  <h2>7. Cómo ejercerlos</h2>
+  <p>Escribe a <a href="mailto:kkannon04@gmail.com">kkannon04@gmail.com</a> desde el correo de tu cuenta, indicando qué necesitas. Responderemos las consultas en un máximo de diez (10) días hábiles y los reclamos en un máximo de quince (15) días hábiles, como establece la Ley 1581 de 2012.</p>
+
+  <h2>8. Seguridad</h2>
+  <p>El acceso a los datos está restringido por permisos en la base de datos: cada estudiante sólo puede leer lo suyo y cada profesor sólo lo de sus grupos. Las calificaciones de las actividades se calculan en el servidor. Ningún sistema es infalible, pero aplicamos medidas razonables para proteger tu información.</p>
+
+  <h2>9. Menores de edad</h2>
+  <p>Si eres menor de 18 años, usa SoyAeronáutico con el conocimiento de tu madre, padre o representante legal. Tus datos se tratan sólo para los fines educativos de esta política.</p>
+
+  <h2>10. Cambios a esta política</h2>
+  <p>Si cambiamos esta política, publicaremos la nueva versión en esta misma página con su fecha de vigencia.</p>
+</main>
+
+<div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
+
+<script>
+  if (localStorage.getItem('aisTheme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+</script>
+</body>
+</html>
