@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+  <title>Examen · SoyAeronáutico</title>
+  <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Mismo sistema visual que tomar-actividad.html y los quizzes del portal */
+    :root {
+      --danger-rgb:214,69,69;
+      --on-accent:#FFFFFF;
+      --bg: #FFFFFF;
+      --panel: #F5F8FC;
+      --panel-alt: #EAF1FB;
+      --accent: #1657C6;
+      --accent-rgb: 22,87,198;
+      --text: #0F1B2D;
+      --text-muted: #5B6B7F;
+      --hairline: #E1E7EF;
+      --danger: #D64545;
+      --vfr: #2E9E6D; --vfr-texto:#1F7A53;
+      --mvfr: #3E7BFA;
+      --ambar: #b45309;
+      --topbar-bg: rgba(255,255,255,0.85);
+    }
+    [data-theme="dark"] {
+      --danger-rgb:201,86,79;
+      --on-accent:#0B1220;
+      --bg: #0B1220;
+      --panel: #121C2E;
+      --panel-alt: #17223A;
+      --accent: #4F8EF7;
+      --accent-rgb: 79,142,247;
+      --text: #EDEFF3;
+      --text-muted: #8894A8;
+      --hairline: #2A3548;
+      --danger: #C9564F;
+      --vfr: #4FA88C; --vfr-texto:#4FA88C;
+      --mvfr: #4A8FD1;
+      --ambar: #fbbf24;
+      --topbar-bg: rgba(11,18,32,0.85);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+    h1,h2,h3,h4 { font-family:'Archivo', sans-serif; margin:0; }
+    a { color:inherit; text-decoration:none; }
+    .mono { font-family:'IBM Plex Mono', monospace; }
+
+    .topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--topbar-bg); backdrop-filter:blur(8px); border-bottom:1px solid var(--hairline); gap:14px; }
+    .brand { display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; color:var(--text); }
+    .brand-mark { width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+    .brand-mark svg { display:block; }
+    .btn-volver-panel { display:inline-block; background:none; color:var(--accent); border:1px solid var(--accent); padding:8px 18px; border-radius:30px; font-weight:600; font-size:0.82rem; white-space:nowrap; cursor:pointer; font-family:'IBM Plex Sans'; }
+    .btn-volver-panel:hover { background:rgba(var(--accent-rgb),0.08); }
+
+    .contenedor { max-width:920px; margin:0 auto; padding:36px 32px 60px; }
+    .eyebrow { font-family:'IBM Plex Mono'; font-size:0.75rem; letter-spacing:0.18em; color:var(--vfr-texto); text-transform:uppercase; margin-bottom:12px; }
+    h1.titulo { font-size:clamp(1.5rem, 3.4vw, 2.1rem); line-height:1.25; margin-bottom:10px; }
+    .meta-actividad { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+    .meta-chip { font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); background:var(--panel); border:1px solid var(--hairline); padding:5px 12px; border-radius:20px; }
+    .meta-chip.alerta { color:var(--ambar); border-color:#f59e0b; background:rgba(245,158,11,0.1); }
+    .instrucciones { display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--hairline); border-left:3px solid var(--vfr); border-radius:10px; padding:14px 18px; margin-bottom:26px; font-size:0.9rem; color:var(--text-muted); line-height:1.6; white-space:pre-wrap; }
+    .instrucciones b { color:var(--text); }
+    .aviso-borrador { display:none; gap:10px; align-items:flex-start; background:rgba(var(--accent-rgb),0.08); border:1px solid var(--accent); border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:0.86rem; color:var(--text-muted); line-height:1.5; }
+    .aviso-borrador b { color:var(--text); }
+
+    .question-card { background:var(--panel); border:1px solid var(--hairline); border-radius:14px; padding:24px 26px; margin-bottom:22px; }
+    .question-card.correct { border-left:6px solid var(--vfr); }
+    .question-card.wrong { border-left:6px solid var(--danger); }
+    .question-card.parcial, .question-card.pendiente { border-left:6px solid #d97706; }
+    .question-card.anulada { opacity:0.75; }
+    .q-header { display:flex; align-items:baseline; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .q-num { font-family:'IBM Plex Mono'; font-weight:600; color:var(--accent); font-size:0.85rem; background:var(--bg); padding:2px 12px; border-radius:12px; border:1px solid var(--hairline); }
+    .ev-tipo { font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.04em; }
+    .ev-puntos { margin-left:auto; font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--text-muted); }
+    .q-text { font-weight:500; font-size:1rem; margin-bottom:14px; line-height:1.5; white-space:pre-wrap; }
+    .options { display:flex; flex-direction:column; gap:8px; }
+    .opt-btn { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:13px 16px; font-size:0.9rem; text-align:left; cursor:pointer; color:var(--text); font-family:'IBM Plex Sans'; transition:border-color .15s, background .15s; }
+    .opt-btn:hover:not(:disabled):not(div) { border-color:var(--accent); background:var(--panel-alt); }
+    div.opt-btn { cursor:default; }
+    .opt-btn.elegida { border-color:var(--accent); background:rgba(var(--accent-rgb),0.10); font-weight:600; }
+    .opt-btn.selected-correct { border-color:var(--vfr); background:rgba(46,158,109,0.14); font-weight:600; }
+    .opt-btn.selected-wrong { border-color:var(--danger); background:rgba(var(--danger-rgb),0.12); font-weight:600; }
+    .opt-btn.reveal-correct { border-color:var(--vfr); background:rgba(46,158,109,0.08); }
+    .opt-btn:disabled { cursor:default; }
+    .opt-btn:focus-visible, .ev-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .ev-marca { font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); font-weight:500; }
+
+    .ev-input { width:100%; padding:11px 13px; border-radius:8px; border:1px solid var(--hairline); background:var(--bg); color:var(--text); font-size:0.92rem; font-family:'IBM Plex Sans'; }
+    .ev-input:focus { border-color:var(--accent); outline:none; box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.2); }
+    textarea.ev-input { resize:vertical; line-height:1.55; }
+    .ev-area { min-height:150px; }
+    .ev-contador { text-align:right; font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); margin-top:6px; }
+    .ev-contador.excedido { color:var(--danger); font-weight:600; }
+    .ev-ayuda { font-size:0.84rem; color:var(--text-muted); margin:0 0 12px; }
+    .ev-contexto, .ev-notam { font-family:'IBM Plex Mono', monospace; font-size:0.85rem; line-height:1.6; background:#0F1B2D; color:#E6EDF7; border-radius:10px; padding:16px 18px; white-space:pre-wrap; word-break:break-word; margin:0 0 16px; }
+    [data-theme="dark"] .ev-contexto, [data-theme="dark"] .ev-notam { background:#060B14; border:1px solid var(--hairline); }
+    .ev-casillas { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(270px, 100%), 1fr)); gap:14px; }
+    .ev-casilla.ancha { grid-column:1 / -1; }
+    .ev-casilla > label { display:block; font-size:0.82rem; font-weight:600; margin-bottom:6px; }
+    .ev-pts { font-family:'IBM Plex Mono'; font-weight:500; font-size:0.7rem; color:var(--text-muted); }
+    .ev-fin { display:flex; flex-direction:column; gap:8px; }
+    .ev-check { display:flex; gap:8px; align-items:center; font-size:0.86rem; cursor:pointer; }
+    .ev-seccion { margin:34px 0 16px; padding-bottom:8px; border-bottom:2px solid var(--hairline); }
+    .ev-seccion h2 { font-size:1.25rem; }
+    .ev-seccion p { color:var(--text-muted); font-size:0.9rem; margin:6px 0 0; white-space:pre-wrap; }
+
+    /* Revisión / expediente */
+    .ev-insignia { font-family:'IBM Plex Mono'; font-size:0.74rem; font-weight:600; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+    .ev-insignia.ok { background:rgba(46,158,109,0.14); color:var(--vfr-texto); }
+    .ev-insignia.parcial, .ev-insignia.pendiente { background:rgba(245,158,11,0.16); color:var(--ambar); }
+    .ev-insignia.mal { background:rgba(var(--danger-rgb),0.12); color:var(--danger); }
+    .ev-insignia.anulada { background:var(--panel-alt); color:var(--text-muted); }
+    .ev-respuesta { background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:12px 14px; white-space:pre-wrap; word-break:break-word; line-height:1.6; }
+    .ev-clave { margin-top:12px; font-size:0.88rem; line-height:1.55; background:rgba(46,158,109,0.08); border:1px solid rgba(46,158,109,0.35); border-radius:8px; padding:10px 14px; }
+    .ev-clave ul { margin:6px 0 0 18px; padding:0; }
+    .ev-comentario { margin-top:12px; font-size:0.88rem; line-height:1.55; background:rgba(var(--accent-rgb),0.07); border-left:3px solid var(--accent); border-radius:6px; padding:10px 14px; }
+    .ev-vacio { color:var(--text-muted); font-style:italic; }
+    .ev-tabla-scroll { overflow-x:auto; }
+    .ev-tabla { width:100%; border-collapse:collapse; font-size:0.86rem; min-width:520px; }
+    .ev-tabla th, .ev-tabla td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--hairline); vertical-align:top; }
+    .ev-tabla th { font-family:'IBM Plex Mono'; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+    .ev-celda-clave { color:var(--vfr-texto); }
+    .ev-celda-clave small { color:var(--text-muted); }
+
+    .barra-entrega { position:sticky; bottom:0; background:var(--topbar-bg); backdrop-filter:blur(8px); border-top:1px solid var(--hairline); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .btn-entregar { background:var(--accent); color:var(--on-accent); border:none; padding:11px 26px; border-radius:30px; font-weight:700; font-size:0.9rem; cursor:pointer; font-family:'IBM Plex Sans'; }
+    .btn-entregar:hover:not(:disabled) { filter:brightness(1.08); }
+    .btn-entregar:disabled { opacity:0.55; cursor:not-allowed; }
+    .btn-secundario { background:none; border:1px solid var(--hairline); color:var(--text); padding:10px 20px; border-radius:30px; font-weight:600; font-size:0.85rem; cursor:pointer; font-family:'IBM Plex Sans'; }
+
+    .resultado-card { border:1px solid var(--hairline); border-left:5px solid var(--vfr); border-radius:14px; padding:24px 26px; background:var(--panel); margin-bottom:26px; }
+    .resultado-card.tier-bien { border-left-color:var(--mvfr); }
+    .resultado-card.tier-reforzar, .resultado-card.revision { border-left-color:#d97706; }
+    .resultado-nota { font-family:'IBM Plex Mono'; font-size:2rem; font-weight:700; color:var(--vfr); }
+    .resultado-card.tier-bien .resultado-nota { color:var(--mvfr); }
+    .resultado-card.tier-reforzar .resultado-nota, .resultado-card.revision .resultado-nota { color:#d97706; }
+    .resultado-card p { margin:10px 0 0; font-size:0.92rem; line-height:1.6; color:var(--text-muted); }
+    .resultado-acciones { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .ficha-datos { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px 20px; font-size:0.86rem; margin-top:14px; }
+    .ficha-datos span { display:block; font-family:'IBM Plex Mono'; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); }
+    .historial h2 { font-size:1.15rem; margin:34px 0 10px; }
+
+    .aviso-bloqueo { max-width:640px; margin:60px auto; padding:30px; text-align:center; background:var(--panel); border:1px solid var(--hairline); border-radius:14px; }
+    .aviso-bloqueo h2 { font-size:1.2rem; margin-bottom:10px; }
+    .aviso-bloqueo p { color:var(--text-muted); font-size:0.92rem; line-height:1.6; margin-bottom:18px; }
+    .cargando { text-align:center; padding:70px 20px; color:var(--text-muted); font-size:0.92rem; }
+
+    @media (max-width:600px) {
+      .topbar { padding:12px 16px; }
+      .contenedor { padding-left:16px; padding-right:16px; }
+      .question-card { padding:18px; }
+      .barra-entrega { padding:12px 16px; }
+    }
+
+    .credito-autor { border-top:1px solid rgba(128,128,128,0.22); margin-top:40px; padding:20px 24px; text-align:center; font-size:0.78rem; color:var(--text-muted); }
+    .credito-autor strong { color:inherit; font-weight:600; }
+
+    /* Guardar el expediente como PDF desde el navegador */
+    @media print {
+      .topbar, .no-imprimir, .barra-entrega, .credito-autor { display:none !important; }
+      body { background:#fff; color:#000; }
+      .contenedor { padding:0; max-width:none; }
+      .question-card, .resultado-card { break-inside:avoid; background:#fff; }
+      .ev-contexto, .ev-notam { background:#f3f4f6 !important; color:#000 !important; border:1px solid #ccc; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
+  <script src="supabase-config.js"></script>
+  <script src="modulos.js"></script>
+<script src="progreso.js"></script>
+<script src="notam-codigos.js"></script>
+<script src="evaluaciones-comun.js"></script>
+<link rel="stylesheet" href="movimiento.css">
+</head>
+<body>
+<script src="auth-gate.js"></script>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div>SoyAeronáutico</div>
+  </a>
+  <a href="Panel_estudiante.html#actividades" class="btn-volver-panel" id="enlaceVolver">Volver a mi panel</a>
+</header>
+
+<div id="cargando" class="cargando">Cargando…</div>
+
+<div id="contenido" style="display:none;">
+  <div class="contenedor">
+    <div class="eyebrow" id="eyebrow">Examen asignado</div>
+    <h1 class="titulo" id="titulo"></h1>
+    <div class="meta-actividad" id="meta"></div>
+    <div id="cabecera"></div>
+    <div class="instrucciones" id="instrucciones" style="display:none;"></div>
+    <div class="aviso-borrador" id="avisoBorrador"><span>💾</span><span>Recuperamos lo que ya habías respondido en este intento. Puedes seguir donde quedaste.</span></div>
+    <div id="preguntas"></div>
+    <div id="historial"></div>
+  </div>
+
+  <div class="barra-entrega" id="barraEntrega" style="display:none;">
+    <span class="mono"><span id="contadorRespondidas">0</span> / <span id="contadorTotal">0</span> respondidas</span>
+    <button class="btn-entregar" id="btnEntregar" type="button">Entregar examen</button>
+  </div>
+</div>
+
+<div id="bloqueo" class="aviso-bloqueo" style="display:none;">
+  <h2 id="bloqueoTitulo"></h2>
+  <p id="bloqueoTexto"></p>
+  <a href="Panel_estudiante.html#actividades" class="btn-volver-panel">Volver a mi panel</a>
+</div>
+
+<div class="credito-autor">Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</div>
+
+<script>
+  if (localStorage.getItem('aisTheme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+  const params = new URLSearchParams(location.search);
+  const pubId = params.get('p');
+  const entregaId = params.get('entrega');
+
+  function mostrarBloqueo(titulo, texto) {
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = 'none';
+    document.getElementById('bloqueoTitulo').textContent = titulo;
+    document.getElementById('bloqueoTexto').textContent = texto;
+    document.getElementById('bloqueo').style.display = 'block';
+  }
+
+  function fechaLegible(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' }) +
+           ' a las ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function mostrarContenido() {
+    document.getElementById('cargando').style.display = 'none';
+    document.getElementById('contenido').style.display = 'block';
+  }
+
+  // Preguntas en el orden en que las vio (o verá) el estudiante.
+  function ordenar(preguntas, orden) {
+    const porId = {};
+    preguntas.forEach(q => { porId[q.id] = q; });
+    const out = (Array.isArray(orden) ? orden : []).map(id => porId[id]).filter(Boolean);
+    preguntas.forEach(q => { if (!out.includes(q)) out.push(q); });
+    return out;
+  }
+
+  // ============================================================
+  // PRESENTAR EL EXAMEN
+  // ============================================================
+  let examen = null, orden = [], preguntas = [];
+  const respuestas = {};
+  let activo = false, claveBorrador = null;
+
+  window.addEventListener('beforeunload', e => {
+    if (!activo) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  function guardarBorrador() {
+    if (!claveBorrador) return;
+    try {
+      localStorage.setItem(claveBorrador, JSON.stringify({ respuestas, orden, intentosUsados: examen.intentos_usados, guardadoEn: Date.now() }));
+    } catch (e) { /* almacenamiento lleno o bloqueado: sólo se pierde el respaldo */ }
+  }
+  function leerBorrador() {
+    try { const b = JSON.parse(localStorage.getItem(claveBorrador)); return b && typeof b.respuestas === 'object' ? b : null; }
+    catch (e) { return null; }
+  }
+  function borrarBorrador() { try { localStorage.removeItem(claveBorrador); } catch (e) {} }
+
+  function actualizarContador() {
+    const evaluables = preguntas.filter(q => q.tipo !== 'seccion');
+    const n = evaluables.filter(q => evRespondida(q, respuestas[q.id])).length;
+    document.getElementById('contadorRespondidas').textContent = n;
+    document.getElementById('contadorTotal').textContent = evaluables.length;
+  }
+
+  async function presentar() {
+    const cliente = obtenerClienteAuth();
+    const { data, error } = await cliente.rpc('obtener_evaluacion', { p_pub: pubId });
+    if (error) { mostrarBloqueo('No pudimos abrir este examen', error.message); return; }
+    examen = data;
+
+    if (examen.no_abierta) {
+      mostrarBloqueo('Este examen todavía no abre', `Podrás presentarlo desde el ${fechaLegible(examen.abre_en)}.`);
+      return;
+    }
+    if (examen.cerrada) {
+      mostrarBloqueo('Este examen ya no recibe entregas',
+        examen.estado === 'liberada' ? 'Tu profesor ya liberó las notas. Puedes ver tu entrega desde tu panel.'
+        : examen.cierra_en && new Date(examen.cierra_en) <= new Date() ? `La fecha límite era el ${fechaLegible(examen.cierra_en)}.`
+        : 'Tu profesor cerró las entregas.');
+      return;
+    }
+    if (examen.sin_intentos) {
+      mostrarBloqueo('Ya usaste todos tus intentos', `Tu profesor permitió ${examen.intentos_max} intento${examen.intentos_max === 1 ? '' : 's'}. Verás tu nota cuando la libere.`);
+      return;
+    }
+
+    const sesion = await obtenerSesionActual();
+    claveBorrador = sesion ? `aisBorradorExamen_${pubId}_${sesion.user.id}` : null;
+    orden = examen.orden || [];
+    const borrador = claveBorrador ? leerBorrador() : null;
+    if (borrador && borrador.intentosUsados === examen.intentos_usados) {
+      // Mismo intento: se conserva el orden en que ya lo estaba viendo.
+      const mismoConjunto = Array.isArray(borrador.orden) && borrador.orden.length === orden.length &&
+        borrador.orden.slice().sort().join('|') === orden.slice().sort().join('|');
+      if (mismoConjunto) orden = borrador.orden;
+      if (Object.keys(borrador.respuestas).length) {
+        Object.assign(respuestas, borrador.respuestas);
+        document.getElementById('avisoBorrador').style.display = 'flex';
+      }
+    } else if (borrador) {
+      borrarBorrador();
+    }
+    preguntas = ordenar(examen.preguntas || [], orden);
+
+    document.getElementById('titulo').textContent = examen.titulo;
+    const total = preguntas.filter(q => q.tipo !== 'seccion').length;
+    const meta = [`${total} pregunta${total === 1 ? '' : 's'}`, `${evPuntosTexto(examen.puntaje_total)} puntos`];
+    if (examen.cierra_en) meta.push(`Cierra el ${fechaLegible(examen.cierra_en)}`);
+    meta.push(examen.intentos_max ? `Intento ${examen.intentos_usados + 1} de ${examen.intentos_max}` : 'Intentos ilimitados');
+    document.getElementById('meta').innerHTML = meta.map(m => `<span class="meta-chip ${m.startsWith('Cierra') ? 'alerta' : ''}">${evEsc(m)}</span>`).join('');
+    if (examen.descripcion) {
+      const ins = document.getElementById('instrucciones');
+      ins.innerHTML = `<span>📋</span><span><b>Instrucciones de tu profesor:</b> ${evEsc(examen.descripcion)}</span>`;
+      ins.style.display = 'flex';
+    }
+
+    const cont = document.getElementById('preguntas');
+    let n = 0;
+    preguntas.forEach(q => {
+      if (q.tipo !== 'seccion') n++;
+      cont.appendChild(evRenderPregunta(q, n, total, respuestas[q.id], valor => {
+        respuestas[q.id] = valor;
+        guardarBorrador();
+        actualizarContador();
+      }, false));
+    });
+
+    document.getElementById('barraEntrega').style.display = 'flex';
+    actualizarContador();
+    activo = true;
+    mostrarContenido();
+  }
+
+  document.getElementById('btnEntregar').addEventListener('click', async () => {
+    const btn = document.getElementById('btnEntregar');
+    const evaluables = preguntas.filter(q => q.tipo !== 'seccion');
+    const faltan = evaluables.filter(q => !evRespondida(q, respuestas[q.id])).length;
+    const msg = faltan
+      ? `Te faltan ${faltan} pregunta${faltan === 1 ? '' : 's'} por responder completa${faltan === 1 ? '' : 's'}. Lo que dejes en blanco cuenta como incorrecto.\n\n¿Entregar de todas formas?`
+      : '¿Entregar el examen? Después de entregar ya no puedes cambiar tus respuestas.';
+    if (!confirm(msg)) return;
+    btn.disabled = true;
+    btn.textContent = 'Entregando…';
+    const { data, error } = await obtenerClienteAuth().rpc('entregar_evaluacion', { p_pub: pubId, p_respuestas: respuestas, p_orden: orden });
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Entregar examen';
+      alert('No se pudo registrar tu entrega. Tus respuestas siguen guardadas en este navegador; inténtalo de nuevo.\n\n' + error.message);
+      return;
+    }
+    activo = false;
+    borrarBorrador();
+    document.getElementById('barraEntrega').style.display = 'none';
+    document.getElementById('preguntas').innerHTML = '';
+    document.getElementById('avisoBorrador').style.display = 'none';
+    const quedan = data.intentos_restantes;
+    document.getElementById('cabecera').innerHTML = `
+      <div class="resultado-card revision">
+        <div class="resultado-nota">Entregado ✓</div>
+        <p><strong>Tu examen quedó registrado</strong> (${fechaLegible(new Date().toISOString())}). Tu profesor revisará las respuestas abiertas y, cuando termine, liberará las notas: entonces verás tu nota, la clave completa y sus comentarios. Te avisaremos en tu panel.</p>
+        <p>${quedan === null ? 'Puedes presentarlo otra vez mientras siga abierto; cuenta tu mejor intento.'
+            : quedan > 0 ? `Te queda${quedan === 1 ? '' : 'n'} ${quedan} intento${quedan === 1 ? '' : 's'}; cuenta tu mejor intento.` : 'Era tu último intento.'}</p>
+        <div class="resultado-acciones no-imprimir">
+          <a href="evaluacion.html?entrega=${encodeURIComponent(data.entrega_id)}" class="btn-volver-panel">Ver lo que entregué</a>
+          <a href="Panel_estudiante.html#actividades" class="btn-secundario">Volver a mi panel</a>
+          ${quedan === null || quedan > 0 ? '<button class="btn-secundario" type="button" onclick="location.reload()">Presentarlo otra vez</button>' : ''}
+        </div>
+      </div>`;
+    document.getElementById('cabecera').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ============================================================
+  // EXPEDIENTE DE UNA ENTREGA
+  // ============================================================
+  const ACCIONES = {
+    publicar: 'Examen publicado', actualizar_publicacion: 'Fechas o intentos cambiados', entrega: 'Entrega registrada',
+    calificar: 'Calificación del profesor', recalculo: 'Nota recalculada', corregir_clave: 'Clave corregida por el profesor',
+    anular: 'Pregunta anulada', liberar: 'Notas liberadas'
+  };
+
+  async function expediente() {
+    const { data, error } = await obtenerClienteAuth().rpc('obtener_expediente', { p_entrega: entregaId });
+    if (error) { mostrarBloqueo('No pudimos abrir esta entrega', error.message); return; }
+    const x = data;
+    const esProf = x.vista === 'profesor';
+    const conNota = esProf || x.liberada;
+    const pub = x.publicacion, ent = x.entrega;
+    document.title = 'Expediente · ' + pub.titulo + ' · SoyAeronáutico';
+
+    const volver = document.getElementById('enlaceVolver');
+    if (esProf) { volver.href = 'panel-profesor.html'; volver.textContent = 'Volver al panel del profesor'; }
+
+    document.getElementById('eyebrow').textContent = esProf ? 'Expediente de la entrega' : (conNota ? 'Tu examen calificado' : 'Tu entrega');
+    document.getElementById('titulo').textContent = pub.titulo;
+    const meta = [pub.grupo_nombre, `Versión v${pub.version}`, `Intento ${ent.intento}`];
+    document.getElementById('meta').innerHTML = meta.map(m => `<span class="meta-chip">${evEsc(m)}</span>`).join('');
+
+    const pct = ent.porcentaje;
+    const tier = pct >= 90 ? 'excelente' : pct >= 70 ? 'bien' : 'reforzar';
+    document.getElementById('cabecera').innerHTML = conNota ? `
+      <div class="resultado-card ${ent.pendientes ? 'revision' : 'tier-' + tier}">
+        <div class="resultado-nota">${evPuntosTexto(ent.puntaje)} / ${evPuntosTexto(ent.puntaje_max)} · ${pct}%</div>
+        ${ent.pendientes ? `<p>Quedan <b>${ent.pendientes}</b> respuesta${ent.pendientes === 1 ? '' : 's'} por calificar: la nota todavía puede cambiar.</p>` : ''}
+        ${!x.liberada ? '<p><b>Notas sin liberar:</b> el estudiante todavía no ve esta nota.</p>' : ''}
+        <div class="ficha-datos">
+          <div><span>Estudiante</span>${evEsc(ent.estudiante_nombre)}${ent.estudiante_correo ? '<br>' + evEsc(ent.estudiante_correo) : ''}</div>
+          <div><span>Entregado</span>${evEsc(fechaLegible(ent.enviado_en))}</div>
+          <div><span>Versión del examen</span>v${pub.version}${pub.version_fecha ? ' · ' + evEsc(fechaLegible(pub.version_fecha)) : ''}</div>
+          ${pub.liberada_en ? `<div><span>Notas liberadas</span>${evEsc(fechaLegible(pub.liberada_en))}</div>` : ''}
+        </div>
+        <div class="resultado-acciones no-imprimir">
+          <button class="btn-volver-panel" type="button" onclick="window.print()">Guardar en PDF</button>
+        </div>
+      </div>` : `
+      <div class="resultado-card revision">
+        <div class="resultado-nota">En revisión</div>
+        <p>Entregaste este examen (${evEsc(fechaLegible(ent.enviado_en))}). Tu profesor todavía no ha liberado las notas: cuando lo haga verás aquí tu nota, la respuesta correcta de cada pregunta y sus comentarios.</p>
+        <p>Abajo está exactamente lo que respondiste.</p>
+      </div>`;
+
+    if (pub.descripcion) {
+      const ins = document.getElementById('instrucciones');
+      ins.innerHTML = `<span>📋</span><span><b>Instrucciones:</b> ${evEsc(pub.descripcion)}</span>`;
+      ins.style.display = 'flex';
+    }
+
+    const preg = ordenar(x.preguntas || [], x.orden);
+    const total = preg.filter(q => q.tipo !== 'seccion').length;
+    const cont = document.getElementById('preguntas');
+    let n = 0;
+    preg.forEach(q => {
+      if (q.tipo !== 'seccion') n++;
+      const cal = conNota && x.calificacion ? x.calificacion[q.id] : null;
+      cont.appendChild(evRenderRevision(q, n, total, (x.respuestas || {})[q.id], cal, conNota));
+    });
+
+    const hist = (x.historial || []).filter(h => h.accion !== 'publicar' || esProf);
+    if (hist.length) {
+      const preguntaNum = id => { const i = preg.filter(q => q.tipo !== 'seccion').findIndex(q => q.id === id); return i >= 0 ? `pregunta ${i + 1}` : ''; };
+      const detalle = h => {
+        const d = h.detalle || {};
+        const partes = [];
+        if (d.pregunta) partes.push(preguntaNum(d.pregunta));
+        const a = d.antes && (d.antes.totales ? d.antes.totales.porcentaje : d.antes.porcentaje);
+        const b = d.despues && (d.despues.totales ? d.despues.totales.porcentaje : d.despues.porcentaje);
+        if (a !== undefined && a !== null && b !== undefined && a !== b) partes.push(`${a}% → ${b}%`);
+        if (d.modo) partes.push({ completo: 'puntaje completo para todos', excluir: 'deja de contar', ninguno: 'anulación deshecha' }[d.modo] || '');
+        if (d.version && h.accion === 'entrega') partes.push('versión v' + d.version);
+        return partes.filter(Boolean).join(' · ');
+      };
+      document.getElementById('historial').innerHTML = `
+        <div class="historial">
+          <h2>Historial</h2>
+          <div class="ev-tabla-scroll"><table class="ev-tabla">
+            <thead><tr><th>Fecha</th><th>Qué pasó</th><th>Detalle</th><th>Motivo</th></tr></thead>
+            <tbody>${hist.map(h => `<tr>
+              <td>${evEsc(fechaLegible(h.fecha))}</td>
+              <td>${evEsc(ACCIONES[h.accion] || h.accion)}</td>
+              <td>${evEsc(detalle(h))}</td>
+              <td>${evEsc(h.motivo || '')}</td></tr>`).join('')}</tbody>
+          </table></div>
+        </div>`;
+    }
+    mostrarContenido();
+  }
+
+  (async function inicio() {
+    if (entregaId) return expediente();
+    if (pubId) return presentar();
+    mostrarBloqueo('No encontramos el examen', 'El enlace está incompleto. Vuelve a tu panel y ábrelo desde la sección Actividades.');
+  })();
+</script>
+</body>
+</html>

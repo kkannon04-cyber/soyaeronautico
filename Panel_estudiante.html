@@ -946,8 +946,10 @@
     return perfil;
   }
 
-  // La edición del nombre desde el panel se quitó (2026-10-11): no surtía
-  // efecto. El nombre sale del perfil con el que el estudiante se registró.
+  // La edición del nombre se quitó el 2026-10-11 porque no surtía efecto (el
+  // upsert chocaba con los permisos de perfiles). Volvió el 2026-10-14 en el
+  // menú del avatar («Editar mi nombre»), con update: ver
+  // guardarPerfilEstudiante() y abrirDialogoNombre() en progreso.js.
 
   // ---------- MÓDULOS DE QUIZ CON PROGRESO ----------
   // Derivados del catálogo único (modulos.js). La sección es explícita en el
@@ -1263,6 +1265,18 @@
       .sort((x, y) => x.dias - y.dias);
   }
 
+  // Enlace para presentar una actividad y su rótulo, según el tipo. Los
+  // exámenes diseñados (tipo 'evaluacion') se presentan en evaluacion.html.
+  function urlActividad(a){
+    return (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad='
+      : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad='
+      : a.tipo === 'evaluacion' ? 'evaluacion.html?p='
+      : 'tomar-actividad.html?id=') + encodeURIComponent(a.id);
+  }
+  function rotuloTipo(a){
+    return a.tipo === 'examen' || a.tipo === 'evaluacion' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura';
+  }
+
   function renderVencimientos(actividades){
     const card = document.getElementById('vencimientosCard');
     const cont = document.getElementById('vencimientosContainer');
@@ -1275,7 +1289,7 @@
       <div class="venc-item">
         <div>
           <h5>${escaparHTML(a.titulo)}</h5>
-          <p>${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura'} · cierra el ${formatFecha(a.fechaLimite)}</p>
+          <p>${rotuloTipo(a)} · cierra el ${formatFecha(a.fechaLimite)}</p>
         </div>
         <span class="venc-chip ${clasePlazo(a.dias)}">${textoPlazo(a.dias)}</span>
       </div>`).join('');
@@ -1316,7 +1330,7 @@
           titulo: 'Actividad pendiente',
           texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} — tu profesor la publicó y aún no la has presentado.`,
           fecha: a.fechaLimite || null,
-          url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+          url: urlActividad(a)
         });
       }
       // Y si además está a punto de cerrarse, un aviso aparte y más urgente.
@@ -1329,9 +1343,36 @@
             titulo: d <= 0 ? 'Cierra hoy' : (d === 1 ? 'Cierra mañana' : `Cierra en ${d} días`),
             texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''} deja de admitir entregas el ${formatFecha(a.fechaLimite)}.`,
             fecha: a.fechaLimite,
-            url: (a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id=') + encodeURIComponent(a.id)
+            url: urlActividad(a)
           });
         }
+      }
+
+      // Exámenes diseñados: aviso cuando el profesor libera las notas y
+      // cuando cambia una nota ya liberada (con su motivo).
+      if (a.tipo === 'evaluacion' && a.liberada && a.completada && a.ultimoResultadoId) {
+        const limite = Date.now() - NOTIF_CORRECCION_DIAS * 86400000;
+        const urlEntrega = 'evaluacion.html?entrega=' + encodeURIComponent(a.ultimoResultadoId);
+        if (a.liberadaEn && new Date(a.liberadaEn).getTime() >= limite) {
+          out.push({
+            id: 'evlib-' + a.id,
+            titulo: 'Notas liberadas',
+            texto: `${escaparHTML(a.titulo)}${a.grupoNombre ? ' (' + escaparHTML(a.grupoNombre) + ')' : ''}: sacaste ${a.mejor}%. Ya puedes ver la clave y los comentarios.`,
+            fecha: a.liberadaEn,
+            url: urlEntrega
+          });
+        }
+        (a.cambios || []).filter(c => c.fecha && new Date(c.fecha).getTime() >= limite).forEach(c => {
+          const antes = c.antes !== null && c.antes !== undefined ? c.antes : c.antes_pct;
+          const despues = c.despues !== null && c.despues !== undefined ? c.despues : c.despues_pct;
+          out.push({
+            id: 'evcamb-' + c.id,
+            titulo: 'Tu profesor revisó tu entrega',
+            texto: `${escaparHTML(a.titulo)}.${antes !== null && antes !== undefined && despues !== null && despues !== undefined && antes !== despues ? ` Tu nota pasó de ${antes}% a ${despues}%.` : ''}${c.motivo ? ' Motivo: ' + escaparHTML(c.motivo) : ''}`,
+            fecha: c.fecha,
+            url: urlEntrega
+          });
+        });
       }
     });
 
@@ -1778,9 +1819,11 @@
     const destino = a.tipo === 'plan_vuelo'
       ? 'simulador-plan-vuelo.html?resultado='
       : a.tipo === 'aftn' ? 'terminal-aftn.html?resultado='
+      : a.tipo === 'evaluacion' ? 'evaluacion.html?entrega='
       : (a.tipo === 'examen' || a.tipo === 'texto') ? 'revision-actividad.html?resultado=' : null;
     if (!destino) return '';
-    return `<a href="${destino}${encodeURIComponent(a.ultimoResultadoId)}"><button class="btn-launch secundario">Ver mi entrega</button></a>`;
+    const texto = a.tipo === 'evaluacion' && a.liberada ? 'Ver mi nota' : 'Ver mi entrega';
+    return `<a href="${destino}${encodeURIComponent(a.ultimoResultadoId)}"><button class="btn-launch secundario">${texto}</button></a>`;
   }
 
   // Una actividad como tarjeta, igual en el panel principal y en la sección
@@ -1790,7 +1833,10 @@
     const textoEstado = a.deGrupoAnterior ? 'Grupo anterior' : a.vencida ? 'Cerrada' : (a.completada ? 'Completada' : 'Pendiente');
 
     const detalles = [];
-    if (a.completada) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · mejor ${a.mejor}%`);
+    // En un examen diseñado la nota sólo existe cuando el profesor la libera.
+    if (a.completada && a.tipo === 'evaluacion' && a.mejor === null) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · en revisión`);
+    else if (a.completada) detalles.push(`${a.intentos} intento${a.intentos === 1 ? '' : 's'} · mejor ${a.mejor}%`);
+    if (a.noAbierta && a.abreEn) detalles.push(`Abre el ${formatFecha(a.abreEn)}`);
     if (a.fechaLimite) detalles.push(`${a.vencida ? 'Cerró' : 'Cierra'} el ${formatFecha(a.fechaLimite)}`);
     if (a.intentosMax) detalles.push(`Máx. ${a.intentosMax} intento${a.intentosMax === 1 ? '' : 's'}`);
 
@@ -1798,17 +1844,19 @@
     const accion = a.deGrupoAnterior ? ''
       : a.bloqueada
         ? `<button class="btn-launch" disabled>${a.vencida ? 'Cerrada' : 'Sin intentos'}</button>`
-        : `<a href="${a.tipo === 'plan_vuelo' ? 'simulador-plan-vuelo.html?actividad=' : a.tipo === 'aftn' ? 'terminal-aftn.html?actividad=' : 'tomar-actividad.html?id='}${encodeURIComponent(a.id)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
+        : a.noAbierta
+        ? '<button class="btn-launch" disabled>Todavía no abre</button>'
+        : `<a href="${urlActividad(a)}"><button class="btn-launch">${a.completada ? 'Volver a intentar' : 'Comenzar'}</button></a>`;
 
     return `
       <div class="module-item">
         <div class="module-info">
-          <div class="module-badge">${a.tipo === 'examen' ? 'Examen' : a.tipo === 'plan_vuelo' ? 'Plan de vuelo' : a.tipo === 'aftn' ? 'Mensajería AFTN' : 'Lectura'}</div>
+          <div class="module-badge">${rotuloTipo(a)}</div>
           <span class="badge-estado ${estado}">${textoEstado}</span>
           ${mostrarGrupo && a.grupoNombre ? `<span class="grupo-etiqueta">${escaparHTML(a.grupoNombre)}</span>` : ''}
           <h4>${escaparHTML(a.titulo)}</h4>
           <p>${detalles.length ? escaparHTML(detalles.join(' · ')) : (a.descripcion ? escaparHTML(a.descripcion) : 'Aún no la has presentado.')}</p>
-          ${a.completada ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : 'medio'}" style="width:${a.mejor}%"></div></div>` : ''}
+          ${a.completada && a.mejor !== null ? `<div class="module-progress"><div class="module-progress-fill ${a.mejor >= 70 ? 'ok' : 'medio'}" style="width:${a.mejor}%"></div></div>` : ''}
         </div>
         <div class="module-acciones">
           ${accion}
@@ -1852,10 +1900,15 @@
       return [];
     }
 
-    const [actividades, anteriores] = await Promise.all([
+    const [actividadesBase, anterioresBase, evaluaciones] = await Promise.all([
       _gruposEstudiante.length ? obtenerActividadesAsignadas() : Promise.resolve([]),
-      obtenerEntregasDeGruposAnteriores()
+      obtenerEntregasDeGruposAnteriores(),
+      obtenerEvaluacionesAsignadas()
     ]);
+    // Los exámenes diseñados se listan junto a las demás actividades; los de
+    // grupos de los que ya salió van con las entregas anteriores.
+    const actividades = actividadesBase.concat(evaluaciones.filter(e => !e.deGrupoAnterior));
+    const anteriores = anterioresBase.concat(evaluaciones.filter(e => e.deGrupoAnterior));
     _actDatos = { cargado: true, actividades, anteriores };
     actualizarNavActividades();
 
@@ -2116,7 +2169,7 @@
     renderAuthNav(sesion);
     if (sesion) await migrarProgresoLocalSiHaceFalta();
     await renderNombre();
-    montarFotoPerfil(avatarInitials);
+    montarFotoPerfil(avatarInitials, { alEditarNombre: () => abrirDialogoNombre(renderNombre) });
     await renderPanel();
     const paginasCompletadas = await renderModulosAprendizaje();
     const racha = await renderRacha();

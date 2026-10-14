@@ -90,6 +90,22 @@
 
   .forgot-link{ display:block; text-align:right; margin-top:8px; font-size:0.8rem; }
 
+  /* Registro / inicio con Google (botón blanco con la «G», según las pautas de marca de Google) */
+  .google-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:#FFFFFF; color:#1F1F1F; border:1px solid #747775; border-radius:30px;
+    padding:10px 14px; font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.9rem; cursor:pointer;
+  }
+  .google-btn:hover{ background:#F7F8F8; }
+  .google-btn:active{ transform:translateY(1px); }
+  .google-btn:focus-visible{ outline:2px solid rgba(var(--accent-rgb),0.5); outline-offset:2px; }
+  .google-btn:disabled{ opacity:0.6; cursor:default; }
+  .google-btn svg{ flex-shrink:0; }
+  .separador-auth{ display:flex; align-items:center; gap:10px; margin:18px 0 4px; color:var(--text-muted); font-size:0.76rem; }
+  .separador-auth::before, .separador-auth::after{ content:''; flex:1; height:1px; background:var(--hairline); }
+  .aviso-legal{ margin:18px 0 0; font-size:0.74rem; line-height:1.5; color:var(--text-muted); text-align:center; }
+  .aviso-legal a{ font-weight:600; }
+
   /* Sugerencia de corrección del correo (p. ej. «gmial.com» → «gmail.com») */
   .sugerencia-correo{ margin-top:8px; font-size:0.8rem; line-height:1.45; color:var(--text-muted); }
   .sugerencia-correo[hidden]{ display:none; }
@@ -153,6 +169,14 @@
         <button class="tab-btn" id="tabSignup" type="button">Crear cuenta</button>
       </div>
 
+      <div id="googleZona">
+        <button type="button" class="google-btn" id="googleBtn">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span id="googleBtnTxt">Continuar con Google</span>
+        </button>
+        <div class="separador-auth">o con tu correo</div>
+      </div>
+
       <form id="authForm">
         <div id="signupFields" style="display:none;">
           <label for="nombre">Nombre</label>
@@ -194,6 +218,8 @@
         </div>
         <p class="reenvio-nota">¿No lo ves? Revisa las carpetas <b>Spam</b> y <b>Promociones</b>. Llega desde <b>no-reply@soyaeronautico.com</b> y puede tardar unos minutos.</p>
       </div>
+
+      <p class="aviso-legal">Al crear tu cuenta o entrar con Google autorizas el tratamiento de tus datos según la <a href="privacidad.html">Política de privacidad</a>.</p>
     </div>
   </div>
 </div>
@@ -223,6 +249,8 @@
   const nuevaPasswordInput = document.getElementById('nuevaPassword');
   const recoverySubmitBtn = document.getElementById('recoverySubmitBtn');
   const tabsEl = document.querySelector('.tabs');
+  const googleBtn = document.getElementById('googleBtn');
+  const googleZona = document.getElementById('googleZona');
 
   let modo = 'login';
 
@@ -246,12 +274,12 @@
   // urls) más las páginas de cuenta y de actividades del profesor. Lista cerrada, para no permitir
   // redirecciones abiertas a otros sitios.
   const PAGINAS_VALIDAS = [
-    'Panel_estudiante.html', 'panel-profesor.html', 'tomar-actividad.html', 'revision-actividad.html',
+    'Panel_estudiante.html', 'panel-profesor.html', 'tomar-actividad.html', 'revision-actividad.html', 'evaluacion.html',
     ...((typeof MODULOS_CATALOGO !== 'undefined') ? MODULOS_CATALOGO.map(m => m.url) : []),
   ];
   // Parámetros que se conservan al volver: el código de invitación del profesor y los ids de las
   // actividades y resultados que llegan por las notificaciones.
-  const PARAMS_NEXT = ['codigo', 'id', 'actividad', 'resultado'];
+  const PARAMS_NEXT = ['codigo', 'id', 'actividad', 'resultado', 'p', 'entrega'];
 
   // En producción Netlify sirve las páginas sin extensión (/quiz-ats), así que auth-gate.js manda
   // next=quiz-ats o next=Panel_estudiante?codigo=XXXX. Se normaliza a «archivo.html» + parámetros
@@ -277,7 +305,7 @@
   const contextoNext = !nextInfo ? null
     : nextInfo.params.get('codigo') ? 'el grupo de tu profesor'
     : (NOMBRES_PAGINAS[nextInfo.pagina] || (modNext ? modNext.nombre : null)
-       || ({ 'panel-profesor.html': 'el Panel del Profesor', 'tomar-actividad.html': 'tu actividad', 'revision-actividad.html': 'la revisión de tu actividad' })[nextInfo.pagina]
+       || ({ 'panel-profesor.html': 'el Panel del Profesor', 'tomar-actividad.html': 'tu actividad', 'revision-actividad.html': 'la revisión de tu actividad', 'evaluacion.html': 'tu examen' })[nextInfo.pagina]
        || null);
 
   function setModo(nuevo){
@@ -351,6 +379,11 @@
       return 'No pudimos enviar el correo en este momento. Intenta de nuevo en unos minutos.';
     if(m.includes('expired') || m.includes('otp_expired') || m.includes('invalid or has expired') || m.includes('token has'))
       return 'El enlace ya no es válido: caducó o ya se usó. Pide uno nuevo con «Reenviar correo de confirmación».';
+    // Inicio con Google
+    if(m.includes('provider is not enabled') || m.includes('unsupported provider'))
+      return 'El inicio de sesión con Google todavía no está disponible. Usa tu correo y contraseña.';
+    if(m.includes('access_denied') || m.includes('access denied'))
+      return 'No se completó el inicio de sesión con Google. Puedes intentarlo de nuevo o usar tu correo.';
     return mensaje;
   }
 
@@ -454,6 +487,7 @@
     document.getElementById('cardSub').textContent = 'Escribe tu nueva contraseña para tu cuenta de SoyAeronáutico.';
     tabsEl.style.display = 'none';
     authForm.style.display = 'none';
+    googleZona.style.display = 'none';
     recoveryForm.style.display = 'block';
     msgBox.className = 'msg';
     msgBox.textContent = '';
@@ -474,6 +508,7 @@
     setupWarning.style.display = 'block';
     setupWarning.textContent = 'No se pudo cargar el servicio de cuentas (puede ser un problema momentáneo de conexión). Recarga la página para volver a intentarlo.';
     submitBtn.disabled = true;
+    googleBtn.disabled = true;
   } else {
     if (modoRecuperacion) mostrarFormularioRecuperacion();
 
@@ -512,6 +547,7 @@
       modoRecuperacion = false;
       tabsEl.style.display = '';
       authForm.style.display = '';
+      googleZona.style.display = '';
       recoveryForm.style.display = 'none';
       setModo('login');
     };
@@ -551,10 +587,43 @@
         volverAlFormulario();
         msgBox.className = 'msg error';
         msgBox.textContent = traducirErrorAuth(errTexto + ' ' + errCodigo);
-        mostrarReenvio('', 'Escribe tu correo arriba y pide un enlace nuevo:');
+        // El reenvío sólo tiene sentido si falló un enlace de correo; si el
+        // error viene de Google (p. ej. canceló), no hay correo que reenviar.
+        if (/otp|expired|confirm|email/i.test(errCodigo + ' ' + errTexto)) {
+          mostrarReenvio('', 'Escribe tu correo arriba y pide un enlace nuevo:');
+        }
       }
     }
   }
+
+  // ---------- REGISTRO / INICIO CON GOOGLE ----------
+  // Sirve igual para crear la cuenta y para entrar: si el correo de Google no
+  // tiene cuenta, Supabase la crea (confirmada, sin correo de verificación) y el
+  // trigger handle_new_user toma el nombre del perfil de Google. Al volver,
+  // supabase-js lee la sesión de la URL y onAuthStateChange (arriba) lleva al
+  // destino, conservando el ?next= original.
+  googleBtn.addEventListener('click', async () => {
+    if (!sbClient) return;
+    googleBtn.disabled = true;
+    document.getElementById('googleBtnTxt').textContent = 'Abriendo Google…';
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+    try { sessionStorage.removeItem('aisAuthGateRebotes'); } catch (e) {}
+    const { error } = await sbClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: loginConNext(),
+        // Deja elegir la cuenta aunque el navegador tenga varias abiertas.
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+    if (error) {
+      msgBox.className = 'msg error';
+      msgBox.textContent = traducirErrorAuth(error.message);
+      googleBtn.disabled = false;
+      document.getElementById('googleBtnTxt').textContent = 'Continuar con Google';
+    }
+  });
 
   forgotPasswordLink.addEventListener('click', async (e) => {
     e.preventDefault();

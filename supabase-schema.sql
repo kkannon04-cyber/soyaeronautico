@@ -3306,3 +3306,1171 @@ grant execute on function public.aftn_sincronizar(uuid, bigint, bigint) to authe
 grant execute on function public.aftn_enviar(uuid, text, text[], text, text, text) to authenticated;
 grant execute on function public.aftn_consignar(uuid, text, text) to authenticated;
 grant execute on function public.aftn_gestionar_sala(uuid, text, bigint) to authenticated;
+
+
+-- ============================================================
+-- EXÁMENES DISEÑADOS (2026-10-13)
+--
+-- El profesor diseña exámenes fuera de los grupos (borrador con
+-- autoguardado), los publica en un grupo a la vez y libera las notas a
+-- mano cuando termina de calificar. Tipos de pregunta: opción múltiple,
+-- respuesta corta, abierta y decodificación de NOTAM casilla por casilla.
+--
+-- Registro para reclamos:
+--   examen_versiones  copia congelada de lo publicado. No se edita ni se borra.
+--   publicaciones     no se borra si tiene entregas; sobrevive al grupo.
+--   entregas_examen   las respuestas no se modifican nunca; no se borra.
+--   historial_examen  sólo se agregan filas.
+-- La inmutabilidad la imponen triggers, no sólo la ausencia de botones.
+-- La calificación ocurre en el servidor (_ev_calificar); el estudiante
+-- no puede leer estas tablas directamente, sólo por funciones.
+-- No toca ninguna tabla ni función existente.
+-- ============================================================
+
+create table if not exists public.examenes (
+  id uuid primary key default gen_random_uuid(),
+  profesor_id uuid references public.perfiles(id) on delete set null,
+  titulo text not null default 'Examen sin título',
+  descripcion text,
+  contenido jsonb not null default '{"preguntas": []}'::jsonb,
+  estado text not null default 'borrador' check (estado in ('borrador', 'listo')),
+  eliminado_en timestamptz,
+  creado_en timestamptz not null default now(),
+  actualizado_en timestamptz not null default now()
+);
+create index if not exists examenes_profesor_idx on public.examenes (profesor_id);
+
+create table if not exists public.examen_versiones (
+  id uuid primary key default gen_random_uuid(),
+  examen_id uuid not null references public.examenes(id) on delete restrict,
+  profesor_id uuid references public.perfiles(id) on delete set null,
+  numero integer not null,
+  titulo text not null,
+  descripcion text,
+  contenido jsonb not null,
+  puntaje_total numeric not null,
+  creado_en timestamptz not null default now(),
+  unique (examen_id, numero)
+);
+create index if not exists examen_versiones_profesor_idx on public.examen_versiones (profesor_id);
+
+create table if not exists public.publicaciones (
+  id uuid primary key default gen_random_uuid(),
+  examen_id uuid not null references public.examenes(id) on delete restrict,
+  version_id uuid not null references public.examen_versiones(id) on delete restrict,
+  profesor_id uuid references public.perfiles(id) on delete set null,
+  grupo_id uuid references public.grupos(id) on delete set null,
+  grupo_nombre text not null,
+  titulo text not null,
+  abre_en timestamptz,
+  cierra_en timestamptz,
+  intentos_max integer check (intentos_max is null or intentos_max > 0),
+  barajar boolean not null default false,
+  estado text not null default 'abierta' check (estado in ('abierta', 'cerrada', 'liberada')),
+  -- Correcciones de clave y anulaciones hechas después de publicar:
+  -- { "claves": { "<pregunta>": {…} }, "anuladas": { "<pregunta>": "completo"|"excluir" } }
+  ajustes jsonb not null default '{"claves": {}, "anuladas": {}}'::jsonb,
+  liberada_en timestamptz,
+  -- Retirar una publicación sin entregas no la borra: deja de verse.
+  retirada_en timestamptz,
+  creado_en timestamptz not null default now()
+);
+create index if not exists publicaciones_profesor_idx on public.publicaciones (profesor_id);
+create index if not exists publicaciones_grupo_idx on public.publicaciones (grupo_id);
+create index if not exists publicaciones_examen_idx on public.publicaciones (examen_id);
+
+create table if not exists public.entregas_examen (
+  id uuid primary key default gen_random_uuid(),
+  publicacion_id uuid not null references public.publicaciones(id) on delete restrict,
+  profesor_id uuid references public.perfiles(id) on delete set null,
+  estudiante_id uuid references public.perfiles(id) on delete set null,
+  estudiante_nombre text not null,
+  estudiante_correo text,
+  intento integer not null,
+  orden jsonb not null,
+  respuestas jsonb not null,
+  calificacion jsonb not null default '{}'::jsonb,
+  puntaje numeric not null default 0,
+  puntaje_max numeric not null default 0,
+  porcentaje integer not null default 0,
+  pendientes integer not null default 0,
+  enviado_en timestamptz not null default now()
+);
+create index if not exists entregas_examen_pub_idx on public.entregas_examen (publicacion_id);
+create index if not exists entregas_examen_est_idx on public.entregas_examen (estudiante_id);
+create index if not exists entregas_examen_prof_idx on public.entregas_examen (profesor_id);
+
+-- Sin claves foráneas a propósito: el historial no debe cambiar ni
+-- desaparecer cuando se borra una cuenta.
+create table if not exists public.historial_examen (
+  id bigint generated always as identity primary key,
+  profesor_id uuid,
+  actor_id uuid,
+  examen_id uuid,
+  publicacion_id uuid,
+  entrega_id uuid,
+  accion text not null,
+  detalle jsonb not null default '{}'::jsonb,
+  motivo text,
+  creado_en timestamptz not null default now()
+);
+create index if not exists historial_examen_prof_idx on public.historial_examen (profesor_id);
+create index if not exists historial_examen_entrega_idx on public.historial_examen (entrega_id);
+create index if not exists historial_examen_pub_idx on public.historial_examen (publicacion_id);
+
+-- ---------- RLS ----------
+alter table public.examenes enable row level security;
+alter table public.examen_versiones enable row level security;
+alter table public.publicaciones enable row level security;
+alter table public.entregas_examen enable row level security;
+alter table public.historial_examen enable row level security;
+
+drop policy if exists "El profesor ve sus exámenes" on public.examenes;
+create policy "El profesor ve sus exámenes" on public.examenes
+  for select using (profesor_id = auth.uid());
+drop policy if exists "El profesor crea exámenes" on public.examenes;
+create policy "El profesor crea exámenes" on public.examenes
+  for insert with check (profesor_id = auth.uid() and public.es_profesor() and eliminado_en is null);
+drop policy if exists "El profesor edita sus exámenes" on public.examenes;
+create policy "El profesor edita sus exámenes" on public.examenes
+  for update using (profesor_id = auth.uid() and eliminado_en is null)
+  with check (profesor_id = auth.uid() and eliminado_en is null);
+-- Sin policy de DELETE: se elimina con eliminar_examen().
+revoke update on public.examenes from authenticated, anon;
+grant update (titulo, descripcion, contenido, estado, actualizado_en) on public.examenes to authenticated;
+
+drop policy if exists "El profesor ve sus versiones" on public.examen_versiones;
+create policy "El profesor ve sus versiones" on public.examen_versiones
+  for select using (profesor_id = auth.uid());
+drop policy if exists "El profesor ve sus publicaciones" on public.publicaciones;
+create policy "El profesor ve sus publicaciones" on public.publicaciones
+  for select using (profesor_id = auth.uid());
+drop policy if exists "El profesor ve las entregas de sus publicaciones" on public.entregas_examen;
+create policy "El profesor ve las entregas de sus publicaciones" on public.entregas_examen
+  for select using (profesor_id = auth.uid());
+drop policy if exists "El profesor ve su historial de exámenes" on public.historial_examen;
+create policy "El profesor ve su historial de exámenes" on public.historial_examen
+  for select using (profesor_id = auth.uid());
+
+revoke insert, update, delete on public.examen_versiones, public.publicaciones,
+  public.entregas_examen, public.historial_examen from authenticated, anon;
+revoke all on public.examenes, public.examen_versiones, public.publicaciones,
+  public.entregas_examen, public.historial_examen from anon;
+
+-- ---------- INMUTABILIDAD ----------
+-- Lo único que puede cambiar en una versión es que se borre la cuenta del
+-- profesor (on delete set null). Nada más.
+create or replace function public._ev_trg_version_inmutable()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if tg_op = 'DELETE' then
+    raise exception 'Las versiones publicadas de un examen no se pueden borrar.';
+  end if;
+  if row(new.id, new.examen_id, new.numero, new.titulo, new.descripcion, new.contenido, new.puntaje_total, new.creado_en)
+     is distinct from row(old.id, old.examen_id, old.numero, old.titulo, old.descripcion, old.contenido, old.puntaje_total, old.creado_en)
+     or (new.profesor_id is not null and new.profesor_id is distinct from old.profesor_id) then
+    raise exception 'Las versiones publicadas de un examen no se pueden modificar.';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists ev_version_inmutable on public.examen_versiones;
+create trigger ev_version_inmutable before update or delete on public.examen_versiones
+  for each row execute function public._ev_trg_version_inmutable();
+
+-- En una entrega puede cambiar la calificación (por las funciones del
+-- profesor); lo que respondió el estudiante, cuándo y quién, nunca.
+create or replace function public._ev_trg_entrega_inmutable()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if tg_op = 'DELETE' then
+    raise exception 'Las entregas de un examen no se pueden borrar.';
+  end if;
+  if row(new.id, new.publicacion_id, new.estudiante_nombre, new.estudiante_correo, new.intento, new.orden, new.respuestas, new.enviado_en)
+     is distinct from row(old.id, old.publicacion_id, old.estudiante_nombre, old.estudiante_correo, old.intento, old.orden, old.respuestas, old.enviado_en)
+     or (new.estudiante_id is not null and new.estudiante_id is distinct from old.estudiante_id)
+     or (new.profesor_id is not null and new.profesor_id is distinct from old.profesor_id) then
+    raise exception 'Las respuestas de una entrega no se pueden modificar.';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists ev_entrega_inmutable on public.entregas_examen;
+create trigger ev_entrega_inmutable before update or delete on public.entregas_examen
+  for each row execute function public._ev_trg_entrega_inmutable();
+
+create or replace function public._ev_trg_historial_inmutable()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  raise exception 'El historial de exámenes no se puede modificar ni borrar.';
+end;
+$$;
+drop trigger if exists ev_historial_inmutable on public.historial_examen;
+create trigger ev_historial_inmutable before update or delete on public.historial_examen
+  for each row execute function public._ev_trg_historial_inmutable();
+
+-- ---------- CALIFICACIÓN ----------
+create or replace function public._ev_norm(p text)
+returns text language sql immutable set search_path = public as $$
+  select regexp_replace(
+           regexp_replace(
+             upper(translate(trim(coalesce(p, '')),
+               'áéíóúüñàèìòùâêîôûÁÉÍÓÚÜÑÀÈÌÒÙÂÊÎÔÛ', 'aeiouunaeiouaeiouAEIOUUNAEIOUAEIOU')),
+             '\s+', ' ', 'g'),
+           '[\.\s]+$', '');
+$$;
+
+create or replace function public._ev_num(p text)
+returns numeric language plpgsql immutable set search_path = public as $$
+declare v text;
+begin
+  v := replace(regexp_replace(coalesce(p, ''), '[^0-9,\.-]', '', 'g'), ',', '.');
+  if v = '' or v !~ '^-?[0-9]+(\.[0-9]+)?$' then return null; end if;
+  return v::numeric;
+end;
+$$;
+
+-- Coordenadas a (lat, lon) en minutos con signo, para comparar
+-- «5129N00028W» con «51°29'N 0°28'W».
+create or replace function public._ev_coord(p text)
+returns numeric[] language plpgsql immutable set search_path = public as $$
+declare m text[]; s text;
+begin
+  s := regexp_replace(upper(coalesce(p, '')), '[^0-9NSEW]+', ' ', 'g');
+  m := regexp_match(s, '(\d{1,2})\s*(\d{2})\s*([NS])\s*(\d{1,3})\s*(\d{2})\s*([EW])');
+  if m is null then return null; end if;
+  return array[
+    (m[1]::numeric * 60 + m[2]::numeric) * case when m[3] = 'S' then -1 else 1 end,
+    (m[4]::numeric * 60 + m[5]::numeric) * case when m[6] = 'W' then -1 else 1 end
+  ];
+end;
+$$;
+
+-- ¿Acertó la casilla? null = se califica a mano.
+create or replace function public._ev_casilla_ok(c jsonb, v jsonb)
+returns boolean language plpgsql immutable set search_path = public as $$
+declare
+  t text;
+  k jsonb := c -> 'clave';
+begin
+  if coalesce((c ->> 'manual')::boolean, false) or c ->> 'entrada' = 'libre' then
+    return null;
+  end if;
+  if v is null or jsonb_typeof(v) = 'null' then return false; end if;
+  t := case when jsonb_typeof(v) = 'string' then v #>> '{}' else null end;
+
+  case c ->> 'entrada'
+    when 'opcion' then
+      return t is not null and t = (k #>> '{}');
+    when 'texto' then
+      return public._ev_norm(t) <> '' and exists (
+        select 1 from jsonb_array_elements_text(
+          coalesce(c -> 'aceptadas', '[]'::jsonb) || jsonb_build_array(k #>> '{}')) x
+        where public._ev_norm(x) = public._ev_norm(t));
+    when 'numero' then
+      return public._ev_num(t) is not null and public._ev_num(t) = public._ev_num(k #>> '{}');
+    when 'coord' then
+      return public._ev_coord(t) is not null and public._ev_coord(t) = public._ev_coord(k #>> '{}');
+    when 'fecha' then
+      return t is not null and left(t, 16) = left(k #>> '{}', 16);
+    when 'fecha_fin' then
+      if jsonb_typeof(v) <> 'object' then return false; end if;
+      if coalesce((k ->> 'perm')::boolean, false) then
+        return coalesce((v ->> 'perm')::boolean, false);
+      end if;
+      return not coalesce((v ->> 'perm')::boolean, false)
+        and left(coalesce(v ->> 'fecha', ''), 16) = left(coalesce(k ->> 'fecha', ''), 16)
+        and coalesce((v ->> 'est')::boolean, false) = coalesce((k ->> 'est')::boolean, false);
+    else
+      return null;
+  end case;
+end;
+$$;
+
+-- Preguntas efectivas = versión publicada + claves corregidas después.
+create or replace function public._ev_preguntas(p_contenido jsonb, p_ajustes jsonb)
+returns jsonb language sql immutable set search_path = public as $$
+  select coalesce(jsonb_agg(
+           q || coalesce(p_ajustes -> 'claves' -> (q ->> 'id'), '{}'::jsonb)
+           order by ord), '[]'::jsonb)
+  from jsonb_array_elements(coalesce(p_contenido -> 'preguntas', '[]'::jsonb)) with ordinality as e(q, ord);
+$$;
+
+create or replace function public._ev_max_pregunta(q jsonb)
+returns numeric language sql immutable set search_path = public as $$
+  select case
+    when q ->> 'tipo' = 'seccion' then 0
+    when q ->> 'tipo' = 'notam' then coalesce((
+      select sum(coalesce((c ->> 'puntos')::numeric, 0))
+      from jsonb_array_elements(coalesce(q -> 'casillas', '[]'::jsonb)) c), 0)
+    else coalesce((q ->> 'puntos')::numeric, 0)
+  end;
+$$;
+
+-- Califica todas las preguntas. Respeta lo que el profesor calificó a mano
+-- (marca "manual" en p_previa) y las anulaciones de la publicación.
+create or replace function public._ev_calificar(p_preguntas jsonb, p_anuladas jsonb, p_resp jsonb, p_previa jsonb)
+returns jsonb language plpgsql immutable set search_path = public as $$
+declare
+  q jsonb; c jsonb; prev jsonb; pc jsonb; v jsonb;
+  pid text; anul text; tipo text;
+  maxq numeric; pts numeric; cmax numeric; cpts numeric;
+  ok boolean; cok boolean; pend integer;
+  cas jsonb; item jsonb;
+  res jsonb := '{}'::jsonb;
+  elegidas jsonb; correctas jsonb;
+begin
+  for q in select x from jsonb_array_elements(coalesce(p_preguntas, '[]'::jsonb)) x loop
+    tipo := q ->> 'tipo';
+    if tipo = 'seccion' then continue; end if;
+    pid  := q ->> 'id';
+    prev := coalesce(p_previa -> pid, '{}'::jsonb);
+    anul := p_anuladas ->> pid;
+    maxq := public._ev_max_pregunta(q);
+    v    := p_resp -> pid;
+    pend := 0; cas := null; ok := null; pts := null;
+
+    if tipo = 'opcion' then
+      select coalesce(jsonb_agg(e order by e), '[]'::jsonb) into elegidas
+        from (select distinct (x #>> '{}')::int e from jsonb_array_elements(
+          case when jsonb_typeof(v) = 'array' then v else '[]'::jsonb end) x
+          where (x #>> '{}') ~ '^\d+$') s;
+      select coalesce(jsonb_agg(e order by e), '[]'::jsonb) into correctas
+        from (select distinct (x #>> '{}')::int e from jsonb_array_elements(
+          coalesce(q -> 'correctas', '[]'::jsonb)) x) s;
+      ok  := jsonb_array_length(elegidas) > 0 and elegidas = correctas;
+      pts := case when ok then maxq else 0 end;
+
+    elsif tipo = 'corta' then
+      ok := public._ev_norm(v #>> '{}') <> '' and exists (
+        select 1 from jsonb_array_elements_text(coalesce(q -> 'aceptadas', '[]'::jsonb)) x
+        where public._ev_norm(x) = public._ev_norm(v #>> '{}'));
+      pts := case when ok then maxq else 0 end;
+
+    elsif tipo = 'abierta' then
+      pend := 1;
+
+    elsif tipo = 'notam' then
+      cas := '{}'::jsonb; pts := 0;
+      for c in select x from jsonb_array_elements(coalesce(q -> 'casillas', '[]'::jsonb)) x loop
+        cmax := coalesce((c ->> 'puntos')::numeric, 0);
+        pc   := coalesce(prev -> 'casillas' -> (c ->> 'id'), '{}'::jsonb);
+        cok  := public._ev_casilla_ok(c, case when jsonb_typeof(v) = 'object' then v -> (c ->> 'id') else null end);
+        if coalesce((pc ->> 'manual')::boolean, false) then
+          cpts := least(greatest(coalesce((pc ->> 'puntos')::numeric, 0), 0), cmax);
+          cok  := cpts >= cmax;
+          cas  := cas || jsonb_build_object(c ->> 'id', jsonb_build_object('max', cmax, 'puntos', cpts, 'ok', cok, 'manual', true));
+        elsif cok is null then
+          pend := pend + 1;
+          cas  := cas || jsonb_build_object(c ->> 'id', jsonb_build_object('max', cmax, 'puntos', null, 'ok', null, 'manual', false));
+        else
+          cpts := case when cok then cmax else 0 end;
+          cas  := cas || jsonb_build_object(c ->> 'id', jsonb_build_object('max', cmax, 'puntos', cpts, 'ok', cok, 'manual', false));
+        end if;
+        pts := pts + coalesce(cpts, 0);
+        cpts := null;
+      end loop;
+    end if;
+
+    -- Nota puesta a mano por el profesor a la pregunta completa.
+    if tipo <> 'notam' and coalesce((prev ->> 'manual')::boolean, false) then
+      pts  := least(greatest(coalesce((prev ->> 'puntos')::numeric, 0), 0), maxq);
+      ok   := pts >= maxq;
+      pend := 0;
+    end if;
+
+    item := jsonb_build_object(
+      'max', maxq,
+      'puntos', case when tipo = 'abierta' and pend > 0 then null else pts end,
+      'ok', ok,
+      'pendientes', pend,
+      'manual', coalesce((prev ->> 'manual')::boolean, false),
+      'comentario', prev -> 'comentario');
+    if cas is not null then item := item || jsonb_build_object('casillas', cas); end if;
+
+    if anul = 'excluir' then
+      item := item || jsonb_build_object('max', 0, 'puntos', 0, 'ok', null, 'pendientes', 0, 'anulada', 'excluir');
+    elsif anul = 'completo' then
+      item := item || jsonb_build_object('puntos', maxq, 'ok', true, 'pendientes', 0, 'anulada', 'completo');
+    end if;
+
+    res := res || jsonb_build_object(pid, item);
+  end loop;
+  return res;
+end;
+$$;
+
+-- Totales de una calificación: puntaje, máximo, porcentaje y pendientes.
+create or replace function public._ev_totales(p_cal jsonb)
+returns jsonb language sql immutable set search_path = public as $$
+  select jsonb_build_object(
+    'puntaje', coalesce(sum(coalesce((i ->> 'puntos')::numeric, 0)), 0),
+    'max', coalesce(sum(coalesce((i ->> 'max')::numeric, 0)), 0),
+    'pendientes', coalesce(sum(coalesce((i ->> 'pendientes')::int, 0)), 0)::int,
+    'porcentaje', case when coalesce(sum(coalesce((i ->> 'max')::numeric, 0)), 0) > 0
+      then round(100 * coalesce(sum(coalesce((i ->> 'puntos')::numeric, 0)), 0)
+                 / sum(coalesce((i ->> 'max')::numeric, 0)))::int else 0 end)
+  from jsonb_each(coalesce(p_cal, '{}'::jsonb)) as e(k, i);
+$$;
+
+-- Recalifica una entrega y guarda calificación y totales.
+create or replace function public._ev_recalcular(p_entrega uuid, p_cal_previa jsonb)
+returns jsonb language plpgsql set search_path = public as $$
+declare
+  e public.entregas_examen%rowtype;
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  cal jsonb; tot jsonb;
+begin
+  select * into e from public.entregas_examen where id = p_entrega;
+  select * into p from public.publicaciones where id = e.publicacion_id;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  cal := public._ev_calificar(public._ev_preguntas(vv.contenido, p.ajustes),
+                              coalesce(p.ajustes -> 'anuladas', '{}'::jsonb),
+                              e.respuestas, coalesce(p_cal_previa, e.calificacion));
+  tot := public._ev_totales(cal);
+  update public.entregas_examen set
+    calificacion = cal,
+    puntaje      = (tot ->> 'puntaje')::numeric,
+    puntaje_max  = (tot ->> 'max')::numeric,
+    porcentaje   = (tot ->> 'porcentaje')::int,
+    pendientes   = (tot ->> 'pendientes')::int
+  where id = p_entrega;
+  return tot;
+end;
+$$;
+
+-- Lo que puede ver el estudiante antes de responder. LISTA BLANCA: sólo
+-- viajan los campos necesarios para responder; cualquier campo con datos
+-- de la clave (o uno que se agregue en el futuro) queda fuera por defecto.
+create or replace function public._ev_sin_claves(p_preguntas jsonb)
+returns jsonb language sql immutable set search_path = public as $$
+  select coalesce(jsonb_agg(
+    jsonb_strip_nulls(jsonb_build_object(
+      'id', q -> 'id', 'tipo', q -> 'tipo', 'titulo', q -> 'titulo', 'texto', q -> 'texto',
+      'enunciado', q -> 'enunciado', 'contexto', q -> 'contexto', 'opciones', q -> 'opciones',
+      'multiple', q -> 'multiple', 'limite_palabras', q -> 'limite_palabras', 'puntos', q -> 'puntos',
+      'notam', q -> 'notam',
+      'casillas', case when q ->> 'tipo' = 'notam' then (
+        select coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+          'id', c -> 'id', 'etiqueta', c -> 'etiqueta', 'entrada', c -> 'entrada',
+          'lista', c -> 'lista', 'puntos', c -> 'puntos')) order by o), '[]'::jsonb)
+        from jsonb_array_elements(coalesce(q -> 'casillas', '[]'::jsonb)) with ordinality as cc(c, o)) end))
+    order by ord), '[]'::jsonb)
+  from jsonb_array_elements(coalesce(p_preguntas, '[]'::jsonb)) with ordinality as e(q, ord);
+$$;
+
+-- Orden de presentación: si se baraja, se mezclan las preguntas dentro de
+-- cada sección; las secciones quedan en su sitio.
+create or replace function public._ev_orden(p_preguntas jsonb, p_barajar boolean)
+returns jsonb language plpgsql volatile set search_path = public as $$
+declare
+  res jsonb := '[]'::jsonb;
+  bloque jsonb := '[]'::jsonb;
+  q jsonb;
+begin
+  for q in select x from jsonb_array_elements(coalesce(p_preguntas, '[]'::jsonb)) x loop
+    if q ->> 'tipo' = 'seccion' then
+      if p_barajar then
+        select coalesce(jsonb_agg(y order by random()), '[]'::jsonb) into bloque from jsonb_array_elements(bloque) y;
+      end if;
+      res := res || bloque || jsonb_build_array(q ->> 'id');
+      bloque := '[]'::jsonb;
+    else
+      bloque := bloque || jsonb_build_array(q ->> 'id');
+    end if;
+  end loop;
+  if p_barajar then
+    select coalesce(jsonb_agg(y order by random()), '[]'::jsonb) into bloque from jsonb_array_elements(bloque) y;
+  end if;
+  return res || bloque;
+end;
+$$;
+
+create or replace function public._ev_historial(p_profesor uuid, p_examen uuid, p_pub uuid, p_entrega uuid,
+                                                p_accion text, p_detalle jsonb, p_motivo text)
+returns void language sql set search_path = public as $$
+  insert into public.historial_examen (profesor_id, actor_id, examen_id, publicacion_id, entrega_id, accion, detalle, motivo)
+  values (p_profesor, auth.uid(), p_examen, p_pub, p_entrega, p_accion, coalesce(p_detalle, '{}'::jsonb), nullif(trim(coalesce(p_motivo, '')), ''));
+$$;
+
+-- Versión vigente del borrador: reutiliza la última si no cambió nada.
+create or replace function public._ev_version_actual(p_examen uuid)
+returns uuid language plpgsql set search_path = public as $$
+declare
+  ex public.examenes%rowtype;
+  ult public.examen_versiones%rowtype;
+  v_id uuid;
+  v_max numeric;
+begin
+  select * into ex from public.examenes where id = p_examen;
+  if jsonb_typeof(ex.contenido -> 'preguntas') <> 'array' then
+    raise exception 'El examen no tiene preguntas.';
+  end if;
+  select coalesce(sum(public._ev_max_pregunta(q)), 0) into v_max
+    from jsonb_array_elements(ex.contenido -> 'preguntas') q;
+  if v_max <= 0 then
+    raise exception 'El examen no tiene preguntas con puntaje: agrega al menos una antes de publicarlo.';
+  end if;
+
+  select * into ult from public.examen_versiones where examen_id = p_examen order by numero desc limit 1;
+  if found and ult.contenido = ex.contenido and ult.titulo = ex.titulo
+     and ult.descripcion is not distinct from ex.descripcion then
+    return ult.id;
+  end if;
+
+  insert into public.examen_versiones (examen_id, profesor_id, numero, titulo, descripcion, contenido, puntaje_total)
+  values (p_examen, ex.profesor_id, coalesce(ult.numero, 0) + 1, ex.titulo, ex.descripcion, ex.contenido, v_max)
+  returning id into v_id;
+  return v_id;
+end;
+$$;
+
+-- ============================================================
+-- FUNCIONES DEL PROFESOR
+-- ============================================================
+
+create or replace function public.publicar_examen(p_examen uuid, p_grupo uuid, p_abre timestamptz,
+                                                  p_cierra timestamptz, p_intentos integer, p_barajar boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  ex public.examenes%rowtype;
+  g public.grupos%rowtype;
+  v_ver uuid; v_num integer; v_pub uuid; v_nueva boolean;
+  v_antes integer;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  select * into ex from public.examenes where id = p_examen and profesor_id = auth.uid() and eliminado_en is null;
+  if not found then raise exception 'No encontramos ese examen.'; end if;
+  select * into g from public.grupos where id = p_grupo and profesor_id = auth.uid();
+  if not found then raise exception 'Ese grupo no es tuyo.'; end if;
+  if p_abre is not null and p_cierra is not null and p_cierra <= p_abre then
+    raise exception 'El cierre debe ser posterior a la apertura.';
+  end if;
+  if p_intentos is not null and p_intentos < 1 then raise exception 'Los intentos deben ser 1 o más.'; end if;
+
+  select count(*) into v_antes from public.examen_versiones where examen_id = p_examen;
+  v_ver := public._ev_version_actual(p_examen);
+  select numero into v_num from public.examen_versiones where id = v_ver;
+  v_nueva := v_num > v_antes;
+
+  update public.examenes set estado = 'listo' where id = p_examen;
+
+  insert into public.publicaciones (examen_id, version_id, profesor_id, grupo_id, grupo_nombre, titulo,
+                                    abre_en, cierra_en, intentos_max, barajar)
+  values (p_examen, v_ver, auth.uid(), p_grupo, g.nombre, ex.titulo, p_abre, p_cierra, p_intentos, coalesce(p_barajar, false))
+  returning id into v_pub;
+
+  perform public._ev_historial(auth.uid(), p_examen, v_pub, null, 'publicar',
+    jsonb_build_object('version', v_num, 'grupo', g.nombre, 'abre', p_abre, 'cierra', p_cierra, 'intentos', p_intentos), null);
+
+  return jsonb_build_object('publicacion_id', v_pub, 'version', v_num, 'version_nueva', v_nueva);
+end;
+$$;
+
+-- Fechas e intentos se pueden cambiar mientras no se liberen las notas.
+create or replace function public.actualizar_publicacion(p_pub uuid, p_abre timestamptz, p_cierra timestamptz, p_intentos integer)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare p public.publicaciones%rowtype;
+begin
+  select * into p from public.publicaciones where id = p_pub and profesor_id = auth.uid();
+  if not found then raise exception 'No encontramos esa publicación.'; end if;
+  if p.estado = 'liberada' then raise exception 'Las notas ya se liberaron: la publicación quedó cerrada.'; end if;
+  if p_abre is not null and p_cierra is not null and p_cierra <= p_abre then
+    raise exception 'El cierre debe ser posterior a la apertura.';
+  end if;
+  if p_intentos is not null and p_intentos < 1 then raise exception 'Los intentos deben ser 1 o más.'; end if;
+  update public.publicaciones set abre_en = p_abre, cierra_en = p_cierra, intentos_max = p_intentos where id = p_pub;
+  perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'actualizar_publicacion',
+    jsonb_build_object('antes', jsonb_build_object('abre', p.abre_en, 'cierra', p.cierra_en, 'intentos', p.intentos_max),
+                       'despues', jsonb_build_object('abre', p_abre, 'cierra', p_cierra, 'intentos', p_intentos)), null);
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+-- cerrar | reabrir | retirar (sólo sin entregas) | actualizar_version (sólo sin entregas)
+create or replace function public.gestionar_publicacion(p_pub uuid, p_accion text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  n integer; v_ver uuid; v_num integer; v_ant integer;
+begin
+  select * into p from public.publicaciones where id = p_pub and profesor_id = auth.uid() and retirada_en is null;
+  if not found then raise exception 'No encontramos esa publicación.'; end if;
+  select count(*) into n from public.entregas_examen where publicacion_id = p_pub;
+
+  if p_accion = 'cerrar' then
+    if p.estado <> 'abierta' then raise exception 'La publicación ya no está abierta.'; end if;
+    update public.publicaciones set estado = 'cerrada' where id = p_pub;
+  elsif p_accion = 'reabrir' then
+    if p.estado <> 'cerrada' then raise exception 'Sólo se puede reabrir una publicación cerrada sin notas liberadas.'; end if;
+    update public.publicaciones set estado = 'abierta' where id = p_pub;
+  elsif p_accion = 'retirar' then
+    if n > 0 then raise exception 'Ya hay % entrega(s): la publicación no se puede retirar. Ciérrala en su lugar.', n; end if;
+    perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'retirar', jsonb_build_object('grupo', p.grupo_nombre), null);
+    update public.publicaciones set retirada_en = now(), estado = 'cerrada' where id = p_pub;
+    return jsonb_build_object('ok', true, 'retirada', true);
+  elsif p_accion = 'actualizar_version' then
+    if n > 0 then raise exception 'Ya hay % entrega(s): no se puede cambiar el examen a mitad de camino. Cierra esta publicación y publica la versión nueva aparte.', n; end if;
+    if p.estado = 'liberada' then raise exception 'La publicación ya está liberada.'; end if;
+    select numero into v_ant from public.examen_versiones where id = p.version_id;
+    if exists (select 1 from public.examenes where id = p.examen_id and eliminado_en is not null) then
+      raise exception 'El examen fue eliminado.';
+    end if;
+    v_ver := public._ev_version_actual(p.examen_id);
+    select numero into v_num from public.examen_versiones where id = v_ver;
+    update public.publicaciones set version_id = v_ver, titulo = (select titulo from public.examen_versiones where id = v_ver),
+      ajustes = '{"claves": {}, "anuladas": {}}'::jsonb where id = p_pub;
+    perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'actualizar_version',
+      jsonb_build_object('version_antes', v_ant, 'version_despues', v_num), null);
+    return jsonb_build_object('ok', true, 'version', v_num);
+  else
+    raise exception 'Acción desconocida.';
+  end if;
+
+  perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, p_accion, '{}'::jsonb, null);
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+-- Calificación manual de una pregunta (o de casillas de un NOTAM) y/o
+-- comentario. Después de liberar exige motivo y el estudiante lo ve.
+create or replace function public.calificar_respuesta(p_entrega uuid, p_pregunta text, p_puntos numeric,
+                                                      p_casillas jsonb, p_comentario text, p_motivo text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  e public.entregas_examen%rowtype;
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  q jsonb; c jsonb; item jsonb; cal jsonb; tot jsonb;
+  k text; val jsonb; maxq numeric; cmax numeric;
+  antes_item jsonb; antes_tot jsonb;
+begin
+  select * into e from public.entregas_examen where id = p_entrega for update;
+  if not found or e.profesor_id is distinct from auth.uid() then raise exception 'No encontramos esa entrega.'; end if;
+  select * into p from public.publicaciones where id = e.publicacion_id;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  if p.estado = 'liberada' and nullif(trim(coalesce(p_motivo, '')), '') is null then
+    raise exception 'Las notas ya se liberaron: escribe el motivo del cambio. El estudiante lo verá.';
+  end if;
+
+  select x into q from jsonb_array_elements(public._ev_preguntas(vv.contenido, p.ajustes)) x where x ->> 'id' = p_pregunta;
+  if q is null or q ->> 'tipo' = 'seccion' then raise exception 'Esa pregunta no existe en el examen.'; end if;
+  maxq := public._ev_max_pregunta(q);
+
+  cal := e.calificacion;
+  antes_item := cal -> p_pregunta;
+  antes_tot := jsonb_build_object('puntaje', e.puntaje, 'max', e.puntaje_max, 'porcentaje', e.porcentaje, 'pendientes', e.pendientes);
+  item := coalesce(cal -> p_pregunta, '{}'::jsonb);
+
+  if p_puntos is not null then
+    if q ->> 'tipo' = 'notam' then raise exception 'En un NOTAM se califica casilla por casilla.'; end if;
+    if p_puntos < 0 or p_puntos > maxq then raise exception 'Los puntos deben estar entre 0 y %.', maxq; end if;
+    item := item || jsonb_build_object('puntos', p_puntos, 'manual', true);
+  end if;
+
+  if p_casillas is not null and jsonb_typeof(p_casillas) = 'object' then
+    if q ->> 'tipo' <> 'notam' then raise exception 'Esa pregunta no tiene casillas.'; end if;
+    item := item || jsonb_build_object('casillas', coalesce(item -> 'casillas', '{}'::jsonb));
+    for k, val in select * from jsonb_each(p_casillas) loop
+      c := null;
+      select x into c from jsonb_array_elements(q -> 'casillas') x where x ->> 'id' = k;
+      if c is null then raise exception 'La casilla % no existe.', k; end if;
+      cmax := coalesce((c ->> 'puntos')::numeric, 0);
+      if (val #>> '{}')::numeric < 0 or (val #>> '{}')::numeric > cmax then
+        raise exception 'La casilla «%» admite entre 0 y % puntos.', c ->> 'etiqueta', cmax;
+      end if;
+      item := jsonb_set(item, array['casillas', k],
+        coalesce(item -> 'casillas' -> k, '{}'::jsonb) || jsonb_build_object('puntos', (val #>> '{}')::numeric, 'manual', true), true);
+    end loop;
+  end if;
+
+  if p_comentario is not null then
+    item := item || jsonb_build_object('comentario', nullif(trim(p_comentario), ''));
+  end if;
+
+  cal := cal || jsonb_build_object(p_pregunta, item);
+  tot := public._ev_recalcular(p_entrega, cal);
+
+  perform public._ev_historial(auth.uid(), p.examen_id, p.id, p_entrega, 'calificar',
+    jsonb_build_object('pregunta', p_pregunta,
+                       'antes', jsonb_build_object('item', antes_item, 'totales', antes_tot),
+                       'despues', jsonb_build_object('item', (select calificacion -> p_pregunta from public.entregas_examen where id = p_entrega), 'totales', tot),
+                       'tras_liberar', p.estado = 'liberada'),
+    p_motivo);
+  return tot;
+end;
+$$;
+
+-- Corrige la clave de una pregunta en ESTA publicación y recalifica la
+-- parte automática de todas sus entregas. La versión no se toca: la
+-- corrección queda en publicaciones.ajustes y en el historial.
+create or replace function public.corregir_clave_publicacion(p_pub uuid, p_pregunta text, p_clave jsonb, p_motivo text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  q jsonb; nueva jsonb; e record; tot jsonb; n integer := 0; cambios integer := 0;
+begin
+  if nullif(trim(coalesce(p_motivo, '')), '') is null then raise exception 'Escribe el motivo de la corrección.'; end if;
+  select * into p from public.publicaciones where id = p_pub and profesor_id = auth.uid() for update;
+  if not found then raise exception 'No encontramos esa publicación.'; end if;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  select x into q from jsonb_array_elements(public._ev_preguntas(vv.contenido, p.ajustes)) x where x ->> 'id' = p_pregunta;
+  if q is null then raise exception 'Esa pregunta no existe.'; end if;
+
+  if q ->> 'tipo' = 'opcion' then
+    if jsonb_typeof(p_clave -> 'correctas') <> 'array' or jsonb_array_length(p_clave -> 'correctas') = 0 then
+      raise exception 'Marca al menos una opción correcta.';
+    end if;
+    if exists (select 1 from jsonb_array_elements(p_clave -> 'correctas') y
+               where (y #>> '{}') !~ '^\d+$' or (y #>> '{}')::int >= jsonb_array_length(q -> 'opciones')) then
+      raise exception 'Hay una opción correcta fuera de rango.';
+    end if;
+    nueva := jsonb_build_object('correctas', p_clave -> 'correctas');
+  elsif q ->> 'tipo' = 'corta' then
+    if jsonb_typeof(p_clave -> 'aceptadas') <> 'array' or jsonb_array_length(p_clave -> 'aceptadas') = 0 then
+      raise exception 'Escribe al menos una respuesta aceptada.';
+    end if;
+    nueva := jsonb_build_object('aceptadas', p_clave -> 'aceptadas');
+  elsif q ->> 'tipo' = 'notam' then
+    -- Sólo cambian clave y variantes; etiquetas, puntos y casillas, no.
+    select jsonb_build_object('casillas', jsonb_agg(
+             c || coalesce((select jsonb_strip_nulls(jsonb_build_object('clave', y -> 'clave', 'aceptadas', y -> 'aceptadas'))
+                            from jsonb_array_elements(coalesce(p_clave -> 'casillas', '[]'::jsonb)) y
+                            where y ->> 'id' = c ->> 'id'), '{}'::jsonb) order by o))
+      into nueva
+      from jsonb_array_elements(q -> 'casillas') with ordinality as cc(c, o);
+  else
+    raise exception 'Las preguntas abiertas no tienen clave automática: califícalas a mano.';
+  end if;
+
+  update public.publicaciones
+     set ajustes = jsonb_set(ajustes, array['claves', p_pregunta], coalesce(ajustes -> 'claves' -> p_pregunta, '{}'::jsonb) || nueva, true)
+   where id = p_pub;
+
+  perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'corregir_clave',
+    jsonb_build_object('pregunta', p_pregunta, 'antes', q, 'nueva', nueva), p_motivo);
+
+  for e in select id, puntaje, porcentaje from public.entregas_examen where publicacion_id = p_pub loop
+    tot := public._ev_recalcular(e.id, null);
+    n := n + 1;
+    if (tot ->> 'puntaje')::numeric is distinct from e.puntaje then
+      cambios := cambios + 1;
+      perform public._ev_historial(auth.uid(), p.examen_id, p_pub, e.id, 'recalculo',
+        jsonb_build_object('pregunta', p_pregunta, 'causa', 'corregir_clave',
+                           'antes', jsonb_build_object('puntaje', e.puntaje, 'porcentaje', e.porcentaje),
+                           'despues', tot, 'tras_liberar', p.estado = 'liberada'), p_motivo);
+    end if;
+  end loop;
+  return jsonb_build_object('entregas', n, 'cambiaron', cambios);
+end;
+$$;
+
+-- Anula una pregunta en esta publicación: 'completo' (todos reciben el
+-- puntaje), 'excluir' (no cuenta) o 'ninguno' (deshace la anulación).
+create or replace function public.anular_pregunta_publicacion(p_pub uuid, p_pregunta text, p_modo text, p_motivo text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  e record; tot jsonb; n integer := 0; cambios integer := 0;
+begin
+  if p_modo not in ('completo', 'excluir', 'ninguno') then raise exception 'Modo de anulación no válido.'; end if;
+  if nullif(trim(coalesce(p_motivo, '')), '') is null then raise exception 'Escribe el motivo de la anulación.'; end if;
+  select * into p from public.publicaciones where id = p_pub and profesor_id = auth.uid() for update;
+  if not found then raise exception 'No encontramos esa publicación.'; end if;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  if not exists (select 1 from jsonb_array_elements(vv.contenido -> 'preguntas') x
+                 where x ->> 'id' = p_pregunta and x ->> 'tipo' <> 'seccion') then
+    raise exception 'Esa pregunta no existe.';
+  end if;
+
+  if p_modo = 'ninguno' then
+    update public.publicaciones set ajustes = jsonb_set(ajustes, '{anuladas}', coalesce(ajustes -> 'anuladas', '{}'::jsonb) - p_pregunta) where id = p_pub;
+  else
+    update public.publicaciones set ajustes = jsonb_set(ajustes, array['anuladas', p_pregunta], to_jsonb(p_modo), true) where id = p_pub;
+  end if;
+
+  perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'anular',
+    jsonb_build_object('pregunta', p_pregunta, 'modo', p_modo, 'antes', p.ajustes -> 'anuladas' -> p_pregunta), p_motivo);
+
+  for e in select id, puntaje, porcentaje from public.entregas_examen where publicacion_id = p_pub loop
+    tot := public._ev_recalcular(e.id, null);
+    n := n + 1;
+    if (tot ->> 'puntaje')::numeric is distinct from e.puntaje or (tot ->> 'porcentaje')::int is distinct from e.porcentaje then
+      cambios := cambios + 1;
+      perform public._ev_historial(auth.uid(), p.examen_id, p_pub, e.id, 'recalculo',
+        jsonb_build_object('pregunta', p_pregunta, 'causa', 'anular', 'modo', p_modo,
+                           'antes', jsonb_build_object('puntaje', e.puntaje, 'porcentaje', e.porcentaje),
+                           'despues', tot, 'tras_liberar', p.estado = 'liberada'), p_motivo);
+    end if;
+  end loop;
+  return jsonb_build_object('entregas', n, 'cambiaron', cambios);
+end;
+$$;
+
+-- «Examen terminado»: libera las notas. Si quedan respuestas por calificar
+-- no deja, salvo que se pida expresamente ponerlas en 0.
+create or replace function public.liberar_publicacion(p_pub uuid, p_cero_pendientes boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  e record; q jsonb; c jsonb; cal jsonb; item jsonb; tot jsonb;
+  v_pend integer; v_n integer;
+begin
+  select * into p from public.publicaciones where id = p_pub and profesor_id = auth.uid() for update;
+  if not found then raise exception 'No encontramos esa publicación.'; end if;
+  if p.estado = 'liberada' then raise exception 'Las notas ya estaban liberadas.'; end if;
+  select coalesce(sum(pendientes), 0), count(*) into v_pend, v_n from public.entregas_examen where publicacion_id = p_pub;
+
+  if v_pend > 0 and not coalesce(p_cero_pendientes, false) then
+    raise exception 'Quedan % respuesta(s) por calificar. Califícalas o confirma que van en 0.', v_pend;
+  end if;
+
+  if v_pend > 0 then
+    select * into vv from public.examen_versiones where id = p.version_id;
+    for e in select * from public.entregas_examen where publicacion_id = p_pub and pendientes > 0 loop
+      cal := e.calificacion;
+      for q in select x from jsonb_array_elements(public._ev_preguntas(vv.contenido, p.ajustes)) x loop
+        item := cal -> (q ->> 'id');
+        if item is null or coalesce((item ->> 'pendientes')::int, 0) = 0 then continue; end if;
+        if q ->> 'tipo' = 'notam' then
+          for c in select x from jsonb_array_elements(q -> 'casillas') x loop
+            if (item -> 'casillas' -> (c ->> 'id') ->> 'puntos') is null then
+              item := jsonb_set(item, array['casillas', c ->> 'id'],
+                coalesce(item -> 'casillas' -> (c ->> 'id'), '{}'::jsonb) || '{"puntos": 0, "manual": true}'::jsonb, true);
+            end if;
+          end loop;
+        else
+          item := item || '{"puntos": 0, "manual": true}'::jsonb;
+        end if;
+        cal := cal || jsonb_build_object(q ->> 'id', item);
+      end loop;
+      tot := public._ev_recalcular(e.id, cal);
+      perform public._ev_historial(auth.uid(), p.examen_id, p_pub, e.id, 'calificar',
+        jsonb_build_object('causa', 'pendientes_en_cero_al_liberar',
+                           'antes', jsonb_build_object('puntaje', e.puntaje, 'pendientes', e.pendientes),
+                           'despues', tot), 'Respuestas sin calificar puestas en 0 al liberar las notas.');
+    end loop;
+  end if;
+
+  update public.publicaciones set estado = 'liberada', liberada_en = now() where id = p_pub;
+  perform public._ev_historial(auth.uid(), p.examen_id, p_pub, null, 'liberar',
+    jsonb_build_object('entregas', v_n, 'pendientes_en_cero', v_pend), null);
+  return jsonb_build_object('ok', true, 'entregas', v_n);
+end;
+$$;
+
+-- Eliminar nunca borra: el examen se archiva (se puede restaurar) y sus
+-- publicaciones abiertas se cierran.
+create or replace function public.eliminar_examen(p_examen uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare ex public.examenes%rowtype;
+begin
+  select * into ex from public.examenes where id = p_examen and profesor_id = auth.uid();
+  if not found then raise exception 'No encontramos ese examen.'; end if;
+  if ex.eliminado_en is not null then raise exception 'Ese examen ya estaba eliminado.'; end if;
+  update public.examenes set eliminado_en = now() where id = p_examen;
+  update public.publicaciones set estado = 'cerrada' where examen_id = p_examen and estado = 'abierta';
+  perform public._ev_historial(auth.uid(), p_examen, null, null, 'eliminar_examen', jsonb_build_object('titulo', ex.titulo), null);
+  return jsonb_build_object('borrado', false, 'archivado', true);
+end;
+$$;
+
+create or replace function public.restaurar_examen(p_examen uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare ex public.examenes%rowtype;
+begin
+  select * into ex from public.examenes where id = p_examen and profesor_id = auth.uid() and eliminado_en is not null;
+  if not found then raise exception 'No encontramos ese examen entre los eliminados.'; end if;
+  update public.examenes set eliminado_en = null where id = p_examen;
+  perform public._ev_historial(auth.uid(), p_examen, null, null, 'restaurar_examen', jsonb_build_object('titulo', ex.titulo), null);
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+-- ============================================================
+-- FUNCIONES DEL ESTUDIANTE (y expediente compartido)
+-- ============================================================
+
+-- Exámenes publicados en mis grupos y los que presenté en grupos anteriores.
+create or replace function public.mis_evaluaciones()
+returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(fila order by (fila ->> 'creado_en') desc), '[]'::jsonb)
+  from (
+    select jsonb_build_object(
+      'id', p.id,
+      'titulo', p.titulo,
+      'descripcion', v.descripcion,
+      'grupo_id', p.grupo_id,
+      'grupo_nombre', p.grupo_nombre,
+      'abre_en', p.abre_en,
+      'cierra_en', p.cierra_en,
+      'intentos_max', p.intentos_max,
+      'estado', p.estado,
+      'liberada_en', p.liberada_en,
+      'creado_en', p.creado_en,
+      'en_mi_grupo', coalesce(p.grupo_id in (select public.mis_grupos()), false),
+      'mis_intentos', (select count(*) from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid()),
+      'ultima_entrega_id', (select e.id from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid() order by e.enviado_en desc limit 1),
+      'ultima_fecha', (select max(e.enviado_en) from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid()),
+      'mejor', case when p.estado = 'liberada' then
+        (select max(e.porcentaje) from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid()) end,
+      'mejor_entrega_id', case when p.estado = 'liberada' then
+        (select e.id from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid() order by e.porcentaje desc, e.enviado_en desc limit 1) end,
+      -- Cambios de nota hechos después de liberar (para avisarle).
+      'cambios', case when p.estado = 'liberada' then (
+        select coalesce(jsonb_agg(jsonb_build_object('id', h.id, 'fecha', h.creado_en, 'motivo', h.motivo,
+                 'antes', h.detalle -> 'antes' -> 'totales' -> 'porcentaje',
+                 'antes_pct', h.detalle -> 'antes' -> 'porcentaje',
+                 'despues', h.detalle -> 'despues' -> 'totales' -> 'porcentaje',
+                 'despues_pct', h.detalle -> 'despues' -> 'porcentaje') order by h.creado_en desc), '[]'::jsonb)
+        from public.historial_examen h
+        join public.entregas_examen e on e.id = h.entrega_id
+        where e.publicacion_id = p.id and e.estudiante_id = auth.uid()
+          and h.creado_en > p.liberada_en and h.accion in ('calificar', 'recalculo')) end
+    ) as fila
+    from public.publicaciones p
+    join public.examen_versiones v on v.id = p.version_id
+    where (p.retirada_en is null and p.grupo_id in (select public.mis_grupos()))
+       or exists (select 1 from public.entregas_examen e where e.publicacion_id = p.id and e.estudiante_id = auth.uid())
+  ) t;
+$$;
+
+create or replace function public.obtener_evaluacion(p_pub uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  n integer; preg jsonb;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  select * into p from public.publicaciones where id = p_pub;
+  if not found or p.retirada_en is not null or p.grupo_id is null or p.grupo_id not in (select public.mis_grupos()) then
+    raise exception 'Este examen no está publicado en ninguno de tus grupos.';
+  end if;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  select count(*) into n from public.entregas_examen where publicacion_id = p_pub and estudiante_id = auth.uid();
+  preg := public._ev_preguntas(vv.contenido, p.ajustes);
+
+  return jsonb_build_object(
+    'id', p.id, 'titulo', p.titulo, 'descripcion', vv.descripcion, 'grupo_nombre', p.grupo_nombre,
+    'abre_en', p.abre_en, 'cierra_en', p.cierra_en, 'intentos_max', p.intentos_max,
+    'intentos_usados', n, 'estado', p.estado,
+    'no_abierta', p.abre_en is not null and now() < p.abre_en,
+    'cerrada', p.estado <> 'abierta' or (p.cierra_en is not null and now() >= p.cierra_en),
+    'sin_intentos', p.intentos_max is not null and n >= p.intentos_max,
+    'puntaje_total', vv.puntaje_total,
+    'preguntas', public._ev_sin_claves(preg),
+    'orden', public._ev_orden(preg, p.barajar));
+end;
+$$;
+
+create or replace function public.entregar_evaluacion(p_pub uuid, p_respuestas jsonb, p_orden jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  n integer; v_id uuid; preg jsonb; ids jsonb; orden jsonb;
+  v_nombre text; v_correo text; tot jsonb; cal jsonb;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  perform pg_advisory_xact_lock(hashtext('ev:' || p_pub::text || ':' || auth.uid()::text));
+  select * into p from public.publicaciones where id = p_pub;
+  if not found or p.retirada_en is not null or p.grupo_id is null or p.grupo_id not in (select public.mis_grupos()) then
+    raise exception 'Este examen no está publicado en ninguno de tus grupos.';
+  end if;
+  if p.estado <> 'abierta' then raise exception 'Este examen ya no recibe entregas.'; end if;
+  if p.abre_en is not null and now() < p.abre_en then raise exception 'Este examen todavía no abre.'; end if;
+  if p.cierra_en is not null and now() >= p.cierra_en then raise exception 'La fecha límite ya pasó.'; end if;
+  select count(*) into n from public.entregas_examen where publicacion_id = p_pub and estudiante_id = auth.uid();
+  if p.intentos_max is not null and n >= p.intentos_max then raise exception 'Ya usaste todos tus intentos.'; end if;
+  if p_respuestas is null or jsonb_typeof(p_respuestas) <> 'object' then raise exception 'Respuestas no válidas.'; end if;
+  if length(p_respuestas::text) > 200000 then raise exception 'La entrega es demasiado grande.'; end if;
+
+  select * into vv from public.examen_versiones where id = p.version_id;
+  preg := public._ev_preguntas(vv.contenido, p.ajustes);
+
+  -- Sólo se guardan respuestas a preguntas del examen.
+  select coalesce(jsonb_object_agg(k, v), '{}'::jsonb) into p_respuestas
+    from jsonb_each(p_respuestas) r(k, v)
+    where exists (select 1 from jsonb_array_elements(preg) x where x ->> 'id' = k and x ->> 'tipo' <> 'seccion');
+
+  -- El orden que vio el estudiante, si es una permutación válida.
+  select coalesce(jsonb_agg(x ->> 'id' order by x ->> 'id'), '[]'::jsonb) into ids from jsonb_array_elements(preg) x;
+  if jsonb_typeof(p_orden) = 'array' and
+     (select coalesce(jsonb_agg(y #>> '{}' order by y #>> '{}'), '[]'::jsonb) from jsonb_array_elements(p_orden) y) = ids then
+    orden := p_orden;
+  else
+    select coalesce(jsonb_agg(x ->> 'id'), '[]'::jsonb) into orden from jsonb_array_elements(preg) x;
+  end if;
+
+  select trim(coalesce(nombre, '') || ' ' || coalesce(apellido, '')) into v_nombre from public.perfiles where id = auth.uid();
+  select email into v_correo from auth.users where id = auth.uid();
+
+  cal := public._ev_calificar(preg, coalesce(p.ajustes -> 'anuladas', '{}'::jsonb), p_respuestas, '{}'::jsonb);
+  tot := public._ev_totales(cal);
+
+  insert into public.entregas_examen (publicacion_id, profesor_id, estudiante_id, estudiante_nombre, estudiante_correo,
+      intento, orden, respuestas, calificacion, puntaje, puntaje_max, porcentaje, pendientes)
+  values (p_pub, p.profesor_id, auth.uid(), coalesce(nullif(v_nombre, ''), 'Estudiante'), v_correo,
+      n + 1, orden, p_respuestas, cal, (tot ->> 'puntaje')::numeric, (tot ->> 'max')::numeric,
+      (tot ->> 'porcentaje')::int, (tot ->> 'pendientes')::int)
+  returning id into v_id;
+
+  perform public._ev_historial(p.profesor_id, p.examen_id, p_pub, v_id, 'entrega',
+    jsonb_build_object('intento', n + 1, 'version', vv.numero, 'totales_automaticos', tot), null);
+
+  -- La nota no se devuelve: se conoce cuando el profesor la libere.
+  return jsonb_build_object('entrega_id', v_id, 'intento', n + 1,
+    'intentos_restantes', case when p.intentos_max is null then null else p.intentos_max - (n + 1) end);
+end;
+$$;
+
+-- Expediente de una entrega: lo ve el profesor siempre y el estudiante
+-- dueño (completo sólo cuando las notas están liberadas).
+create or replace function public.obtener_expediente(p_entrega uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  e public.entregas_examen%rowtype;
+  p public.publicaciones%rowtype;
+  vv public.examen_versiones%rowtype;
+  es_prof boolean; liberada boolean; preg jsonb; hist jsonb;
+begin
+  if auth.uid() is null then raise exception 'Debes iniciar sesión.'; end if;
+  select * into e from public.entregas_examen where id = p_entrega;
+  if not found then raise exception 'No encontramos esa entrega.'; end if;
+  es_prof := e.profesor_id = auth.uid();
+  if not es_prof and e.estudiante_id is distinct from auth.uid() then raise exception 'No encontramos esa entrega.'; end if;
+  select * into p from public.publicaciones where id = e.publicacion_id;
+  select * into vv from public.examen_versiones where id = p.version_id;
+  liberada := p.estado = 'liberada';
+  preg := public._ev_preguntas(vv.contenido, p.ajustes);
+
+  select coalesce(jsonb_agg(jsonb_build_object('fecha', h.creado_en, 'accion', h.accion, 'detalle', h.detalle,
+           'motivo', h.motivo, 'propia', h.entrega_id is not null) order by h.creado_en), '[]'::jsonb)
+    into hist
+    from public.historial_examen h
+   where h.entrega_id = p_entrega
+      or (h.entrega_id is null and h.publicacion_id = p.id and h.accion in ('publicar', 'corregir_clave', 'anular', 'liberar', 'actualizar_publicacion'));
+
+  if es_prof or liberada then
+    return jsonb_build_object(
+      'vista', case when es_prof then 'profesor' else 'estudiante' end,
+      'liberada', liberada,
+      'publicacion', jsonb_build_object('id', p.id, 'titulo', p.titulo, 'grupo_nombre', p.grupo_nombre, 'estado', p.estado,
+        'liberada_en', p.liberada_en, 'abre_en', p.abre_en, 'cierra_en', p.cierra_en, 'version', vv.numero,
+        'version_fecha', vv.creado_en, 'descripcion', vv.descripcion, 'ajustes', p.ajustes),
+      'entrega', jsonb_build_object('id', e.id, 'intento', e.intento, 'enviado_en', e.enviado_en,
+        'estudiante_nombre', e.estudiante_nombre, 'estudiante_correo', e.estudiante_correo,
+        'puntaje', e.puntaje, 'puntaje_max', e.puntaje_max, 'porcentaje', e.porcentaje, 'pendientes', e.pendientes),
+      'preguntas', preg,
+      'orden', e.orden,
+      'respuestas', e.respuestas,
+      'calificacion', e.calificacion,
+      'historial', hist);
+  end if;
+
+  -- Estudiante antes de liberar: lo que respondió, sin claves ni nota.
+  return jsonb_build_object(
+    'vista', 'estudiante',
+    'liberada', false,
+    'publicacion', jsonb_build_object('id', p.id, 'titulo', p.titulo, 'grupo_nombre', p.grupo_nombre, 'estado', p.estado,
+      'version', vv.numero, 'descripcion', vv.descripcion),
+    'entrega', jsonb_build_object('id', e.id, 'intento', e.intento, 'enviado_en', e.enviado_en,
+      'estudiante_nombre', e.estudiante_nombre),
+    'preguntas', public._ev_sin_claves(preg),
+    'orden', e.orden,
+    'respuestas', e.respuestas,
+    'historial', (select coalesce(jsonb_agg(x), '[]'::jsonb) from jsonb_array_elements(hist) x where x ->> 'accion' = 'entrega'));
+end;
+$$;
+
+-- ---------- PERMISOS DE EJECUCIÓN ----------
+revoke execute on function public._ev_trg_version_inmutable() from public, anon, authenticated;
+revoke execute on function public._ev_trg_entrega_inmutable() from public, anon, authenticated;
+revoke execute on function public._ev_trg_historial_inmutable() from public, anon, authenticated;
+revoke execute on function public._ev_norm(text) from public, anon;
+revoke execute on function public._ev_num(text) from public, anon;
+revoke execute on function public._ev_coord(text) from public, anon;
+revoke execute on function public._ev_casilla_ok(jsonb, jsonb) from public, anon;
+revoke execute on function public._ev_preguntas(jsonb, jsonb) from public, anon;
+revoke execute on function public._ev_max_pregunta(jsonb) from public, anon;
+revoke execute on function public._ev_calificar(jsonb, jsonb, jsonb, jsonb) from public, anon;
+revoke execute on function public._ev_totales(jsonb) from public, anon;
+revoke execute on function public._ev_sin_claves(jsonb) from public, anon;
+revoke execute on function public._ev_orden(jsonb, boolean) from public, anon;
+revoke execute on function public._ev_recalcular(uuid, jsonb) from public, anon, authenticated;
+revoke execute on function public._ev_historial(uuid, uuid, uuid, uuid, text, jsonb, text) from public, anon, authenticated;
+revoke execute on function public._ev_version_actual(uuid) from public, anon, authenticated;
+
+revoke execute on function public.publicar_examen(uuid, uuid, timestamptz, timestamptz, integer, boolean) from public, anon;
+revoke execute on function public.actualizar_publicacion(uuid, timestamptz, timestamptz, integer) from public, anon;
+revoke execute on function public.gestionar_publicacion(uuid, text) from public, anon;
+revoke execute on function public.calificar_respuesta(uuid, text, numeric, jsonb, text, text) from public, anon;
+revoke execute on function public.corregir_clave_publicacion(uuid, text, jsonb, text) from public, anon;
+revoke execute on function public.anular_pregunta_publicacion(uuid, text, text, text) from public, anon;
+revoke execute on function public.liberar_publicacion(uuid, boolean) from public, anon;
+revoke execute on function public.eliminar_examen(uuid) from public, anon;
+revoke execute on function public.restaurar_examen(uuid) from public, anon;
+revoke execute on function public.mis_evaluaciones() from public, anon;
+revoke execute on function public.obtener_evaluacion(uuid) from public, anon;
+revoke execute on function public.entregar_evaluacion(uuid, jsonb, jsonb) from public, anon;
+revoke execute on function public.obtener_expediente(uuid) from public, anon;
+
+grant execute on function public.publicar_examen(uuid, uuid, timestamptz, timestamptz, integer, boolean) to authenticated;
+grant execute on function public.actualizar_publicacion(uuid, timestamptz, timestamptz, integer) to authenticated;
+grant execute on function public.gestionar_publicacion(uuid, text) to authenticated;
+grant execute on function public.calificar_respuesta(uuid, text, numeric, jsonb, text, text) to authenticated;
+grant execute on function public.corregir_clave_publicacion(uuid, text, jsonb, text) to authenticated;
+grant execute on function public.anular_pregunta_publicacion(uuid, text, text, text) to authenticated;
+grant execute on function public.liberar_publicacion(uuid, boolean) to authenticated;
+grant execute on function public.eliminar_examen(uuid) to authenticated;
+grant execute on function public.restaurar_examen(uuid) to authenticated;
+grant execute on function public.mis_evaluaciones() to authenticated;
+grant execute on function public.obtener_evaluacion(uuid) to authenticated;
+grant execute on function public.entregar_evaluacion(uuid, jsonb, jsonb) to authenticated;
+grant execute on function public.obtener_expediente(uuid) to authenticated;
+
+
+-- ============================================================
+-- REGISTRO CON GOOGLE (2026-10-14)
+-- Google no manda «nombre»/«apellido» como el formulario del sitio, sino el
+-- nombre completo (full_name / name) y a veces given_name / family_name. Se
+-- usan en ese orden de preferencia. El registro con correo no cambia.
+-- El proveedor Google se activa en el panel de Supabase (Authentication →
+-- Sign In / Providers → Google), no desde SQL.
+-- ============================================================
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+declare
+  m jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  completo text := trim(regexp_replace(coalesce(m ->> 'full_name', m ->> 'name', ''), '\s+', ' ', 'g'));
+  v_nombre text;
+  v_apellido text;
+begin
+  v_nombre := coalesce(
+    nullif(trim(m ->> 'nombre'), ''),
+    nullif(trim(m ->> 'given_name'), ''),
+    nullif(split_part(completo, ' ', 1), ''),
+    '');
+  v_apellido := coalesce(
+    nullif(trim(m ->> 'apellido'), ''),
+    nullif(trim(m ->> 'family_name'), ''),
+    case when nullif(trim(m ->> 'nombre'), '') is null and position(' ' in completo) > 0
+         then nullif(trim(substr(completo, position(' ' in completo) + 1)), '') end,
+    '');
+
+  insert into public.perfiles (id, nombre, apellido, rol)
+  values (new.id, left(v_nombre, 60), left(v_apellido, 60), 'student')
+  on conflict (id) do nothing;
+
+  return new;
+end;
+$function$;

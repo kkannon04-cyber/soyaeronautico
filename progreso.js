@@ -416,20 +416,75 @@ async function obtenerPerfilEstudiante() {
   return { nombre, apellido, nombreCompleto, esEmail };
 }
 
+// Devuelve { ok:true } o { ok:false, error } para que el diálogo de
+// «Editar mi nombre» pueda avisar si no se guardó. Con sesión se usa update:
+// la tabla sólo deja al usuario cambiar nombre y apellido de su perfil. Antes
+// se usaba upsert, que también escribe la columna id y la base lo rechaza
+// («permission denied»): por eso la edición «no surtía efecto» y se quitó el
+// 2026-10-11. El perfil lo crea siempre el trigger handle_new_user.
 async function guardarPerfilEstudiante(nombre, apellido) {
-  const nombreLimpio = (nombre || '').trim();
-  const apellidoLimpio = (apellido || '').trim();
-  if (!nombreLimpio) return;
+  const nombreLimpio = (nombre || '').trim().slice(0, 60);
+  const apellidoLimpio = (apellido || '').trim().slice(0, 60);
+  if (!nombreLimpio) return { ok: false, error: 'Escribe tu nombre.' };
 
   const sesion = await obtenerSesionActual();
   if (sesion) {
     const cliente = obtenerClienteAuth();
-    const { error } = await cliente.from('perfiles').upsert({ id: sesion.user.id, nombre: nombreLimpio, apellido: apellidoLimpio });
-    if (error) console.error('No se pudo guardar el perfil en Supabase:', error.message);
-    return;
+    const { data, error } = await cliente.from('perfiles')
+      .update({ nombre: nombreLimpio, apellido: apellidoLimpio })
+      .eq('id', sesion.user.id)
+      .select('id');
+    if (!error && data && data.length) return { ok: true };
+    const motivo = error ? error.message : 'no se encontró tu perfil';
+    console.error('No se pudo guardar el perfil en Supabase:', motivo);
+    return { ok: false, error: 'No se pudo guardar tu nombre (' + motivo + '). Intenta de nuevo.' };
   }
   localStorage.setItem(AIS_NOMBRE_KEY, nombreLimpio);
   localStorage.setItem(AIS_APELLIDO_KEY, apellidoLimpio);
+  return { ok: true };
+}
+
+// Diálogo para editar nombre y apellido (lo abren los paneles desde el menú
+// del avatar). `alGuardar()` se llama tras guardar, para repintar el nombre.
+async function abrirDialogoNombre(alGuardar) {
+  _estilosFotoPerfil();
+  const perfil = await obtenerPerfilEstudiante();
+  const dlg = document.createElement('dialog');
+  dlg.className = 'dialogo-nombre';
+  dlg.innerHTML = `
+    <form method="dialog">
+      <strong>Editar mi nombre</strong>
+      <p>Así te verán tus profesores en sus grupos y en tus entregas.</p>
+      <label for="dlgNombre">Nombre</label>
+      <input type="text" id="dlgNombre" maxlength="60" autocomplete="given-name" required>
+      <label for="dlgApellido">Apellido</label>
+      <input type="text" id="dlgApellido" maxlength="60" autocomplete="family-name">
+      <div class="dialogo-nombre-error" aria-live="polite"></div>
+      <div class="aviso-foto-botones">
+        <button type="submit" class="aviso-foto-si" value="guardar">Guardar</button>
+        <button type="button" class="aviso-foto-luego" data-cancelar>Cancelar</button>
+      </div>
+    </form>`;
+  document.body.appendChild(dlg);
+  const inNombre = dlg.querySelector('#dlgNombre');
+  const inApellido = dlg.querySelector('#dlgApellido');
+  inNombre.value = perfil.esEmail ? '' : perfil.nombre;
+  inApellido.value = perfil.esEmail ? '' : perfil.apellido;
+  const cerrar = () => { dlg.close(); dlg.remove(); };
+  dlg.querySelector('[data-cancelar]').addEventListener('click', cerrar);
+  dlg.addEventListener('cancel', e => { e.preventDefault(); cerrar(); });
+  dlg.querySelector('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = dlg.querySelector('[type="submit"]');
+    btn.disabled = true;
+    const r = await guardarPerfilEstudiante(inNombre.value, inApellido.value);
+    btn.disabled = false;
+    if (!r.ok) { dlg.querySelector('.dialogo-nombre-error').textContent = r.error || 'No se pudo guardar.'; return; }
+    cerrar();
+    if (typeof alGuardar === 'function') alGuardar();
+  });
+  dlg.showModal();
+  inNombre.focus();
 }
 
 // ---------- FOTO DE PERFIL (alumno y profesor, mismo código) ----------
@@ -547,6 +602,15 @@ function _estilosFotoPerfil() {
   .aviso-foto-botones .aviso-foto-nunca { border: 0; padding: 7px 4px; color: var(--text-muted); text-decoration: underline; }
   .aviso-foto-error { color: var(--danger); font-size: .8rem; margin-top: 8px; }
   @media (max-width: 520px) { .aviso-foto { right: 16px; bottom: 16px; } }
+  .dialogo-nombre { margin: auto; inset: 0; width: min(360px, calc(100vw - 32px)); height: fit-content; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 20px 44px -16px rgba(15,23,42,.45); padding: 18px 20px; font-family: var(--font-main); }
+  .dialogo-nombre::backdrop { background: rgba(15,23,42,.55); }
+  .dialogo-nombre strong { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 4px; }
+  .dialogo-nombre p { margin: 0 0 12px; font-size: .84rem; color: var(--text-muted); line-height: 1.4; }
+  .dialogo-nombre label { display: block; font-size: .78rem; font-weight: 600; margin: 10px 0 5px; }
+  .dialogo-nombre input { width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main, var(--card-bg)); color: var(--text-main); font: inherit; font-size: .9rem; }
+  .dialogo-nombre input:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .dialogo-nombre .aviso-foto-botones { margin-top: 16px; }
+  .dialogo-nombre-error { color: var(--danger); font-size: .8rem; margin-top: 8px; min-height: 1em; }
   `;
   document.head.appendChild(s);
 }
@@ -554,7 +618,8 @@ function _estilosFotoPerfil() {
 // Convierte el avatar de iniciales en el control de la foto: muestra la
 // foto si hay, abre un menú al pulsarlo y, a quien no tiene foto ni pidió
 // silenciarlo, le muestra un recordatorio. Sin sesión no hace nada.
-async function montarFotoPerfil(avatarEl) {
+// `opciones.alEditarNombre`, si viene, agrega «Editar mi nombre» al menú.
+async function montarFotoPerfil(avatarEl, opciones) {
   if (!avatarEl) return;
   const info = await obtenerFotoPerfil();
   if (!info) return;
@@ -599,6 +664,13 @@ async function montarFotoPerfil(avatarEl) {
     if (menu) return cerrarMenu();
     menu = document.createElement('div');
     menu.className = 'avatar-menu';
+    if (opciones && typeof opciones.alEditarNombre === 'function') {
+      const editar = document.createElement('button');
+      editar.type = 'button';
+      editar.textContent = 'Editar mi nombre';
+      editar.addEventListener('click', e => { e.stopPropagation(); cerrarMenu(); opciones.alEditarNombre(); });
+      menu.appendChild(editar);
+    }
     const subir = document.createElement('button');
     subir.type = 'button';
     subir.textContent = urlActual ? 'Cambiar foto' : 'Poner foto de perfil';
@@ -963,6 +1035,53 @@ async function obtenerMisCorrecciones() {
     porcentajeDespues: c.porcentaje_despues,
     fecha: c.fecha
   }));
+}
+
+// ---------- EXÁMENES DISEÑADOS (evaluacion.html) ----------
+// Publicaciones de exámenes en mis grupos y las que presenté en grupos
+// de los que ya salí. Se devuelven con la misma forma que
+// obtenerActividadesAsignadas() para que el panel las liste igual, más
+// los datos propios: la nota (`mejor`) sólo existe cuando el profesor la
+// liberó; antes la entrega está «en revisión».
+async function obtenerEvaluacionesAsignadas() {
+  const sesion = await obtenerSesionActual();
+  if (!sesion) return [];
+  const cliente = obtenerClienteAuth();
+  const { data, error } = await cliente.rpc('mis_evaluaciones');
+  if (error) { console.error('No se pudieron leer los exámenes asignados:', error.message); return []; }
+
+  const ahora = new Date();
+  return (data || []).map(p => {
+    const intentos = Number(p.mis_intentos) || 0;
+    const liberada = p.estado === 'liberada';
+    const vencida = p.estado !== 'abierta' || (!!p.cierra_en && new Date(p.cierra_en) <= ahora);
+    const sinIntentos = p.intentos_max !== null && p.intentos_max !== undefined && intentos >= p.intentos_max;
+    return {
+      id: p.id,
+      titulo: p.titulo,
+      descripcion: p.descripcion,
+      tipo: 'evaluacion',
+      grupoId: p.grupo_id,
+      grupoNombre: p.grupo_nombre,
+      creadoEn: p.creado_en,
+      fechaLimite: p.cierra_en,
+      abreEn: p.abre_en,
+      noAbierta: !!p.abre_en && new Date(p.abre_en) > ahora,
+      intentosMax: p.intentos_max,
+      intentos,
+      mejor: liberada && p.mejor !== null && p.mejor !== undefined ? p.mejor : null,
+      ultima: p.ultima_fecha,
+      ultimoResultadoId: p.mejor_entrega_id || p.ultima_entrega_id,
+      completada: intentos > 0,
+      vencida,
+      bloqueada: vencida || sinIntentos,
+      liberada,
+      liberadaEn: p.liberada_en,
+      enRevision: intentos > 0 && !liberada,
+      cambios: Array.isArray(p.cambios) ? p.cambios : [],
+      deGrupoAnterior: !p.en_mi_grupo
+    };
+  });
 }
 
 // ---------- RESOLVER UNA ACTIVIDAD ----------
