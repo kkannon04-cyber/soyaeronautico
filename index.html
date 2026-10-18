@@ -705,6 +705,9 @@
   }
   footer a{ text-decoration:none; }
   footer a:hover{ color:var(--accent); }
+  .visitas{ display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em; }
+  .visitas[hidden]{ display:none; }
+  .visitas b{ color:var(--text); font-weight:600; }
 
   /* ---------- MOBILE RESPONSIVE ---------- */
   @media (max-width:600px){
@@ -1171,6 +1174,7 @@
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
   <span>Datos METAR: aviationweather.gov (NOAA)</span>
+  <span class="visitas" id="visitas" hidden><span class="live-dot" aria-hidden="true"></span><b id="visitasTotal"></b> visitas</span>
   <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados &middot; <a href="privacidad.html">Política de privacidad</a></span>
 </footer>
 
@@ -1640,6 +1644,22 @@
     const btnMobile = document.getElementById('navLoginBtnMobile');
     if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
     if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+  })();
+
+  // ---------- CONTADOR DE VISITAS ----------
+  // Suma una visita por sesión del navegador; en las recargas solo lee el total.
+  // Si Supabase no responde, el contador sigue oculto (sin ceros ni errores a la vista).
+  (async function contadorVisitas(){
+    if (typeof sbClient === 'undefined' || !sbClient) return;
+    let yaContada = false;
+    try { yaContada = sessionStorage.getItem('saVisitaContada') === '1'; } catch (e) {}
+    try {
+      const { data, error } = await sbClient.rpc(yaContada ? 'contar_visitas' : 'registrar_visita');
+      if (error || data === null || data === undefined) return;
+      if (!yaContada) { try { sessionStorage.setItem('saVisitaContada', '1'); } catch (e) {} }
+      document.getElementById('visitasTotal').textContent = Number(data).toLocaleString('es-CO');
+      document.getElementById('visitas').hidden = false;
+    } catch (e) {}
   })();
 </script>
 <script src="cielo.js"></script>

@@ -4474,3 +4474,42 @@ begin
   return new;
 end;
 $function$;
+
+-- ============================================================
+-- CONTADOR DE VISITAS DEL LANDING (2026-10-18)
+-- Un único número total: no se guarda IP, navegador ni ningún dato del
+-- visitante. La página suma una visita por sesión del navegador
+-- (sessionStorage) y en las recargas solo lee el total.
+-- La tabla no tiene políticas RLS: nadie la lee ni la escribe directamente;
+-- solo las dos funciones (security definer) tocan la fila.
+-- ============================================================
+create table if not exists public.visitas_sitio (
+  id smallint primary key default 1 check (id = 1),
+  total bigint not null default 0
+);
+alter table public.visitas_sitio enable row level security;
+insert into public.visitas_sitio (id, total) values (1, 0) on conflict (id) do nothing;
+
+create or replace function public.registrar_visita()
+returns bigint
+language sql
+security definer
+set search_path to 'public'
+as $$
+  update public.visitas_sitio set total = total + 1 where id = 1 returning total;
+$$;
+
+create or replace function public.contar_visitas()
+returns bigint
+language sql
+stable
+security definer
+set search_path to 'public'
+as $$
+  select total from public.visitas_sitio where id = 1;
+$$;
+
+revoke all on function public.registrar_visita() from public;
+revoke all on function public.contar_visitas() from public;
+grant execute on function public.registrar_visita() to anon, authenticated;
+grant execute on function public.contar_visitas() to anon, authenticated;

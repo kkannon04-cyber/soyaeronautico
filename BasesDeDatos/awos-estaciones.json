@@ -1,0 +1,448 @@
+{
+ "fuente": "Posición y datos de aeródromo: eAIP Colombia, enmienda 73/26 (AD 2). Enlaces: mapa AWOS de la Aerocivil (meteorologia.aerocivil.gov.co/obs_map/awos_map).",
+ "aviso": "Solo enlaces: los datos en vivo los muestra la Aerocivil en su propio sistema; SoyAeronáutico no copia ni almacena observaciones.",
+ "generado": "2026-10-16",
+ "estaciones": [
+  {
+   "icao": "SKUC",
+   "estacion": "Arauca",
+   "nombre": "ARAUCA - SANTIAGO PEREZ QUIROZ",
+   "lat": 7.06891,
+   "lon": -70.73696,
+   "elevFt": 423,
+   "url": "http://leadscabecera.aerocivil.gov.co:2396"
+  },
+  {
+   "icao": "SKAR",
+   "estacion": "Armenia",
+   "nombre": "ARMENIA - EL EDEN",
+   "lat": 4.45164,
+   "lon": -75.76639,
+   "elevFt": 3976,
+   "url": "http://leadscabecera.aerocivil.gov.co:167"
+  },
+  {
+   "icao": "SKBS",
+   "estacion": "Bahía Solano",
+   "nombre": "BAHÍA SOLANO - JOSE CELESTINO MUTIS",
+   "lat": 6.20311,
+   "lon": -77.39497,
+   "elevFt": 79,
+   "url": "http://leadscabecera.aerocivil.gov.co:182"
+  },
+  {
+   "icao": "SKEJ",
+   "estacion": "Barrancabermeja",
+   "nombre": "BARRANCABERMEJA - YARIGUIES",
+   "lat": 7.0238,
+   "lon": -73.8072,
+   "elevFt": 68,
+   "url": "http://leadscabecera.aerocivil.gov.co:2211"
+  },
+  {
+   "icao": "SKBQ",
+   "estacion": "Barranquilla",
+   "nombre": "BARRANQUILLA - ERNESTO CORTISSOZ",
+   "lat": 10.88946,
+   "lon": -74.78068,
+   "elevFt": 95,
+   "url": "http://leadscabecera.aerocivil.gov.co:3028"
+  },
+  {
+   "icao": "SKBO",
+   "estacion": "Bogotá",
+   "nombre": "BOGOTÁ - EL DORADO",
+   "lat": 4.7016,
+   "lon": -74.14694,
+   "elevFt": 8358,
+   "url": "http://leadscabecera.aerocivil.gov.co:458"
+  },
+  {
+   "icao": "SKBG",
+   "estacion": "Bucaramanga",
+   "nombre": "BUCARAMANGA - PALONEGRO",
+   "lat": 7.12638,
+   "lon": -73.18473,
+   "elevFt": 3901,
+   "url": "http://leadscabecera.aerocivil.gov.co:24103"
+  },
+  {
+   "icao": "SKBU",
+   "estacion": "Buenaventura",
+   "nombre": "BUENAVENTURA - GERARDO TOBAR LOPEZ",
+   "lat": 3.81957,
+   "lon": -76.98991,
+   "elevFt": 44,
+   "url": "http://leadscabecera.aerocivil.gov.co:10479"
+  },
+  {
+   "icao": "SKCL",
+   "estacion": "Cali",
+   "nombre": "CALI - ALFONSO BONILLA ARAGON",
+   "lat": 3.54311,
+   "lon": -76.38169,
+   "elevFt": 3162,
+   "url": "http://leadscabecera.aerocivil.gov.co:1529"
+  },
+  {
+   "icao": "SKLC",
+   "estacion": "Carepa",
+   "nombre": "CAREPA - ANTONIO ROLDAN BETANCOURT",
+   "lat": 7.81175,
+   "lon": -76.71644,
+   "elevFt": 52,
+   "url": "http://leadscabecera.aerocivil.gov.co:1110"
+  },
+  {
+   "icao": "SKCG",
+   "estacion": "Cartagena",
+   "nombre": "CARTAGENA - RAFAEL NUÑEZ",
+   "lat": 10.44168,
+   "lon": -75.51292,
+   "elevFt": 7,
+   "url": "http://leadscabecera.aerocivil.gov.co:3115"
+  },
+  {
+   "icao": "SKGO",
+   "estacion": "Cartago",
+   "nombre": "CARTAGO - SANTA ANA",
+   "lat": 4.75757,
+   "lon": -75.95601,
+   "elevFt": 2981,
+   "url": "http://leadscabecera.aerocivil.gov.co:10282"
+  },
+  {
+   "icao": "SKCZ",
+   "estacion": "Corozal",
+   "nombre": "COROZAL - LAS BRUJAS",
+   "lat": 9.3326,
+   "lon": -75.28522,
+   "elevFt": 525,
+   "url": "http://leadscabecera.aerocivil.gov.co:9104"
+  },
+  {
+   "icao": "SKCC",
+   "estacion": "Cúcuta",
+   "nombre": "CÚCUTA - CAMILO DAZA",
+   "lat": 7.92739,
+   "lon": -72.51159,
+   "elevFt": 1089,
+   "url": "http://leadscabecera.aerocivil.gov.co:2111"
+  },
+  {
+   "icao": "SKFL",
+   "estacion": "Florencia",
+   "nombre": "FLORENCIA - GUSTAVO ARTUNDUAGA PAREDES",
+   "lat": 1.58926,
+   "lon": -75.56443,
+   "elevFt": 792,
+   "url": "http://leadscabecera.aerocivil.gov.co:3170"
+  },
+  {
+   "icao": "SKGI",
+   "estacion": "Girardot",
+   "nombre": "GIRARDOT - SANTIAGO VILA",
+   "lat": 4.27535,
+   "lon": -74.79609,
+   "elevFt": 902,
+   "url": "http://leadscabecera.aerocivil.gov.co:5155"
+  },
+  {
+   "icao": "SKGP",
+   "estacion": "Guapi",
+   "nombre": "GUAPI - JUAN CASIANO",
+   "lat": 2.57003,
+   "lon": -77.89799,
+   "elevFt": 32,
+   "url": "http://awos.atnaerocivil.gov.co/skgp"
+  },
+  {
+   "icao": "SKGY",
+   "estacion": "Guaymaral",
+   "nombre": "CHIA - FLAMINIO SUAREZ CAMACHO",
+   "lat": 4.8125,
+   "lon": -74.06508,
+   "elevFt": 8389,
+   "url": "http://leadscabecera.aerocivil.gov.co:1653"
+  },
+  {
+   "icao": "SKIB",
+   "estacion": "Ibagué",
+   "nombre": "IBAGUÉ - PERALES",
+   "lat": 4.42165,
+   "lon": -75.13361,
+   "elevFt": 3041,
+   "url": "http://leadscabecera.aerocivil.gov.co:4200"
+  },
+  {
+   "icao": "SKIP",
+   "estacion": "Ipiales",
+   "nombre": "IPIALES - SAN LUIS",
+   "lat": 0.86149,
+   "lon": -77.66751,
+   "elevFt": 9760,
+   "url": "http://leadscabecera.aerocivil.gov.co:9817"
+  },
+  {
+   "icao": "SKPV",
+   "estacion": "Isla de Providencia",
+   "nombre": "PROVIDENCIA - EL EMBRUJO",
+   "lat": 13.35716,
+   "lon": -81.35792,
+   "elevFt": 16,
+   "url": "http://leadscabecera.aerocivil.gov.co:1034"
+  },
+  {
+   "icao": "SKLT",
+   "estacion": "Leticia",
+   "nombre": "LETICIA - ALFREDO VASQUEZ COBO",
+   "lat": -4.19191,
+   "lon": -69.9422,
+   "elevFt": 271,
+   "url": "http://leadscabecera.aerocivil.gov.co:617"
+  },
+  {
+   "icao": "SKMZ",
+   "estacion": "Manizales",
+   "nombre": "MANIZALES - LA NUBIA",
+   "lat": 5.03005,
+   "lon": -75.46545,
+   "elevFt": 6860,
+   "url": "http://leadscabecera.aerocivil.gov.co:9918"
+  },
+  {
+   "icao": "SKQU",
+   "estacion": "Mariquita",
+   "nombre": "MARIQUITA - JOSE CELESTINO MUTIS",
+   "lat": 5.21261,
+   "lon": -74.88371,
+   "elevFt": 1531,
+   "url": "http://awos.atnaerocivil.gov.co/skqu"
+  },
+  {
+   "icao": "SKMD",
+   "estacion": "Medellín",
+   "nombre": "MEDELLÍN - OLAYA HERRERA",
+   "lat": 6.22048,
+   "lon": -75.59043,
+   "elevFt": 4922,
+   "url": "http://leadscabecera.aerocivil.gov.co:1103"
+  },
+  {
+   "icao": "SKMU",
+   "estacion": "Mitú",
+   "nombre": "MITU - FABIO A LEON BENTLEY",
+   "lat": 1.25355,
+   "lon": -70.23406,
+   "elevFt": 557,
+   "url": "http://leadscabecera.aerocivil.gov.co:9638"
+  },
+  {
+   "icao": "SKMR",
+   "estacion": "Montería",
+   "nombre": "MONTERÍA - LOS GARZONES",
+   "lat": 8.82286,
+   "lon": -75.82517,
+   "elevFt": 41,
+   "url": "http://leadscabecera.aerocivil.gov.co:1212"
+  },
+  {
+   "icao": "SKNV",
+   "estacion": "Neiva",
+   "nombre": "NEIVA - BENITO SALAS",
+   "lat": 2.95029,
+   "lon": -75.29402,
+   "elevFt": 1482,
+   "url": "http://leadscabecera.aerocivil.gov.co:719"
+  },
+  {
+   "icao": "SKOC",
+   "estacion": "Ocaña",
+   "nombre": "OCAÑA - AGUAS CLARAS",
+   "lat": 8.31511,
+   "lon": -73.35842,
+   "elevFt": 3839,
+   "url": "http://leadscabecera.aerocivil.gov.co:148"
+  },
+  {
+   "icao": "SKPS",
+   "estacion": "Pasto",
+   "nombre": "PASTO - ANTONIO NARIÑO",
+   "lat": 1.39647,
+   "lon": -77.29101,
+   "elevFt": 5958,
+   "url": "http://leadscabecera.aerocivil.gov.co:9128"
+  },
+  {
+   "icao": "SKPE",
+   "estacion": "Pereira",
+   "nombre": "PEREIRA - MATECAÑA",
+   "lat": 4.81257,
+   "lon": -75.73996,
+   "elevFt": 4413,
+   "url": "http://leadscabecera.aerocivil.gov.co:1713"
+  },
+  {
+   "icao": "SKPP",
+   "estacion": "Popayán",
+   "nombre": "POPAYÁN - GUILLERMO LEÓN VALENCIA",
+   "lat": 2.45435,
+   "lon": -76.6098,
+   "elevFt": 5687,
+   "url": "http://leadscabecera.aerocivil.gov.co:1864"
+  },
+  {
+   "icao": "SKAS",
+   "estacion": "Puerto Asís",
+   "nombre": "PUERTO ASÍS - TRES DE MAYO",
+   "lat": 0.50571,
+   "lon": -76.50071,
+   "elevFt": 813,
+   "url": "http://awos.atnaerocivil.gov.co/skas"
+  },
+  {
+   "icao": "SKPC",
+   "estacion": "Puerto Carreño",
+   "nombre": "PUERTO CARREÑO - GERMAN OLANO",
+   "lat": 6.18511,
+   "lon": -67.49251,
+   "elevFt": 177,
+   "url": "http://leadscabecera.aerocivil.gov.co:9285"
+  },
+  {
+   "icao": "SKPD",
+   "estacion": "Puerto Inírida",
+   "nombre": "INÍRIDA - CESAR GAVIRIA",
+   "lat": 3.85426,
+   "lon": -67.90647,
+   "elevFt": 325,
+   "url": "http://leadscabecera.aerocivil.gov.co:715"
+  },
+  {
+   "icao": "SKUI",
+   "estacion": "Quibdó",
+   "nombre": "QUIBDÓ - EL CARAÑO",
+   "lat": 5.6908,
+   "lon": -76.64122,
+   "elevFt": 184,
+   "url": "http://leadscabecera.aerocivil.gov.co:1305"
+  },
+  {
+   "icao": "SKRH",
+   "estacion": "Riohacha",
+   "nombre": "RIOHACHA - ALMIRANTE PADILLA",
+   "lat": 11.52617,
+   "lon": -72.92668,
+   "elevFt": 50,
+   "url": "http://leadscabecera.aerocivil.gov.co:343"
+  },
+  {
+   "icao": "SKRG",
+   "estacion": "Rionegro",
+   "nombre": "RIONEGRO - JOSÉ MARÍA CÓRDOVA",
+   "lat": 6.16446,
+   "lon": -75.423,
+   "elevFt": 7024,
+   "url": "http://leadscabecera.aerocivil.gov.co:10215"
+  },
+  {
+   "icao": "SKSP",
+   "estacion": "San Andrés",
+   "nombre": "SAN ANDRÉS - GUSTAVO ROJAS PINILLA",
+   "lat": 12.58366,
+   "lon": -81.71134,
+   "elevFt": 18,
+   "url": "http://leadscabecera.aerocivil.gov.co:3514"
+  },
+  {
+   "icao": "SKSJ",
+   "estacion": "San José del Guaviare",
+   "nombre": "SAN JOSÉ DEL GUAVIARE - JORGE E. GONZALEZ T.",
+   "lat": 2.57933,
+   "lon": -72.63939,
+   "elevFt": 613,
+   "url": "http://leadscabecera.aerocivil.gov.co:9725"
+  },
+  {
+   "icao": "SKSV",
+   "estacion": "San Vicente",
+   "nombre": "SAN VICENTE DEL CAGUÁN - SAN VICENTE DEL CAGUÁN",
+   "lat": 2.15228,
+   "lon": -74.76648,
+   "elevFt": 879,
+   "url": "http://leadscabecera.aerocivil.gov.co:10011"
+  },
+  {
+   "icao": "SKSM",
+   "estacion": "Santa Marta",
+   "nombre": "SANTA MARTA - SIMON BOLIVAR",
+   "lat": 11.11969,
+   "lon": -74.23064,
+   "elevFt": 22,
+   "url": "http://leadscabecera.aerocivil.gov.co:3312"
+  },
+  {
+   "icao": "SKSA",
+   "estacion": "Saravena",
+   "nombre": "SARAVENA - COLONIZADORES",
+   "lat": 6.95037,
+   "lon": -71.8562,
+   "elevFt": 672,
+   "url": "http://leadscabecera.aerocivil.gov.co:4459"
+  },
+  {
+   "icao": "SKTM",
+   "estacion": "Tame",
+   "nombre": "TAME - GUSTAVO VARGAS",
+   "lat": 6.45101,
+   "lon": -71.76005,
+   "elevFt": 1241,
+   "url": "http://leadscabecera.aerocivil.gov.co:4365"
+  },
+  {
+   "icao": "SKTL",
+   "estacion": "Tolú",
+   "nombre": "TOLÚ - GOLFO DE MORROSQUILLO",
+   "lat": 9.50963,
+   "lon": -75.58603,
+   "elevFt": 7,
+   "url": "http://leadscabecera.aerocivil.gov.co:416"
+  },
+  {
+   "icao": "SKCO",
+   "estacion": "Tumaco",
+   "nombre": "TUMACO - LA FLORIDA",
+   "lat": 1.81441,
+   "lon": -78.74925,
+   "elevFt": 20,
+   "url": "http://leadscabecera.aerocivil.gov.co:10894"
+  },
+  {
+   "icao": "SKVP",
+   "estacion": "Valledupar",
+   "nombre": "VALLEDUPAR - ALFONSO LOPEZ PUMAREJO",
+   "lat": 10.43513,
+   "lon": -73.2494,
+   "elevFt": 485,
+   "url": "http://leadscabecera.aerocivil.gov.co:323"
+  },
+  {
+   "icao": "SKVV",
+   "estacion": "Villavicencio",
+   "nombre": "VILLAVICENCIO - VANGUARDIA",
+   "lat": 4.16906,
+   "lon": -73.61279,
+   "elevFt": 1381,
+   "url": "http://leadscabecera.aerocivil.gov.co:2736"
+  },
+  {
+   "icao": "SKYP",
+   "estacion": "Yopal",
+   "nombre": "EL YOPAL - EL ALCARAVÁN",
+   "lat": 5.31914,
+   "lon": -72.38423,
+   "elevFt": 1025,
+   "url": "http://leadscabecera.aerocivil.gov.co:2811"
+  }
+ ]
+}
