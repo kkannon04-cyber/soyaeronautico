@@ -1,6 +1,6 @@
 // Cliente mínimo de Supabase con fetch: sesión (la misma del sitio), Storage privado y la tabla de respuestas.
 // En pruebas, window.__SUPA_MOCK(url, opciones) reemplaza a fetch.
-import { CONFIG } from './config.js';
+import { CONFIG } from './simulador-fpl-config.js';
 
 const COLA = 'fpl-cola';
 const pedir = (url, op) => (window.__SUPA_MOCK || fetch)(url, op);

@@ -166,8 +166,9 @@ Claude Code está conectado directamente a Supabase, Netlify y GitHub vía MCP (
 
 ### Simulador FPL · Supervisor AIM — agregado 2026-10-19
 
-`simulador-fpl/` funciona para **cualquier usuario registrado**: sin sesión no carga los planes. Se llega por enlace: no va en el menú, en `quizzes.html` ni en `modulos.js`, y lleva `noindex`. Cristian lo quitará más adelante. Sus archivos son **generados**: no se editan a mano.
-- **Fuente:** `C:\Users\HP\OneDrive\Documentos\Simulacion-AIS-COM-MET\simulador-fpl\sitio\`.
+`simulador-fpl.html` (página suelta, como los demás simuladores; desde 2026-10-19 ya no va en una carpeta) funciona para **cualquier usuario registrado**: sin sesión no carga los planes. Está en **Quizzes → Simuladores**, sin `noindex` (y, como los demás simuladores, fuera del sitemap). No va en `modulos.js` porque guarda su avance en su propia tabla; por eso `login.html` lo tiene aparte en `PAGINAS_VALIDAS` (para volver a él con `?next=simulador-fpl.html`). Conserva **su propio diseño** (decisión de Cristian): no se le aplica la cabecera ni la estética del sitio. Sus archivos son **generados**: no se editan a mano.
+- **Archivos en el sitio:** `simulador-fpl.html`, `simulador-fpl.css`, `simulador-fpl.js`, `simulador-fpl-supa.js`, `simulador-fpl-config.js`, `simulador-fpl-formulario.js`, `simulador-fpl-logica.js` y `ASSETS/simulador-fpl-formulario.jpg`.
+- **Fuente:** `C:\Users\HP\OneDrive\Documentos\Simulacion-AIS-COM-MET\simulador-fpl\sitio\` (con los nombres cortos `index.html`, `app.js`…; el publicador los renombra y ajusta los `import`).
 - **Para regenerar:** `node simulador-fpl/publicar-en-sitio.mjs` desde esa carpeta.
 - **Los datos no van al repositorio.** El banco de planes y las consultas ALDIA están en el depósito no público `simulador-fpl` de Supabase, que solo descargan usuarios con sesión. Las consultas traen solo a las personas que aparecen en los planes, sin cédulas. El avance de cada usuario está en la tabla `fpl_respuestas`, con RLS `usuario = auth.uid()`.
 - **Esquema:** `simulador-fpl/supabase/esquema.sql`, en la carpeta de estudio.

@@ -2,7 +2,7 @@
 // Las posiciones están en píxeles de la imagen (1278 × 1653) y se convierten a porcentajes.
 const ANCHO = 1278;
 const ALTO = 1653;
-export const IMAGEN = 'img/formulario-gsan.jpg';
+export const IMAGEN = 'ASSETS/simulador-fpl-formulario.jpg';
 
 // [x, y, ancho, alto] de cada casilla sobre la imagen.
 const C = {

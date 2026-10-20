@@ -1,7 +1,7 @@
 // Supervisor AIM · Simulador FPL. El supervisor entrega planes; tú decides si los aceptas o los rechazas.
-import * as supa from './supa.js';
-import { pintarFormulario } from './formulario.js';
-import { calificar, siguientePendiente, colaRepaso, resumen, elegirSimulacro, intentoSiguiente, ultimaPorPlan, coincideNombre, sinTildes } from './logica.js';
+import * as supa from './simulador-fpl-supa.js';
+import { pintarFormulario } from './simulador-fpl-formulario.js';
+import { calificar, siguientePendiente, colaRepaso, resumen, elegirSimulacro, intentoSiguiente, ultimaPorPlan, coincideNombre, sinTildes } from './simulador-fpl-logica.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];

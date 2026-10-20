@@ -268,13 +268,16 @@
     'simulador-plan-vuelo.html': 'el Simulador de Plan de Vuelo',
     'Simulador-NALA.html': 'el Simulador NALA',
     'simulador-fraseologia.html': 'el Simulador ATC por voz',
+    'simulador-fpl.html': 'el Simulador FPL · Supervisor AIM',
     'Panel_estudiante.html': 'tu Panel del Estudiante',
   };
   // Páginas protegidas a las que se puede volver: todo el catálogo de modulos.js (fuente única de
-  // urls) más las páginas de cuenta y de actividades del profesor. Lista cerrada, para no permitir
-  // redirecciones abiertas a otros sitios.
+  // urls) más las páginas de cuenta y de actividades del profesor, y el Simulador FPL (guarda su avance
+  // en su propia tabla, por eso no está en modulos.js). Lista cerrada, para no permitir redirecciones
+  // abiertas a otros sitios.
   const PAGINAS_VALIDAS = [
     'Panel_estudiante.html', 'panel-profesor.html', 'tomar-actividad.html', 'revision-actividad.html', 'evaluacion.html',
+    'simulador-fpl.html',
     ...((typeof MODULOS_CATALOGO !== 'undefined') ? MODULOS_CATALOGO.map(m => m.url) : []),
   ];
   // Parámetros que se conservan al volver: el código de invitación del profesor y los ids de las
