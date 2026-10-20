@@ -26,6 +26,7 @@ function mostrar(vista) {
 function ir() {
   const h = location.hash.replace('#', '') || 'bandeja';
   if (h.startsWith('plan/')) return verPlan(h.slice(5));
+  if (h.startsWith('repaso/')) return verRepasoPlan(h.slice(7));
   const vistas = { bandeja: verBandeja, simulacro: verSimulacro, repaso: verRepaso, avance: verAvance, documentos: verDocumentos };
   (vistas[h] || verBandeja)();
   window.scrollTo({ top: 0 });
@@ -42,6 +43,7 @@ function actualizarCabecera() {
 function mesa(cont, plan, op) {
   const t0 = Date.now();
   let respondido = null;
+  const sig = op.siguiente || { boton: 'Siguiente plan', pista: 'pasar al siguiente plan' };
   cont.className = 'vista mesa';
   cont.innerHTML = `
     <div class="columna-hoja">
@@ -49,7 +51,7 @@ function mesa(cont, plan, op) {
       <p class="recibido"><span class="id">${plan.id}</span><span>${TIPOS[plan.tipo] || plan.tipo}</span>
         <span>Recibido en la sala AIS de <b>${esc(plan.recibido.lugar)}</b> el <b>${fecha(plan.recibido.fecha)}</b> a las <b>${esc(plan.recibido.hora)} UTC</b>.</span></p>
       <div class="marco"><div class="hoja llega"></div></div>
-      <p class="ayuda-hoja"><span class="pista">Desliza la hoja a la derecha para pasar al siguiente plan.</span><button type="button" class="enlace ampliar">Ampliar la hoja</button></p>
+      <p class="ayuda-hoja"><span class="pista">Desliza la hoja a la derecha para ${sig.pista}.</span><button type="button" class="enlace ampliar">Ampliar la hoja</button></p>
     </div>
     <aside class="panel" aria-live="polite"></aside>`;
   const hoja = $('.hoja', cont);
@@ -113,12 +115,12 @@ function mesa(cont, plan, op) {
     sellar(decision);
     actualizarCabecera();
     if (op.mostrarCorreccion === false) {
-      panel.innerHTML = `<div class="correccion"><p>Respuesta guardada. Las correcciones se ven al terminar el simulacro.</p><button type="button" class="boton principal siguiente">Siguiente plan</button><p class="aviso-guardado suave" role="status"></p></div>`;
+      panel.innerHTML = `<div class="correccion"><p>Respuesta guardada. Las correcciones se ven al terminar el simulacro.</p><button type="button" class="boton principal siguiente">${sig.boton}</button><p class="aviso-guardado suave" role="status"></p></div>`;
     } else {
-      panel.innerHTML = `${htmlCorreccion(plan, fila, cal)}<button type="button" class="boton principal siguiente">Siguiente plan</button><p class="aviso-guardado suave" role="status"></p>`;
+      panel.innerHTML = `${htmlCorreccion(plan, fila, cal)}<button type="button" class="boton principal siguiente">${sig.boton}</button><p class="aviso-guardado suave" role="status"></p>`;
     }
     $('.siguiente', panel).onclick = pasar;
-    $('.pista', cont).textContent = 'Desliza la hoja a la derecha o usa la flecha → para el siguiente plan.';
+    $('.pista', cont).textContent = `Desliza la hoja a la derecha o usa la flecha → para ${sig.pista}.`;
     if (window.innerWidth < 980) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     const ok = await supa.guardarRespuesta(fila);
     const aviso = $('.aviso-guardado', panel);
@@ -186,16 +188,36 @@ function verBandeja() {
   mesa(cont, plan, { modo: 'practica', alSiguiente: verBandeja });
 }
 
+// El repaso abre con la rejilla de pendientes (como en Avance); cada plan se corrige en #repaso/<id>.
+const pendientes = (n) => `${n} ${n === 1 ? 'plan pendiente' : 'planes pendientes'}`;
 function verRepaso() {
   mostrar('repaso');
   const cont = $('#vista-repaso');
+  cont._teclaDerecha = null;
+  cont.className = 'vista';
   const cola = colaRepaso(estado.planes, estado.respuestas);
   if (!cola.length) {
-    cont.className = 'vista';
     cont.innerHTML = `<div class="vacio"><h1>Nada que repasar</h1><p>Los planes que respondas mal o a medias aparecen aquí hasta que los resuelvas bien.</p><p><a class="boton principal" href="#bandeja">Volver a la bandeja</a></p></div>`;
     return;
   }
-  mesa(cont, cola[0], { modo: 'repaso', alSiguiente: verRepaso, encabezado: `<p class="suave">Repaso: ${cola.length} ${cola.length === 1 ? 'plan pendiente' : 'planes pendientes'}.</p>` });
+  const ultima = ultimaPorPlan(estado.respuestas);
+  cont.innerHTML = `<h1>Repaso</h1>
+    <p class="suave">${pendientes(cola.length)}. Elige cuál quieres corregir: sale del repaso cuando lo resuelves bien.</p>
+    <div class="leyenda"><span>Ámbar: parcial</span><span>Rojo: mal</span></div>
+    <div class="rejilla">${cola.map((p) => { const r = ultima.get(p.id).resultado; return `<button type="button" data-id="${p.id}" class="${r}" title="${p.id}: ${r}">${p.id.slice(1)}</button>`; }).join('')}</div>`;
+  $$('.rejilla button', cont).forEach((b) => { b.onclick = () => { location.hash = `#repaso/${b.dataset.id}`; }; });
+}
+
+function verRepasoPlan(id) {
+  mostrar('repaso');
+  const cola = colaRepaso(estado.planes, estado.respuestas);
+  const plan = cola.find((p) => p.id === id);
+  if (!plan) { location.replace('#repaso'); return; }
+  mesa($('#vista-repaso'), plan, {
+    modo: 'repaso', siguiente: { boton: 'Volver al repaso', pista: 'volver al repaso' },
+    alSiguiente: () => { location.hash = '#repaso'; },
+    encabezado: `<p class="suave"><a href="#repaso">← Volver al repaso</a> · ${pendientes(cola.length)}</p>`,
+  });
 }
 
 function verPlan(id) {
