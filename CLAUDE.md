@@ -164,6 +164,15 @@ Claude Code está conectado directamente a Supabase, Netlify y GitHub vía MCP (
 - Cabecera, menú, tema y pie: copiados de `simulador-memoria.html`. Si cambian en el sitio, actualizar la plantilla.
 - Guarda su progreso con `guardarIntento('simulador-aip', …)`, igual que los demás simuladores.
 
+### Simulador FPL · Supervisor AIM — agregado 2026-10-19
+
+`simulador-fpl/` funciona para **cualquier usuario registrado**: sin sesión no carga los planes. Se llega por enlace: no va en el menú, en `quizzes.html` ni en `modulos.js`, y lleva `noindex`. Cristian lo quitará más adelante. Sus archivos son **generados**: no se editan a mano.
+- **Fuente:** `C:\Users\HP\OneDrive\Documentos\Simulacion-AIS-COM-MET\simulador-fpl\sitio\`.
+- **Para regenerar:** `node simulador-fpl/publicar-en-sitio.mjs` desde esa carpeta.
+- **Los datos no van al repositorio.** El banco de planes y las consultas ALDIA están en el depósito no público `simulador-fpl` de Supabase, que solo descargan usuarios con sesión. Las consultas traen solo a las personas que aparecen en los planes, sin cédulas. El avance de cada usuario está en la tabla `fpl_respuestas`, con RLS `usuario = auth.uid()`.
+- **Esquema:** `simulador-fpl/supabase/esquema.sql`, en la carpeta de estudio.
+- **Sesión:** usa la misma del sitio (`sb-yszcglcnbpnyteytpfyc-auth-token`) y no toca `auth-gate.js` ni `supabase-config.js`.
+
 ---
 
 ## Regla importante
