@@ -32,6 +32,25 @@ function campo(caja, texto, clase = '') {
   return `<span class="fc ${clase}" style="${pct(caja)}">${esc(texto)}</span>`;
 }
 const tachon = (caja) => `<span class="fc-tachon" style="${pct(caja)}" aria-hidden="true"></span>`;
+// Casilla de un renglón que achica la letra si el texto no cabe (la 10a llega a 21 caracteres: SDE1E2E3GIJ4J7M3RWXYZ).
+// Con la letra normal (2.15cqw) cada carácter de Patrick Hand ocupa unos 12 px de la imagen; se calcula con 13 de margen.
+function campoAjustado(caja, texto, clase = '') {
+  const t = String(texto ?? '');
+  const cabe = Math.floor((caja[2] - 12) / 13);
+  const tam = t.length > cabe ? `;font-size:${((2.15 * cabe) / t.length).toFixed(2)}cqw` : '';
+  return `<span class="fc ajustar ${clase}" style="${pct(caja)}${tam}">${esc(t)}</span>`;
+}
+// Si con la letra que de verdad cargó el navegador (o la de reemplazo) aún no cabe, se achica en proporción, en cqw.
+function ajustarCasillas(contenedor) {
+  const ajustar = () => {
+    for (const e of contenedor.querySelectorAll('.fc.ajustar')) {
+      if (!e.clientWidth || e.scrollWidth <= e.clientWidth) continue;
+      e.style.fontSize = `${((parseFloat(e.style.fontSize) || 2.15) * (e.clientWidth / e.scrollWidth) * 0.97).toFixed(3)}cqw`;
+    }
+  };
+  ajustar();
+  document.fonts?.ready.then(ajustar);
+}
 
 // Reparte el texto por palabras en los renglones disponibles (ancho en píxeles de la imagen).
 export function partirEnRenglones(texto, renglones, anchoLetra = 13.2) {
@@ -67,7 +86,7 @@ export function pintarFormulario(plan, contenedor) {
   partes.push(campo(C.deposito, c.deposito, 'separado'), campo(C.remitente, c.remitente, 'separado'));
   partes.push(campo(C.c7, c.c7, 'separado'), campo(C.c8reglas, c.c8reglas), campo(C.c8tipo, c.c8tipo));
   partes.push(campo(C.c9num, c.c9num), campo(C.c9tipo, c.c9tipo, 'separado'), campo(C.c9estela, c.c9estela));
-  partes.push(campo(C.c10a, c.c10a, 'izq'), campo(C.c10b, c.c10b, 'izq'));
+  partes.push(campoAjustado(C.c10a, c.c10a, 'izq'), campoAjustado(C.c10b, c.c10b, 'izq'));
   partes.push(campo(C.c13ad, c.c13ad, 'separado'), campo(C.c13hora, c.c13hora, 'separado'));
   partes.push(campo(C.c15vel, c.c15vel, 'separado'), campo(C.c15nivel, c.c15nivel, 'separado'));
   const ruta = renglones(C.ruta, c.c15ruta);
@@ -94,5 +113,6 @@ export function pintarFormulario(plan, contenedor) {
   partes.push(`<span class="fc multilinea" style="${pct(C.licencia)}">${esc(c.licencia)}</span>`);
   contenedor.classList.add('formulario');
   contenedor.innerHTML = `<img class="formulario-fondo" src="${IMAGEN}" alt="Plan de vuelo ${esc(c.c7)} en el formulario GSAN-2.2-12-04" draggable="false">${partes.join('')}`;
+  ajustarCasillas(contenedor);
   return contenedor;
 }
