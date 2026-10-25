@@ -4513,3 +4513,53 @@ revoke all on function public.registrar_visita() from public;
 revoke all on function public.contar_visitas() from public;
 grant execute on function public.registrar_visita() to anon, authenticated;
 grant execute on function public.contar_visitas() to anon, authenticated;
+
+-- ============================================================
+-- LISTAS DE NOTAM CARGADAS A MANO (2026-10-25)
+-- Desde el 2026-10-25 Aerocivil pide un reCAPTCHA para descargar los PDF de
+-- NOTAM vigentes, así que la función ya no puede bajarlos sola. El editor
+-- los descarga, los sube en notam-cargar.html, la función los lee
+-- (netlify/functions/notam-colombia.js) y guarda aquí una fila por serie
+-- (A, B y C, que incluye la D). notam-vigentes.html muestra estas filas.
+-- Leer: cualquiera. Escribir: solo quien esté en notam_editores (se agrega
+-- desde el SQL Editor; no hay políticas para que nadie se agregue solo).
+-- ============================================================
+create table if not exists public.notam_editores (
+  usuario uuid primary key references auth.users(id) on delete cascade
+);
+alter table public.notam_editores enable row level security;
+revoke all on public.notam_editores from anon, authenticated;
+grant select on public.notam_editores to authenticated;
+create policy "notam_editores: cada editor se ve a sí mismo" on public.notam_editores
+  for select to authenticated
+  using ( usuario = (select auth.uid()) );
+
+create table if not exists public.notam_listas (
+  serie text primary key check (serie in ('A', 'B', 'C')),
+  archivo text not null,
+  generado timestamptz,
+  total integer not null check (total > 0),
+  notams jsonb not null check (jsonb_typeof(notams) = 'array'),
+  cargado timestamptz not null default now(),
+  cargado_por uuid not null default auth.uid()
+);
+alter table public.notam_listas enable row level security;
+revoke all on public.notam_listas from anon, authenticated;
+grant select on public.notam_listas to anon, authenticated;
+grant insert, update on public.notam_listas to authenticated;
+create policy "notam_listas: lectura pública" on public.notam_listas
+  for select to anon, authenticated
+  using ( true );
+create policy "notam_listas: el editor carga" on public.notam_listas
+  for insert to authenticated
+  with check (
+    exists (select 1 from public.notam_editores e where e.usuario = (select auth.uid()))
+    and cargado_por = (select auth.uid())
+  );
+create policy "notam_listas: el editor reemplaza" on public.notam_listas
+  for update to authenticated
+  using ( exists (select 1 from public.notam_editores e where e.usuario = (select auth.uid())) )
+  with check (
+    exists (select 1 from public.notam_editores e where e.usuario = (select auth.uid()))
+    and cargado_por = (select auth.uid())
+  );

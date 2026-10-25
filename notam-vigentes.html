@@ -207,6 +207,7 @@
   .status-line{ font-size:0.85rem; color:var(--text-muted); margin-top:6px; }
   .status-line:empty{ display:none; }
   .status-line.error{ color:var(--danger); }
+  .status-line.aviso{ color:var(--amber); }
   .status-line a{ color:var(--accent); }
   .nv-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding-bottom:12px; margin-bottom:14px; border-bottom:1px solid var(--hairline); }
   .nv-head .icao{ font-family:'IBM Plex Mono'; font-weight:700; font-size:1.15rem; color:var(--accent); }
@@ -428,7 +429,7 @@
 <section class="page-hero">
   <h1>NOTAM vigentes</h1>
   <p class="hero-meta" id="heroMeta">Lista de <a href="https://aerobarranquilla.aerocivil.gov.co/publicaciones/3708/listas-de-verificacion-y-listas-de-notam-validos/" target="_blank" rel="noopener">Aerocivil</a> · <span class="aviso">solo para estudio, no para uso operacional</span></p>
-  <div class="status-line" id="statusLine" role="status">Consultando la lista de Aerocivil…</div>
+  <div class="status-line" id="statusLine" role="status">Cargando la lista de NOTAM…</div>
 </section>
 
 <div class="nv-wrap" id="nvWrap">
@@ -503,7 +504,10 @@
 <script>
   // ---------- NOTAM VIGENTES ----------
   // Los datos vienen de netlify/functions/notam-colombia.js (listas en PDF de
-  // Aerocivil). La versión explicada sustituye abreviaturas con la GEN 2.2 del
+  // Aerocivil). Desde 2026-10-25 Aerocivil pide un captcha para descargarlas,
+  // así que el editor las sube a mano en notam-cargar.html y pueden tener
+  // horas o días: por eso se muestra la fecha y se ocultan los ya vencidos.
+  // La versión explicada sustituye abreviaturas con la GEN 2.2 del
   // AIP Colombia (notam-abreviaturas.js); no usa IA ni inventa texto.
   (function(){
     const API = '/.netlify/functions/notam-colombia';
@@ -551,6 +555,17 @@
       if(!iso) return null;
       const d = new Date(iso);
       return `${String(d.getUTCHours()).padStart(2, '0')}${String(d.getUTCMinutes()).padStart(2, '0')}Z`;
+    }
+    function fechaHoraZ(iso){
+      if(!iso) return null;
+      const d = new Date(iso);
+      return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]} ${horaZ(iso)}`;
+    }
+    // Terminó antes de ahora. Los de fin estimado (EST) siguen vigentes hasta
+    // que otro NOTAM los cancele o reemplace, así que no se ocultan.
+    function vencido(n){
+      const c = fecha(n.c);
+      return !!c && !n.est && c.t <= Date.now();
     }
 
     // ---------- Lectura con abreviaturas ----------
@@ -789,16 +804,26 @@
         const r = await fetch(API, { signal:ctl.signal });
         const data = await r.json();
         if(!r.ok || !Array.isArray(data.notams)) throw new Error(data.error || 'Respuesta inválida');
-        todos = data.notams;
+        todos = data.notams.filter(n => !vencido(n));
+        const ocultos = data.notams.length - todos.length;
         const cd = (data.listas || []).find(l => l.serie === 'C/D');
-        const hora = horaZ((cd && cd.generado) || (data.listas || []).map(l => l.generado).filter(Boolean).sort().pop());
-        const detalleListas = (data.listas || []).map(l => `${l.serie}: ${l.total}${l.generado ? ' (' + horaZ(l.generado) + ')' : ''}${l.error ? ' — sin datos' : ''}`).join(' · ');
+        const generada = (cd && cd.generado) || (data.listas || []).map(l => l.generado).filter(Boolean).sort().pop();
+        const hora = fechaHoraZ(generada);
+        const detalleListas = (data.listas || []).map(l => `${l.serie}: ${l.total}${l.generado ? ' (' + fechaHoraZ(l.generado) + ')' : ''}${l.error ? ' — sin datos' : ''}`).join(' · ');
         heroMeta.innerHTML = `${todos.length} NOTAM · lista de <a href="${esc(data.fuente)}" target="_blank" rel="noopener" title="${esc(detalleListas)}">Aerocivil</a>${hora ? ' generada ' + hora : ''} · <span class="aviso">solo para estudio, no para uso operacional</span>`;
         const faltan = (data.listas || []).filter(l => l.error).map(l => l.serie);
-        statusEl.classList.toggle('error', !!(data.desactualizado || faltan.length));
+        // Con la carga manual la lista puede tener días: se avisa pasadas 48 h.
+        const vieja = generada && Date.now() - new Date(generada).getTime() > 48 * 3.6e6;
+        const error = !!(data.desactualizado || faltan.length);
+        statusEl.classList.toggle('error', error);
+        statusEl.classList.toggle('aviso', !error && !!vieja);
         statusEl.textContent = data.desactualizado
           ? 'Aerocivil no respondió: se muestra la última copia guardada.'
-          : (faltan.length ? `No se pudo leer la lista de la serie ${faltan.join(', ')} en este momento.` : '');
+          : (faltan.length ? `No se pudo leer la lista de la serie ${faltan.join(', ')} en este momento.`
+          : (vieja ? `Esta lista es del ${fechaHoraZ(generada)}: puede haber NOTAM nuevos o cancelados desde entonces.${ocultos ? ` Se ocultaron ${ocultos} que ya terminaron.` : ''}` : ''));
+        if(vieja && !error){
+          statusEl.insertAdjacentHTML('beforeend', ' Lo más reciente está en la <a href="https://aerobarranquilla.aerocivil.gov.co/publicaciones/3708/listas-de-verificacion-y-listas-de-notam-validos/" target="_blank" rel="noopener">publicación original</a>.');
+        }
         pintarTodo();
       }catch(e){
         statusEl.classList.add('error');

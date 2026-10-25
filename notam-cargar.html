@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Cargar listas de NOTAM — SoyAeronáutico</title>
+<link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --vfr-texto:#1F7A53;
+    --bg:#FFFFFF;
+    --panel:#F5F8FC;
+    --panel-alt:#EAF1FB;
+    --accent:#1657C6;
+    --accent-rgb:22,87,198;
+    --navy:#0A2647;
+    --text:#0F1B2D;
+    --text-muted:#5B6B7F;
+    --muted-rgb:91,107,127;
+    --hairline:#E1E7EF;
+    --shadow-rgb:15,23,42;
+    --danger:#D64545;
+    --amber:#B7791F;
+    --live:#2E9E6D;
+    --live-rgb:46,158,109;
+    --topbar-bg:rgba(255,255,255,0.85);
+    --on-accent:#FFFFFF;
+    --shadow-instrument:0 16px 40px -24px rgba(15,23,42,0.18);
+    --shadow-card:0 12px 30px -18px rgba(15,23,42,0.18);
+  }
+
+  [data-theme="dark"]{
+    --vfr-texto:#4FA88C;
+    --bg:#0B1220;
+    --panel:#121C2E;
+    --panel-alt:#17223A;
+    --accent:#4F8EF7;
+    --accent-rgb:79,142,247;
+    --navy:#0A2647;
+    --text:#EDEFF3;
+    --text-muted:#8894A8;
+    --muted-rgb:136,148,168;
+    --hairline:#2A3548;
+    --shadow-rgb:0,0,0;
+    --danger:#C9564F;
+    --amber:#E0A84F;
+    --live:#4FA88C;
+    --live-rgb:79,168,140;
+    --topbar-bg:rgba(11,18,32,0.85);
+    --on-accent:#0B1220;
+    --shadow-instrument:0 16px 40px -24px rgba(0,0,0,0.6);
+    --shadow-card:0 12px 30px -18px rgba(0,0,0,0.55);
+  }
+
+  html{ transition:background .2s; scroll-behavior:smooth; }
+  body{ transition:background .2s, color .2s; }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Archivo', sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* ---------- TOP BAR (igual que notam-vigentes.html) ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Archivo', sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:0.02em; }
+  a.brand{ text-decoration:none; color:var(--text); cursor:pointer; }
+  .brand-mark{ width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--accent); flex-shrink:0; }
+  .brand-mark svg{ display:block; }
+  .brand small{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace; font-weight:400; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--live); box-shadow:0 0 0 0 rgba(var(--live-rgb),0.6); animation:pulseDot 2.2s ease-out infinite; flex-shrink:0; }
+  @keyframes pulseDot{ 0%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0.55); } 70%{ box-shadow:0 0 0 6px rgba(var(--live-rgb),0); } 100%{ box-shadow:0 0 0 0 rgba(var(--live-rgb),0); } }
+  @media (prefers-reduced-motion:reduce){ .live-dot{ animation:none; } }
+
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-size:0.88rem; font-weight:500;}
+  nav.desktop-nav a{ position:relative; text-decoration:none; color:var(--text-muted); padding-bottom:6px; transition:color .2s; }
+  nav.desktop-nav a::after{ content:''; position:absolute; left:0; right:100%; bottom:0; height:2px; background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1); }
+  nav.desktop-nav a:hover, nav.desktop-nav a:focus-visible{ color:var(--text); }
+  nav.desktop-nav a:hover::after, nav.desktop-nav a:focus-visible::after{ right:0; }
+  nav.desktop-nav a.active{ color:var(--live); font-weight:600; }
+  nav.desktop-nav a.active::after{ right:0; background:var(--live); }
+
+  .nav-dropdown{ position:relative; }
+  .nav-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    background:none; border:none; padding:0 0 6px; margin:0;
+    font-family:'IBM Plex Sans', sans-serif; font-size:0.88rem; font-weight:500;
+    color:var(--text-muted); cursor:pointer; position:relative; transition:color .2s;
+  }
+  .nav-dropdown-btn::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:2px;
+    background:var(--accent); transition:right .25s cubic-bezier(.4,0,.2,1);
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn:focus-visible{ color:var(--text); }
+  .nav-dropdown-btn:hover::after, .nav-dropdown-btn:focus-visible::after{ right:0; }
+  .nav-dropdown-caret{ width:11px; height:11px; flex-shrink:0; transition:transform .2s; }
+  .nav-dropdown.open .nav-dropdown-caret, .nav-dropdown:hover .nav-dropdown-caret{ transform:rotate(180deg); }
+  .nav-dropdown-menu{
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    padding-top:14px; z-index:60;
+  }
+  .nav-dropdown.open .nav-dropdown-menu, .nav-dropdown:hover .nav-dropdown-menu{ display:block; }
+  .nav-dropdown-menu-inner{
+    background:var(--bg); border:1px solid var(--hairline); border-radius:10px;
+    padding:8px; min-width:180px; box-shadow:var(--shadow-card);
+  }
+  .nav-dropdown-menu a{
+    display:block; padding:9px 12px; border-radius:6px;
+    font-size:0.88rem; font-weight:500; color:var(--text); text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .nav-dropdown-menu a:hover, .nav-dropdown-menu a:focus-visible{ background:var(--panel-alt); color:var(--accent); }
+
+  .nav-divider{ width:1px; height:18px; background:var(--hairline); }
+  .nav-icon-btn{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; background:none; border:1px solid transparent; color:var(--text-muted); cursor:pointer; transition:border-color .2s, color .2s; }
+  .nav-icon-btn:hover{ color:var(--accent); border-color:var(--hairline); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  .nav-login-btn{ display:inline-block; text-decoration:none; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:0.85rem; padding:8px 20px; border-radius:30px; transition:filter .15s; white-space:nowrap; }
+  .nav-login-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:600px){ .nav-login-btn{ padding:8px 14px; font-size:0.8rem; } }
+  .zulu-mini{ font-size:0.78rem; font-weight:600; color:var(--accent); letter-spacing:0.03em; }
+  @media (max-width:600px){ .zulu-mini{ display:none; } }
+  .theme-toggle svg{ display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
+  .menu-btn{display:none; background:none; border:1px solid var(--hairline); color:var(--text); padding:8px 12px; border-radius:8px; font-size:1rem;}
+  nav.desktop-nav a, .nav-dropdown-btn{ white-space:nowrap; }
+  @media (max-width:1400px){ nav.desktop-nav{ gap:20px; } }
+  @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
+  @media (max-width:1280px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
+
+  /* ---------- ENCABEZADO CORTO ---------- */
+  .page-hero{ max-width:860px; margin:0 auto; padding:28px 32px 6px; }
+  .page-hero h1{ font-size:clamp(1.45rem, 2.6vw, 1.9rem); margin-bottom:6px; }
+  .hero-meta{ font-family:'IBM Plex Mono'; font-size:0.74rem; color:var(--text-muted); line-height:1.7; margin:0; }
+  .hero-meta a{ color:var(--accent); text-decoration:none; }
+  .hero-meta a:hover{ text-decoration:underline; }
+
+  /* ---------- PASOS ---------- */
+  .nc-wrap{ max-width:860px; margin:0 auto; padding:16px 32px 72px; display:flex; flex-direction:column; gap:16px; }
+  .nc-card{ background:var(--panel); border:1px solid var(--hairline); border-radius:14px; box-shadow:var(--shadow-instrument); padding:20px 22px; }
+  .nc-card h2{ display:flex; align-items:center; gap:10px; font-size:1.02rem; margin-bottom:10px; }
+  .nc-num{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--accent); color:var(--on-accent); font-family:'IBM Plex Mono'; font-size:0.8rem; font-weight:600; flex-shrink:0; }
+  .nc-card p{ font-size:0.9rem; line-height:1.6; color:var(--text-muted); margin:0 0 12px; }
+  .nc-card p b{ color:var(--text); font-family:'IBM Plex Mono'; font-weight:600; font-size:0.84rem; }
+  .nc-btn{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; background:var(--accent); color:var(--on-accent); font-weight:600; font-size:0.86rem; padding:10px 18px; border-radius:30px; transition:filter .15s; }
+  .nc-btn:hover{ filter:brightness(1.08); }
+  .nc-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  .nc-ayuda{ margin-top:14px; font-size:0.86rem; }
+  .nc-ayuda summary{ cursor:pointer; color:var(--accent); font-weight:500; }
+  .nc-ayuda p{ margin:8px 0 0; }
+  .nc-ayuda code{ font-family:'IBM Plex Mono'; font-size:0.82rem; background:var(--bg); border:1px solid var(--hairline); border-radius:4px; padding:1px 5px; color:var(--text); }
+
+  .nc-drop{
+    position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    text-align:center; padding:28px 16px; border:2px dashed var(--hairline); border-radius:12px;
+    background:var(--bg); cursor:pointer; transition:border-color .2s, background .2s;
+  }
+  .nc-drop:hover, .nc-drop.encima{ border-color:var(--accent); background:rgba(var(--accent-rgb),0.06); }
+  .nc-drop:focus-within{ outline:2px solid var(--accent); outline-offset:3px; }
+  .nc-drop input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .nc-drop svg{ color:var(--accent); }
+  .nc-drop span{ font-weight:600; font-size:0.92rem; }
+  .nc-drop small{ font-size:0.78rem; color:var(--text-muted); }
+  .nc-drop.inactivo{ cursor:not-allowed; opacity:0.55; }
+
+  .nc-permiso{ font-size:0.88rem; color:var(--danger); margin:0 0 12px; }
+  .nc-permiso:empty{ display:none; }
+
+  .nc-resultados{ list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .nc-resultados:empty{ display:none; }
+  .nc-res{ display:flex; align-items:flex-start; gap:10px; background:var(--bg); border:1px solid var(--hairline); border-radius:10px; padding:10px 12px; font-size:0.86rem; line-height:1.5; }
+  .nc-res .icono{ font-family:'IBM Plex Mono'; font-weight:700; width:18px; text-align:center; flex-shrink:0; }
+  .nc-res .cuerpo{ flex:1; min-width:0; }
+  .nc-res .nombre{ font-family:'IBM Plex Mono'; font-weight:600; font-size:0.8rem; word-break:break-all; }
+  .nc-res .detalle{ color:var(--text-muted); }
+  .nc-res.ok{ border-color:rgba(var(--live-rgb),0.55); }
+  .nc-res.ok .icono{ color:var(--live); }
+  .nc-res.error{ border-color:var(--danger); }
+  .nc-res.error .icono{ color:var(--danger); }
+  .nc-res.aviso{ border-color:var(--amber); }
+  .nc-res.aviso .icono{ color:var(--amber); }
+  .nc-res .ojo{ color:var(--amber); }
+  .nc-res button{ margin-top:6px; background:none; border:1px solid var(--hairline); color:var(--text); border-radius:8px; padding:6px 12px; font-family:'IBM Plex Sans'; font-size:0.8rem; cursor:pointer; }
+  .nc-res button:hover{ color:var(--accent); border-color:var(--accent); }
+
+  .nc-tabla-wrap{ overflow-x:auto; }
+  .nc-tabla{ width:100%; border-collapse:collapse; font-size:0.84rem; }
+  .nc-tabla th{ text-align:left; font-family:'IBM Plex Mono'; font-size:0.66rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding:8px 10px; border-bottom:1px solid var(--hairline); white-space:nowrap; }
+  .nc-tabla td{ padding:10px; border-bottom:1px solid var(--hairline); white-space:nowrap; }
+  .nc-tabla tr:last-child td{ border-bottom:none; }
+  .nc-tabla .serie{ font-family:'IBM Plex Mono'; font-weight:700; color:var(--accent); }
+  .nc-tabla .hace{ display:block; font-size:0.74rem; color:var(--text-muted); }
+  .nc-tabla .viejo .hace{ color:var(--amber); font-weight:600; }
+  .nc-tabla .sub{ display:block; font-size:0.74rem; color:var(--text-muted); }
+  .nc-tabla .falta{ color:var(--text-muted); font-style:italic; }
+  .nc-pie{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; font-size:0.8rem; color:var(--text-muted); }
+  .nc-pie a{ color:var(--accent); text-decoration:none; font-weight:600; }
+  .nc-pie a:hover{ text-decoration:underline; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---------- MOBILE NAV DRAWER ---------- */
+  .mobile-nav{ display:none; position:fixed; inset:0; z-index:200; }
+  .mobile-nav.open{ display:block; }
+  .mobile-nav-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); }
+  .mobile-nav-panel{
+    position:absolute; top:0; right:0; bottom:0;
+    width:min(300px, 85vw);
+    background:var(--panel);
+    border-left:1px solid var(--hairline);
+    padding:24px 0;
+    display:flex; flex-direction:column;
+    overflow-y:auto;
+    box-shadow:-8px 0 32px rgba(0,0,0,0.2);
+  }
+  .mobile-nav-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px 20px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:12px;
+  }
+  .mobile-nav-close{
+    background:none; border:1px solid var(--hairline);
+    color:var(--text); width:40px; height:40px;
+    border-radius:8px; font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mobile-nav-links a{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    text-decoration:none; color:var(--text);
+    font-size:0.95rem; font-weight:500;
+    border-bottom:1px solid var(--hairline);
+    transition:background .15s, color .15s, padding-left .15s;
+  }
+  .mobile-nav-links a:hover{ background:var(--panel-alt); color:var(--accent); padding-left:30px; }
+  .mobile-nav-links a.active{ color:var(--live); font-weight:600; }
+  .mobile-nav-links a span.mnav-arrow{ color:var(--text-muted); font-size:0.85rem; }
+  .mobile-nav-footer{
+    margin-top:auto; padding:20px 24px 0;
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px solid var(--hairline);
+  }
+  .mobile-nav-footer .theme-toggle{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:1px solid var(--hairline);
+    color:var(--text-muted); padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-size:0.82rem; font-family:'IBM Plex Sans';
+    transition:color .2s, border-color .2s;
+  }
+  .mobile-nav-footer .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- MÓVIL ---------- */
+  @media (max-width:860px){
+    .topbar{ padding:14px 16px; }
+    .page-hero{ padding:20px 16px 4px; }
+    .nc-wrap{ padding:12px 16px 56px; gap:12px; }
+    .nc-card{ padding:16px; }
+  }
+  @media (max-width:600px){
+    body > footer{ padding:20px 16px; flex-direction:column; gap:6px; }
+    .nc-tabla th:nth-child(4), .nc-tabla td:nth-child(4){ display:none; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js" integrity="sha384-ysv13JVP3fufiEXfjML9OdCa/rRbMJvUBOWyor82wfuK8INNZAvmbxHgKIHi+oqz" crossorigin="anonymous"></script>
+<script src="supabase-config.js"></script>
+<script src="progreso.js"></script>
+<link rel="stylesheet" href="movimiento.css">
+</head>
+<body>
+<script src="auth-gate.js"></script>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20 6 L25.5 20 L14.5 20 Z" fill="currentColor"/>
+        <path d="M20 34 L25.5 20 L14.5 20 Z" fill="currentColor" opacity="0.4"/>
+        <circle cx="20" cy="20" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </div>
+    <div>
+      SoyAeronáutico
+      <small><span class="live-dot" aria-hidden="true"></span>PORTAL AIS · COM · MET</small>
+    </div>
+  </a>
+  <nav class="desktop-nav">
+    <div class="nav-dropdown" id="modulosDropdown">
+      <button class="nav-dropdown-btn" id="modulosBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        Módulos
+        <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown-menu" id="modulosMenu">
+        <div class="nav-dropdown-menu-inner">
+          <a href="meteorologia.html">Meteorología</a>
+          <a href="ats.html">ATS</a>
+          <a href="fraseologia.html">Fraseología</a>
+          <a href="plan-de-vuelo.html">Plan de Vuelo</a>
+          <a href="navegacion.html">Navegación</a>
+          <a href="notam.html">NOTAM</a>
+        </div>
+      </div>
+    </div>
+    <a href="designadores.html">Designadores</a>
+    <a href="aeronaves.html">Aeronaves</a>
+    <a href="metar-taf.html">METAR y TAF</a>
+    <a href="notam-vigentes.html" class="active">NOTAM</a>
+    <a href="glosario.html">Glosario</a>
+    <a href="quizzes.html">Quizzes</a>
+    <a href="quienes-somos.html">Quiénes somos</a>
+  </nav>
+  <div class="nav-right">
+    <span class="zulu-mini mono" id="zuluMini">--:--:-- Z</span>
+    <a href="Panel_estudiante.html" class="nav-login-btn" id="navLoginBtn">Mi panel</a>
+    <button class="nav-icon-btn theme-toggle" id="themeToggle" aria-label="Cambiar a modo oscuro" type="button">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Menú de navegación" aria-modal="true">
+  <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <span style="font-family:'Archivo';font-weight:800;font-size:1rem;">Menú</span>
+      <button class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú">✕</button>
+    </div>
+    <nav class="mobile-nav-links">
+      <a href="ats.html">ATS <span class="mnav-arrow">→</span></a>
+      <a href="designadores.html">Designadores <span class="mnav-arrow">→</span></a>
+      <a href="aeronaves.html">Aeronaves <span class="mnav-arrow">→</span></a>
+      <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
+      <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="notam-vigentes.html" class="active">NOTAM vigentes <span class="mnav-arrow">→</span></a>
+      <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
+      <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>
+      <a href="notam.html">NOTAM <span class="mnav-arrow">→</span></a>
+      <a href="fraseologia.html">Fraseología <span class="mnav-arrow">→</span></a>
+      <a href="glosario.html">Glosario <span class="mnav-arrow">→</span></a>
+      <a href="quizzes.html">Quizzes <span class="mnav-arrow">→</span></a>
+      <a href="quienes-somos.html">Quiénes somos <span class="mnav-arrow">→</span></a>
+      <a href="Panel_estudiante.html">Mi panel <span class="mnav-arrow">→</span></a>
+    </nav>
+    <div class="mobile-nav-footer">
+      <button class="theme-toggle" id="themeToggleMobile" type="button">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        Modo oscuro
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="page-hero">
+  <h1>Cargar listas de NOTAM</h1>
+  <p class="hero-meta">Solo para el editor del sitio · se publican en <a href="notam-vigentes.html">NOTAM vigentes</a></p>
+</section>
+
+<main class="nc-wrap">
+  <section class="nc-card" aria-labelledby="paso1">
+    <h2 id="paso1"><span class="nc-num">1</span>Descarga las listas de Aerocivil</h2>
+    <p>Descarga <b>Alfa2.pdf</b>, <b>Bravo2.pdf</b> y <b>Charlie2.pdf</b>. También sirven Alfa1, Bravo1 y Charlie1.</p>
+    <a class="nc-btn" href="https://aerobarranquilla.aerocivil.gov.co/publicaciones/3708/listas-de-verificacion-y-listas-de-notam-validos/" target="_blank" rel="noopener">Abrir listas de Aerocivil
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+    </a>
+    <details class="nc-ayuda">
+      <summary>¿Sale «Error 403 · Web Page Blocked»?</summary>
+      <p>Es un error de Aerocivil. En la barra de direcciones cambia <code>www</code> por <code>aerobarranquilla</code>, presiona Enter y dale clic a «Validar».</p>
+    </details>
+  </section>
+
+  <section class="nc-card" aria-labelledby="paso2">
+    <h2 id="paso2"><span class="nc-num">2</span>Súbelas aquí</h2>
+    <p class="nc-permiso" id="avisoPermiso" role="alert"></p>
+    <label class="nc-drop" id="drop" for="archivos">
+      <input type="file" id="archivos" accept="application/pdf,.pdf" multiple>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      <span>Elige los PDF o arrástralos aquí</span>
+      <small>Puedes subir los tres juntos: la serie se reconoce sola.</small>
+    </label>
+    <ul class="nc-resultados" id="resultados" aria-live="polite"></ul>
+  </section>
+
+  <section class="nc-card" aria-labelledby="paso3">
+    <h2 id="paso3"><span class="nc-num">3</span>Lo que está publicado</h2>
+    <div class="nc-tabla-wrap">
+      <table class="nc-tabla">
+        <thead><tr><th>Serie</th><th>NOTAM</th><th>Lista generada</th><th>Cargada</th></tr></thead>
+        <tbody id="estado"><tr><td colspan="4" class="falta">Consultando…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="nc-pie">
+      <span>Los visitantes ven los cambios en unos 10 minutos.</span>
+      <a href="notam-vigentes.html">Ver NOTAM vigentes →</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/OACI.</span>
+  <span>NOTAM: listas de Aerocivil</span>
+  <span>Creado por <strong>Cristian Arcila</strong> &middot; &copy; 2026 &mdash; Todos los derechos reservados</span>
+</footer>
+
+<script>
+  // ---------- THEME TOGGLE ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('aisTheme');
+  if(savedTheme === 'dark'){
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(isDark){
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aisTheme', 'light');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('aisTheme', 'dark');
+      themeToggle.setAttribute('aria-label', 'Cambiar a modo claro');
+    }
+  });
+
+  // ---------- RELOJ ZULU ----------
+  const zuluMini = document.getElementById('zuluMini');
+  function updateZuluMini(){
+    const now = new Date();
+    const p = n => n.toString().padStart(2, '0');
+    zuluMini.textContent = `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())} Z`;
+  }
+  updateZuluMini();
+  setInterval(updateZuluMini, 1000);
+</script>
+
+<script>
+  // ---------- CARGA DE LISTAS ----------
+  // Desde 2026-10-25 Aerocivil pide un captcha para descargar los PDF de NOTAM,
+  // así que el editor los baja a mano y los sube aquí. La función
+  // netlify/functions/notam-colombia.js reconoce la serie, lee el PDF y lo
+  // guarda en Supabase (notam_listas); solo pueden hacerlo las cuentas de
+  // notam_editores, y eso lo comprueba RLS, no esta página.
+  (function(){
+    const API = '/.netlify/functions/notam-colombia';
+    const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const SERIES = [['A', 'A', 'internacional, en inglés'], ['B', 'B', 'aeródromos privados'], ['C', 'C/D', 'nacional']];
+    const $ = id => document.getElementById(id);
+    const archivosEl = $('archivos'), dropEl = $('drop'), resultadosEl = $('resultados'), estadoEl = $('estado'), permisoEl = $('avisoPermiso');
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    const p2 = n => String(n).padStart(2, '0');
+    let puedeCargar = false;
+
+    function fechaZ(iso){
+      if(!iso) return null;
+      const d = new Date(iso);
+      return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}Z`;
+    }
+    const horas = iso => (Date.now() - new Date(iso).getTime()) / 3.6e6;
+    function hace(iso){
+      const h = horas(iso);
+      if(h < 1) return 'hace menos de 1 h';
+      if(h < 48) return `hace ${Math.floor(h)} h`;
+      return `hace ${Math.floor(h / 24)} días`;
+    }
+
+    // ---------- Lo que está publicado ----------
+    async function pintarEstado(){
+      const { data, error } = await sbClient.from('notam_listas').select('serie,archivo,total,generado,cargado');
+      if(error){
+        estadoEl.innerHTML = '<tr><td colspan="4" class="falta">No se pudo consultar lo publicado.</td></tr>';
+        return;
+      }
+      estadoEl.innerHTML = SERIES.map(([clave, nombre, desc]) => {
+        const f = (data || []).find(x => x.serie === clave);
+        if(!f) return `<tr><td class="serie" title="${esc(desc)}">${nombre}</td><td colspan="3" class="falta">Sin cargar</td></tr>`;
+        // Las listas se rehacen cada ~10 min: con más de 2 días ya conviene subir una nueva.
+        const ref = f.generado || f.cargado;
+        return `<tr class="${horas(ref) > 48 ? 'viejo' : ''}">
+          <td class="serie" title="${esc(desc)}">${nombre}</td>
+          <td class="mono">${f.total}</td>
+          <td>${f.generado ? esc(fechaZ(f.generado)) + `<span class="hace">${hace(f.generado)}</span>` : `<span class="falta">sin hora en el PDF</span><span class="hace">cargada ${hace(f.cargado)}</span>`}</td>
+          <td>${esc(fechaZ(f.cargado))}<span class="sub">${esc(f.archivo)}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ---------- Subida ----------
+    function fila(nombre){
+      const li = document.createElement('li');
+      li.className = 'nc-res';
+      li.innerHTML = `<span class="icono" aria-hidden="true">…</span><div class="cuerpo"><div class="nombre">${esc(nombre)}</div><div class="detalle">Leyendo…</div></div>`;
+      resultadosEl.appendChild(li);
+      return li;
+    }
+    function marcar(li, tipo, html){
+      li.className = 'nc-res ' + tipo;
+      li.querySelector('.icono').textContent = tipo === 'ok' ? '✓' : (tipo === 'aviso' ? '!' : '✕');
+      li.querySelector('.detalle').innerHTML = html;
+    }
+
+    async function subir(archivo, forzar, li){
+      li = li || fila(archivo.name);
+      if(!/\.pdf$/i.test(archivo.name) && archivo.type !== 'application/pdf'){
+        marcar(li, 'error', 'No es un PDF.');
+        return;
+      }
+      const sesion = await obtenerSesionActual();
+      if(!sesion){
+        marcar(li, 'error', 'Tu sesión venció: recarga la página e inicia sesión otra vez.');
+        return;
+      }
+      try{
+        const r = await fetch(`${API}?archivo=${encodeURIComponent(archivo.name)}${forzar ? '&forzar=1' : ''}`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/pdf', Authorization:'Bearer ' + sesion.access_token },
+          body:archivo
+        });
+        const d = await r.json().catch(() => ({}));
+        if(r.ok){
+          let txt = `Serie <b>${esc(d.serie)}</b> · ${d.total} NOTAM · ${d.generado ? 'lista generada ' + esc(fechaZ(d.generado)) : 'sin hora en el PDF'} · publicada`;
+          // Aerocivil rehace las listas cada ~10 min: una de hace horas suele ser un archivo viejo.
+          if(d.generado && horas(d.generado) > 3) txt += `<br><span class="ojo">Ojo: esta lista se generó ${hace(d.generado)}. ¿Es la descarga de hoy?</span>`;
+          marcar(li, 'ok', txt);
+        }else if(r.status === 409){
+          marcar(li, 'aviso', `${esc(d.error)} La publicada es del ${esc(fechaZ(d.generadoActual))} y esta del ${esc(fechaZ(d.generado))}.<br><button type="button">Publicar esta de todas formas</button>`);
+          li.querySelector('button').addEventListener('click', async () => {
+            marcar(li, '', 'Leyendo…');
+            li.querySelector('.icono').textContent = '…';
+            await subir(archivo, true, li);
+            pintarEstado();
+          }, { once:true });
+        }else{
+          marcar(li, 'error', esc(d.error || `Error ${r.status}.`));
+        }
+      }catch(e){
+        marcar(li, 'error', 'No hubo conexión con el sitio. Intenta de nuevo.');
+      }
+    }
+
+    async function procesar(lista){
+      if(!puedeCargar) return;
+      const archivos = [...lista];
+      archivosEl.value = '';
+      for(const a of archivos) await subir(a);
+      pintarEstado();
+    }
+
+    archivosEl.addEventListener('change', () => procesar(archivosEl.files));
+    ['dragenter', 'dragover'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); if(puedeCargar) dropEl.classList.add('encima'); }));
+    ['dragleave', 'drop'].forEach(ev => dropEl.addEventListener(ev, () => dropEl.classList.remove('encima')));
+    dropEl.addEventListener('drop', e => { e.preventDefault(); procesar(e.dataTransfer.files); });
+
+    // ---------- Arranque ----------
+    (async function(){
+      if(typeof sbClient === 'undefined' || !sbClient) return;
+      const sesion = await obtenerSesionActual();
+      if(!sesion) return;   // auth-gate.js ya manda al login
+      const { data } = await sbClient.from('notam_editores').select('usuario').maybeSingle();
+      puedeCargar = !!data;
+      if(!puedeCargar){
+        permisoEl.textContent = 'Tu cuenta no tiene permiso para cargar listas de NOTAM.';
+        dropEl.classList.add('inactivo');
+        archivosEl.disabled = true;
+      }
+      pintarEstado();
+    })();
+  })();
+</script>
+
+<script>
+  // ---------- DROPDOWN "MÓDULOS" ----------
+  (function(){
+    const dropdown = document.getElementById('modulosDropdown');
+    if(!dropdown) return;
+    const btn = document.getElementById('modulosBtn');
+    function closeDropdown(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function toggleDropdown(){
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
+    document.addEventListener('click', e => { if(!dropdown.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDropdown(); });
+  })();
+
+  // ---------- MOBILE NAV DRAWER ----------
+  (function(){
+    const menuBtn        = document.getElementById('menuBtn');
+    const mobileNav      = document.getElementById('mobileNav');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavBack  = document.getElementById('mobileNavBackdrop');
+    const themeToggleMob = document.getElementById('themeToggleMobile');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    if(!menuBtn || !mobileNav) return;
+
+    function openMobileNav(){
+      mobileNav.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      mobileNav.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false');
+      document.body.style.overflow = '';
+    }
+    menuBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavBack.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMobileNav(); });
+
+    function syncMobileThemeLabel(){
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      themeToggleMob.querySelector('.icon-sun').style.display  = isDark ? 'none'  : 'block';
+      themeToggleMob.querySelector('.icon-moon').style.display = isDark ? 'block' : 'none';
+      themeToggleMob.childNodes[themeToggleMob.childNodes.length-1].textContent =
+        isDark ? ' Modo claro' : ' Modo oscuro';
+    }
+    syncMobileThemeLabel();
+
+    themeToggleMob.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('aisTheme', 'light');
+      }else{
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('aisTheme', 'dark');
+      }
+      if(themeToggleBtn) themeToggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      syncMobileThemeLabel();
+    });
+    if(themeToggleBtn) themeToggleBtn.addEventListener('click', syncMobileThemeLabel);
+  })();
+</script>
+</body>
+</html>

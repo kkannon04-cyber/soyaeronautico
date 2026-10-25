@@ -173,8 +173,9 @@
      debajo de 1240 px se pasa al menú desplegable. */
   nav.desktop-nav a, .nav-dropdown-btn{ white-space:nowrap; }
   @media (max-width:1400px){ nav.desktop-nav{ gap:20px; } }
-  @media (max-width:1330px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
-  @media (max-width:1240px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
+  /* Esta página tiene además el botón de pantalla completa: la barra se estrecha antes. */
+  @media (max-width:1360px){ nav.desktop-nav{ gap:14px; font-size:0.84rem; } .nav-right{ gap:10px; } }
+  @media (max-width:1280px){ nav.desktop-nav{display:none;} .nav-right .nav-login-btn{display:none;} .menu-btn{display:block;} }
 
   /* ---------- modo pantalla completa (solo topbar/CWP; deja visible el reloj zulu) ---------- */
   #fsToggle .icon-collapse{ display:none; }
@@ -945,6 +946,7 @@
     <a href="designadores.html">Designadores</a>
     <a href="aeronaves.html">Aeronaves</a>
     <a href="metar-taf.html">METAR y TAF</a>
+    <a href="notam-vigentes.html">NOTAM</a>
     <!-- <a href="satelite.html">Satélite</a> -->
     <a href="glosario.html">Glosario</a>
     <a href="quizzes.html" class="active">Quizzes</a>
@@ -980,6 +982,7 @@
       <a href="aeronaves.html">Aeronaves <span class="mnav-arrow">→</span></a>
       <a href="meteorologia.html">Meteorología <span class="mnav-arrow">→</span></a>
       <a href="metar-taf.html">METAR y TAF <span class="mnav-arrow">→</span></a>
+      <a href="notam-vigentes.html">NOTAM vigentes <span class="mnav-arrow">→</span></a>
       <!-- <a href="satelite.html">Satélite <span class="mnav-arrow">→</span></a> -->
       <a href="plan-de-vuelo.html">Plan de Vuelo <span class="mnav-arrow">→</span></a>
       <a href="navegacion.html">Navegación <span class="mnav-arrow">→</span></a>

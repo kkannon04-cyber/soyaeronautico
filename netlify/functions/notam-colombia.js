@@ -17,6 +17,18 @@
 //
 // La lista NO trae la casilla Q) ni la FIR de cada NOTAM; no se inventan.
 //
+// ── Carga manual (desde 2026-10-25) ────────────────────────────────────────
+// Aerocivil pide ahora un reCAPTCHA antes de cada descarga, así que la función
+// ya no puede bajar los PDF sola (y no se intenta saltar esa verificación).
+// El editor los descarga a mano y los sube en notam-cargar.html:
+//   POST ?archivo=Charlie2.pdf  (cuerpo: el PDF; Authorization: su sesión)
+// La función reconoce la serie por el encabezado del PDF, lo lee y guarda el
+// resultado en la tabla notam_listas de Supabase (una fila por serie). Solo
+// pueden escribir las cuentas de notam_editores: lo decide RLS con la sesión
+// del editor, así que aquí no hace falta ninguna clave secreta.
+// El GET responde con esas listas guardadas; solo si no hay ninguna intenta
+// todavía la descarga directa de Aerocivil.
+//
 // ── Caché (para no gastar créditos de Netlify ni cargar a Aerocivil) ───────
 // Aerocivil regenera los PDF más o menos cada 10 minutos, así que:
 // 1) Cache-Control de 10 min + stale-while-revalidate: la CDN de Netlify
@@ -53,6 +65,11 @@ const LUGARES_RECORTADOS = [
   { prefijo: 'SAN SEBASTIAN DE MAR', icao: 'SKQU' }
 ];
 const FIR_SIN_CODIGO = { 'FIR/UIR BOGOTA': 'SKED', 'FIR/UIR BARRANQUILLA': 'SKEC' };
+
+// Proyecto de Supabase del sitio (mismos valores públicos de supabase-config.js).
+const SUPABASE_URL = 'https://yszcglcnbpnyteytpfyc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_H3VUEgXfNLR9htE7QFHeAw_VxUIOC9W';
+const MAX_PDF = 4 * 1024 * 1024;   // Charlie1, la más grande, pesa unos 850 KB
 
 const TTL_MS = 10 * 60 * 1000;
 const TIMEOUT_MS = 7000;
@@ -424,8 +441,21 @@ function construirNotam(bloque){
   };
 }
 
+// Serie de la lista según su encabezado: la letra grande junto a "NOTAM"
+// ("A", "B" o "C / D") arriba de la primera página. C/D se guarda como "C".
+function serieDelPdf(items){
+  const letra = items.filter(it => it.p === 1 && it.y > 680)
+    .map(it => it.t.replace(/\s+/g, ''))
+    .find(t => /^(A|B|C\/D)$/.test(t));
+  return letra ? letra.charAt(0) : null;
+}
+
+// Sin serieArchivo (carga manual), la serie se toma del encabezado del PDF.
 function notamsDePdf(buf, serieArchivo){
   const items = extraerTexto(buf);
+  const serie = serieArchivo || serieDelPdf(items);
+  if(!serie) return { serie:null, generado:null, notams:[] };
+  serieArchivo = serie;
   const generado = selloGeneracion(items);
   const filas = renglones(items);
   const bloques = [];
@@ -453,7 +483,7 @@ function notamsDePdf(buf, serieArchivo){
     if(r.p !== vistaPagina && r.y > 740) continue;
     actual.lineas.push(r);
   }
-  return { generado, notams: bloques.map(construirNotam) };
+  return { serie, generado, notams: bloques.map(construirNotam) };
 }
 
 // ═══════════════════════ Descarga ════════════════════════════════════════
@@ -509,12 +539,15 @@ async function leerSerie(fuente, limite){
 }
 
 async function construirRespuesta(){
-  const limite = Date.now() + 8500;
+  // En producción una consulta completa tomó 9,6 s con el arranque en frío:
+  // el margen deja que la función responda antes del corte de Netlify.
+  const limite = Date.now() + 7500;
   let series = await Promise.all(FUENTES.map(f => leerSerie(f, limite)));
   // Si algún enlace venció, se toman los nuevos de la página y se reintenta.
   if(series.some(s => s.motivo === 'enlace') && limite - Date.now() > 2500 && await actualizarEnlaces(limite)){
     series = await Promise.all(series.map((s, i) => s.motivo === 'enlace' ? leerSerie(FUENTES[i], limite) : s));
   }
+  series.filter(s => s.motivo).forEach(s => console.log(`notam-colombia: serie ${s.serie} sin leer (${s.motivo})`));
   const notams = series.flatMap(s => s.notams);
   if(!notams.length) throw new Error('Sin NOTAM legibles');
   return {
@@ -525,9 +558,116 @@ async function construirRespuesta(){
   };
 }
 
+// ═══════════════════════ Listas cargadas por el editor ═══════════════════
+
+function pedirSupabase(ruta, opciones, limite){
+  const ms = Math.max(800, (limite || Date.now() + 8000) - Date.now());
+  return fetch(SUPABASE_URL + ruta, { ...opciones, signal:AbortSignal.timeout(ms) });
+}
+
+async function listasGuardadas(){
+  const r = await pedirSupabase('/rest/v1/notam_listas?select=serie,archivo,generado,total,notams,cargado', { headers:{ apikey:SUPABASE_KEY } });
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+function respuestaGuardada(filas){
+  const orden = { A:0, B:1, C:2 };
+  filas.sort((a, b) => orden[a.serie] - orden[b.serie]);
+  return {
+    fuente: PAGINA,
+    consultado: new Date().toISOString(),
+    cargaManual: true,
+    listas: filas.map(f => ({ serie: f.serie === 'C' ? 'C/D' : f.serie, archivo:f.archivo, generado:f.generado, cargado:f.cargado, total:f.total, error:null })),
+    notams: filas.flatMap(f => f.notams)
+  };
+}
+
+// Primero las listas que cargó el editor; si no hay ninguna, la descarga directa.
+async function obtenerDatos(){
+  try{
+    const filas = await listasGuardadas();
+    if(filas.length) return respuestaGuardada(filas);
+  }catch(e){
+    console.log('notam-colombia: no se pudieron leer las listas guardadas:', e.message);
+  }
+  return construirRespuesta();
+}
+
+const responder = (statusCode, obj) => ({
+  statusCode,
+  headers:{ 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', 'Netlify-CDN-Cache-Control':'no-store' },
+  body:JSON.stringify(obj)
+});
+
+// POST desde notam-cargar.html: un PDF por petición.
+async function cargarPdf(event){
+  const limite = Date.now() + 8500;
+  const cab = event.headers || {};
+  const token = (cab.authorization || cab.Authorization || '').replace(/^Bearer\s+/i, '').trim();
+  if(!token) return responder(401, { error:'Inicia sesión para cargar listas.' });
+  const sesion = { apikey:SUPABASE_KEY, Authorization:'Bearer ' + token };
+
+  // RLS de notam_editores solo le muestra a cada cuenta su propia fila.
+  let usuario;
+  try{
+    const r = await pedirSupabase('/rest/v1/notam_editores?select=usuario', { headers:sesion }, limite);
+    if(r.status === 401) return responder(401, { error:'Tu sesión venció: vuelve a iniciar sesión.' });
+    const filas = r.ok ? await r.json() : null;
+    if(!Array.isArray(filas)) throw new Error('HTTP ' + r.status);
+    if(!filas.length) return responder(403, { error:'Tu cuenta no puede cargar listas de NOTAM.' });
+    usuario = filas[0].usuario;
+  }catch(e){
+    console.log('notam-colombia: no se pudo comprobar el editor:', e.message);
+    return responder(502, { error:'No se pudo comprobar tu cuenta. Intenta de nuevo.' });
+  }
+
+  const buf = Buffer.from(event.body || '', event.isBase64Encoded ? 'base64' : 'latin1');
+  if(buf.length > MAX_PDF) return responder(413, { error:'El archivo es demasiado grande para ser una lista de NOTAM.' });
+  if(buf.subarray(0, 5).toString('latin1') !== '%PDF-') return responder(400, { error:'El archivo no es un PDF.' });
+
+  let leido;
+  try{ leido = notamsDePdf(buf); }
+  catch(e){
+    console.log('notam-colombia: PDF ilegible:', e.message);
+    return responder(422, { error:'No se pudo leer el PDF.' });
+  }
+  if(!leido.serie) return responder(422, { error:'No se reconoce la serie: ¿es una lista de NOTAM vigentes de Aerocivil (Alfa, Bravo o Charlie)?' });
+  if(!leido.notams.length) return responder(422, { error:'El PDF no trae NOTAM reconocibles.' });
+
+  const q = event.queryStringParameters || {};
+  const archivo = String(q.archivo || '').replace(/[^\w .()-]/g, '').slice(0, 80) || `${leido.serie}.pdf`;
+  const serieVista = leido.serie === 'C' ? 'C/D' : leido.serie;
+
+  // Una lista más vieja no reemplaza a la guardada, salvo que se pida.
+  try{
+    const r = await pedirSupabase(`/rest/v1/notam_listas?serie=eq.${leido.serie}&select=generado`, { headers:{ apikey:SUPABASE_KEY } }, limite);
+    const previa = r.ok ? (await r.json())[0] : null;
+    if(q.forzar !== '1' && previa && previa.generado && leido.generado && new Date(leido.generado) < new Date(previa.generado)){
+      return responder(409, { error:`Ya hay una lista más reciente de la serie ${serieVista}.`, serie:serieVista, generado:leido.generado, generadoActual:previa.generado });
+    }
+  }catch(e){ /* si no se puede comparar, se guarda igual */ }
+
+  const fila = { serie:leido.serie, archivo, generado:leido.generado, total:leido.notams.length, notams:leido.notams, cargado:new Date().toISOString(), cargado_por:usuario };
+  try{
+    const r = await pedirSupabase('/rest/v1/notam_listas?on_conflict=serie', {
+      method:'POST',
+      headers:{ ...sesion, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal' },
+      body:JSON.stringify(fila)
+    }, limite);
+    if(!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  }catch(e){
+    console.log('notam-colombia: no se pudo guardar la lista:', e.message);
+    return responder(502, { error:'No se pudo guardar la lista. Intenta de nuevo.' });
+  }
+  cache = { data:null, expira:0 };
+  return responder(200, { serie:serieVista, archivo, generado:leido.generado, total:fila.total, cargado:fila.cargado });
+}
+
 let enCurso = null;   // si llegan varias visitas a la vez, una sola descarga
 
-exports.handler = async () => {
+exports.handler = async (event) => {
+  if(event && event.httpMethod === 'POST') return cargarPdf(event);
   const HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
     // La CDN de Netlify reutiliza la respuesta 10 min (el ciclo de Aerocivil);
@@ -540,7 +680,7 @@ exports.handler = async () => {
     return { statusCode:200, headers:HEADERS, body:cache.data };
   }
   try{
-    enCurso = enCurso || construirRespuesta().finally(() => { enCurso = null; });
+    enCurso = enCurso || obtenerDatos().finally(() => { enCurso = null; });
     const data = await enCurso;
     const body = JSON.stringify(data);
     // Una lista incompleta (una serie falló) se guarda menos tiempo.
@@ -548,6 +688,7 @@ exports.handler = async () => {
     cache = { data:body, expira:Date.now() + (completa ? TTL_MS : 2 * 60 * 1000) };
     return { statusCode:200, headers: completa ? HEADERS : { ...HEADERS, 'Cache-Control':'public, max-age=60', 'Netlify-CDN-Cache-Control':'public, s-maxage=120' }, body };
   }catch(e){
+    console.log('notam-colombia: sin datos para responder:', e.message);
     if(cache.data){
       const viejo = JSON.parse(cache.data);
       viejo.desactualizado = true;
@@ -562,4 +703,4 @@ exports.handler = async () => {
 };
 
 // Para pruebas locales
-exports._interno = { extraerTexto, notamsDePdf };
+exports._interno = { extraerTexto, notamsDePdf, serieDelPdf, respuestaGuardada };
