@@ -581,6 +581,37 @@
   .module-card-fifa:hover .mc-ir{ color:var(--accent); transform:translateX(3px); }
   .mc-cover.bg-nav{ background:linear-gradient(135deg, #1E1B4B, #4F46E5); }
   .mc-cover.bg-ntm{ background:linear-gradient(135deg, #3B0764, #9333EA); }
+
+  /* Serie de íconos de SoyAeronáutico (2026-10-26): todas las portadas y herramientas son
+     baldosas de color, sin fotos. El sello común son los anillos de alcance, como los de un
+     radar o una rosa VOR, que salen del pictograma. Los pictogramas comparten gramática:
+     rejilla de 24, trazo fino redondeado y un solo acento relleno translúcido. */
+  .mc-cover{ --ic-x:calc(100% - 32px); --ic-y:50%; }
+  .mc-cover:not(.has-photo)::before{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:
+      repeating-radial-gradient(circle at var(--ic-x) var(--ic-y), rgba(255,255,255,0) 0 11px, rgba(255,255,255,0.13) 11px 12px),
+      radial-gradient(circle at 0 0, rgba(255,255,255,0.16), rgba(255,255,255,0) 62%);
+  }
+  /* El pictograma va entero, como emblema en el centro de los anillos (antes era una marca
+     de agua cortada en la esquina). */
+  .module-card-fifa .mc-icon{ width:44px; height:44px; right:10px; bottom:auto; top:50%; transform:translateY(-50%); opacity:0.92; }
+  .module-card-fifa:hover .mc-icon{ transform:translateY(-50%) rotate(-6deg) scale(1.06); opacity:1; }
+  @media (prefers-reduced-motion: reduce){ .module-card-fifa:hover .mc-icon{ transform:translateY(-50%); } }
+  .mc-icon .acento, .tool-thumb .acento{ fill:currentColor; fill-opacity:0.35; }
+  .tool-thumb.ico{ position:relative; color:#FFF; }
+  .tool-thumb.ico::before{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:repeating-radial-gradient(circle at 100% 100%, rgba(255,255,255,0) 0 7px, rgba(255,255,255,0.14) 7px 8px);
+  }
+  .tool-thumb.ico svg{ position:relative; width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .tool-thumb.t-des{ background:linear-gradient(135deg, #701A75, #D946EF); }
+  .tool-thumb.t-glo{ background:linear-gradient(135deg, #134E4A, #14B8A6); }
+  .tool-thumb.t-aer{ background:linear-gradient(135deg, #881337, #F43F5E); }
+  .tool-thumb.t-qui{ background:linear-gradient(135deg, #78350F, #F59E0B); }
+  .tool-card:hover .tool-thumb.ico svg{ transform:rotate(-6deg) scale(1.06); }
+  .tool-thumb.ico svg{ transition:transform .25s cubic-bezier(.4,0,.2,1); }
+  @media (prefers-reduced-motion: reduce){ .tool-card:hover .tool-thumb.ico svg{ transform:none; } }
   .module-card-fifa:focus-visible, .tool-card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
 
   /* Herramientas de consulta y práctica: fila aparte, más compacta que los módulos. */
@@ -635,7 +666,9 @@
     .module-card-fifa{ grid-template-columns:84px minmax(0,1fr); gap:6px 14px; padding:14px 4px; align-items:start; }
     .module-card-fifa .mc-cover{ width:84px; height:64px; grid-row:span 2; }
     .module-card-fifa .mc-code{ margin:6px; font-size:0.62rem; padding:2px 6px; }
-    .module-card-fifa .mc-icon{ width:40px; height:40px; }
+    .module-card-fifa .mc-icon{ width:34px; height:34px; right:6px; top:auto; bottom:5px; transform:none; }
+    .module-card-fifa:hover .mc-icon{ transform:none; }
+    .module-card-fifa .mc-cover{ --ic-x:calc(100% - 23px); --ic-y:calc(100% - 22px); }
     .module-card-fifa .mc-body h3{ font-size:0.98rem; }
     .module-card-fifa .mc-body p{ font-size:0.8rem; }
     .mc-avance{ grid-column:2; }
@@ -1048,9 +1081,9 @@
   <div class="mods-cab" aria-hidden="true"><span>Módulo</span><span>Contenido</span><span>Tu avance</span></div>
   <div class="modules-grid-fifa">
     <a class="module-card-fifa" href="meteorologia.html" data-paginas="meteorologia-generalidades,meteorologia-nubosidad,meteorologia-variables">
-      <div class="mc-cover bg-met has-photo">
-        <img class="mc-cover-photo" src="ASSETS/opt/met-hero.jpg" alt="">
+      <div class="mc-cover bg-met">
         <span class="mc-code">MET</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 14.5H17a3.8 3.8 0 0 0 .5-7.57 5.4 5.4 0 0 0-10.3-1.1A4.35 4.35 0 0 0 6.6 14.5Z"/><path class="acento" d="m12.6 12.8-2.4 4h2.4l-1.3 4.4 4-5.4h-2.5l1.4-3Z"/></svg>
       </div>
       <div class="mc-body">
         <h3>Meteorología Aeronáutica</h3>
@@ -1059,9 +1092,9 @@
       </div>
     </a>
     <a class="module-card-fifa" href="ats.html" data-paginas="ats">
-      <div class="mc-cover bg-ats has-photo">
-        <img class="mc-cover-photo" src="ASSETS/opt/atc.jpg" alt="">
+      <div class="mc-cover bg-ats">
         <span class="mc-code">ATS</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2.5"/><path class="acento" d="M5.5 4.5h13l-1.8 5H7.3Z"/><path d="M10 4.5l.4 5M14 4.5l-.4 5"/><path d="M9 9.5l.6 11h4.8l.6-11"/><path d="M6.5 20.5h11"/><path d="M10.6 13.5h2.8"/></svg>
       </div>
       <div class="mc-body">
         <h3>Servicios de Tránsito Aéreo</h3>
@@ -1070,9 +1103,9 @@
       </div>
     </a>
     <a class="module-card-fifa" href="plan-de-vuelo.html" data-paginas="plan-de-vuelo">
-      <div class="mc-cover bg-fpl has-photo">
-        <img class="mc-cover-photo" src="ASSETS/opt/plan-de-vuelo.jpg" alt="">
+      <div class="mc-cover bg-fpl">
         <span class="mc-code">FPL</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="acento" d="M2.8 21.2 5.8 16l3 5.2Z"/><path d="M7 14.6l3-2.1M13.6 10.1l3.4-2.4" stroke-dasharray="1.6 2"/><path d="m11.8 9.6 2 2-2 2-2-2Z"/><circle cx="19.2" cy="6" r="2.4"/><path d="M19.2 1.6v1.2M19.2 9.2v1.2M14.8 6H16M22.4 6h-.2"/></svg>
       </div>
       <div class="mc-body">
         <h3>Plan de Vuelo</h3>
@@ -1081,9 +1114,9 @@
       </div>
     </a>
     <a class="module-card-fifa" href="fraseologia.html" data-paginas="fraseologia-fundamentos,fraseologia-oaci,fraseologia-fases,fraseologia-tierra,fraseologia-emergencias">
-      <div class="mc-cover bg-fra has-photo">
-        <img class="mc-cover-photo" src="ASSETS/opt/fraseologia.jpg" alt="">
+      <div class="mc-cover bg-fra">
         <span class="mc-code">FRA</span>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 13.5V12a7.5 7.5 0 0 1 15 0v1.5"/><path class="acento" d="M3.8 13.5h2.7v5.5H3.8a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 1-1ZM17.5 13.5h2.7a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-2.7Z"/><path d="M17.5 19c0 1.6-1.6 2.5-4 2.5"/><path d="M11.4 20.8h2.1v1.5h-2.1Z"/></svg>
       </div>
       <div class="mc-body">
         <h3>Fraseología Aeronáutica</h3>
@@ -1094,7 +1127,7 @@
     <a class="module-card-fifa" href="navegacion.html" data-paginas="navegacion-fundamentos,navegacion-tiempo,navegacion-velocidad,navegacion-altimetria,navegacion-radioayudas,navegacion-viento-unidades">
       <div class="mc-cover bg-nav">
         <span class="mc-code">NAV</span>
-        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z" fill="currentColor" fill-opacity="0.35"/></svg>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/><path class="acento" d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/></svg>
       </div>
       <div class="mc-body">
         <h3>Navegación Aérea</h3>
@@ -1105,7 +1138,7 @@
     <a class="module-card-fifa" href="notam.html" data-paginas="notam-fundamentos,notam-formato,notam-codigo-q,notam-especiales">
       <div class="mc-cover bg-ntm">
         <span class="mc-code">NOTAM</span>
-        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2.5h7l4 4V21a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z"/><path d="M14 2.5V7h4"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/></svg>
+        <svg class="mc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2.5h7l4 4V21a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z"/><path class="acento" d="M14 2.5V7h4Z"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/></svg>
       </div>
       <div class="mc-body">
         <h3>NOTAM</h3>
@@ -1121,30 +1154,28 @@
   </div>
   <div class="tools-grid">
     <a class="tool-card" href="designadores.html">
-      <span class="tool-thumb"><img src="ASSETS/opt/designadores.jpg" alt=""></span>
+      <span class="tool-thumb ico t-des" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21.5s6.5-6 6.5-11.2a6.5 6.5 0 0 0-13 0C5.5 15.5 12 21.5 12 21.5Z"/><circle class="acento" cx="12" cy="10.3" r="3.1"/><path d="m8.6 12 6.8-3.4"/></svg></span>
       <span class="tool-body">
         <strong>Designadores de Lugar</strong>
         <span>Más de 1.000 indicadores ICAO de aeródromos colombianos, filtrables por departamento.</span>
       </span>
     </a>
     <a class="tool-card" href="glosario.html">
-      <span class="tool-thumb"><img src="ASSETS/opt/glosario.jpg" alt=""></span>
+      <span class="tool-thumb ico t-glo" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="acento" d="M12 6.5C10.2 5.2 7.7 4.5 4.5 4.5v13c3.2 0 5.7.7 7.5 2Z"/><path d="M12 6.5c1.8-1.3 4.3-2 7.5-2v13c-3.2 0-5.7.7-7.5 2"/><path d="M14.5 9.2c1-.4 2.1-.6 3.2-.7M14.5 12.4c1-.4 2.1-.6 3.2-.7"/></svg></span>
       <span class="tool-body">
         <strong>Glosario Aeronáutico</strong>
         <span>NOTAM, RVSM, PBN y demás términos técnicos, buscables al instante.</span>
       </span>
     </a>
     <a class="tool-card" href="aeronaves.html">
-      <span class="tool-thumb tool-thumb-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c.8 0 1.3.9 1.3 2v5l7.2 4.2v2l-7.2-2.2v4.3l2.2 1.7v1.5L12 20.2 8.5 21v-1.5l2.2-1.7v-4.3L3.5 15.7v-2l7.2-4.2v-5c0-1.1.5-2 1.3-2Z"/></svg>
-      </span>
+      <span class="tool-thumb ico t-aer" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="acento" d="M12 2.5c.8 0 1.3.9 1.3 2v5l7.2 4.2v2l-7.2-2.2v4.3l2.2 1.7v1.5L12 20.2 8.5 21v-1.5l2.2-1.7v-4.3L3.5 15.7v-2l7.2-4.2v-5c0-1.1.5-2 1.3-2Z"/></svg></span>
       <span class="tool-body">
         <strong>Aeronaves</strong>
         <span>Designador OACI, categoría de estela, performance y reconocimiento visual de cada tipo.</span>
       </span>
     </a>
     <a class="tool-card" href="quizzes.html">
-      <span class="tool-thumb"><img src="ASSETS/opt/quizzes.jpg" alt=""></span>
+      <span class="tool-thumb ico t-qui" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 4.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 21.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-1.5"/><path class="acento" d="M9 3h6v3H9Z"/><path d="m8.5 11 1.3 1.3 2.2-2.5M14 11h2.5M8.5 16l1.3 1.3 2.2-2.5M14 16h2.5"/></svg></span>
       <span class="tool-body">
         <strong>Zona de Quizzes</strong>
         <span>Bancos de preguntas por módulo con calificación inmediata para tu autoevaluación.</span>
