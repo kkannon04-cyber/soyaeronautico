@@ -176,7 +176,7 @@
   /* Simuladores en lista (2026-10-26): tabla de filas como la de Tabler. */
   .sim-lista { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
   .sim-lista ul { list-style: none; margin: 0; padding: 0; }
-  .sim-cab, .sim-fila { display: grid; grid-template-columns: minmax(0, 1fr) 190px 130px 118px; gap: 18px; align-items: center; padding: 0 20px; }
+  .sim-cab, .sim-fila { display: grid; grid-template-columns: minmax(0, 1fr) 190px 150px 118px; gap: 18px; align-items: center; padding: 0 20px; }
   .sim-cab { padding-top: 10px; padding-bottom: 10px; background: var(--bg-main); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
   .sim-fila { padding-top: 15px; padding-bottom: 15px; color: inherit; transition: background-color .18s ease; }
   .sim-lista li + li .sim-fila { border-top: 1px solid var(--border-color); }
@@ -195,6 +195,8 @@
   .sim-nota .sim-tenue { display: inline; }
   .sim-intentos { font-size: 0.82rem; color: var(--text-main); }
   .sim-intentos b { font-family: var(--font-mono); }
+  .sim-intentos b.sim-pagina { display: block; font-family: var(--font-main); font-weight: 600; line-height: 1.35; }
+  .sim-ok { font-weight: 600; color: var(--success); }
   .sim-accion { justify-self: end; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--primary); white-space: nowrap; transition: border-color .2s, gap .2s; }
   .sim-fila:hover .sim-accion { border-color: var(--primary); gap: 9px; }
   .sim-fila.nuevo .sim-accion { color: var(--text-main); }
@@ -1050,46 +1052,44 @@
     { id: 'notam', nombre: 'NOTAM', url: 'notam.html', paginas: ['notam-fundamentos', 'notam-formato', 'notam-codigo-q', 'notam-especiales'] }
   ];
 
-  // Bloque del mosaico: tarjetas para lo practicado y, debajo, una fila de
-  // enlaces compactos para lo que aún no tiene intentos. Así la columna no se
-  // llena de tarjetas vacías y lo que ya hiciste queda arriba.
-  function bloquePractica(tarjetasHtml, pendientes, etiqueta){
+  // Módulos, quizzes y simuladores en tabla (2026-10-26, a pedido del usuario:
+  // «me gustaba más en lista»). Una fila por elemento, con columnas como la
+  // tabla de Tabler: qué es, tu avance o nota con su barra, un dato y la acción.
+  // `columnas` son los 3 encabezados; cada fila trae su HTML ya armado.
+  function tablaPractica(columnas, filas){
     const FL = '<svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
-    let html = tarjetasHtml.length ? `<div class="prac-grid">${tarjetasHtml.join('')}</div>` : '';
-    if (pendientes.length) {
-      html += `<div class="prac-pend${tarjetasHtml.length ? '' : ' sola'}"><span class="prac-pend-etq">${etiqueta} · ${pendientes.length}</span>`
-        + pendientes.map(p => `<a class="prac-pend-item" href="${p.url}">${escaparHTML(p.nombre)}${FL}</a>`).join('')
-        + '</div>';
-    }
-    return html;
+    return `<div class="sim-lista">
+      <div class="sim-cab" aria-hidden="true"><span>${columnas[0]}</span><span>${columnas[1]}</span><span>${columnas[2]}</span><span></span></div>
+      <ul>${filas.map(f => `
+        <li><a class="sim-fila${f.nuevo ? ' nuevo' : ''}" href="${f.url}">
+          <span class="sim-nombre"><strong>${escaparHTML(f.nombre)}</strong>${f.desc ? `<span>${escaparHTML(f.desc)}</span>` : ''}</span>
+          <span class="sim-nota" aria-label="${escaparHTML(f.notaTexto)}">${f.nota}</span>
+          <span class="sim-intentos">${f.dato}</span>
+          <span class="sim-accion">${f.accion} ${FL}</span>
+        </a></li>`).join('')}</ul>
+    </div>`;
   }
 
-  // Simuladores en lista (2026-10-26, a pedido del usuario: «me gustaba más en
-  // lista»). Una fila por simulador, con columnas como la tabla de Tabler: qué
-  // es, tu mejor nota con su barra, intentos y la acción. Lo practicado arriba.
-  function listaSimuladores(items){
-    const FL = '<svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+  const barraNota = (pct, clase) =>
+    `<span class="module-progress"><span class="module-progress-fill ${clase}" style="width:${pct}%"></span></span>`;
+
+  // Quizzes y simuladores: cuenta el MEJOR intento. Lo practicado arriba.
+  function listaIntentos(items, primeraColumna){
     const dia = iso => new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }).replace('.', '');
-    const filas = items.map(({ m, info }) => {
-      const nota = info
-        ? `<span class="sim-pct ${info.mejor >= 70 ? 'ok' : ''}">${info.mejor}%</span>
-           <span class="module-progress"><span class="module-progress-fill ${info.mejor >= 70 ? 'ok' : 'medio'}" style="width:${info.mejor}%"></span></span>`
-        : '<span class="sim-pct sin">—</span><span class="sim-tenue">Sin intentos</span>';
-      const intentos = info
+    return tablaPractica([primeraColumna, 'Tu mejor nota', 'Intentos'], items.map(({ m, info }) => ({
+      url: m.url,
+      nombre: m.nombre,
+      desc: m.desc || m.badge || '',
+      nuevo: !info,
+      notaTexto: info ? `Tu mejor nota: ${info.mejor}%` : 'Sin intentos',
+      nota: info
+        ? `<span class="sim-pct ${info.mejor >= 70 ? 'ok' : ''}">${info.mejor}%</span>${barraNota(info.mejor, info.mejor >= 70 ? 'ok' : 'medio')}`
+        : '<span class="sim-pct sin">—</span><span class="sim-tenue">Sin intentos</span>',
+      dato: info
         ? `<b>${info.intentos}</b> intento${info.intentos === 1 ? '' : 's'}<span class="sim-tenue">Último: ${dia(info.ultimaFecha)}</span>`
-        : '<span class="sim-tenue">—</span>';
-      return `
-        <li><a class="sim-fila${info ? '' : ' nuevo'}" href="${m.url}">
-          <span class="sim-nombre"><strong>${escaparHTML(m.nombre)}</strong>${m.desc ? `<span>${escaparHTML(m.desc)}</span>` : ''}</span>
-          <span class="sim-nota" aria-label="${info ? `Tu mejor nota: ${info.mejor}%` : 'Sin intentos'}">${nota}</span>
-          <span class="sim-intentos">${intentos}</span>
-          <span class="sim-accion">${info ? 'Practicar' : 'Empezar'} ${FL}</span>
-        </a></li>`;
-    }).join('');
-    return `<div class="sim-lista">
-      <div class="sim-cab" aria-hidden="true"><span>Simulador</span><span>Tu mejor nota</span><span>Intentos</span><span></span></div>
-      <ul>${filas}</ul>
-    </div>`;
+        : '<span class="sim-tenue">—</span>',
+      accion: info ? 'Practicar' : 'Empezar'
+    })));
   }
 
   async function renderModulosAprendizaje(){
@@ -1097,36 +1097,42 @@
     const paginasCompletadas = new Set(completados.map(m => m.pagina));
 
     const contenedor = document.getElementById('modulosAprendizajeContainer');
-    const tarjetas = MODULOS_APRENDIZAJE.map(m => {
+    // Nombre corto de una página («Meteorología · Nubosidad» → «Nubosidad»).
+    const nombrePagina = p => (typeof nombreDeTema === 'function' ? nombreDeTema(p) : p).replace(/^[^·]*·\s*/, '');
+    const filas = MODULOS_APRENDIZAJE.map(m => {
       const total = m.paginas.length;
       const hechas = m.paginas.filter(p => paginasCompletadas.has(p)).length;
       const pct = Math.round((hechas / total) * 100);
+      const completo = hechas === total;
 
       // Continuar donde quedó: la primera página que aún no ha completado.
       // El id de cada página ES su archivo (misma convención que los temas),
       // así que no hace falta ninguna tabla de equivalencias.
       const pendiente = m.paginas.find(p => !paginasCompletadas.has(p));
-      const destino = (hechas > 0 && hechas < total && pendiente) ? pendiente + '.html' : m.url;
-      const etiquetaPendiente = (hechas > 0 && hechas < total && pendiente && typeof nombreDeTema === 'function')
-        ? nombreDeTema(pendiente) : null;
-      const html = `
-        <a class="prac-tile ${hechas === 0 ? 'nuevo' : ''}" href="${destino}">
-          <span class="prac-badge">${total} página${total === 1 ? '' : 's'}</span>
-          <h4>${m.nombre}</h4>
-          ${etiquetaPendiente ? `<p class="prac-desc">Sigue en ${escaparHTML(etiquetaPendiente)}</p>` : ''}
-          <div class="prac-dato"><strong class="prac-pct ${hechas === total ? 'ok' : ''}">${hechas}/${total}</strong><span>página${total === 1 ? '' : 's'}</span></div>
-          <div class="module-progress"><div class="module-progress-fill ${hechas === total ? 'ok' : hechas > 0 ? 'medio' : ''}" style="width:${pct}%"></div></div>
-          <span class="prac-accion">${hechas === 0 ? 'Comenzar' : hechas === total ? 'Repasar' : 'Continuar'} <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
-        </a>`;
-      return { hechas, html };
+      const destino = (hechas > 0 && !completo && pendiente) ? pendiente + '.html' : m.url;
+      let dato = '<span class="sim-tenue">—</span>';
+      if (completo) dato = '<span class="sim-ok">Completo</span>';
+      else if (hechas > 0) dato = `<span class="sim-tenue">Sigue en</span><b class="sim-pagina">${escaparHTML(nombrePagina(pendiente))}</b>`;
+      else if (total > 1) dato = `<span class="sim-tenue">Empieza en</span><b class="sim-pagina">${escaparHTML(nombrePagina(m.paginas[0]))}</b>`;
+      return {
+        hechas,
+        fila: {
+          url: destino,
+          nombre: m.nombre,
+          desc: '',
+          nuevo: hechas === 0,
+          notaTexto: `Avance: ${hechas} de ${total} páginas`,
+          nota: `<span class="sim-pct ${completo ? 'ok' : hechas ? '' : 'sin'}">${hechas}/${total}</span>${barraNota(pct, completo ? 'ok' : hechas ? 'medio' : '')}`,
+          dato,
+          accion: hechas === 0 ? 'Comenzar' : completo ? 'Repasar' : 'Continuar'
+        }
+      };
     });
-    // Lo empezado en tarjetas; lo que no, en una fila compacta de enlaces.
-    contenedor.innerHTML = bloquePractica(
-      tarjetas.filter(t => t.hechas > 0).map(t => t.html),
-      MODULOS_APRENDIZAJE.filter((m, i) => tarjetas[i].hechas === 0).map(m => ({ url: m.url, nombre: m.nombre })),
-      'Sin empezar');
-    const empezados = tarjetas.filter(t => t.hechas > 0).length;
-    document.getElementById('cuentaAprendizaje').textContent = `${empezados} de ${tarjetas.length} empezados`;
+    // Lo empezado arriba, cada grupo en el orden del catálogo.
+    const ordenadas = filas.filter(f => f.hechas > 0).concat(filas.filter(f => f.hechas === 0));
+    contenedor.innerHTML = tablaPractica(['Módulo', 'Tu avance', 'Dónde vas'], ordenadas.map(f => f.fila));
+    const empezados = filas.filter(f => f.hechas > 0).length;
+    document.getElementById('cuentaAprendizaje').textContent = `${empezados} de ${filas.length} empezados`;
 
     return paginasCompletadas;
   }
@@ -1714,28 +1720,6 @@
     document.getElementById('statMejorModulo').textContent = mejorModuloTexto;
     document.getElementById('statUltima').textContent = stats.ultimaActividad ? formatFecha(stats.ultimaActividad) : 'Sin actividad';
 
-    // Una tarjeta del mosaico: con intentos muestra el MEJOR (es la nota que
-    // cuenta); sin intentos, la descripción y la invitación a empezar.
-    function tarjetaPractica(item, info, { badge, desc, accionNueva }){
-      if (info) {
-        return `
-          <a class="prac-tile" href="${item.url}">
-            ${badge ? `<span class="prac-badge">${badge}</span>` : ''}
-            <h4>${item.nombre}</h4>
-            <div class="prac-dato"><strong class="prac-pct ${info.mejor >= 70 ? 'ok' : ''}">${info.mejor}%</strong><span>mejor · ${info.intentos} intento${info.intentos === 1 ? '' : 's'}</span></div>
-            <div class="module-progress"><div class="module-progress-fill ${info.mejor >= 70 ? 'ok' : 'medio'}" style="width:${info.mejor}%"></div></div>
-            <span class="prac-accion">Practicar de nuevo <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
-          </a>`;
-      }
-      return `
-        <a class="prac-tile nuevo" href="${item.url}">
-          ${badge ? `<span class="prac-badge">${badge}</span>` : ''}
-          <h4>${item.nombre}</h4>
-          ${desc ? `<p class="prac-desc">${desc}</p>` : ''}
-          <span class="prac-accion">${accionNueva} <svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
-        </a>`;
-    }
-
     // Lo practicado primero (lo más reciente arriba) y luego lo pendiente,
     // en el orden del catálogo.
     function ordenarPracticados(lista){
@@ -1745,10 +1729,7 @@
 
     // Progreso por quiz
     const quizzes = ordenarPracticados(MODULOS.map(m => ({ m, info: stats.porModulo[m.id] })));
-    document.getElementById('modulosContainer').innerHTML = bloquePractica(
-      quizzes.filter(x => x.info).map(({ m, info }) => tarjetaPractica(m, info, { badge: m.badge })),
-      quizzes.filter(x => !x.info).map(({ m }) => ({ url: m.url, nombre: m.nombre })),
-      'Sin intentos');
+    document.getElementById('modulosContainer').innerHTML = listaIntentos(quizzes, 'Quiz');
     document.getElementById('cuentaQuizzes').textContent =
       `${quizzes.filter(x => x.info).length} de ${quizzes.length} practicados`;
 
@@ -1756,7 +1737,7 @@
     // trabajo libre sin un "correctas/total" real que reportar; los demás
     // sí llaman a guardarIntento() y muestran el mismo progreso que un quiz)
     const simuladores = ordenarPracticados(SIMULADORES.map(s => ({ m: s, info: s.id ? stats.porModulo[s.id] : null })));
-    document.getElementById('simuladoresContainer').innerHTML = listaSimuladores(simuladores);
+    document.getElementById('simuladoresContainer').innerHTML = listaIntentos(simuladores, 'Simulador');
     document.getElementById('cuentaSimuladores').textContent =
       `${simuladores.filter(x => x.info).length} de ${simuladores.length} practicados`;
 
@@ -2343,7 +2324,7 @@
       { elemento: '#graficasPanel', titulo: 'Tus gráficas', texto: 'A la izquierda, tu mejor nota en cada quiz frente a la línea del 70 %. A la derecha, cómo ha ido cambiando tu nota general.' },
       { elemento: '#actividadesCard', titulo: 'Lo que te asignó tu profesor', texto: 'Las actividades pendientes de tus grupos aparecen aquí primero.' },
       { elemento: '#repasarCard', titulo: 'Qué repasar', texto: 'Los temas donde más fallas en los últimos 90 días, con el enlace a su página de teoría.' },
-      { elemento: tarjetaDe('[data-acordeon="progreso-quiz"]'), titulo: 'Practica desde aquí', texto: 'Cada tarjeta abre su quiz y muestra tu mejor nota. Lo que aún no has hecho queda al final.' },
+      { elemento: tarjetaDe('[data-acordeon="progreso-quiz"]'), titulo: 'Practica desde aquí', texto: 'Cada fila abre su quiz y muestra tu mejor nota. Lo que aún no has hecho queda al final.' },
       { elemento: '.streak-card', titulo: 'Tu racha de estudio', texto: 'Cada cuadro es un día. Mientras más intenso el verde, más intentos hiciste ese día.' },
       { elemento: tarjetaDe('#grupoContainerPanel'), titulo: 'Tus grupos', texto: 'Escribe aquí el código que te dé tu profesor para ver sus actividades.' },
       { elemento: '#sidebar', titulo: 'Todo el sitio a un clic', texto: 'Desde la barra lateral llegas a los módulos, los quizzes, los simuladores y las herramientas.' }
