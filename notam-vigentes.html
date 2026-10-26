@@ -430,6 +430,7 @@
   <h1>NOTAM vigentes</h1>
   <p class="hero-meta" id="heroMeta">Lista de <a href="https://aerobarranquilla.aerocivil.gov.co/publicaciones/3708/listas-de-verificacion-y-listas-de-notam-validos/" target="_blank" rel="noopener">Aerocivil</a> · <span class="aviso">solo para estudio, no para uso operacional</span></p>
   <div class="status-line" id="statusLine" role="status">Cargando la lista de NOTAM…</div>
+  <p class="hero-meta" id="enlaceCargar" hidden>Editor: <a href="notam-cargar.html">cargar listas nuevas →</a></p>
 </section>
 
 <div class="nv-wrap" id="nvWrap">
@@ -914,6 +915,10 @@
     const btnMobile = document.getElementById('navLoginBtnMobile');
     if (btnDesktop) { btnDesktop.textContent = 'Mi panel'; btnDesktop.href = 'Panel_estudiante.html'; }
     if (btnMobile) { btnMobile.firstChild.textContent = 'Mi panel '; btnMobile.href = 'Panel_estudiante.html'; }
+    // El editor ve el acceso a la carga de listas: notam_editores solo le
+    // muestra a cada cuenta su propia fila (RLS), así que a los demás no les sale.
+    const { data: editor } = await sbClient.from('notam_editores').select('usuario').maybeSingle();
+    if (editor) document.getElementById('enlaceCargar').hidden = false;
   })();
 </script>
 </body>

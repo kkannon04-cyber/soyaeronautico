@@ -11,7 +11,7 @@ const fecha = (iso) => `${iso.slice(8, 10)} ${MESES[Number(iso.slice(5, 7)) - 1]
 const TIPOS = { 'IFR-COM': 'IFR comercial', AG: 'Aviación general', 'VFR-D': 'VFR diurno', 'VFR-N': 'VFR nocturno', MIL: 'Militar o de Estado', HEL: 'Helicóptero' };
 const AYUDA = {
   1: 'Existe en ALDIA y tiene chequeo vigente en este equipo', 2: 'Vigente a la fecha del vuelo', 3: 'Aeronavegable en ALDIA',
-  4: 'P/ contra la capacidad del tipo; TBN solo S y M', 5: 'E/ contra EET + alterno + reserva', 6: 'Agua, selva, ELT, chalecos y botes',
+  4: 'P/ contra la capacidad del tipo; TBN solo S y M', 5: 'E/ contra EET + alterno más distante + reserva final', 6: 'Chalecos y botes según la distancia a tierra, selva, ELT',
   7: 'Par o impar, flujos de ENR 1.3, A185 y F190, directas', 8: 'Aerovías y puntos de ENR 3 y ENR 4.4', 9: 'Existe, está vigente, SUP y NOTAM',
   10: 'Salida, destino y alternos', 11: 'AD 2.3, salida y puesta del sol, VFR nocturno', 12: 'AD 2.20 y tipo de tránsito de AD 2.2', 13: 'Casillas 8, 10, 13, 16 y 18; antelación',
 };
