@@ -13,7 +13,8 @@
 // guardarIntento() la comprueba ANTES de la red y avisa por consola.
 //
 // Cómo añadir un módulo nuevo:
-//   1. Añádelo a MODULOS_CATALOGO con su id, nombre, url, tipo y sección.
+//   1. Añádelo a MODULOS_CATALOGO con su id, nombre, corto (etiqueta de las
+//      gráficas de los paneles), url, tipo y sección.
 //   2. Carga <script src="modulos.js"></script> en la página, ANTES de
 //      progreso.js.
 //   3. Ya está. No hay que tocar SQL ni el Panel del Estudiante.
@@ -27,69 +28,69 @@
 // logro "Políglota AIS", que exige haber hecho todos los de la sección
 // "modulos" y se volvería inalcanzable si entrara un simulador nuevo ahí.
 const MODULOS_CATALOGO = [
-  { id: 'quiz-ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', url: 'quiz-ats.html',
+  { id: 'quiz-ats', nombre: 'Servicios de Tránsito Aéreo (ATS)', corto: 'ATS', url: 'quiz-ats.html',
     tipo: 'quiz', seccion: 'modulos', badge: '50 preguntas', temaPorDefecto: 'ats' },
 
-  { id: 'quiz-fpl', nombre: 'Plan de Vuelo', url: 'quiz-fpl.html',
+  { id: 'quiz-fpl', nombre: 'Plan de Vuelo', corto: 'FPL', url: 'quiz-fpl.html',
     tipo: 'quiz', seccion: 'modulos', badge: '25 preguntas', temaPorDefecto: 'plan-de-vuelo' },
 
-  { id: 'quiz-designadores', nombre: 'Designadores de Aeródromos', url: 'quiz-designadores.html',
+  { id: 'quiz-designadores', nombre: 'Designadores de Aeródromos', corto: 'Designadores', url: 'quiz-designadores.html',
     tipo: 'quiz', seccion: 'modulos', badge: '196 aeródromos · 3 parciales de 20', temaPorDefecto: 'designadores' },
 
-  { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', url: 'quiz-fraseologia.html',
+  { id: 'quiz-fraseologia', nombre: 'Fraseología Aeronáutica', corto: 'Fraseología', url: 'quiz-fraseologia.html',
     tipo: 'quiz', seccion: 'modulos', badge: '50 preguntas', temaPorDefecto: 'fraseologia-fundamentos' },
 
-  { id: 'simulador-metar', nombre: 'Simulador METAR', url: 'simulador-metar.html',
+  { id: 'simulador-metar', nombre: 'Simulador METAR', corto: 'Sim. METAR', url: 'simulador-metar.html',
     tipo: 'simulador', seccion: 'modulos', badge: 'Modo examen · 20 reportes', temaPorDefecto: 'metar-taf' },
 
-  { id: 'navegacion-quiz-tiempo-altimetria', nombre: 'Navegación · Quiz I — Tiempo y Altimetría',
+  { id: 'navegacion-quiz-tiempo-altimetria', nombre: 'Navegación · Quiz I — Tiempo y Altimetría', corto: 'NAV I',
     url: 'quiz-navegacion-tiempo-altimetria.html',
     tipo: 'quiz', seccion: 'modulos', badge: 'Nivel avanzado · 25 preguntas', temaPorDefecto: 'navegacion-tiempo' },
 
-  { id: 'navegacion-quiz-radioayudas-viento', nombre: 'Navegación · Quiz II — Radioayudas y Viento',
+  { id: 'navegacion-quiz-radioayudas-viento', nombre: 'Navegación · Quiz II — Radioayudas y Viento', corto: 'NAV II',
     url: 'quiz-navegacion-radioayudas-viento.html',
     tipo: 'quiz', seccion: 'modulos', badge: 'Nivel avanzado · 25 preguntas', temaPorDefecto: 'navegacion-radioayudas' },
 
-  { id: 'quiz-notam', nombre: 'NOTAM', url: 'quiz-notam.html',
+  { id: 'quiz-notam', nombre: 'NOTAM', corto: 'NOTAM', url: 'quiz-notam.html',
     tipo: 'quiz', seccion: 'modulos', badge: '25 preguntas', temaPorDefecto: 'notam-fundamentos' },
 
   // Añadido 2026-09-16: banco de 173 preguntas del cuestionario básico AIS/COM;
   // el estudiante elige cantidad y orden. Mezcla COM/AIS/MET/cartas/AD, así
   // que no tiene una página teórica única: sin tema por defecto.
-  { id: 'quiz-ais-com', nombre: 'Entrenamiento AIS/COM', url: 'quiz-ais-com.html',
+  { id: 'quiz-ais-com', nombre: 'Entrenamiento AIS/COM', corto: 'AIS/COM', url: 'quiz-ais-com.html',
     tipo: 'quiz', seccion: 'modulos', badge: '173 preguntas · a tu medida', temaPorDefecto: null },
 
   // Añadido 2026-09-25: examen de 194 preguntas de Meteorología Aeronáutica,
   // con la misma mecánica configurable del entrenamiento AIS/COM. Recorre los
   // tres ejes del módulo MET y además METAR/TAF/SIGMET, así que no apunta a una
   // sola página teórica: sin tema por defecto.
-  { id: 'quiz-meteorologia', nombre: 'Quiz Meteorología', url: 'quiz-meteorologia.html',
+  { id: 'quiz-meteorologia', nombre: 'Quiz Meteorología', corto: 'MET', url: 'quiz-meteorologia.html',
     tipo: 'quiz', seccion: 'modulos', badge: '194 preguntas · a tu medida', temaPorDefecto: null },
 
-  { id: 'simulador-plan-vuelo', nombre: 'Simulador Plan de Vuelo', url: 'simulador-plan-vuelo.html',
+  { id: 'simulador-plan-vuelo', nombre: 'Simulador Plan de Vuelo', corto: 'Sim. FPL', url: 'simulador-plan-vuelo.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Llenado de FPL campo por campo con validación.', temaPorDefecto: 'plan-de-vuelo' },
 
-  { id: 'simulador-fraseologia', nombre: 'Fraseología — Simulador ATC', url: 'simulador-fraseologia.html',
+  { id: 'simulador-fraseologia', nombre: 'Fraseología — Simulador ATC', corto: 'Sim. ATC', url: 'simulador-fraseologia.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Practica por voz con mapa de ruta en vivo.', temaPorDefecto: 'fraseologia-fases' },
 
   // Añadido 2026-09-14: guardaba intentos desde hacía tiempo con este id, pero
   // no estaba en ninguna lista, así que se perdían en silencio.
-  { id: 'simulador-nala', nombre: 'Simulador NALA — CWP', url: 'Simulador-NALA.html',
+  { id: 'simulador-nala', nombre: 'Simulador NALA — CWP', corto: 'NALA', url: 'Simulador-NALA.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Plan de vuelo, AFTN y radar en un puesto de trabajo real.', temaPorDefecto: null },
 
   // Añadido 2026-09-27: terminal AFTN/AMHS (Anexo 10, Vol. II, Cap. 4). Guarda
   // los turnos del puesto individual y las rondas de ejercicios. No tiene
   // página teórica propia: su referencia normativa vive dentro de la terminal.
-  { id: 'terminal-aftn', nombre: 'Terminal AFTN / AMHS', url: 'terminal-aftn.html',
+  { id: 'terminal-aftn', nombre: 'Terminal AFTN / AMHS', corto: 'AFTN', url: 'terminal-aftn.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Redacta y trata mensajes AFTN: prioridad, direcciones, servicio y salas con compañeros.', temaPorDefecto: null },
 
   // Añadido 2026-09-24: prueba de amplitud de memoria. No tiene página teórica
   // propia (entrena una destreza, no un contenido del AIP), por eso va sin tema.
-  { id: 'simulador-memoria', nombre: 'Memoria y Agilidad Mental', url: 'simulador-memoria.html',
+  { id: 'simulador-memoria', nombre: 'Memoria y Agilidad Mental', corto: 'Memoria', url: 'simulador-memoria.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Secuencias que crecen a cada acierto: memoria de trabajo bajo presión de tiempo.', temaPorDefecto: null },
 
@@ -97,7 +98,7 @@ const MODULOS_CATALOGO = [
   // buscador. Guarda cada prueba, cacería, simulacro o práctica; en el detalle, el tema de
   // cada pregunta es su sección del AIP («ENR 1.10»), que no tiene página teórica propia:
   // nombreDeTema() la muestra tal cual y urlDeTema() devuelve null, como corresponde.
-  { id: 'simulador-aip', nombre: 'Simulador AIP Colombia', url: 'simulador-aip.html',
+  { id: 'simulador-aip', nombre: 'Simulador AIP Colombia', corto: 'AIP', url: 'simulador-aip.html',
     tipo: 'simulador', seccion: 'simuladores',
     desc: 'Estudia el AIP por partes, practica con más de 15 000 preguntas y pregúntale al AIP.', temaPorDefecto: null }
 ];

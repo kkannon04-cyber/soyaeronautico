@@ -182,6 +182,46 @@
   .stat-card span.label { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: var(--text-muted); display: block; }
   .stat-card strong { font-size: 1.6rem; font-weight: 700; margin-top: 6px; display: block; font-family: var(--font-mono); }
 
+  /* Gráficas del grupo (graficas-panel.js + Frappe Charts) */
+  .graficas-grupo { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 0 22px; align-items: start; }
+  .graficas-grupo[hidden] { display: none; }
+  .graficas-grupo .panel-card > div:last-child { min-height: 200px; }
+  @media (max-width: 1150px) { .graficas-grupo { grid-template-columns: 1fr; } }
+
+  /* Tabla de notas (Tabulator) con los colores del panel */
+  #tablaNotas.tabulator { font-family: var(--font-main); font-size: 0.86rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; }
+  #tablaNotas .tabulator-header, #tablaNotas .tabulator-header .tabulator-col { background: var(--bg-main); color: var(--text-muted); border-color: var(--border-color); }
+  #tablaNotas .tabulator-header .tabulator-col .tabulator-col-content { padding: 9px 10px 8px; }
+  #tablaNotas .tabulator-header .tabulator-col .tabulator-col-title { font-weight: 600; font-size: 0.78rem; white-space: normal; line-height: 1.3; }
+  #tablaNotas .tabulator-header-filter input { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 8px !important; font: inherit; font-weight: 400; }
+  #tablaNotas .tabulator-tableholder { background: var(--card-bg); }
+  #tablaNotas .tabulator-row, #tablaNotas .tabulator-row.tabulator-row-even { background: var(--card-bg); color: var(--text-main); border-color: var(--border-color); }
+  #tablaNotas .tabulator-row .tabulator-cell { border-color: var(--border-color); padding: 9px 10px; }
+  #tablaNotas .tabulator-row.tabulator-selectable:hover { background: color-mix(in srgb, var(--primary) 7%, var(--card-bg)); }
+  #tablaNotas .tabulator-frozen { background: inherit; }
+  #tablaNotas .tabulator-placeholder-contents { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+  #tablaNotas .tabulator-footer { background: var(--bg-main); color: var(--text-muted); border-color: var(--border-color); }
+  #tablaNotas .tabulator-footer .tabulator-page { color: var(--text-main); background: var(--card-bg); border-color: var(--border-color); border-radius: 6px; }
+  #tablaNotas .tabulator-footer .tabulator-page.active { color: var(--primary); }
+  .tn-nota { font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem; padding: 2px 8px; border-radius: 6px; }
+  .tn-nota.ok { color: var(--success); background: rgba(16,185,129,0.12); }
+  .tn-nota.medio { color: #b45309; background: rgba(245,158,11,0.14); }
+  .tn-nota.bajo { color: var(--danger); background: rgba(239,68,68,0.10); }
+  [data-theme="dark"] .tn-nota.medio { color: var(--warning); }
+  .tn-nada { color: var(--text-muted); }
+
+  /* Ordenar preguntas arrastrando (SortableJS) */
+  .ex-asa { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: 6px; vertical-align: middle; border-radius: 6px; color: var(--text-muted); cursor: grab; touch-action: none; }
+  .ex-asa:hover { color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+  .ex-asa:active { cursor: grabbing; }
+  .ex-q-fantasma { opacity: 0.4; border-style: dashed !important; border-color: var(--primary) !important; }
+  .ex-q-arrastrando { box-shadow: var(--shadow-card-hover); }
+
+  /* Recorrido guiado */
+  .btn-recorrido { display: inline-flex; align-items: center; gap: 7px; }
+  .btn-recorrido[hidden] { display: none; }
+  .btn-recorrido svg { color: var(--primary); }
+
   /* === FORMULARIOS === */
   .campo { margin-bottom: 14px; }
   .campo label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
@@ -468,6 +508,16 @@
 <script src="notam-codigos.js"></script>
 <script src="evaluaciones-comun.js"></script>
 <script src="examenes-profesor.js"></script>
+<!-- Gráficas (Frappe Charts), tabla de notas (Tabulator), ordenar preguntas
+     arrastrando (SortableJS) y recorrido guiado (driver.js), autorizados el
+     2026-10-26. Con defer no frenan la carga del panel. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.10.2/dist/driver.css" integrity="sha384-q84NOjxOvSzdVT3EjRGos6w4J4t7ysF+ueMkf5CCMevHRH2IkF+sEvNvofEU67dW" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.7.1/dist/css/tabulator_simple.min.css" integrity="sha384-845p0lFU615QIduQrRBstSh/4oeH8AntnsjQxQorupjL89uYj3JAryzqwGRHHsT3" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/frappe-charts@1.6.2/dist/frappe-charts.min.umd.js" integrity="sha384-JQa9VKO4+ZAEaRWDOmQM5LPHQTv8t9B4y8kBn36iar33TxUZByrYAa3o+PsU7hYk" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/driver.js@1.10.2/dist/driver.js.iife.js" integrity="sha384-5g481DgM/VdK19dNiL3kmTG/tz1fQriwUvSide6vc77uYGaXh0s5GLQCUN6dgI8n" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.7.1/dist/js/tabulator.min.js" integrity="sha384-1M1aGyKpzLZTYIWClgDVwtSkPjR2lvQIkbhZvQ3A3VPKhU2H6EjeXeCBEmyXluer" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js" integrity="sha384-DgmC6Xe2bSN2WjTDXzWYbUbxyhNP+NNkGDR/g78pCXV7E7rcVTGxVg0uIVCUUcBc" crossorigin="anonymous"></script>
+<script defer src="graficas-panel.js"></script>
 <link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
@@ -549,9 +599,15 @@
 
     <!-- ============ RESUMEN ============ -->
     <section class="seccion activa" id="seccion-resumen">
-      <div class="seccion-head">
-        <h2>Panel del Profesor</h2>
-        <p>Desde aquí creas tus grupos, armas tu banco de preguntas, publicas exámenes o lecturas para tus estudiantes y revisas sus resultados.</p>
+      <div class="seccion-head seccion-head-fila">
+        <div>
+          <h2>Panel del Profesor</h2>
+          <p>Desde aquí creas tus grupos, armas tu banco de preguntas, publicas exámenes o lecturas para tus estudiantes y revisas sus resultados.</p>
+        </div>
+        <button type="button" class="btn btn-secundario btn-mini btn-recorrido" id="btnRecorrido" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9z"/></svg>
+          Ver recorrido
+        </button>
       </div>
       <div class="stats-grid">
         <div class="stat-card"><span class="label">Grupos</span><strong id="kpiGrupos">0</strong></div>
@@ -1924,6 +1980,143 @@ async function abrirCorreccion(resultadoId, tipo, filaId) {
   });
 }
 
+// ============================================================
+// GRÁFICAS, TABLA DE NOTAS Y RECORRIDO (librerías con defer)
+// ============================================================
+// Frappe Charts, Tabulator, SortableJS y driver.js cargan con defer: corren
+// antes de DOMContentLoaded, así que basta esperar ese evento.
+const libreriasListas = new Promise(listo => {
+  if (document.readyState !== 'loading') listo();
+  else document.addEventListener('DOMContentLoaded', listo, { once: true });
+});
+
+const recortarTexto = (texto, n) => texto.length > n ? texto.slice(0, n - 1).trimEnd() + '…' : texto;
+const RANGOS_NOTA = [['Menos de 60', 0, 59], ['60–69', 60, 69], ['70–79', 70, 79], ['80–89', 80, 89], ['90–100', 90, 100]];
+
+async function pintarAnalisisGrupo({ estudiantes, calificadas, filas, notaDe, nombreGrupo }) {
+  await libreriasListas;
+  const notas = estudiantes.map(e => notaDe(e.id)).filter(n => n !== null);
+
+  // --- Gráficas del grupo ---
+  if (window.GraficasPanel && GraficasPanel.disponible()) {
+    const contRangos = document.getElementById('graficaRangos');
+    if (notas.length) {
+      GraficasPanel.barras(contRangos, {
+        etiquetas: RANGOS_NOTA.map(r => r[0]),
+        cortas: RANGOS_NOTA.map(r => r[0].replace('Menos de ', 'Bajo ')),
+        valores: RANGOS_NOTA.map(([, desde, hasta]) => notas.filter(n => n >= desde && n <= hasta).length),
+        serie: 'Estudiantes', umbral: null, sufijo: '', alto: 220
+      });
+    } else {
+      contRangos.innerHTML = '<div class="vacio">Aparece cuando alguien entregue una actividad calificada.</div>';
+    }
+    const medias = calificadas.map(a => {
+      const mejores = filas.filter(f => f.actividadId === a.id && f.intentos > 0).map(f => f.mejor);
+      return { a, media: mejores.length ? Math.round(mejores.reduce((s, x) => s + x, 0) / mejores.length) : null };
+    }).filter(x => x.media !== null);
+    const contActividades = document.getElementById('graficaActividades');
+    if (medias.length) {
+      GraficasPanel.barras(contActividades, {
+        etiquetas: medias.map(x => x.a.titulo),
+        cortas: medias.map(x => recortarTexto(x.a.titulo, 14)),
+        valores: medias.map(x => x.media),
+        serie: 'Nota media', umbral: null, alto: 220
+      });
+    } else {
+      contActividades.innerHTML = '<div class="vacio">Aparece cuando alguien entregue una actividad calificada.</div>';
+    }
+  } else {
+    document.getElementById('graficasGrupo').hidden = true;
+  }
+
+  // --- Tabla de notas ---
+  const cardTabla = document.getElementById('cardTablaNotas');
+  if (typeof Tabulator === 'undefined') { cardTabla.hidden = true; return; }
+  const campo = id => 'a_' + String(id).replace(/[^a-zA-Z0-9]/g, '');
+  const datos = estudiantes.map(est => {
+    const fila = { id: est.id, nombre: est.nombre, nota: notaDe(est.id), entregadas: 0, ultima: null };
+    calificadas.forEach(a => {
+      const f = filas.find(x => x.estudianteId === est.id && x.actividadId === a.id);
+      const entregada = f && f.intentos > 0;
+      fila[campo(a.id)] = entregada ? f.mejor : null;
+      if (entregada) {
+        fila.entregadas++;
+        if (!fila.ultima || f.ultimaFecha > fila.ultima) fila.ultima = f.ultimaFecha;
+      }
+    });
+    return fila;
+  });
+  const formatoNota = celda => {
+    const v = celda.getValue();
+    return v === null || v === undefined ? '<span class="tn-nada">—</span>' : `<span class="tn-nota ${clasePct(v)}">${v}%</span>`;
+  };
+  const columnaNota = (titulo, field, extra) => Object.assign({
+    title: esc(titulo), field, formatter: formatoNota, hozAlign: 'center', headerHozAlign: 'center',
+    sorter: 'number', minWidth: 96, maxWidth: 190, accessorDownload: v => (v === null || v === undefined ? '' : v)
+  }, extra || {});
+
+  const tabla = new Tabulator('#tablaNotas', {
+    data: datos,
+    layout: 'fitDataStretch',
+    pagination: datos.length > 15,
+    paginationSize: 15,
+    placeholder: 'Ningún estudiante coincide.',
+    locale: 'es',
+    langs: { es: { pagination: { first: 'Primera', first_title: 'Primera página', last: 'Última', last_title: 'Última página', prev: 'Anterior', prev_title: 'Página anterior', next: 'Siguiente', next_title: 'Página siguiente', counter: { showing: 'Mostrando', of: 'de', rows: 'filas', pages: 'páginas' } } } },
+    initialSort: [{ column: 'nombre', dir: 'asc' }],
+    columns: [
+      { title: 'Estudiante', field: 'nombre', frozen: true, minWidth: 180, headerFilter: 'input', headerFilterPlaceholder: 'Buscar…' },
+      ...calificadas.map(a => columnaNota(a.titulo, campo(a.id), { headerTooltip: a.titulo })),
+      columnaNota('Nota', 'nota', { headerTooltip: 'Media del mejor intento en cada actividad calificada', maxWidth: 110 }),
+      { title: 'Entregó', field: 'entregadas', sorter: 'number', hozAlign: 'center', headerHozAlign: 'center', width: 96,
+        formatter: c => `${c.getValue()}/${calificadas.length}`, accessorDownload: v => `${v}/${calificadas.length}` },
+      { title: 'Última entrega', field: 'ultima', sorter: 'string', minWidth: 130,
+        formatter: c => c.getValue() ? fechaDia(c.getValue()) : '<span class="tn-nada">—</span>',
+        accessorDownload: v => v ? fechaDia(v) : '' }
+    ]
+  });
+
+  const btnBajos = document.getElementById('btnFiltroBajos');
+  btnBajos.addEventListener('click', () => {
+    const activo = btnBajos.getAttribute('aria-pressed') !== 'true';
+    btnBajos.setAttribute('aria-pressed', String(activo));
+    btnBajos.classList.toggle('btn-primario', activo);
+    btnBajos.classList.toggle('btn-secundario', !activo);
+    if (activo) tabla.setFilter(f => calificadas.some(a => f[campo(a.id)] !== null && f[campo(a.id)] < 60));
+    else tabla.clearFilter();
+  });
+  document.getElementById('btnTablaCsv').addEventListener('click', () => {
+    tabla.download('csv', `notas-${_nombreArchivoSeguro(nombreGrupo)}-${_fechaArchivo()}.csv`, { delimiter: ';', bom: true });
+    aviso('Archivo descargado. Ábrelo con Excel.', 'ok');
+  });
+}
+
+// Recorrido guiado: solo la primera vez en este navegador; después, con «Ver recorrido».
+const CLAVE_RECORRIDO_PROF = 'aisRecorridoPanelProfesor';
+function abrirRecorridoProfesor(forzar) {
+  if (!window.GraficasPanel) return false;
+  if (!forzar && localStorage.getItem(CLAVE_RECORRIDO_PROF)) return false;
+  if (!document.getElementById('seccion-resumen').classList.contains('activa')) mostrarSeccion('resumen');
+  return GraficasPanel.recorrido([
+    { elemento: '#seccion-resumen .stats-grid', titulo: 'Tu clase en números', texto: 'Grupos, estudiantes, actividades publicadas y preguntas de tus bancos.' },
+    { elemento: '#seccion-resumen .briefing', titulo: 'Tu briefing', texto: 'Los pasos para poner a andar tu clase. Se marcan solos a medida que los haces.' },
+    { elemento: '.nav-item[data-seccion="grupos"]', titulo: 'Mis grupos', texto: 'Crea un grupo y comparte su código: tus estudiantes lo escriben una vez en su panel.' },
+    { elemento: '.nav-item[data-seccion="banco"]', titulo: 'Bancos de preguntas', texto: 'Escribe o importa tus preguntas y agrúpalas por tema.' },
+    { elemento: '.nav-item[data-seccion="actividades"]', titulo: 'Actividades', texto: 'Publica exámenes, lecturas, planes de vuelo o mensajería AFTN con fecha límite.' },
+    { elemento: '.nav-item[data-seccion="examenes"]', titulo: 'Mis exámenes', texto: 'Diseña exámenes completos con secciones y preguntas abiertas. Las preguntas se ordenan arrastrándolas.' },
+    { elemento: '.nav-item[data-seccion="resultados"]', titulo: 'Resultados', texto: 'Gráficas del grupo, la tabla de notas que se ordena y filtra, y las descargas para Excel.' }
+  ], { clave: CLAVE_RECORRIDO_PROF, forzar });
+}
+
+async function prepararRecorridoProfesor() {
+  await libreriasListas;
+  if (!window.GraficasPanel) return;
+  const boton = document.getElementById('btnRecorrido');
+  boton.hidden = false;
+  boton.addEventListener('click', () => abrirRecorridoProfesor(true));
+  abrirRecorridoProfesor(false);
+}
+
 async function cargarResultados() {
   const grupoId = document.getElementById('rGrupo').value;
   const cont = document.getElementById('contenidoResultados');
@@ -1968,6 +2161,9 @@ async function cargarResultados() {
   const notasEstudiantes = estudiantesRes.estudiantes.map(e => notaDe(e.id)).filter(n => n !== null);
   const notaGrupo = notasEstudiantes.length === 0 ? null
     : Math.round(notasEstudiantes.reduce((s, n) => s + n, 0) / notasEstudiantes.length);
+  // Gráficas y tabla de notas: solo con estudiantes y alguna actividad calificada.
+  const calificadas = actividadesGrupo.filter(a => a.tipo !== 'texto');
+  const hayAnalisis = estudiantesRes.estudiantes.length > 0 && calificadas.length > 0;
 
   // Fila de un intento con sus acciones. `lista` distingue la ficha del
   // estudiante ('e') de la lista cronológica ('t') para no repetir ids.
@@ -2051,6 +2247,33 @@ async function cargarResultados() {
       <div class="stat-card"><span class="label">Entregas</span><strong>${entregas}</strong></div>
       <div class="stat-card" title="Media de las notas de los estudiantes; cada uno cuenta con su mejor intento por actividad"><span class="label">Nota del grupo</span><strong class="pct ${clasePct(notaGrupo)}">${notaGrupo === null ? '—' : notaGrupo + '%'}</strong></div>
     </div>
+${hayAnalisis ? `
+    <div class="graficas-grupo" id="graficasGrupo">
+      <div class="panel-card">
+        <h3>Estudiantes por rango de nota</h3>
+        <p class="card-sub">Cuántos estudiantes tienen su nota en cada rango. Quien no ha entregado nada no cuenta.</p>
+        <div id="graficaRangos"></div>
+      </div>
+      <div class="panel-card">
+        <h3>Nota media por actividad</h3>
+        <p class="card-sub">Media del mejor intento de quienes la presentaron. Pasa el mouse por una barra para ver el nombre completo.</p>
+        <div id="graficaActividades"></div>
+      </div>
+    </div>
+
+    <div class="panel-card" id="cardTablaNotas">
+      <div class="card-cabecera">
+        <div>
+          <h3>Tabla de notas</h3>
+          <p class="card-sub">Mejor intento de cada estudiante en cada actividad calificada. Haz clic en un encabezado para ordenar o busca por nombre.</p>
+        </div>
+        <div class="acciones">
+          <button class="btn btn-secundario btn-mini" id="btnFiltroBajos" type="button" aria-pressed="false">Ver solo notas bajo 60 %</button>
+          <button class="btn btn-secundario btn-mini" id="btnTablaCsv" type="button">Descargar tabla (Excel)</button>
+        </div>
+      </div>
+      <div id="tablaNotas"></div>
+    </div>` : ''}
 
     <div class="panel-card">
       <div class="card-cabecera">
@@ -2098,6 +2321,10 @@ async function cargarResultados() {
             </table></div>
           </details>`}
     </div>`;
+
+  if (hayAnalisis) {
+    pintarAnalisisGrupo({ estudiantes: estudiantesRes.estudiantes, calificadas, filas, notaDe, nombreGrupo: grupo ? grupo.nombre : 'grupo' });
+  }
 
   cont.querySelectorAll('.est-resultado').forEach(d => { if (abiertos.has(d.dataset.estudiante)) d.open = true; });
   const listaTodos = cont.querySelector('.intentos-todos');
@@ -2234,6 +2461,7 @@ async function cargarTodo() {
   aplicarTipoActividad();
   await cargarTodo();
   exIniciar();
+  prepararRecorridoProfesor();
 })();
 </script>
 </body>

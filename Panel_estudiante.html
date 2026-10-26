@@ -173,8 +173,61 @@
   .ring-fill { fill: none; stroke: var(--primary); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease; }
   .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.85rem; font-weight: 700; }
 
+  /* Simuladores en lista (2026-10-26): tabla de filas como la de Tabler. */
+  .sim-lista { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+  .sim-lista ul { list-style: none; margin: 0; padding: 0; }
+  .sim-cab, .sim-fila { display: grid; grid-template-columns: minmax(0, 1fr) 190px 130px 118px; gap: 18px; align-items: center; padding: 0 20px; }
+  .sim-cab { padding-top: 10px; padding-bottom: 10px; background: var(--bg-main); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+  .sim-fila { padding-top: 15px; padding-bottom: 15px; color: inherit; transition: background-color .18s ease; }
+  .sim-lista li + li .sim-fila { border-top: 1px solid var(--border-color); }
+  .sim-fila:hover { background: color-mix(in srgb, var(--primary) 6%, var(--card-bg)); }
+  .sim-fila:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .sim-nombre { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .sim-nombre strong { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
+  .sim-nombre span { font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; }
+  .sim-nota { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .sim-nota .module-progress { display: block; margin-top: 0; flex: 1; max-width: none; height: 6px; }
+  .sim-nota .module-progress-fill { display: block; }
+  .sim-pct { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--amarillo-texto); min-width: 3ch; }
+  .sim-pct.ok { color: var(--success); }
+  .sim-pct.sin { color: var(--text-muted); font-weight: 500; }
+  .sim-tenue { display: block; font-size: 0.75rem; color: var(--text-muted); }
+  .sim-nota .sim-tenue { display: inline; }
+  .sim-intentos { font-size: 0.82rem; color: var(--text-main); }
+  .sim-intentos b { font-family: var(--font-mono); }
+  .sim-accion { justify-self: end; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 600; color: var(--primary); white-space: nowrap; transition: border-color .2s, gap .2s; }
+  .sim-fila:hover .sim-accion { border-color: var(--primary); gap: 9px; }
+  .sim-fila.nuevo .sim-accion { color: var(--text-main); }
+  @media (max-width: 760px) {
+    .sim-cab { display: none; }
+    .sim-fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nombre accion" "nota intentos"; gap: 10px 14px; padding: 14px 16px; }
+    .sim-nombre { grid-area: nombre; }
+    .sim-accion { grid-area: accion; align-self: start; }
+    .sim-nota { grid-area: nota; }
+    .sim-intentos { grid-area: intentos; justify-self: end; text-align: right; }
+    .sim-fila.nuevo .sim-intentos { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sim-fila, .sim-accion { transition: none; } }
+
+  /* Recorrido guiado (driver.js) */
+  .btn-recorrido { margin-left: auto; flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: border-color .2s, color .2s; }
+  .btn-recorrido:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-recorrido svg { color: var(--primary); }
+
+  /* Gráficas del avance (graficas-panel.js) */
+  .graficas-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; align-items: start; }
+  .graficas-grid[hidden] { display: none; }
+  .grafica-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 16px 14px; }
+  .grafica-card > div { min-height: 200px; }
+  .grafica-pie { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-top: 6px; }
+  @media (max-width: 1024px) { .graficas-grid { grid-template-columns: 1fr; gap: 0; } }
+  @media (max-width: 560px) { .welcome-section { flex-wrap: wrap; } .btn-recorrido { margin-left: 0; } }
+
   /* Layout de contenido principal */
   .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+  /* Sin esto, lo ancho de una columna (el calendario de Frappe mide ~380 px) ensancha la
+     pista en el teléfono y todo el panel se corre a la derecha. */
+  .content-grid > * { min-width: 0; }
   @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
 
   .panel-card { background-color: transparent; margin-bottom: 32px; }
@@ -493,6 +546,12 @@
 <script src="supabase-config.js"></script>
 <script src="modulos.js"></script>
 <script src="progreso.js"></script>
+<!-- Gráficas (Frappe Charts) y recorrido guiado (driver.js), autorizados el 2026-10-26.
+     Con defer no frenan la carga; el panel espera a DOMContentLoaded para dibujar. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.10.2/dist/driver.css" integrity="sha384-q84NOjxOvSzdVT3EjRGos6w4J4t7ysF+ueMkf5CCMevHRH2IkF+sEvNvofEU67dW" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/frappe-charts@1.6.2/dist/frappe-charts.min.umd.js" integrity="sha384-JQa9VKO4+ZAEaRWDOmQM5LPHQTv8t9B4y8kBn36iar33TxUZByrYAa3o+PsU7hYk" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/driver.js@1.10.2/dist/driver.js.iife.js" integrity="sha384-5g481DgM/VdK19dNiL3kmTG/tz1fQriwUvSide6vc77uYGaXh0s5GLQCUN6dgI8n" crossorigin="anonymous"></script>
+<script defer src="graficas-panel.js"></script>
 <link rel="stylesheet" href="movimiento.css">
 </head>
 <body>
@@ -633,6 +692,10 @@
           <h2 id="welcomeHeading">Bienvenido de nuevo, <span id="nombreEstudiante">Estudiante</span></h2>
           <p>Continúa mejorando tu preparación aeronáutica.</p>
         </div>
+        <button type="button" class="btn-recorrido" id="btnRecorrido" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9z"/></svg>
+          Ver recorrido
+        </button>
       </div>
 
       <!-- GRID DE MÉTRICAS (KPIs unificados) -->
@@ -669,6 +732,25 @@
           <div class="kpi-data">
             <span class="label">Última actividad</span>
             <strong id="statUltima" style="font-size: 0.95rem;">Sin actividad</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficas del avance (Frappe Charts, vía graficas-panel.js). Ocultas
+           hasta que haya al menos un intento: sin datos no hay nada que graficar. -->
+      <div class="graficas-grid" id="graficasPanel" hidden>
+        <div class="panel-card">
+          <div class="panel-header">Tu mejor nota por quiz y simulador</div>
+          <div class="grafica-card">
+            <div id="graficaMejores"></div>
+            <p class="grafica-pie">La línea punteada marca el 70 %: desde ahí la barra de cada tarjeta se pinta en verde.</p>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header">Cómo ha cambiado tu nota general</div>
+          <div class="grafica-card">
+            <div id="graficaEvolucion"></div>
+            <p class="grafica-pie" id="graficaEvolucionPie">Cada punto es un día en que practicaste. Repetir un quiz nunca la baja; estrenar uno nuevo sí puede moverla, porque entra en la media.</p>
           </div>
         </div>
       </div>
@@ -774,9 +856,10 @@
                 </div>
               </div>
               <div class="heatmap-scroll">
+                <div id="calendarioEstudio"></div>
                 <div class="heatmap-grid" id="heatmapGrid"></div>
               </div>
-              <div class="heatmap-legend">
+              <div class="heatmap-legend" id="heatmapLeyenda">
                 <span>Menos</span>
                 <span class="heatmap-cell" style="background:var(--border-color);"></span>
                 <span class="heatmap-cell" style="background:rgba(16,185,129,0.35);"></span>
@@ -981,6 +1064,34 @@
     return html;
   }
 
+  // Simuladores en lista (2026-10-26, a pedido del usuario: «me gustaba más en
+  // lista»). Una fila por simulador, con columnas como la tabla de Tabler: qué
+  // es, tu mejor nota con su barra, intentos y la acción. Lo practicado arriba.
+  function listaSimuladores(items){
+    const FL = '<svg class="pend-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+    const dia = iso => new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }).replace('.', '');
+    const filas = items.map(({ m, info }) => {
+      const nota = info
+        ? `<span class="sim-pct ${info.mejor >= 70 ? 'ok' : ''}">${info.mejor}%</span>
+           <span class="module-progress"><span class="module-progress-fill ${info.mejor >= 70 ? 'ok' : 'medio'}" style="width:${info.mejor}%"></span></span>`
+        : '<span class="sim-pct sin">—</span><span class="sim-tenue">Sin intentos</span>';
+      const intentos = info
+        ? `<b>${info.intentos}</b> intento${info.intentos === 1 ? '' : 's'}<span class="sim-tenue">Último: ${dia(info.ultimaFecha)}</span>`
+        : '<span class="sim-tenue">—</span>';
+      return `
+        <li><a class="sim-fila${info ? '' : ' nuevo'}" href="${m.url}">
+          <span class="sim-nombre"><strong>${escaparHTML(m.nombre)}</strong>${m.desc ? `<span>${escaparHTML(m.desc)}</span>` : ''}</span>
+          <span class="sim-nota" aria-label="${info ? `Tu mejor nota: ${info.mejor}%` : 'Sin intentos'}">${nota}</span>
+          <span class="sim-intentos">${intentos}</span>
+          <span class="sim-accion">${info ? 'Practicar' : 'Empezar'} ${FL}</span>
+        </a></li>`;
+    }).join('');
+    return `<div class="sim-lista">
+      <div class="sim-cab" aria-hidden="true"><span>Simulador</span><span>Tu mejor nota</span><span>Intentos</span><span></span></div>
+      <ul>${filas}</ul>
+    </div>`;
+  }
+
   async function renderModulosAprendizaje(){
     const completados = await obtenerModulosCompletados();
     const paginasCompletadas = new Set(completados.map(m => m.pagina));
@@ -1045,6 +1156,13 @@
     ringFillEl.style.stroke = pct === null ? 'var(--border-color)' : colorPorPorcentaje(valor);
   }
 
+  // graficas-panel.js y sus librerías se cargan con defer: corren antes de
+  // DOMContentLoaded, así que esperar ese evento basta para poder dibujar.
+  const graficasListas = new Promise(listo => {
+    if (document.readyState !== 'loading') listo();
+    else document.addEventListener('DOMContentLoaded', listo, { once: true });
+  });
+
   // ---------- RACHA DE ESTUDIO (calendario de actividad) ----------
   const SEMANAS_HEATMAP = 12;
   const DIAS_HEATMAP = SEMANAS_HEATMAP * 7;
@@ -1105,6 +1223,18 @@
     hoy.setHours(0,0,0,0);
     const diaInicio = new Date(hoy);
     diaInicio.setDate(diaInicio.getDate() - (DIAS_HEATMAP - 1));
+
+    // Calendario de Frappe Charts (meses, días y detalle al pasar el mouse).
+    // Si la librería no cargó, queda la cuadrícula propia de siempre.
+    await graficasListas;
+    const dibujado = window.GraficasPanel && GraficasPanel.calendario(
+      document.getElementById('calendarioEstudio'), conteoPorDia,
+      { desde: diaInicio, hasta: hoy, etiqueta: 'intentos', etiquetaUno: 'intento' });
+    if (dibujado) {
+      grid.style.display = 'none';
+      document.getElementById('heatmapLeyenda').style.display = 'none';
+      return { actual, mejor };
+    }
 
     for (let i = 0; i < DIAS_HEATMAP; i++) {
       const dia = new Date(diaInicio);
@@ -1626,10 +1756,7 @@
     // trabajo libre sin un "correctas/total" real que reportar; los demás
     // sí llaman a guardarIntento() y muestran el mismo progreso que un quiz)
     const simuladores = ordenarPracticados(SIMULADORES.map(s => ({ m: s, info: s.id ? stats.porModulo[s.id] : null })));
-    document.getElementById('simuladoresContainer').innerHTML = bloquePractica(
-      simuladores.filter(x => x.info).map(({ m, info }) => tarjetaPractica(m, info, { badge: '' })),
-      simuladores.filter(x => !x.info).map(({ m }) => ({ url: m.url, nombre: m.nombre })),
-      'Sin intentos');
+    document.getElementById('simuladoresContainer').innerHTML = listaSimuladores(simuladores);
     document.getElementById('cuentaSimuladores').textContent =
       `${simuladores.filter(x => x.info).length} de ${simuladores.length} practicados`;
 
@@ -2159,6 +2286,79 @@
     aplicarRuta();
   });
 
+  // ---------- GRÁFICAS DEL AVANCE ----------
+  // Las dos parten del MEJOR intento, igual que la nota general
+  // (obtenerEstadisticas en progreso.js).
+  function evolucionNotaGeneral(intentos){
+    const mejores = {};
+    const porDia = new Map();
+    intentos.slice().sort((a, b) => a.fecha.localeCompare(b.fecha)).forEach(i => {
+      mejores[i.modulo] = Math.max(mejores[i.modulo] || 0, i.porcentaje);
+      const valores = Object.values(mejores);
+      porDia.set(claveDia(new Date(i.fecha)), Math.round(valores.reduce((s, p) => s + p, 0) / valores.length));
+    });
+    return Array.from(porDia.entries()).slice(-14);
+  }
+
+  function etiquetaDia(clave){
+    const [a, m, d] = clave.split('-').map(Number);
+    return new Date(a, m - 1, d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }).replace('.', '');
+  }
+
+  async function renderGraficas(){
+    const intentos = await obtenerIntentos();
+    const caja = document.getElementById('graficasPanel');
+    await graficasListas;
+    if (!intentos.length || !window.GraficasPanel || !GraficasPanel.disponible()) { caja.hidden = true; return; }
+    caja.hidden = false;
+
+    const stats = await obtenerEstadisticas();
+    const practicados = MODULOS_CATALOGO.filter(m => stats.porModulo[m.id]);
+    GraficasPanel.barras(document.getElementById('graficaMejores'), {
+      etiquetas: practicados.map(m => m.nombre),
+      cortas: practicados.map(m => m.corto || m.nombre),
+      valores: practicados.map(m => stats.porModulo[m.id].mejor)
+    });
+
+    const evolucion = evolucionNotaGeneral(intentos);
+    const contEvolucion = document.getElementById('graficaEvolucion');
+    if (evolucion.length >= 2) {
+      GraficasPanel.linea(contEvolucion, {
+        etiquetas: evolucion.map(([dia]) => etiquetaDia(dia)),
+        valores: evolucion.map(([, nota]) => nota)
+      });
+    } else {
+      contEvolucion.innerHTML = '<p class="empty-state">La línea aparece cuando hayas practicado en dos días distintos.</p>';
+      contEvolucion.style.minHeight = '0';
+    }
+  }
+
+  // ---------- RECORRIDO GUIADO ----------
+  // Se abre solo la primera vez en este navegador; después, con «Ver recorrido».
+  const CLAVE_RECORRIDO = 'aisRecorridoPanelEstudiante';
+  function abrirRecorrido(forzar){
+    const tarjetaDe = sel => { const el = document.querySelector(sel); return el && el.closest('.panel-card'); };
+    return window.GraficasPanel && GraficasPanel.recorrido([
+      { elemento: '.stats-grid', titulo: 'Tu nota general', texto: 'Es la media de tu mejor intento en cada quiz y simulador. Repetir un quiz nunca te baja la nota.' },
+      { elemento: '#graficasPanel', titulo: 'Tus gráficas', texto: 'A la izquierda, tu mejor nota en cada quiz frente a la línea del 70 %. A la derecha, cómo ha ido cambiando tu nota general.' },
+      { elemento: '#actividadesCard', titulo: 'Lo que te asignó tu profesor', texto: 'Las actividades pendientes de tus grupos aparecen aquí primero.' },
+      { elemento: '#repasarCard', titulo: 'Qué repasar', texto: 'Los temas donde más fallas en los últimos 90 días, con el enlace a su página de teoría.' },
+      { elemento: tarjetaDe('[data-acordeon="progreso-quiz"]'), titulo: 'Practica desde aquí', texto: 'Cada tarjeta abre su quiz y muestra tu mejor nota. Lo que aún no has hecho queda al final.' },
+      { elemento: '.streak-card', titulo: 'Tu racha de estudio', texto: 'Cada cuadro es un día. Mientras más intenso el verde, más intentos hiciste ese día.' },
+      { elemento: tarjetaDe('#grupoContainerPanel'), titulo: 'Tus grupos', texto: 'Escribe aquí el código que te dé tu profesor para ver sus actividades.' },
+      { elemento: '#sidebar', titulo: 'Todo el sitio a un clic', texto: 'Desde la barra lateral llegas a los módulos, los quizzes, los simuladores y las herramientas.' }
+    ], { clave: CLAVE_RECORRIDO, forzar });
+  }
+
+  async function prepararRecorrido(){
+    await graficasListas;
+    if (!window.GraficasPanel) return;
+    const boton = document.getElementById('btnRecorrido');
+    boton.hidden = false;
+    boton.addEventListener('click', () => abrirRecorrido(true));
+    if (rutaActual().vista !== 'actividades') abrirRecorrido(false);
+  }
+
   // ---------- ARRANQUE ----------
   (async function inicio(){
     // Un enlace de invitación (?codigo=…) abre la sección Actividades, que es
@@ -2171,6 +2371,7 @@
     await renderNombre();
     montarFotoPerfil(avatarInitials, { alEditarNombre: () => abrirDialogoNombre(renderNombre) });
     await renderPanel();
+    await renderGraficas();
     const paginasCompletadas = await renderModulosAprendizaje();
     const racha = await renderRacha();
     await renderLogros(racha, paginasCompletadas);
@@ -2189,6 +2390,7 @@
     renderVencimientos(lista);
     const correcciones = sesion ? await obtenerMisCorrecciones() : [];
     await renderNotificaciones(lista, correcciones, _gruposEstudiante.length > 0);
+    prepararRecorrido();
   })();
   </script>
 

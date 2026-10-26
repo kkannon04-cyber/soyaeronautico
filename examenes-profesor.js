@@ -481,6 +481,33 @@ function exPintarPreguntas() {
     if (q.tipo !== 'seccion') n++;
     cont.appendChild(exTarjetaPregunta(q, i, n));
   });
+  exActivarArrastre(cont);
+}
+
+// Ordenar preguntas y secciones arrastrándolas por su asa (SortableJS, cargado
+// con defer en panel-profesor.html). Los botones ↑ ↓ siguen ahí para quien
+// use el teclado. Sin la librería, el asa no aparece y todo sigue igual.
+function exActivarArrastre(cont) {
+  if (typeof Sortable === 'undefined') {
+    cont.querySelectorAll('.ex-asa').forEach(a => a.remove());
+    return;
+  }
+  if (Sortable.get(cont)) return;
+  Sortable.create(cont, {
+    handle: '.ex-asa',
+    draggable: '.ex-q',
+    animation: 160,
+    ghostClass: 'ex-q-fantasma',
+    chosenClass: 'ex-q-arrastrando',
+    onEnd: ev => {
+      if (ev.oldIndex === ev.newIndex) return;
+      const arr = ex.editando.contenido.preguntas;
+      const [movida] = arr.splice(ev.oldIndex, 1);
+      arr.splice(ev.newIndex, 0, movida);
+      exProgramarGuardado();
+      exPintarPreguntas();
+    }
+  });
 }
 
 function exTarjetaPregunta(q, i, numero) {
@@ -491,6 +518,7 @@ function exTarjetaPregunta(q, i, numero) {
   card.innerHTML = `
     <div class="ex-q-cab">
       <div>
+        <span class="ex-asa" title="Arrastra para cambiar el orden" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.7"/><circle cx="15" cy="5" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="19" r="1.7"/><circle cx="15" cy="19" r="1.7"/></svg></span>
         <span class="module-badge">${q.tipo === 'seccion' ? 'Sección' : 'Pregunta ' + numero}</span>
         <span class="ex-tenue">${EX_TIPOS[q.tipo]}${q.tipo !== 'seccion' ? ` · ${evPuntosTexto(max)} pt${max === 1 ? '' : 's'}` : ''}</span>
       </div>

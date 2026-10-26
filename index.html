@@ -861,6 +861,45 @@
     .news-section{ padding:0 16px 48px; }
     .news-grid{ grid-template-columns:1fr; }
   }
+  /* ---------- CONTACTO (2026-10-26) ---------- */
+  .contacto{ max-width:1200px; margin:0 auto; padding:0 32px 80px; }
+  .contacto-head{ margin-bottom:28px; padding-bottom:16px; border-bottom:2px solid var(--text); }
+  .contacto-head h2{ font-size:1.7rem; margin-bottom:8px; }
+  .contacto-head p{ color:var(--text-muted); max-width:620px; margin:0; line-height:1.6; }
+  .contacto-grid{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 2fr); gap:24px 56px; align-items:start; }
+  .contacto-guia{ list-style:none; margin:0; padding:0; }
+  .contacto-guia li{ display:flex; flex-direction:column; gap:3px; padding:14px 0; border-top:1px solid var(--hairline); }
+  .contacto-guia li:first-child{ border-top:0; padding-top:4px; }
+  .contacto-guia strong{ font-family:'Archivo', sans-serif; font-size:0.98rem; }
+  .contacto-guia span{ font-size:0.88rem; color:var(--text-muted); line-height:1.55; }
+  .contacto-guia a, .contacto-acepto a{ color:var(--accent); font-weight:600; text-underline-offset:3px; }
+
+  .contacto-form{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px 20px; }
+  .campo-c{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .campo-c.ancho, .contacto-form .ancho{ grid-column:1 / -1; }
+  .campo-c label{ font-size:0.86rem; font-weight:600; color:var(--text); }
+  .campo-c .opcional{ font-weight:400; color:var(--text-muted); }
+  .campo-c input, .campo-c select, .campo-c textarea{
+    width:100%; font:inherit; font-size:0.95rem; color:var(--text);
+    background:var(--bg); border:1px solid var(--hairline); border-radius:8px; padding:11px 12px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  [data-theme="dark"] .campo-c input, [data-theme="dark"] .campo-c select, [data-theme="dark"] .campo-c textarea{ background:var(--panel); }
+  .campo-c textarea{ resize:vertical; min-height:130px; line-height:1.55; }
+  .campo-c input:focus, .campo-c select:focus, .campo-c textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.22); }
+  .campo-c [aria-invalid="true"]{ border-color:var(--danger); }
+  .contacto-acepto{ flex-direction:row; align-items:flex-start; gap:10px; }
+  .contacto-acepto input{ width:18px; height:18px; flex-shrink:0; margin-top:2px; padding:0; accent-color:var(--accent); }
+  .contacto-acepto label{ font-weight:400; font-size:0.86rem; line-height:1.5; color:var(--text-muted); }
+  .contacto-trampa{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .contacto-enviar{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .contacto-btn{ border:0; cursor:pointer; }
+  .contacto-btn:disabled{ opacity:0.65; cursor:wait; transform:none; }
+  .contacto-estado{ margin:0; font-size:0.9rem; color:var(--text-muted); }
+  .contacto-estado.ok{ color:var(--vfr-texto); font-weight:600; }
+  .contacto-estado.error{ color:var(--danger); }
+  @media (max-width:860px){ .contacto-grid{ grid-template-columns:1fr; } .contacto-guia{ display:none; } }
+  @media (max-width:600px){ .contacto{ padding:0 16px 56px; } .contacto-form{ grid-template-columns:1fr; } }
 </style>
 <link rel="stylesheet" href="movimiento.css">
 </head>
@@ -1209,6 +1248,63 @@
   </div>
 </section>
 
+<!-- ===== CONTACTO (2026-10-26) =====
+     Formulario de Netlify Forms: Netlify recibe el mensaje y lo reenvía por
+     correo al del proyecto (la notificación se configura en el panel de
+     Netlify, no aquí; así la dirección no queda expuesta en la página). -->
+<section class="contacto" id="contacto" aria-labelledby="contactoTitulo">
+  <div class="contacto-head">
+    <h2 id="contactoTitulo">Escríbenos</h2>
+    <p>¿Una duda sobre el curso o el sitio, una cuenta de profesor o un error que encontraste? Déjanos tus datos y tu mensaje, y te respondemos al correo que escribas.</p>
+  </div>
+  <div class="contacto-grid">
+    <ul class="contacto-guia">
+      <li><strong>Cuenta de profesor</strong><span>Cuéntanos tu institución y el curso que diriges.</span></li>
+      <li><strong>Un error en el sitio</strong><span>Dinos en qué página está y qué esperabas ver.</span></li>
+      <li><strong>Datos personales</strong><span>Para conocer, corregir o borrar tus datos, revisa la <a href="privacidad.html">Política de privacidad</a>.</span></li>
+    </ul>
+
+    <form class="contacto-form" id="formContacto" name="contacto" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+      <input type="hidden" name="form-name" value="contacto">
+      <p class="contacto-trampa" aria-hidden="true"><label>No llenes este campo <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+      <div class="campo-c">
+        <label for="cNombre">Nombre</label>
+        <input id="cNombre" name="nombre" type="text" autocomplete="name" maxlength="120" required>
+      </div>
+      <div class="campo-c">
+        <label for="cCorreo">Correo electrónico</label>
+        <input id="cCorreo" name="correo" type="email" autocomplete="email" maxlength="160" required>
+      </div>
+      <div class="campo-c">
+        <label for="cTelefono">Teléfono o WhatsApp <span class="opcional">(opcional)</span></label>
+        <input id="cTelefono" name="telefono" type="tel" autocomplete="tel" maxlength="40">
+      </div>
+      <div class="campo-c">
+        <label for="cMotivo">Motivo</label>
+        <select id="cMotivo" name="motivo">
+          <option>Consulta sobre el curso o el sitio</option>
+          <option>Quiero una cuenta de profesor</option>
+          <option>Reportar un error</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="campo-c ancho">
+        <label for="cMensaje">Mensaje</label>
+        <textarea id="cMensaje" name="mensaje" rows="5" maxlength="2000" required></textarea>
+      </div>
+      <div class="campo-c ancho contacto-acepto">
+        <input id="cAcepto" name="acepto" type="checkbox" value="sí" required>
+        <label for="cAcepto">Acepto que SoyAeronáutico use estos datos solo para responderme, según la <a href="privacidad.html">Política de privacidad</a>.</label>
+      </div>
+      <div class="ancho contacto-enviar">
+        <button type="submit" class="hero-cta contacto-btn" id="contactoBtn">Enviar mensaje</button>
+        <p class="contacto-estado" id="contactoEstado" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
 </main>
 <footer>
   <span>Portal de estudio independiente — contenido con fines educativos, no reemplaza fuentes oficiales AIP/ICAO.</span>
@@ -1316,6 +1412,54 @@
     syncMobileThemeLabel();
   });
 
+
+  // ---------- CONTACTO ----------
+  // Envío sin recargar a Netlify Forms (POST url-encoded a «/» con form-name).
+  // Sin JavaScript, el formulario se envía normal y Netlify muestra su página
+  // de confirmación.
+  (function(){
+    const form = document.getElementById('formContacto');
+    if (!form) return;
+    const estado = document.getElementById('contactoEstado');
+    const boton = document.getElementById('contactoBtn');
+    const pintar = (texto, clase) => { estado.textContent = texto; estado.className = 'contacto-estado' + (clase ? ' ' + clase : ''); };
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      form.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+      const invalidos = Array.from(form.querySelectorAll('input, select, textarea')).filter(el => !el.checkValidity());
+      if (invalidos.length) {
+        invalidos.forEach(el => el.setAttribute('aria-invalid', 'true'));
+        const primero = invalidos[0];
+        const avisos = {
+          cNombre: 'Escribe tu nombre.',
+          cCorreo: 'Escribe un correo válido para poder responderte.',
+          cMensaje: 'Escribe tu mensaje.',
+          cAcepto: 'Para enviar, acepta el uso de tus datos según la Política de privacidad.'
+        };
+        pintar(avisos[primero.id] || 'Revisa los campos marcados.', 'error');
+        primero.focus();
+        return;
+      }
+      boton.disabled = true;
+      pintar('Enviando…');
+      try {
+        const res = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(new FormData(form)).toString()
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const correo = form.correo.value.trim();
+        form.reset();
+        pintar(`Mensaje enviado. Te respondemos a ${correo}.`, 'ok');
+      } catch (err) {
+        pintar('No se pudo enviar el mensaje. Revisa tu conexión e inténtalo de nuevo en unos minutos.', 'error');
+      } finally {
+        boton.disabled = false;
+      }
+    });
+  })();
 
   // ---------- NOTAM CAROUSEL ----------
   (function(){
